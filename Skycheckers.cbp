@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="Skycheckers" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/Skycheckers" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/Skycheckers" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="`sdl-config --cflags`" />
+		</Compiler>
+		<Linker>
+			<Add option="`sdl-config --libs`" />
+			<Add library="SDL" />
+			<Add library="SDL_mixer" />
+			<Add library="glut" />
+			<Add library="SDL_ttf" />
+			<Add library="SDL_image" />
+		</Linker>
+		<Unit filename="ai.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="ai.h" />
+		<Unit filename="animation.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="animation.h" />
+		<Unit filename="audio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="audio.h" />
+		<Unit filename="characters.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="characters.h" />
+		<Unit filename="collision.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="collision.h" />
+		<Unit filename="console.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="console.h" />
+		<Unit filename="font.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="font.h" />
+		<Unit filename="game_menus.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="game_menus.h" />
+		<Unit filename="input.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="input.h" />
+		<Unit filename="linux.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="linux.h" />
+		<Unit filename="main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="maincore.h" />
+		<Unit filename="menu.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="menu.h" />
+		<Unit filename="network.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="network.h" />
+		<Unit filename="scenery.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="scenery.h" />
+		<Unit filename="utilities.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="utilities.h" />
+		<Unit filename="weapon.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="weapon.h" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
