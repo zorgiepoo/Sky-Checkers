@@ -9,7 +9,7 @@ OpenGL and GLUT are linked as well, and Cocoa is linked on OS X.
 
 Windows uses to the .dll files, Linux uses to the .a files, OS X uses the .framework files in the repository.
 
-Linux has a linux-loader to that sets the path to dynamic libraries before running the game executable.
+Linux has a linux-loader too that sets the environmental path to dynamic libraries before running the game executable.
 
 Linux support has only been tested on Ubuntu. OS X has been tested on Tiger and above I think, and Windows has been tested on XP and above.
 
