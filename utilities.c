@@ -26,6 +26,7 @@ static int power_of_two(int input);
 /*
  * Using the Mersenne Twister Random number generator
  * http://www.qbrundage.com/michaelb/pubs/essays/random_number_generation
+ * This code is licensed as "Public Domain" (mt_init(), mt_random())
  */
 #define MT_LEN			624
 
@@ -84,6 +85,8 @@ unsigned long mt_random() {
 	 */
 }
 
+// The code from this function is taken from https://www.opengl.org/discussion_boards/showthread.php/163677-SDL_image-Opengl
+// which is derived from SDL 1.2 source code which is licensed under LGPL
 static void surfaceToGLTexture(SDL_Surface *surface, GLuint *tex)
 {
 	int w, h;
