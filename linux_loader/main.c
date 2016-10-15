@@ -9,9 +9,8 @@
  * buffer = Where to format the path. Must be at least
  *                 PATH_MAX in size.
  */
-
-//http://ubuntuforums.org/showthread.php?t=377353
-
+// Note: this function is licensed under the GPL and is derived from:
+// http://apps.linuxaudio.org/apps/all/edrummer
 static void get_exe_name(char* buffer)
 {
   char linkname[64];
