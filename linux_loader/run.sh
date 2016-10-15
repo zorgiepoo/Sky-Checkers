@@ -5,6 +5,7 @@
 
 # Function to find the real directory a program resides in.
 # Feb. 17, 2000 - Sam Lantinga, Loki Entertainment Software
+# This code is licensed under Public Domain (I asked the author)
 FindPath()
 {
     fullpath="`echo $1 | grep /`"
