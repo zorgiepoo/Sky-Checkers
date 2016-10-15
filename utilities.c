@@ -86,7 +86,8 @@ unsigned long mt_random() {
 }
 
 // The code from this function is taken from https://www.opengl.org/discussion_boards/showthread.php/163677-SDL_image-Opengl
-// which is derived from SDL 1.2 source code which is licensed under LGPL
+// which is derived from SDL 1.2 source code which is licensed under LGPL:
+// https://github.com/klange/SDL/blob/master/test/testgl.c
 static void surfaceToGLTexture(SDL_Surface *surface, GLuint *tex)
 {
 	int w, h;
@@ -159,6 +160,7 @@ static void surfaceToGLTexture(SDL_Surface *surface, GLuint *tex)
 	SDL_FreeSurface(image); /* No longer needed */
 }
 
+// This function is derived from same place as surfaceToGLTexture() code is
 static int power_of_two(int input)
 {
 	int value = 1;
