@@ -1,6 +1,6 @@
 # Sky Checkers
 
-![Screenshot](https://zgcoder.net/software/skycheckers/images/playing-thumb.png)
+[<img src="https://zgcoder.net/software/skycheckers/images/playing-thumb.png">](https://zgcoder.net/software/skycheckers/images/playing.png)
 
 ## Introduction
 Sky Checkers is a multiplayer video game I wrote during my high school and early college years. It is based on an old N64 Kirby mini-game. Knock off your enemies and the last one standing wins.
