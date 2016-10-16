@@ -3,7 +3,14 @@
 #include <sys/types.h>
 #include <string.h>
 
-// This code is *really* not necessary. If I was more bright back then, I would have just made the run.sh script executable
+/*
+ * Note: this function is licensed under the GPL v3 or later and is derived from:
+ * http://apps.linuxaudio.org/apps/all/edrummer
+ * Note 2: This code is probably unnecessary; if I was more bright back then,
+ * I would have only just used/altered the run.sh script and make it executable
+ * eDrummer for Linux
+ * Copyright 2013 Jeff Glatt
+ */
 
 /******************* get_exe_name() ******************
  * Gets the path name where this exe is installed
@@ -11,8 +18,6 @@
  * buffer = Where to format the path. Must be at least
  *                 PATH_MAX in size.
  */
-// Note: this function is licensed under the GPL and is derived from:
-// http://apps.linuxaudio.org/apps/all/edrummer
 static void get_exe_name(char* buffer)
 {
   char linkname[64];
