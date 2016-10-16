@@ -9,6 +9,14 @@
 /* Begin PBXBuildFile section */
 		002F3C0109D093BD00EBEB88 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002F3C0009D093BD00EBEB88 /* OpenGL.framework */; };
 		002F3C6109D0951E00EBEB88 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002F3C6009D0951E00EBEB88 /* GLUT.framework */; };
+		720C2C241DB4005800551761 /* SDL_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 720C2C201DB4005800551761 /* SDL_image.framework */; };
+		720C2C251DB4005800551761 /* SDL_mixer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 720C2C211DB4005800551761 /* SDL_mixer.framework */; };
+		720C2C261DB4005800551761 /* SDL_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 720C2C221DB4005800551761 /* SDL_ttf.framework */; };
+		720C2C271DB4005800551761 /* SDL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 720C2C231DB4005800551761 /* SDL.framework */; };
+		720C2C281DB4006300551761 /* SDL_image.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 720C2C201DB4005800551761 /* SDL_image.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		720C2C291DB4006300551761 /* SDL_mixer.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 720C2C211DB4005800551761 /* SDL_mixer.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		720C2C2A1DB4006300551761 /* SDL_ttf.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 720C2C221DB4005800551761 /* SDL_ttf.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		720C2C2B1DB4006300551761 /* SDL.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 720C2C231DB4005800551761 /* SDL.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		770FFA0810B8F465009FD46A /* osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 770FFA0710B8F465009FD46A /* osx.m */; };
 		771B6CA010BE60320014884B /* sc_icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 771B6C9F10BE60320014884B /* sc_icon.icns */; };
 		772B6A850D15CBA000A216BD /* network.c in Sources */ = {isa = PBXBuildFile; fileRef = 772B6A840D15CBA000A216BD /* network.c */; };
@@ -25,16 +33,8 @@
 		7781DBC40B7E8E9B003BD7B6 /* weapon.c in Sources */ = {isa = PBXBuildFile; fileRef = 7781DBC20B7E8E9B003BD7B6 /* weapon.c */; };
 		778FA7910D0656FA002A3C26 /* ai.c in Sources */ = {isa = PBXBuildFile; fileRef = 778FA7900D0656FA002A3C26 /* ai.c */; };
 		77C7A2640CFA8C6500295420 /* Data in Resources */ = {isa = PBXBuildFile; fileRef = 77C7A2630CFA8C6500295420 /* Data */; };
-		77C7A3BA0CFAE5D200295420 /* SDL_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 77C7A3B60CFAE5D200295420 /* SDL_image.framework */; };
-		77C7A3BC0CFAE5D200295420 /* SDL_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 77C7A3B80CFAE5D200295420 /* SDL_ttf.framework */; };
-		77C7A3BD0CFAE5D200295420 /* SDL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 77C7A3B90CFAE5D200295420 /* SDL.framework */; };
-		77C7A3F40CFAE5E500295420 /* SDL_image.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 77C7A3B60CFAE5D200295420 /* SDL_image.framework */; };
-		77C7A3F60CFAE5E500295420 /* SDL_ttf.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 77C7A3B80CFAE5D200295420 /* SDL_ttf.framework */; };
-		77C7A3F70CFAE5E500295420 /* SDL.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 77C7A3B90CFAE5D200295420 /* SDL.framework */; };
 		77C7A4FC0CFD292600295420 /* game_menus.c in Sources */ = {isa = PBXBuildFile; fileRef = 77C7A4FB0CFD292600295420 /* game_menus.c */; };
-		77CBEDCC10B3B3BB0006B1BE /* SDL_mixer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 77CBEDCB10B3B3BB0006B1BE /* SDL_mixer.framework */; };
 		77CBEDEB10B3B3EB0006B1BE /* audio.c in Sources */ = {isa = PBXBuildFile; fileRef = 77CBEDEA10B3B3EB0006B1BE /* audio.c */; };
-		77CBEE4A10B3B56E0006B1BE /* SDL_mixer.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 77CBEDCB10B3B3BB0006B1BE /* SDL_mixer.framework */; };
 		77CCC2AF0BA4D36B007F9F3A /* console.c in Sources */ = {isa = PBXBuildFile; fileRef = 77DC8A510B2FA1DD0080334C /* console.c */; };
 		77CCC2B30BA4D374007F9F3A /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
@@ -47,10 +47,10 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				77CBEE4A10B3B56E0006B1BE /* SDL_mixer.framework in Copy Frameworks into .app bundle */,
-				77C7A3F40CFAE5E500295420 /* SDL_image.framework in Copy Frameworks into .app bundle */,
-				77C7A3F60CFAE5E500295420 /* SDL_ttf.framework in Copy Frameworks into .app bundle */,
-				77C7A3F70CFAE5E500295420 /* SDL.framework in Copy Frameworks into .app bundle */,
+				720C2C281DB4006300551761 /* SDL_image.framework in Copy Frameworks into .app bundle */,
+				720C2C291DB4006300551761 /* SDL_mixer.framework in Copy Frameworks into .app bundle */,
+				720C2C2A1DB4006300551761 /* SDL_ttf.framework in Copy Frameworks into .app bundle */,
+				720C2C2B1DB4006300551761 /* SDL.framework in Copy Frameworks into .app bundle */,
 			);
 			name = "Copy Frameworks into .app bundle";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -65,6 +65,10 @@
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* SkyCheckers_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SkyCheckers_Prefix.pch; sourceTree = "<group>"; };
+		720C2C201DB4005800551761 /* SDL_image.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL_image.framework; path = Frameworks/SDL_image.framework; sourceTree = "<group>"; };
+		720C2C211DB4005800551761 /* SDL_mixer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL_mixer.framework; path = Frameworks/SDL_mixer.framework; sourceTree = "<group>"; };
+		720C2C221DB4005800551761 /* SDL_ttf.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL_ttf.framework; path = Frameworks/SDL_ttf.framework; sourceTree = "<group>"; };
+		720C2C231DB4005800551761 /* SDL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL.framework; path = Frameworks/SDL.framework; sourceTree = "<group>"; };
 		770FFA0610B8F465009FD46A /* osx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = osx.h; sourceTree = "<group>"; };
 		770FFA0710B8F465009FD46A /* osx.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = osx.m; sourceTree = "<group>"; };
 		771B6C9F10BE60320014884B /* sc_icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = sc_icon.icns; sourceTree = "<group>"; };
@@ -94,12 +98,8 @@
 		778FA78F0D0656FA002A3C26 /* ai.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ai.h; sourceTree = "<group>"; };
 		778FA7900D0656FA002A3C26 /* ai.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ai.c; sourceTree = "<group>"; };
 		77C7A2630CFA8C6500295420 /* Data */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Data; sourceTree = "<group>"; };
-		77C7A3B60CFAE5D200295420 /* SDL_image.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL_image.framework; path = Frameworks/SDL_image.framework; sourceTree = "<group>"; };
-		77C7A3B80CFAE5D200295420 /* SDL_ttf.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL_ttf.framework; path = Frameworks/SDL_ttf.framework; sourceTree = "<group>"; };
-		77C7A3B90CFAE5D200295420 /* SDL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL.framework; path = Frameworks/SDL.framework; sourceTree = "<group>"; };
 		77C7A4FA0CFD292600295420 /* game_menus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = game_menus.h; sourceTree = "<group>"; };
 		77C7A4FB0CFD292600295420 /* game_menus.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = game_menus.c; sourceTree = "<group>"; };
-		77CBEDCB10B3B3BB0006B1BE /* SDL_mixer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL_mixer.framework; path = Frameworks/SDL_mixer.framework; sourceTree = "<group>"; };
 		77CBEDE910B3B3EB0006B1BE /* audio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = audio.h; sourceTree = "<group>"; };
 		77CBEDEA10B3B3EB0006B1BE /* audio.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = audio.c; sourceTree = "<group>"; };
 		77DC8A500B2FA1DD0080334C /* console.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = console.h; sourceTree = "<group>"; };
@@ -113,13 +113,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				720C2C241DB4005800551761 /* SDL_image.framework in Frameworks */,
 				002F3C6109D0951E00EBEB88 /* GLUT.framework in Frameworks */,
+				720C2C251DB4005800551761 /* SDL_mixer.framework in Frameworks */,
+				720C2C261DB4005800551761 /* SDL_ttf.framework in Frameworks */,
 				002F3C0109D093BD00EBEB88 /* OpenGL.framework in Frameworks */,
 				77CCC2B30BA4D374007F9F3A /* Cocoa.framework in Frameworks */,
-				77C7A3BA0CFAE5D200295420 /* SDL_image.framework in Frameworks */,
-				77C7A3BC0CFAE5D200295420 /* SDL_ttf.framework in Frameworks */,
-				77C7A3BD0CFAE5D200295420 /* SDL.framework in Frameworks */,
-				77CBEDCC10B3B3BB0006B1BE /* SDL_mixer.framework in Frameworks */,
+				720C2C271DB4005800551761 /* SDL.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -137,10 +137,10 @@
 		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				77CBEDCB10B3B3BB0006B1BE /* SDL_mixer.framework */,
-				77C7A3B60CFAE5D200295420 /* SDL_image.framework */,
-				77C7A3B80CFAE5D200295420 /* SDL_ttf.framework */,
-				77C7A3B90CFAE5D200295420 /* SDL.framework */,
+				720C2C201DB4005800551761 /* SDL_image.framework */,
+				720C2C211DB4005800551761 /* SDL_mixer.framework */,
+				720C2C221DB4005800551761 /* SDL_ttf.framework */,
+				720C2C231DB4005800551761 /* SDL.framework */,
 				002F3C6009D0951E00EBEB88 /* GLUT.framework */,
 				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
 				002F3C0009D093BD00EBEB88 /* OpenGL.framework */,
@@ -264,9 +264,15 @@
 /* Begin PBXProject section */
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "SkyCheckers" */;
 			compatibilityVersion = "Xcode 2.4";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				en,
+			);
 			mainGroup = 29B97314FDCFA39411CA2CEA /* SkyCheckers */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -331,27 +337,18 @@
 		C01FCF4B08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)",
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_2)",
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_2)",
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_3)",
+					"$(PROJECT_DIR)/Frameworks",
 				);
-				FRAMEWORK_SEARCH_PATHS_QUOTED_1 = "\"$(SRCROOT)/../../../../../Desktop\"";
-				FRAMEWORK_SEARCH_PATHS_QUOTED_2 = "\"$(SRCROOT)\"";
-				FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/Frameworks\"";
-				FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_2 = "\"$(SRCROOT)/Frameworks\"";
-				FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_3 = "\"$(SRCROOT)/Frameworks\"";
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_VERSION = 4.0;
 				INFOPLIST_FILE = Info.plist;
-				INSTALL_PATH = "$(HOME)/Applications";
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				OTHER_CFLAGS = "-D_DEBUG";
 				PRODUCT_NAME = SkyCheckers;
 				RUN_CLANG_STATIC_ANALYZER = NO;
@@ -362,35 +359,21 @@
 					"-Wnewline-eof",
 				);
 				WRAPPER_EXTENSION = app;
-				ZERO_LINK = NO;
 			};
 			name = Debug;
 		};
 		C01FCF4C08A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
-					ppc,
-					i386,
-				);
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)",
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_2)",
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_2)",
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_3)",
+					"$(PROJECT_DIR)/Frameworks",
 				);
-				FRAMEWORK_SEARCH_PATHS_QUOTED_1 = "\"$(SRCROOT)/../../../../../Desktop\"";
-				FRAMEWORK_SEARCH_PATHS_QUOTED_2 = "\"$(SRCROOT)\"";
-				FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/Frameworks\"";
-				FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_2 = "\"$(SRCROOT)/Frameworks\"";
-				FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_3 = "\"$(SRCROOT)/Frameworks\"";
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G5;
-				GCC_VERSION = 4.0;
 				INFOPLIST_FILE = Info.plist;
-				INSTALL_PATH = "$(HOME)/Applications";
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				PRODUCT_NAME = SkyCheckers;
 				WARNING_CFLAGS = (
 					"-Wall",
@@ -399,7 +382,6 @@
 					"-Wnewline-eof",
 				);
 				WRAPPER_EXTENSION = app;
-				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
@@ -420,7 +402,6 @@
 				);
 				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
-				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				ZERO_LINK = NO;
 			};
 			name = Debug;
@@ -442,7 +423,6 @@
 				);
 				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
-				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				SECTORDER_FLAGS = "";
 			};
 			name = Release;
