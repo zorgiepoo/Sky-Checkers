@@ -135,7 +135,9 @@ GLuint loadString(char *string)
 	if (string == NULL)
 		return 0;
 	
-	static const char *FONT_PATH = "Data/Fonts/goodfish.ttf";
+	// This font is "goodfish.ttf" and is intentionally obfuscated in source by author's request
+	// A license to embed the font was acquired (for me, Mayur, only) from http://typodermicfonts.com/goodfish/
+	static const char *FONT_PATH = "Data/Fonts/typelib.dat";
 	
 	// load font..
 	TTF_Font *font = TTF_OpenFont(FONT_PATH, 144);
