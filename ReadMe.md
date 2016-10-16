@@ -19,7 +19,7 @@ Sky Checkers supports macOS, Windows, and Linux. Distributed binaries can be fou
 
 ## Licensing
 
-The source code is licensed under the GPL, and borrows some external (L)GPL or public domain code which is commented appropriately.
+The source code is currently licensed under the GPL version 3.
 
 The assets are licensed differently. I acquired [an embedded app license](http://typodermicfonts.com/goodfish/) for the goodfish font that only I can use and which is obfuscated in the code. Sound assets except for the main menu music are freely distributed from [Freesound](https://freesound.org) and [PacDV](http://www.pacdv.com/sounds/).
 
