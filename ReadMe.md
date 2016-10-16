@@ -12,10 +12,10 @@ Sky Checkers supports macOS, Windows, and Linux. Distributed binaries can be fou
 ## Features
 
 * 3D graphics written using OpenGL
-* Local or online battles with 1 - 4 players (online uses port 4893 over UDP)
+* Local or [online](https://zgcoder.net/software/skycheckers/images/skycheckers_ubuntu_and_osx.png) battles with 1 - 4 players (online uses port 4893 over UDP)
 * AI bots with an easy, medium, or hard difficulty
 * Gamepad support
-* Console for development & debugging
+* [Console](https://zgcoder.net/software/skycheckers/images/console.png) for development & debugging
 
 ## Licensing
 
