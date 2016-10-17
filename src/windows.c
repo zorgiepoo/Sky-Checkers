@@ -17,14 +17,14 @@
  * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
  */
  
- #include "windows.h"
- #include <Shlwapi.h>
- #include <ShlObj.h>
- #include <windows.h>
+#include "windows.h"
+#include <Shlwapi.h>
+#include <ShlObj.h>
+#include <windows.h>
 #include "resource.h"
- 
- FILE *getUserDataFile(const char *mode)
- {
+
+FILE *getUserDataFile(const char *mode)
+{
 	FILE *file = NULL;
 	
 	TCHAR appDataPath[MAX_PATH];
@@ -41,17 +41,16 @@
 	}
 	
 	return file;
- }
+}
 
- // This code may not work under Debug but it works under Release configuration
- // It sets the taskbar icon to our app's icon image
- void setWindowsIcon(void *windowHandle)
- {
-	 HINSTANCE handle = GetModuleHandle(NULL);
-	 HICON icon = LoadIcon(handle, MAKEINTRESOURCE(IDI_ICON1));
-	 if (icon != NULL)
-	 {
-		 SetClassLong((HWND)windowHandle, GCL_HICON, icon);
-	 }
- }
- 
+// This code may not work under Debug but it works under Release configuration
+// It sets the taskbar icon to our app's icon image
+void setWindowsIcon(void *windowHandle)
+{
+	HINSTANCE handle = GetModuleHandle(NULL);
+	HICON icon = LoadIcon(handle, MAKEINTRESOURCE(IDI_ICON1));
+	if (icon != NULL)
+	{
+		SetClassLong((HWND)windowHandle, GCL_HICON, icon);
+	}
+}
