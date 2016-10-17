@@ -5,9 +5,9 @@
 ## Introduction
 Sky Checkers is a multiplayer video game I wrote during my high school and early college years. It is based on an old N64 Kirby mini-game. Knock off your enemies and the last one standing wins.
 
-The quality of the code may reflect what I consider my first real project. This project serves mainly for historical value now, and may not compile on some platforms and toolsets as-is.
+The quality of the code may reflect what I consider my first real project. This project is mainly for historical value now.
 
-Sky Checkers supports macOS, Windows, and Linux. Distributed binaries can be found on the [releases page](https://github.com/zorgiepoo/Sky-Checkers/releases).
+Sky Checkers supports macOS, Windows, and Linux. Downloads can be found on the [releases page](https://github.com/zorgiepoo/Sky-Checkers/releases). For information on compiling from source, see `INSTALL`.
 
 ## Features
 
