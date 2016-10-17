@@ -5,7 +5,7 @@ Sky Checkers relies on the following dependencies:
 * SDL_mixer 1.2
 * SDL_ttf 2.0 (for SDL 1.2)
 * SDL_image 1.2
-* GLUT
+* FreeGLUT (for Windows and Linux)
 
 On Linux, development libraries for these dependencies may need to first be installed.
 
@@ -29,6 +29,5 @@ yum install freeglut-devel.x86_64
 For macOS and Windows, these dependencies are bundled in the source code already.
 
 To compile under macOS, build and run the project using Xcode.
+To compile under Windows, build and run the project using Visual Studio in win/
 To compile under Linux, execute make and it will output a skycheckers executable.
-
-Building on Windows is not straightforward. I set up a Dev-C++ project a long time ago that used minGW.
