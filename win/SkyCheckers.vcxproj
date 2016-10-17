@@ -1,0 +1,157 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\ai.h" />
+    <ClInclude Include="..\src\animation.h" />
+    <ClInclude Include="..\src\audio.h" />
+    <ClInclude Include="..\src\characters.h" />
+    <ClInclude Include="..\src\collision.h" />
+    <ClInclude Include="..\src\console.h" />
+    <ClInclude Include="..\src\font.h" />
+    <ClInclude Include="..\src\game_menus.h" />
+    <ClInclude Include="..\src\input.h" />
+    <ClInclude Include="..\src\maincore.h" />
+    <ClInclude Include="..\src\menu.h" />
+    <ClInclude Include="..\src\network.h" />
+    <ClInclude Include="..\src\scenery.h" />
+    <ClInclude Include="..\src\utilities.h" />
+    <ClInclude Include="..\src\weapon.h" />
+    <ClInclude Include="..\src\windows.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\ai.c" />
+    <ClCompile Include="..\src\animation.c" />
+    <ClCompile Include="..\src\audio.c" />
+    <ClCompile Include="..\src\characters.c" />
+    <ClCompile Include="..\src\collision.c" />
+    <ClCompile Include="..\src\console.c" />
+    <ClCompile Include="..\src\font.c" />
+    <ClCompile Include="..\src\game_menus.c" />
+    <ClCompile Include="..\src\input.c" />
+    <ClCompile Include="..\src\main.c" />
+    <ClCompile Include="..\src\menu.c" />
+    <ClCompile Include="..\src\network.c" />
+    <ClCompile Include="..\src\scenery.c" />
+    <ClCompile Include="..\src\utilities.c" />
+    <ClCompile Include="..\src\weapon.c" />
+    <ClCompile Include="..\src\windows.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SkyCheckers.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="cube.ico" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{4D6DF06F-1E53-49E2-A20D-D5CA6E2FBA6A}</ProjectGuid>
+    <RootNamespace>SkyCheckers</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>$(ProjectDir)SDL-1.2.15\include;$(ProjectDir)SDL_ttf-2.0.11\include;$(ProjectDir)SDL_mixer-1.2.12\include;$(ProjectDir)SDL_image-1.2.12\include;$(ProjectDir)freeglut\include;$(ProjectDir);$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)SDL-1.2.15\lib\x86;$(ProjectDir)SDL_ttf-2.0.11\lib\x86;$(ProjectDir)SDL_mixer-1.2.12\lib\x86;$(ProjectDir)SDL_image-1.2.12\lib\x86;$(ProjectDir)freeglut\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>$(ProjectDir)SDL-1.2.15\include;$(ProjectDir)SDL_ttf-2.0.11\include;$(ProjectDir)SDL_mixer-1.2.12\include;$(ProjectDir)SDL_image-1.2.12\include;$(ProjectDir)freeglut\include;$(ProjectDir);$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)SDL-1.2.15\lib\x86;$(ProjectDir)SDL_ttf-2.0.11\lib\x86;$(ProjectDir)SDL_mixer-1.2.12\lib\x86;$(ProjectDir)SDL_image-1.2.12\lib\x86;$(ProjectDir)freeglut\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>SDL.lib;SDLmain.lib;SDL_image.lib;SDL_ttf.lib;SDL_mixer.lib;freeglut.lib;ws2_32.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /d "$(ProjectDir)SDL-1.2.15\lib\x86\SDL.dll" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)SDL_mixer-1.2.12\lib\x86\SDL_mixer.dll" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)SDL_mixer-1.2.12\lib\x86\libogg-0.dll" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)SDL_mixer-1.2.12\lib\x86\libvorbis-0.dll" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)SDL_mixer-1.2.12\lib\x86\libvorbisfile-3.dll" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)SDL_mixer-1.2.12\lib\x86\LICENSE.ogg-vorbis.txt" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)SDL_ttf-2.0.11\lib\x86\SDL_ttf.dll" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)SDL_ttf-2.0.11\lib\x86\libfreetype-6.dll" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)SDL_ttf-2.0.11\lib\x86\LICENSE.freetype.txt" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)SDL_image-1.2.12\lib\x86\SDL_image.dll" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)SDL_image-1.2.12\lib\x86\zlib1.dll" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)SDL_image-1.2.12\lib\x86\LICENSE.zlib.txt" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)freeglut\bin\freeglut.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>SDL.lib;SDLmain.lib;SDL_image.lib;SDL_ttf.lib;SDL_mixer.lib;freeglut.lib;ws2_32.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /d "$(ProjectDir)SDL-1.2.15\lib\x86\SDL.dll" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)SDL_mixer-1.2.12\lib\x86\SDL_mixer.dll" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)SDL_mixer-1.2.12\lib\x86\libogg-0.dll" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)SDL_mixer-1.2.12\lib\x86\libvorbis-0.dll" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)SDL_mixer-1.2.12\lib\x86\libvorbisfile-3.dll" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)SDL_mixer-1.2.12\lib\x86\LICENSE.ogg-vorbis.txt" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)SDL_ttf-2.0.11\lib\x86\SDL_ttf.dll" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)SDL_ttf-2.0.11\lib\x86\libfreetype-6.dll" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)SDL_ttf-2.0.11\lib\x86\LICENSE.freetype.txt" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)SDL_image-1.2.12\lib\x86\SDL_image.dll" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)SDL_image-1.2.12\lib\x86\zlib1.dll" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)SDL_image-1.2.12\lib\x86\LICENSE.zlib.txt" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)freeglut\bin\freeglut.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
