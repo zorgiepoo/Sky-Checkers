@@ -51,6 +51,6 @@ void setWindowsIcon(void *windowHandle)
 	HICON icon = LoadIcon(handle, MAKEINTRESOURCE(IDI_ICON1));
 	if (icon != NULL)
 	{
-		SetClassLong((HWND)windowHandle, GCL_HICON, icon);
+		SetClassLong((HWND)windowHandle, GCL_HICON, (LONG)icon);
 	}
 }
