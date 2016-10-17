@@ -554,7 +554,7 @@ void drawFramesPerSecond(void)
     last_frame_time = now;
     dt_fps = now - last_fps_time;
 
-	static char fpsString[10];
+	static char fpsString[128];
 
     if (dt_fps > 1.0)
 	{

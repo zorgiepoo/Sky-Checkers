@@ -165,7 +165,7 @@ static GLfloat getConsoleValue(void)
 	// scc~: get(arg) object.property
 	
 	GLfloat value = 0.0;
-	char result[10];
+	char result[128];
 	int resultLen;
 	int i;
 	
@@ -408,7 +408,7 @@ static GLfloat setConsoleValue(SDL_bool *errorFlag)
 	// syntax:
 	// scc~: object(arg).property value
 	
-	char input[50];
+	char input[128];
 	GLfloat value = 0;
 	unsigned int i;
 	unsigned int len = 0;
@@ -468,7 +468,7 @@ static GLfloat setConsoleValue(SDL_bool *errorFlag)
 			int arg_val;
 			int stringIndexCount = 7;
 			char *number = &gConsoleString[MIN_CONSOLE_STRING_LENGTH + 5];
-			char partialConsoleString[100];
+			char partialConsoleString[128];
 			char *property;
 			
 			arg_val = atoi(number);
