@@ -17,6 +17,15 @@ apt-get install libsdl-ttf2.0-dev
 apt-get install libsdl-image1.2-dev
 apt-get install freeglut3-dev
 
+On CentOS, I executed:
+
+yum groupinstall 'Development Tools'
+yum install epel-release
+yum install SDL-devel.x86_64
+yum install SDL_mixer-devel.x86_64
+yum install SDL_ttf-devel.x86_64
+yum install freeglut-devel.x86_64
+
 For macOS and Windows, these dependencies are bundled in the source code already.
 
 To compile under macOS, build and run the project using Xcode.
