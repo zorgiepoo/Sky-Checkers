@@ -24,6 +24,7 @@ yum install epel-release
 yum install SDL-devel.x86_64
 yum install SDL_mixer-devel.x86_64
 yum install SDL_ttf-devel.x86_64
+yum install SDL_image-devel.x86_64
 yum install freeglut-devel.x86_64
 
 For macOS and Windows, these dependencies are bundled in the source code already.
