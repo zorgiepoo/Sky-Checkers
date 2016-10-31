@@ -85,6 +85,8 @@ SDL_bool gDrawFPS =								SDL_FALSE;
 static int gGameState;
 static SDL_bool gGameLaunched =					SDL_FALSE;
 
+#define MAX_CHARACTER_LIVES 10
+
 void initGame(void);
 
 static void createSurface(Uint32 flags);
@@ -217,35 +219,94 @@ static void readDefaults(void)
 	gValidDefaults = SDL_TRUE;
 
 	// conole flag default
-	fscanf(fp, "Console flag: %i\n\n", (int *)&gConsoleFlag);
+	int consoleFlag = 0;
+	if (fscanf(fp, "Console flag: %i\n\n", &consoleFlag) < 1) return;
+	gConsoleFlag = (consoleFlag != 0);
 
 	// video defaults
-	fscanf(fp, "screen width: %i\n", &gScreenWidth);
-	fscanf(fp, "screen height: %i\n", &gScreenHeight);
-	fscanf(fp, "vsync flag: %i\n", &gVsyncFlag);
+	if (fscanf(fp, "screen width: %i\n", &gScreenWidth) < 1) return;
+	if (fscanf(fp, "screen height: %i\n", &gScreenHeight) < 1) return;
+	if (fscanf(fp, "vsync flag: %i\n", &gVsyncFlag) < 1) return;
+	gVsyncFlag = !!gVsyncFlag;
+	
+	int fpsFlag = 0;
+	if (fscanf(fp, "fps flag: %i\n", &fpsFlag) < 1) return;
+	gFpsFlag = (fpsFlag != 0);
+	
+	int aaFlag = 0;
+	if (fscanf(fp, "FSAA flag: %i\n", &aaFlag) < 1) return;
+	gFsaaFlag = (aaFlag != 0);
 
-	// typecasting (int *) seems to work for SDL_bool pointers
-	fscanf(fp, "fps flag: %i\n", (int *)&gFpsFlag);
-	fscanf(fp, "FSAA flag: %i\n", (int *)&gFsaaFlag);
-
-	fscanf(fp, "Fullscreen flag: %i\n", (int *)&gFullscreenFlag);
+	int fullscreenFlag = 0;
+	if (fscanf(fp, "Fullscreen flag: %i\n", &fullscreenFlag) < 1) return;
+	gFullscreenFlag = fullscreenFlag;
 
 	fscanf(fp, "\n");
 
-	fscanf(fp, "Number of lives: %i\n", &gCharacterLives);
-	fscanf(fp, "Number of net lives: %i\n", &gCharacterNetLives);
+	if (fscanf(fp, "Number of lives: %i\n", &gCharacterLives) < 1) return;
+	if (gCharacterLives > MAX_CHARACTER_LIVES)
+	{
+		gCharacterLives = MAX_CHARACTER_LIVES;
+	}
+	else if (gCharacterLives < 0)
+	{
+		gCharacterLives = MAX_CHARACTER_LIVES / 2;
+	}
+	
+	if (fscanf(fp, "Number of net lives: %i\n", &gCharacterNetLives) < 1) return;
+	if (gCharacterNetLives > MAX_CHARACTER_LIVES)
+	{
+		gCharacterNetLives = MAX_CHARACTER_LIVES;
+	}
+	else if (gCharacterNetLives < 0)
+	{
+		gCharacterNetLives = MAX_CHARACTER_LIVES / 2;
+	}
 
 	fscanf(fp, "\n");
 
 	// character states
-	fscanf(fp, "Pink Bubblegum state: %i\n", &gPinkBubbleGum.state);
-	fscanf(fp, "Red Rover state: %i\n", &gRedRover.state);
-	fscanf(fp, "Green Tree state: %i\n", &gGreenTree.state);
-	fscanf(fp, "Blue Lightning state: %i\n", &gBlueLightning.state);
+	if (fscanf(fp, "Pink Bubblegum state: %i\n", &gPinkBubbleGum.state) < 1) return;
+	if (gPinkBubbleGum.state != CHARACTER_HUMAN_STATE && gPinkBubbleGum.state != CHARACTER_AI_STATE)
+	{
+		gPinkBubbleGum.state = CHARACTER_HUMAN_STATE;
+	}
+	
+	if (fscanf(fp, "Red Rover state: %i\n", &gRedRover.state) < 1) return;
+	if (gRedRover.state != CHARACTER_HUMAN_STATE && gRedRover.state != CHARACTER_AI_STATE)
+	{
+		gRedRover.state = CHARACTER_AI_STATE;
+	}
+	
+	if (fscanf(fp, "Green Tree state: %i\n", &gGreenTree.state) < 1) return;
+	if (gGreenTree.state != CHARACTER_HUMAN_STATE && gGreenTree.state != CHARACTER_AI_STATE)
+	{
+		gGreenTree.state = CHARACTER_AI_STATE;
+	}
+	
+	if (fscanf(fp, "Blue Lightning state: %i\n", &gBlueLightning.state) < 1) return;
+	if (gBlueLightning.state != CHARACTER_HUMAN_STATE && gBlueLightning.state != CHARACTER_AI_STATE)
+	{
+		gBlueLightning.state = CHARACTER_AI_STATE;
+	}
 
-	fscanf(fp, "AI Mode: %i\n", &gAIMode);
-	fscanf(fp, "AI Net Mode: %i\n", &gAINetMode);
-	fscanf(fp, "Number of Net Humans: %i\n", &gNumberOfNetHumans);
+	if (fscanf(fp, "AI Mode: %i\n", &gAIMode) < 1) return;
+	if (gAIMode != AI_EASY_MODE && gAIMode != AI_MEDIUM_MODE && gAIMode != AI_HARD_MODE)
+	{
+		gAIMode = AI_EASY_MODE;
+	}
+	
+	if (fscanf(fp, "AI Net Mode: %i\n", &gAINetMode) < 1) return;
+	if (gAINetMode != AI_EASY_MODE && gAINetMode != AI_MEDIUM_MODE && gAINetMode != AI_HARD_MODE)
+	{
+		gAINetMode = AI_EASY_MODE;
+	}
+	
+	if (fscanf(fp, "Number of Net Humans: %i\n", &gNumberOfNetHumans) < 1) return;
+	if (gNumberOfNetHumans < 0 || gNumberOfNetHumans > 3)
+	{
+		gNumberOfNetHumans = 1;
+	}
 
 	fscanf(fp, "\n");
 
@@ -341,16 +402,22 @@ static void readDefaults(void)
 	fscanf(fp, "Blue Lightning joy weapon id: %i, axis: %i, joy id: %i (%[A-Za-z0-9 ])\n", &gBlueLightningInput.weapjs_id, &gBlueLightningInput.weapjs_axis_id, &gBlueLightningInput.joy_weap_id, gBlueLightningInput.joy_weap);
 
 	fscanf(fp, "\n");
-	fscanf(fp, "Server IP Address: %s\n", gServerAddressString);
+	if (fscanf(fp, "Server IP Address: %s\n", gServerAddressString) < 1) return;
 	gServerAddressStringIndex = strlen(gServerAddressString);
 
 	fscanf(fp, "\n");
-	fscanf(fp, "Net name: %s\n", gUserNameString);
+	if (fscanf(fp, "Net name: %s\n", gUserNameString) < 1) return;
 	gUserNameStringIndex = strlen(gUserNameString);
 	
 	fscanf(fp, "\n");
-	fscanf(fp, "Audio effects: %i\n", (int *)&gAudioEffectsFlag);
-	fscanf(fp, "Music: %i\n", (int *)&gAudioMusicFlag);
+	
+	int audioEffectsFlag = 0;
+	if (fscanf(fp, "Audio effects: %i\n", &audioEffectsFlag) < 1) return;
+	gAudioEffectsFlag = (audioEffectsFlag != 0);
+	
+	int audioMusicFlag = 0;
+	if (fscanf(fp, "Music: %i\n", &audioMusicFlag) < 1) return;
+	gAudioMusicFlag = (audioMusicFlag != 0);
 
 	fclose(fp);
 }
@@ -977,7 +1044,7 @@ static void eventInput(SDL_Event *event, int *quit)
 				if (gDrawArrowsForCharacterLivesFlag)
 				{
 					if (gCharacterLives == 1)
-						gCharacterLives = 10;
+						gCharacterLives = MAX_CHARACTER_LIVES;
 					else
 						gCharacterLives--;
 				}
@@ -985,7 +1052,7 @@ static void eventInput(SDL_Event *event, int *quit)
 				{
 					if (gCharacterNetLives == 1)
 					{
-						gCharacterNetLives = 10;
+						gCharacterNetLives = MAX_CHARACTER_LIVES;
 					}
 					else
 					{

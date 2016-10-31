@@ -22,7 +22,7 @@
 #include "maincore.h"
 #include "menu.h"
 
-#define MAX_SERVER_ADDRESS_SIZE	50
+#define MAX_SERVER_ADDRESS_SIZE	512
 extern char gServerAddressString[MAX_SERVER_ADDRESS_SIZE];
 extern int gServerAddressStringIndex;
 
