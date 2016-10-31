@@ -1548,8 +1548,12 @@ static void eventLoop(void)
 
 		drawScene();
 		SDL_GL_SwapBuffers();
-
-		if (gFpsFlag)
+		
+		SDL_bool hasAppFocus = (SDL_GetAppState() & SDL_APPINPUTFOCUS) != 0;
+		// Restrict game to 30 fps when the fps flag is enabled as well as when we don't have app focus
+		// This will allow the game to use less processing power when it's in the background,
+		// which fixes a bug on macOS where the game can have huge CPU spikes when the window is completly obscured
+		if (gFpsFlag || !hasAppFocus)
 		{
 			// time how long each draw-swap-delay cycle takes and adjust the delay to get closer to target framerate
 			if (thenTicks > 0)
@@ -1582,7 +1586,7 @@ static void eventLoop(void)
 			if (gGameState == GAME_STATE_OFF && !isPlayingMainMenuMusic())
 			{
 				stopMusic();
-				if (SDL_GetAppState() & SDL_APPINPUTFOCUS)
+				if (hasAppFocus)
 				{
 					playMainMenuMusic();
 				}
