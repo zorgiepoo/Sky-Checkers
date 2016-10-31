@@ -1682,11 +1682,18 @@ static void initSDL_GL(void)
 		zgPrint("however, you won't be able to choose which resolution you want in the video options menu.^");
 		zgPrint("It will be 800x500 by default. To change this, you'll need to change the screen and height values in user_data.txt");
 	}
+	
+	// find gScreenWidth and gScreenHeight and set the counter accordingly
+	for (gResolutionCounter = 0; gResolutions[gResolutionCounter]; gResolutionCounter++)
+	{
+		if (gResolutions[gResolutionCounter]->w == gScreenWidth && gResolutions[gResolutionCounter]->h == gScreenHeight)
+			break;
+	}
 
 	// if the defaults fail, try to use 800x500
 	// if that fails, try to use 800x600,
 	// if that fails, try to use 640x480
-	if (gScreenWidth == 0 && gScreenHeight == 0)
+	if (gResolutions[gResolutionCounter] == NULL)
 	{
 		if (!findAndSetResolution(800, 500) && !findAndSetResolution(800, 600) && !findAndSetResolution(MIN_SCREEN_RESOLUTION_WIDTH, MIN_SCREEN_RESOLUTION_HEIGHT))
 		{
@@ -1697,13 +1704,6 @@ static void initSDL_GL(void)
 	// otherwise find the users' screen resolution defaults
 	else
 	{
-		// find gScreenWidth and gScreenHeight and set the counter accordingly
-		for (gResolutionCounter = 0; gResolutions[gResolutionCounter]; gResolutionCounter++)
-		{
-			if (gResolutions[gResolutionCounter]->w == gScreenWidth && gResolutions[gResolutionCounter]->h == gScreenHeight)
-				break;
-		}
-
 		if (compareResolutions(*(gResolutions[gResolutionCounter]), bestResolution) == 1)
 		{
 			zgPrint("Defaults resolution might be too high. Try trashing the defaults...Terminating...");
