@@ -30,6 +30,8 @@ extern const unsigned JOY_LEFT;
 extern const unsigned JOY_AXIS_NONE;
 extern const unsigned JOY_INVALID_ID;
 
+#define MAX_JOY_DESCRIPTION_BUFFER_LENGTH 128
+
 /* Keyboard input structure used for a character*/
 typedef struct
 {

@@ -60,11 +60,11 @@ void initInput(Input *input, int right, int left, int up, int down, int weapon)
 	input->weapjs_axis_id = JOY_AXIS_NONE;
 	
 	// allocate some memory for the descriptions.
-	input->joy_right = malloc(30);
-	input->joy_left = malloc(30);
-	input->joy_up = malloc(30);
-	input->joy_down = malloc(30);
-	input->joy_weap = malloc(30);
+	input->joy_right = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
+	input->joy_left = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
+	input->joy_up = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
+	input->joy_down = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
+	input->joy_weap = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
 	
 	sprintf(input->joy_right, "None");
 	sprintf(input->joy_left, "None");

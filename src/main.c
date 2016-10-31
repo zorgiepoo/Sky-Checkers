@@ -201,6 +201,117 @@ static void initScene(void)
 	initMenus();
 }
 
+#define MAX_EXPECTED_SCAN_LENGTH 512
+static SDL_bool scanExpectedString(FILE *fp, const char *expectedString)
+{
+	size_t expectedStringLength = strlen(expectedString);
+	if (expectedStringLength > MAX_EXPECTED_SCAN_LENGTH - 1)
+	{
+		return SDL_FALSE;
+	}
+	
+	char buffer[MAX_EXPECTED_SCAN_LENGTH] = {0};
+	if (fread(buffer, expectedStringLength, 1, fp) < 1)
+	{
+		return SDL_FALSE;
+	}
+	
+	return (strcmp(buffer, expectedString) == 0);
+}
+
+static SDL_bool scanLineTerminatingString(FILE *fp, char *destBuffer, size_t maxBufferSize)
+{
+	char *safeBuffer = calloc(maxBufferSize, 1);
+	if (safeBuffer == NULL) return SDL_FALSE;
+	
+	size_t safeBufferIndex = 0;
+	while (safeBufferIndex < maxBufferSize - 1 && ferror(fp) == 0)
+	{
+		int byte = fgetc(fp);
+		if (byte == EOF || byte == '\n') break;
+		
+		safeBuffer[safeBufferIndex++] = (char)byte;
+	}
+	
+	SDL_bool success;
+	if (ferror(fp) != 0 || feof(fp) != 0 || safeBufferIndex >= maxBufferSize - 1)
+	{
+		success = SDL_FALSE;
+	}
+	else
+	{
+		memcpy(destBuffer, safeBuffer, maxBufferSize);
+		success = SDL_TRUE;
+	}
+	
+	free(safeBuffer);
+	
+	return success;
+}
+
+static SDL_bool scanGroupedJoyString(FILE *fp, char *joyBuffer)
+{
+	char tempBuffer[MAX_JOY_DESCRIPTION_BUFFER_LENGTH + 2] = {0};
+	if (!scanLineTerminatingString(fp, tempBuffer, sizeof(tempBuffer))) return SDL_FALSE;
+	
+	size_t length = strlen(tempBuffer);
+	if (length <= 2) return SDL_FALSE;
+	
+	if (tempBuffer[0] != '(' || tempBuffer[length - 1] != ')') return SDL_FALSE;
+	
+	memcpy(joyBuffer, tempBuffer + 1, length - 2);
+	
+	return SDL_TRUE;
+}
+
+static SDL_bool readCharacterInputDefaults(FILE *fp, const char *characterName, Input *input)
+{
+	if (!scanExpectedString(fp, characterName)) return SDL_FALSE;
+	if (fscanf(fp, " key right: %i\n", &input->r_id) < 1) return SDL_FALSE;
+	
+	if (!scanExpectedString(fp, characterName)) return SDL_FALSE;
+	if (fscanf(fp, " key left: %i\n", &input->l_id) < 1) return SDL_FALSE;
+	
+	if (!scanExpectedString(fp, characterName)) return SDL_FALSE;
+	if (fscanf(fp, " key up: %i\n", &input->u_id) < 1) return SDL_FALSE;
+	
+	if (!scanExpectedString(fp, characterName)) return SDL_FALSE;
+	if (fscanf(fp, " key down: %i\n", &input->d_id) < 1) return SDL_FALSE;
+	
+	if (!scanExpectedString(fp, characterName)) return SDL_FALSE;
+	if (fscanf(fp, " key weapon: %i\n", &input->weap_id) < 1) return SDL_FALSE;
+	
+	input->joy_right = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
+	input->joy_left = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
+	input->joy_up = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
+	input->joy_down = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
+	input->joy_weap = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
+	
+	if (!scanExpectedString(fp, characterName)) return SDL_FALSE;
+	if (fscanf(fp, " joy right id: %i, axis: %i, joy id: %i ", &input->rjs_id, &input->rjs_axis_id, &input->joy_right_id) < 3) return SDL_FALSE;
+	if (!scanGroupedJoyString(fp, input->joy_right)) return SDL_FALSE;
+	
+	if (!scanExpectedString(fp, characterName)) return SDL_FALSE;
+	if (fscanf(fp, " joy left id: %i, axis: %i, joy id: %i ", &input->ljs_id, &input->ljs_axis_id, &input->joy_left_id) < 3) return SDL_FALSE;
+	if (!scanGroupedJoyString(fp, input->joy_left)) return SDL_FALSE;
+	
+	if (!scanExpectedString(fp, characterName)) return SDL_FALSE;
+	if (fscanf(fp, " joy up id: %i, axis: %i, joy id: %i ", &input->ujs_id, &input->ujs_axis_id, &input->joy_up_id) < 3) return SDL_FALSE;
+	if (!scanGroupedJoyString(fp, input->joy_up)) return SDL_FALSE;
+	
+	if (!scanExpectedString(fp, characterName)) return SDL_FALSE;
+	if (fscanf(fp, " joy down id: %i, axis: %i, joy id: %i ", &input->djs_id, &input->djs_axis_id, &input->joy_down_id) < 3) return SDL_FALSE;
+	if (!scanGroupedJoyString(fp, input->joy_down)) return SDL_FALSE;
+	
+	if (!scanExpectedString(fp, characterName)) return SDL_FALSE;
+	if (fscanf(fp, " joy weapon id: %i, axis: %i, joy id: %i ", &input->weapjs_id, &input->weapjs_axis_id, &input->joy_weap_id) < 3) return SDL_FALSE;
+	if (!scanGroupedJoyString(fp, input->joy_weap)) return SDL_FALSE;
+	
+	if (!scanExpectedString(fp, "\n")) return SDL_FALSE;
+	
+	return SDL_TRUE;
+}
+
 static void readDefaults(void)
 {
 	#ifndef WINDOWS
@@ -216,34 +327,30 @@ static void readDefaults(void)
 		return;
 	}
 
-	gValidDefaults = SDL_TRUE;
-
 	// conole flag default
 	int consoleFlag = 0;
-	if (fscanf(fp, "Console flag: %i\n\n", &consoleFlag) < 1) return;
+	if (fscanf(fp, "Console flag: %i\n\n", &consoleFlag) < 1) goto cleanup;
 	gConsoleFlag = (consoleFlag != 0);
 
 	// video defaults
-	if (fscanf(fp, "screen width: %i\n", &gScreenWidth) < 1) return;
-	if (fscanf(fp, "screen height: %i\n", &gScreenHeight) < 1) return;
-	if (fscanf(fp, "vsync flag: %i\n", &gVsyncFlag) < 1) return;
+	if (fscanf(fp, "screen width: %i\n", &gScreenWidth) < 1) goto cleanup;
+	if (fscanf(fp, "screen height: %i\n", &gScreenHeight) < 1) goto cleanup;
+	if (fscanf(fp, "vsync flag: %i\n", &gVsyncFlag) < 1) goto cleanup;
 	gVsyncFlag = !!gVsyncFlag;
 	
 	int fpsFlag = 0;
-	if (fscanf(fp, "fps flag: %i\n", &fpsFlag) < 1) return;
+	if (fscanf(fp, "fps flag: %i\n", &fpsFlag) < 1) goto cleanup;
 	gFpsFlag = (fpsFlag != 0);
 	
 	int aaFlag = 0;
-	if (fscanf(fp, "FSAA flag: %i\n", &aaFlag) < 1) return;
+	if (fscanf(fp, "FSAA flag: %i\n", &aaFlag) < 1) goto cleanup;
 	gFsaaFlag = (aaFlag != 0);
 
 	int fullscreenFlag = 0;
-	if (fscanf(fp, "Fullscreen flag: %i\n", &fullscreenFlag) < 1) return;
+	if (fscanf(fp, "Fullscreen flag: %i\n", &fullscreenFlag) < 1) goto cleanup;
 	gFullscreenFlag = fullscreenFlag;
 
-	fscanf(fp, "\n");
-
-	if (fscanf(fp, "Number of lives: %i\n", &gCharacterLives) < 1) return;
+	if (fscanf(fp, "Number of lives: %i\n", &gCharacterLives) < 1) goto cleanup;
 	if (gCharacterLives > MAX_CHARACTER_LIVES)
 	{
 		gCharacterLives = MAX_CHARACTER_LIVES;
@@ -253,7 +360,7 @@ static void readDefaults(void)
 		gCharacterLives = MAX_CHARACTER_LIVES / 2;
 	}
 	
-	if (fscanf(fp, "Number of net lives: %i\n", &gCharacterNetLives) < 1) return;
+	if (fscanf(fp, "Number of net lives: %i\n", &gCharacterNetLives) < 1) goto cleanup;
 	if (gCharacterNetLives > MAX_CHARACTER_LIVES)
 	{
 		gCharacterNetLives = MAX_CHARACTER_LIVES;
@@ -263,162 +370,74 @@ static void readDefaults(void)
 		gCharacterNetLives = MAX_CHARACTER_LIVES / 2;
 	}
 
-	fscanf(fp, "\n");
-
 	// character states
-	if (fscanf(fp, "Pink Bubblegum state: %i\n", &gPinkBubbleGum.state) < 1) return;
+	if (fscanf(fp, "Pink Bubblegum state: %i\n", &gPinkBubbleGum.state) < 1) goto cleanup;
 	if (gPinkBubbleGum.state != CHARACTER_HUMAN_STATE && gPinkBubbleGum.state != CHARACTER_AI_STATE)
 	{
 		gPinkBubbleGum.state = CHARACTER_HUMAN_STATE;
 	}
 	
-	if (fscanf(fp, "Red Rover state: %i\n", &gRedRover.state) < 1) return;
+	if (fscanf(fp, "Red Rover state: %i\n", &gRedRover.state) < 1) goto cleanup;
 	if (gRedRover.state != CHARACTER_HUMAN_STATE && gRedRover.state != CHARACTER_AI_STATE)
 	{
 		gRedRover.state = CHARACTER_AI_STATE;
 	}
 	
-	if (fscanf(fp, "Green Tree state: %i\n", &gGreenTree.state) < 1) return;
+	if (fscanf(fp, "Green Tree state: %i\n", &gGreenTree.state) < 1) goto cleanup;
 	if (gGreenTree.state != CHARACTER_HUMAN_STATE && gGreenTree.state != CHARACTER_AI_STATE)
 	{
 		gGreenTree.state = CHARACTER_AI_STATE;
 	}
 	
-	if (fscanf(fp, "Blue Lightning state: %i\n", &gBlueLightning.state) < 1) return;
+	if (fscanf(fp, "Blue Lightning state: %i\n", &gBlueLightning.state) < 1) goto cleanup;
 	if (gBlueLightning.state != CHARACTER_HUMAN_STATE && gBlueLightning.state != CHARACTER_AI_STATE)
 	{
 		gBlueLightning.state = CHARACTER_AI_STATE;
 	}
 
-	if (fscanf(fp, "AI Mode: %i\n", &gAIMode) < 1) return;
+	if (fscanf(fp, "AI Mode: %i\n", &gAIMode) < 1) goto cleanup;
 	if (gAIMode != AI_EASY_MODE && gAIMode != AI_MEDIUM_MODE && gAIMode != AI_HARD_MODE)
 	{
 		gAIMode = AI_EASY_MODE;
 	}
 	
-	if (fscanf(fp, "AI Net Mode: %i\n", &gAINetMode) < 1) return;
+	if (fscanf(fp, "AI Net Mode: %i\n", &gAINetMode) < 1) goto cleanup;
 	if (gAINetMode != AI_EASY_MODE && gAINetMode != AI_MEDIUM_MODE && gAINetMode != AI_HARD_MODE)
 	{
 		gAINetMode = AI_EASY_MODE;
 	}
 	
-	if (fscanf(fp, "Number of Net Humans: %i\n", &gNumberOfNetHumans) < 1) return;
+	if (fscanf(fp, "Number of Net Humans: %i\n", &gNumberOfNetHumans) < 1) goto cleanup;
 	if (gNumberOfNetHumans < 0 || gNumberOfNetHumans > 3)
 	{
 		gNumberOfNetHumans = 1;
 	}
-
-	fscanf(fp, "\n");
-
-	// PinkBubbleGum defaults
-	fscanf(fp, "Pink Bubblegum key right: %i\n", &gPinkBubbleGumInput.r_id);
-	fscanf(fp, "Pink Bubblegum key left: %i\n", &gPinkBubbleGumInput.l_id);
-	fscanf(fp, "Pink Bubblegum key up: %i\n", &gPinkBubbleGumInput.u_id);
-	fscanf(fp, "Pink Bubblegum key down: %i\n", &gPinkBubbleGumInput.d_id);
-	fscanf(fp, "Pink Bubblegum key weapon: %i\n", &gPinkBubbleGumInput.weap_id);
-
-	fscanf(fp, "\n");
-
-	gPinkBubbleGumInput.joy_right = malloc(30);
-	gPinkBubbleGumInput.joy_left = malloc(30);
-	gPinkBubbleGumInput.joy_up = malloc(30);
-	gPinkBubbleGumInput.joy_down = malloc(30);
-	gPinkBubbleGumInput.joy_weap = malloc(30);
-
-	// %s will not work correctly, but %[A-Za-z0-9 ] does
-	fscanf(fp, "Pink Bubblegum joy right id: %i, axis: %i, joy id: %i (%[A-Za-z0-9 ])\n", &gPinkBubbleGumInput.rjs_id, &gPinkBubbleGumInput.rjs_axis_id, &gPinkBubbleGumInput.joy_right_id, gPinkBubbleGumInput.joy_right);
-	fscanf(fp, "Pink Bubblegum joy left id: %i, axis: %i, joy id: %i (%[A-Za-z0-9 ])\n", &gPinkBubbleGumInput.ljs_id, &gPinkBubbleGumInput.ljs_axis_id, &gPinkBubbleGumInput.joy_left_id, gPinkBubbleGumInput.joy_left);
-	fscanf(fp, "Pink Bubblegum joy up id: %i, axis: %i, joy id: %i (%[A-Za-z0-9 ])\n", &gPinkBubbleGumInput.ujs_id, &gPinkBubbleGumInput.ujs_axis_id, &gPinkBubbleGumInput.joy_up_id, gPinkBubbleGumInput.joy_up);
-	fscanf(fp, "Pink Bubblegum joy down id: %i, axis: %i, joy id: %i (%[A-Za-z0-9 ])\n", &gPinkBubbleGumInput.djs_id, &gPinkBubbleGumInput.djs_axis_id, &gPinkBubbleGumInput.joy_down_id, gPinkBubbleGumInput.joy_down);
-	fscanf(fp, "Pink Bubblegum joy weapon id: %i, axis: %i, joy id: %i (%[A-Za-z0-9 ])\n", &gPinkBubbleGumInput.weapjs_id, &gPinkBubbleGumInput.weapjs_axis_id, &gPinkBubbleGumInput.joy_weap_id, gPinkBubbleGumInput.joy_weap);
-
-	fscanf(fp, "\n");
-
-	// RedRover defaults
-	fscanf(fp, "Red Rover key right: %i\n", &gRedRoverInput.r_id);
-	fscanf(fp, "Red Rover key left: %i\n", &gRedRoverInput.l_id);
-	fscanf(fp, "Red Rover key up: %i\n", &gRedRoverInput.u_id);
-	fscanf(fp, "Red Rover key down: %i\n", &gRedRoverInput.d_id);
-	fscanf(fp, "Red Rover key weapon: %i\n", &gRedRoverInput.weap_id);
-
-	fscanf(fp, "\n");
-
-	gRedRoverInput.joy_right = malloc(30);
-	gRedRoverInput.joy_left = malloc(30);
-	gRedRoverInput.joy_up = malloc(30);
-	gRedRoverInput.joy_down = malloc(30);
-	gRedRoverInput.joy_weap = malloc(30);
-
-	fscanf(fp, "Red Rover joy right id: %i, axis: %i, joy id: %i (%[A-Za-z0-9 ])\n", &gRedRoverInput.rjs_id, &gRedRoverInput.rjs_axis_id, &gRedRoverInput.joy_right_id, gRedRoverInput.joy_right);
-	fscanf(fp, "Red Rover joy left id: %i, axis: %i, joy id: %i (%[A-Za-z0-9 ])\n", &gRedRoverInput.ljs_id, &gRedRoverInput.ljs_axis_id, &gRedRoverInput.joy_left_id, gRedRoverInput.joy_left);
-	fscanf(fp, "Red Rover joy up id: %i, axis: %i, joy id: %i (%[A-Za-z0-9 ])\n", &gRedRoverInput.ujs_id, &gRedRoverInput.ujs_axis_id, &gRedRoverInput.joy_up_id, gRedRoverInput.joy_up);
-	fscanf(fp, "Red Rover joy down id: %i, axis: %i, joy id: %i (%[A-Za-z0-9 ])\n", &gRedRoverInput.djs_id, &gRedRoverInput.djs_axis_id, &gRedRoverInput.joy_down_id, gRedRoverInput.joy_down);
-	fscanf(fp, "Red Rover joy weapon id: %i, axis: %i, joy id: %i (%[A-Za-z0-9 ])\n", &gRedRoverInput.weapjs_id, &gRedRoverInput.weapjs_axis_id, &gRedRoverInput.joy_weap_id, gRedRoverInput.joy_weap);
-
-	fscanf(fp, "\n");
-
-	// GreenTree defaults
-	fscanf(fp, "Green Tree key right: %i\n", &gGreenTreeInput.r_id);
-	fscanf(fp, "Green Tree key left: %i\n", &gGreenTreeInput.l_id);
-	fscanf(fp, "Green Tree key up: %i\n", &gGreenTreeInput.u_id);
-	fscanf(fp, "Green Tree key down: %i\n", &gGreenTreeInput.d_id);
-	fscanf(fp, "Green Tree key weapon: %i\n", &gGreenTreeInput.weap_id);
-
-	fscanf(fp, "\n");
-
-	gGreenTreeInput.joy_right = malloc(30);
-	gGreenTreeInput.joy_left = malloc(30);
-	gGreenTreeInput.joy_up = malloc(30);
-	gGreenTreeInput.joy_down = malloc(30);
-	gGreenTreeInput.joy_weap = malloc(30);
-
-	fscanf(fp, "Green Tree joy right id: %i, axis: %i, joy id: %i (%[A-Za-z0-9 ])\n", &gGreenTreeInput.rjs_id, &gGreenTreeInput.rjs_axis_id, &gGreenTreeInput.joy_right_id, gGreenTreeInput.joy_right);
-	fscanf(fp, "Green Tree joy left id: %i, axis: %i, joy id: %i (%[A-Za-z0-9 ])\n", &gGreenTreeInput.ljs_id, &gGreenTreeInput.ljs_axis_id, &gGreenTreeInput.joy_left_id, gGreenTreeInput.joy_left);
-	fscanf(fp, "Green Tree joy up id: %i, axis: %i, joy id: %i (%[A-Za-z0-9 ])\n", &gGreenTreeInput.ujs_id, &gGreenTreeInput.ujs_axis_id, &gGreenTreeInput.joy_up_id, gGreenTreeInput.joy_up);
-	fscanf(fp, "Green Tree joy down id: %i, axis: %i, joy id: %i (%[A-Za-z0-9 ])\n", &gGreenTreeInput.djs_id, &gGreenTreeInput.djs_axis_id, &gGreenTreeInput.joy_down_id, gGreenTreeInput.joy_down);
-	fscanf(fp, "Green Tree joy weapon id: %i, axis: %i, joy id: %i (%[A-Za-z0-9 ])\n", &gGreenTreeInput.weapjs_id, &gGreenTreeInput.weapjs_axis_id, &gGreenTreeInput.joy_weap_id, gGreenTreeInput.joy_weap);
-
-	fscanf(fp, "\n");
-
-	// BlueLightning defaults
-	fscanf(fp, "Blue Lightning key right: %i\n", &gBlueLightningInput.r_id);
-	fscanf(fp, "Blue Lightning key left: %i\n", &gBlueLightningInput.l_id);
-	fscanf(fp, "Blue Lightning key up: %i\n", &gBlueLightningInput.u_id);
-	fscanf(fp, "Blue Lightning key down: %i\n", &gBlueLightningInput.d_id);
-	fscanf(fp, "Blue Lightning key weapon: %i\n", &gBlueLightningInput.weap_id);
-
-	fscanf(fp, "\n");
-
-	gBlueLightningInput.joy_right = malloc(30);
-	gBlueLightningInput.joy_left = malloc(30);
-	gBlueLightningInput.joy_up = malloc(30);
-	gBlueLightningInput.joy_down = malloc(30);
-	gBlueLightningInput.joy_weap = malloc(30);
-
-	fscanf(fp, "Blue Lightning joy right id: %i, axis: %i, joy id: %i (%[A-Za-z0-9 ])\n", &gBlueLightningInput.rjs_id, &gBlueLightningInput.rjs_axis_id, &gBlueLightningInput.joy_right_id, gBlueLightningInput.joy_right);
-	fscanf(fp, "Blue Lightning joy left id: %i, axis: %i, joy id: %i (%[A-Za-z0-9 ])\n", &gBlueLightningInput.ljs_id, &gBlueLightningInput.ljs_axis_id, &gBlueLightningInput.joy_left_id, gBlueLightningInput.joy_left);
-	fscanf(fp, "Blue Lightning joy up id: %i, axis: %i, joy id: %i (%[A-Za-z0-9 ])\n", &gBlueLightningInput.ujs_id, &gBlueLightningInput.ujs_axis_id, &gBlueLightningInput.joy_up_id, gBlueLightningInput.joy_up);
-	fscanf(fp, "Blue Lightning joy down id: %i, axis: %i, joy id: %i (%[A-Za-z0-9 ])\n", &gBlueLightningInput.djs_id, &gBlueLightningInput.djs_axis_id, &gBlueLightningInput.joy_down_id, gBlueLightningInput.joy_down);
-	fscanf(fp, "Blue Lightning joy weapon id: %i, axis: %i, joy id: %i (%[A-Za-z0-9 ])\n", &gBlueLightningInput.weapjs_id, &gBlueLightningInput.weapjs_axis_id, &gBlueLightningInput.joy_weap_id, gBlueLightningInput.joy_weap);
-
-	fscanf(fp, "\n");
-	if (fscanf(fp, "Server IP Address: %s\n", gServerAddressString) < 1) return;
+	
+	if (!readCharacterInputDefaults(fp, "Pink Bubblegum", &gPinkBubbleGumInput)) goto cleanup;
+	if (!readCharacterInputDefaults(fp, "Red Rover", &gRedRoverInput)) goto cleanup;
+	if (!readCharacterInputDefaults(fp, "Green Tree", &gGreenTreeInput)) goto cleanup;
+	if (!readCharacterInputDefaults(fp, "Blue Lightning", &gBlueLightningInput)) goto cleanup;
+	
+	if (!scanExpectedString(fp, "Server IP Address: ")) goto cleanup;
+	if (!scanLineTerminatingString(fp, gServerAddressString, sizeof(gServerAddressString))) goto cleanup;
+	
 	gServerAddressStringIndex = strlen(gServerAddressString);
-
-	fscanf(fp, "\n");
-	if (fscanf(fp, "Net name: %s\n", gUserNameString) < 1) return;
+	
+	if (!scanExpectedString(fp, "\nNet name: ")) goto cleanup;
+	if (!scanLineTerminatingString(fp, gUserNameString, sizeof(gUserNameString))) goto cleanup;
+	
 	gUserNameStringIndex = strlen(gUserNameString);
 	
-	fscanf(fp, "\n");
-	
 	int audioEffectsFlag = 0;
-	if (fscanf(fp, "Audio effects: %i\n", &audioEffectsFlag) < 1) return;
+	if (fscanf(fp, "\nAudio effects: %i\n", &audioEffectsFlag) < 1) goto cleanup;
 	gAudioEffectsFlag = (audioEffectsFlag != 0);
 	
 	int audioMusicFlag = 0;
-	if (fscanf(fp, "Music: %i\n", &audioMusicFlag) < 1) return;
+	if (fscanf(fp, "Music: %i\n", &audioMusicFlag) < 1) goto cleanup;
 	gAudioMusicFlag = (audioMusicFlag != 0);
 
+	gValidDefaults = SDL_TRUE;
+cleanup:
 	fclose(fp);
 }
 
