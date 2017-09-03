@@ -7,7 +7,7 @@ Sky Checkers is a multiplayer video game I wrote during my high school and early
 
 The quality of the code may reflect what I consider my first real project. This project is mainly for historical value now.
 
-Sky Checkers officially supports macOS, Windows, and Linux. Support for other platforms depends on the presence of [SDL](https://www.libsdl.org). Downloads for version 1.0.2 can be found on the [releases page](https://github.com/zorgiepoo/Sky-Checkers/releases). For information on compiling the latest changes from source, please see [INSTALL](INSTALL).
+Sky Checkers officially supports macOS, Windows, and Linux. Support for other platforms depends on the presence of [SDL](https://www.libsdl.org). Downloads can be found on the [releases page](https://github.com/zorgiepoo/Sky-Checkers/releases). For information on compiling the latest changes from source, please see [INSTALL](INSTALL).
 
 ## Features
 
