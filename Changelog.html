@@ -1,0 +1,134 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="1038.25">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px Helvetica; min-height: 16.0px}
+    p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+    p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+  </style>
+</head>
+<body>
+<p class="p1"><b>SkyCheckers (1.0.3)</b></p>
+<p class="p1">*Add 64-bit support for macOS</p>
+<p class="p1">*Move Windows project to MSVC compiler & project (no more MinGW)</p>
+<p class="p1">*Update compiling for Linux and other 'nix systems</p>
+<p class="p1">*Fix some buffer overflow issues and crashes</p>
+<p class="p1">*Fix game from using too much CPU usage when in the background</p>
+<p class="p2"><b></b><br></p>
+<p class="p1"><b>SkyCheckers (1.0.2)</b></p>
+<p class="p1">*Fixed network-play issue where net names may not be fetched or displayed correctly</p>
+<p class="p1">*Made the black box cover the full screen in the main menu</p>
+<p class="p2"><b></b><br></p>
+<p class="p1"><b>SkyCheckers (1.0.1)</b></p>
+<p class="p1">*Fixed gameplay bug where SkyCheckers may not detect the correct winner in a close one vs one situation</p>
+<p class="p2"><b></b><br></p>
+<p class="p1"><b>SkyCheckers (1.0)</b></p>
+<p class="p1">*Fixed input complaint, where one could not hold down two directional keys simultaneously</p>
+<p class="p1">*Changed main menu music slightly, and fixed corruption issues</p>
+<p class="p1">*Slightly changed program icon</p>
+<p class="p1">*Changed "Return" to "Enter" in some places, as "Return" only exists on the Mac</p>
+<p class="p2"><b></b><br></p>
+<p class="p1"><b>SkyCheckers (7th milestone)</b></p>
+<p class="p1">*Support for online play (network port is 4893 on UDP)</p>
+<p class="p1">*Experimental support for Ubuntu/linux</p>
+<p class="p1">*Audio support. Sound effects and music are included.</p>
+<p class="p1">*Defaults (user_data.txt) is stored in the correct location on each operating system.</p>
+<p class="p1">*AI mode now defaults on Easy</p>
+<p class="p1">*Improved console stability, and added more useful features such as game_reset.</p>
+<p class="p1">*Fixed resolution issues, where some invalid video resolutions would be listed. All resolutions whose width is smaller than its height is not shown anymore. Also, 640x480 is now the minimum screen resolution that is shown.</p>
+<p class="p1">*SkyCheckers now tries to use 800x500 as a default resolution.</p>
+<p class="p1">*Sky texture is not rendered as blurred/pixelated anymore.</p>
+<p class="p1">*Fixed jagged edges with cube blocks. This would appear even when anti-aliasing was enabled. Fixed this by making the zNear plane bigger.</p>
+<p class="p1">*Anti-aliasing is now enabled by default.</p>
+<p class="p1">*Fixed a somewhat-rare crash where a user may have tried to enable anti-aliasing when their system didn't support it.</p>
+<p class="p1">*SkyCheckers is now more selective towards who can be a bot/human.</p>
+<p class="p1">*Player icons and lives on the bottom of the game screen are now re-ordered to indicate player order.</p>
+<p class="p1">*The weapon's projectile color is not rainbow-colored anymore. Its color now reflects the character that is shooting it.</p>
+<p class="p1">*Changed all textures to just use bmps instead of pngs.</p>
+<p class="p1">*The waiting time when getting ready to play a game is now changed from 5 seconds to 3.</p>
+<p class="p1">*Added an icon for SkyCheckers.</p>
+<p class="p2"><b></b><br></p>
+<p class="p1"><b>SkyCheckers (6th milestone)</b></p>
+<p class="p3"><br></p>
+<p class="p4">*New characters</p>
+<p class="p4">*AI's (Bots). Modes exist such as Easy, Medium, and Hard.</p>
+<p class="p4">*Statistics of wins and kills shown at end of each game</p>
+<p class="p4">*Mouse cursor not visible anymore, ever.</p>
+<p class="p4">*Fixed memory leaks when going to fullscreen or windowed mode, or when a new game initiated.</p>
+<p class="p4">*Fixed a bug on joysticks where when a character comes back on the checkerboard, the character would automatically start to move based on bad input.</p>
+<p class="p4">*Improved animation, and the time that a player cannot move after firing his weapon is shortened.</p>
+<p class="p4">*Menu options with more than 2 selectable options now have up and down arrows visualization to indicate you can scroll through the options with the arrow keys.</p>
+<p class="p4">*Now you can't write F1 - F15 keys in the console.</p>
+<p class="p4">*Insignificant logging messages no longer exist.</p>
+<p class="p4">*Fixed a situation where when the gray stoned animation appeared, it used to override the animation of tiles that have been attacked by a player. Now, it doesn't do that anymore.</p>
+<p class="p4">*Added more accessible properties to console.</p>
+<p class="p4">*Fixed index out-of-bounds crash in the console when inserting too many characters.</p>
+<p class="p4">*Fixed joystick calibration problems on OS X</p>
+<p class="p3"><br></p>
+<p class="p1"><b>SkyCheckers (5th milestone)</b></p>
+<p class="p3"><br></p>
+<p class="p4">*Fixed a minor bug in Windows where the mouse cursor wasn't disabled when going to fullscreen at launch.</p>
+<p class="p4">*Fixed some serious video resolution problems.</p>
+<p class="p4">** 1) Some resolutions may have not been listed.</p>
+<p class="p4">** 2) You could have set a resolution that your display supported but that was higher than the current resolution a user may be using.</p>
+<p class="p4">*Fixed a silly bug introduced in milestone 4 where the console wouldn't output characters (unicode) on Windows.</p>
+<p class="p4">*Improved input.</p>
+<p class="p4">*Fixed an input bug where you wouldn't be able to move or play anymore after holding down fire while dying and re-spawning back, or if you kept on invoking your weapon too frequently.</p>
+<p class="p4">*You can now enable/disable players.</p>
+<p class="p4">*Fixed some menu alignments</p>
+<p class="p4">*When you invoke fullscreen, other game controls aren't invoked by it anymore. (If all goes well, anyway)</p>
+<p class="p4">*Removed sky brightness feature (annoying to deal with, really, and wasn't worth it)</p>
+<p class="p4">*Improved animation.</p>
+<p class="p4">*Fixed grey stone animation problems. Now the tiles fall down only when someone loses all of their lives. Also, fixed a bug where this animation wouldn't activate after more than one game.</p>
+<p class="p4">*Game ending/beginning/reseting is now improved. There is now a countdown from 5 to 1 (in seconds) for when to begin playing and it shows who wins when a game has ended. It resets after a few seconds after that, unless the user chooses to quit the game and go back to the main menu.</p>
+<p class="p4">*Improved some re-spawning times and falling death speed of characters and tiles.</p>
+<p class="p3"><br></p>
+<p class="p1"><b>SkyCheckers (4th milestone)</b></p>
+<p class="p3"><br></p>
+<p class="p4">*Improved Font implementation.</p>
+<p class="p4">*Implemented a Menu system (along with menus)</p>
+<p class="p4">*Video options. (refresh rate, FSAA, screen resolutions, fullscreen)</p>
+<p class="p4">*Keyboard configuration.</p>
+<p class="p4">*Joystick support and configuration.</p>
+<p class="p4">*Defaults now exist. (They're stored in the data folder for the time being)</p>
+<p class="p4">*Re-spawn times are quicker.</p>
+<p class="p4">*Velocities of the characters are now time-based instead of frame-based.</p>
+<p class="p4">*Ability to choose number of lives.</p>
+<p class="p3"><br></p>
+<p class="p1"><b>SkyCheckers (3rd milestone)</b></p>
+<p class="p3"><br></p>
+<p class="p4">*Characters can play and kill each other and what not.</p>
+<p class="p4">*Console has better typing support and more features.</p>
+<p class="p4">*Animation is done, including "grey stone" animation.</p>
+<p class="p4">*Re-spawning tiles and characters.</p>
+<p class="p4">*VSYNC</p>
+<p class="p4">*FSAA</p>
+<p class="p4">*FPS checker through console.</p>
+<p class="p4">*Delay, spawn, speed, synchronization times are better.</p>
+<p class="p4">*Sky gets darker and brighter.</p>
+<p class="p4">*Sky has "atmosphere" blending.</p>
+<p class="p4">*Game can be reset (It resets automatically after a game is finished)</p>
+<p class="p4">*Displays how many lives each character has.</p>
+<p class="p4">*Fullscreen on Windows (Alt enter/return)</p>
+<p class="p4">*Probably more stuff.</p>
+<p class="p3"><br></p>
+<p class="p1"><b>SkyCheckers (2nd milestone)</b></p>
+<p class="p3"><br></p>
+<p class="p4">*Tiles are linked together.</p>
+<p class="p4">*Tiles have properties (color, location, state)</p>
+<p class="p4">*Collision is complete.</p>
+<p class="p4">*Added a console for development purposes.</p>
+<p class="p3"><br></p>
+<p class="p1"><b>SkyCheckers (1st milestone)</b></p>
+<p class="p3"><br></p>
+<p class="p4">*Initial release.</p>
+<p class="p4">*Has a checkerboard, sky, and characters texture-mapped.</p>
+<p class="p4">*Players can move.</p>
+</body>
+</html>
