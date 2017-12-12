@@ -23,9 +23,10 @@
 FILE *getUserDataFile(const char *mode)
 {
 	FILE *file = NULL;
-	NSString *userLibraryPath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-	if (userLibraryPath)
+	NSArray *userLibraryPaths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
+	if (userLibraryPaths.count > 0)
 	{
+		NSString *userLibraryPath = [userLibraryPaths objectAtIndex:0];
 		NSString *appSupportPath = [userLibraryPath stringByAppendingPathComponent:@"Application Support"];
 		
 		if ([[NSFileManager defaultManager] fileExistsAtPath:appSupportPath])
