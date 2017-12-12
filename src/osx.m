@@ -48,7 +48,7 @@ void getDefaultUserName(char *defaultUserName, int maxLength)
 	NSString *fullUsername = NSFullUserName();
 	if (fullUsername)
 	{
-		int spaceIndex = [fullUsername rangeOfString:@" "].location;
+		NSUInteger spaceIndex = [fullUsername rangeOfString:@" "].location;
 		if (spaceIndex != NSNotFound)
 		{
 			strncpy(defaultUserName, [[fullUsername substringToIndex:spaceIndex] UTF8String], maxLength);
