@@ -91,7 +91,7 @@ static NSString *getApplicationName(void)
 }
 @end
 
-@interface SDLMain : NSObject
+@interface SDLMain : NSObject <NSApplicationDelegate>
 @end
 
 /* The main class of the application, the application's delegate */
