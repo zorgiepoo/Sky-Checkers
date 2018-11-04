@@ -194,11 +194,6 @@ void loadCharacterTextures(void)
 	gIconQuadric = gluNewQuadric();
 }
 
-void deleteCharacterTextures(void)
-{
-	glDeleteTextures(1, &gCharacterTex);
-}
-
 void buildCharacterLists(void)
 {
 	// RedRover
@@ -262,16 +257,6 @@ void buildCharacterLists(void)
 	gluDeleteQuadric(gBlueLightning.quadric);
 	
 	gluDeleteQuadric(gIconQuadric);
-}
-
-void deleteCharacterLists(void)
-{
-	glDeleteLists(gRedRover.characterList, 1);
-	glDeleteLists(gGreenTree.characterList, 1);
-	glDeleteLists(gPinkBubbleGum.characterList, 1);
-	glDeleteLists(gBlueLightning.characterList, 1);
-	
-	glDeleteLists(gIconList, 1);
 }
 
 void drawCharacter(Character *character)

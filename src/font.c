@@ -172,12 +172,12 @@ GLuint loadString(char *string)
 	if (textSurface == NULL)
 		zgPrint("SDL_CreateRGBSurface failed: %e");
 	
-	SDL_SetAlpha(fontSurface, 0, 255);
+	SDL_SetSurfaceAlphaMod(fontSurface, 255);
 	
 	if (SDL_BlitSurface(fontSurface, NULL, textSurface, NULL) == -1)
 		zgPrint("blitting failed");
 	
-	GLuint texture;
+	GLuint texture = 0;
 	
 	// generate texture
 	glGenTextures(1, &texture);

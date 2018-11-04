@@ -187,7 +187,7 @@ static void animateWeapAndTiles(Character *player)
 {
 	if (player->weap->animationState)
 	{
-		if (player->animation_timer == 0 && (SDL_GetAppState() & SDL_APPINPUTFOCUS) && gAudioEffectsFlag)
+		if (player->animation_timer == 0 && ((SDL_GetWindowFlags(gWindow) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 		{
 			playShootingSound();
 		}
@@ -295,7 +295,7 @@ static void animateWeapAndTiles(Character *player)
 				player->destroyed_tile->state = SDL_FALSE;
 				player->destroyed_tile->z -= TILE_FALLING_SPEED;
 				
-				if ((SDL_GetAppState() & SDL_APPINPUTFOCUS) && gAudioEffectsFlag)
+				if (((SDL_GetWindowFlags(gWindow) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 				{
 					playTileFallingSound();
 				}
@@ -355,7 +355,7 @@ static void firstTileLayerAnimation(int beginAnimating, int endAnimating)
 			gTiles[gTilesLayer[gLayerColorIndex]].green = 0.33f;
 			gTiles[gTilesLayer[gLayerColorIndex]].blue = 0.36f;
 			
-			if ((SDL_GetAppState() & SDL_APPINPUTFOCUS) && gAudioEffectsFlag)
+			if (((SDL_GetWindowFlags(gWindow) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 			{
 				playGrayStoneColorSound();
 			}
@@ -381,7 +381,7 @@ static void firstTileLayerAnimation(int beginAnimating, int endAnimating)
 			gTiles[gTilesLayer[gLayerDeathIndex]].z -= TILE_FALLING_SPEED;
 			gTiles[gTilesLayer[gLayerDeathIndex]].isDead = SDL_TRUE;
 			
-			if ((SDL_GetAppState() & SDL_APPINPUTFOCUS) && gAudioEffectsFlag)
+			if (((SDL_GetWindowFlags(gWindow) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 			{
 				playTileFallingSound();
 			}
@@ -419,7 +419,7 @@ static void secondTileLayerAnimation(int beginAnimating, int endAnimating)
 			gTiles[gTilesLayer[gLayerTwoColorIndex]].green = 0.33f;
 			gTiles[gTilesLayer[gLayerTwoColorIndex]].blue = 0.36f;
 			
-			if ((SDL_GetAppState() & SDL_APPINPUTFOCUS) && gAudioEffectsFlag)
+			if (((SDL_GetWindowFlags(gWindow) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 			{
 				playGrayStoneColorSound();
 			}
@@ -445,7 +445,7 @@ static void secondTileLayerAnimation(int beginAnimating, int endAnimating)
 			gTiles[gTilesLayer[gLayerTwoDeathIndex]].z -= TILE_FALLING_SPEED;
 			gTiles[gTilesLayer[gLayerTwoDeathIndex]].isDead = SDL_TRUE;
 			
-			if ((SDL_GetAppState() & SDL_APPINPUTFOCUS) && gAudioEffectsFlag)
+			if (((SDL_GetWindowFlags(gWindow) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 			{
 				playTileFallingSound();
 			}

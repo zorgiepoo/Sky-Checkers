@@ -105,7 +105,7 @@ Character *characterFromInput(Input *characterInput)
 void performDownAction(Input *input, SDL_Event *event)
 {
 	// this is a check for joysticks, mainly
-	if (!(SDL_GetAppState() & SDL_APPINPUTFOCUS))
+	if ((SDL_GetWindowFlags(gWindow) & SDL_WINDOW_INPUT_FOCUS) == 0)
 	{
 		return;
 	}
@@ -121,7 +121,7 @@ void performDownAction(Input *input, SDL_Event *event)
 	
 	if (event->type == SDL_KEYDOWN)
 	{
-		if (event->key.keysym.sym == input->weap_id && !input->character->weap->animationState)
+		if (event->key.keysym.scancode == input->weap_id && !input->character->weap->animationState)
 		{
 			if (gGameHasStarted)
 			{
@@ -129,25 +129,25 @@ void performDownAction(Input *input, SDL_Event *event)
 			}
 		}
 		
-		else if (!input->right && event->key.keysym.sym == input->r_id)
+		else if (!input->right && event->key.keysym.scancode == input->r_id)
 		{
 			input->right = SDL_TRUE;
 			turnOffDirectionsExcept(input, RIGHT);
 		}
 	
-		else if (!input->left && event->key.keysym.sym == input->l_id)
+		else if (!input->left && event->key.keysym.scancode == input->l_id)
 		{
 			input->left = SDL_TRUE;
 			turnOffDirectionsExcept(input, LEFT);
 		}
 	
-		else if (!input->up && event->key.keysym.sym == input->u_id)
+		else if (!input->up && event->key.keysym.scancode == input->u_id)
 		{
 			input->up = SDL_TRUE;
 			turnOffDirectionsExcept(input, UP);
 		}
 	
-		else if (!input->down && event->key.keysym.sym == input->d_id)
+		else if (!input->down && event->key.keysym.scancode == input->d_id)
 		{
 			input->down = SDL_TRUE;
 			turnOffDirectionsExcept(input, DOWN);
@@ -316,7 +316,7 @@ void performDownAction(Input *input, SDL_Event *event)
 
 void performUpAction(Input *input, SDL_Event *event)
 {
-	if (!(SDL_GetAppState() & SDL_APPINPUTFOCUS))
+	if ((SDL_GetWindowFlags(gWindow) & SDL_WINDOW_INPUT_FOCUS) == 0)
 	{
 		return;
 	}
@@ -328,27 +328,27 @@ void performUpAction(Input *input, SDL_Event *event)
 		if (!input->right && !input->left && !input->down && !input->up && !input->weap)
 			return;
 	
-		if (event->key.keysym.sym == input->r_id)
+		if (event->key.keysym.scancode == input->r_id)
 		{
 			input->right = SDL_FALSE;
 		}
 	
-		else if (event->key.keysym.sym == input->l_id)
+		else if (event->key.keysym.scancode == input->l_id)
 		{
 			input->left = SDL_FALSE;
 		}
 	
-		else if (event->key.keysym.sym == input->u_id)
+		else if (event->key.keysym.scancode == input->u_id)
 		{
 			input->up = SDL_FALSE;
 		}
 	
-		else if (event->key.keysym.sym == input->d_id)
+		else if (event->key.keysym.scancode == input->d_id)
 		{
 			input->down = SDL_FALSE;
 		}
 		
-		else if (event->key.keysym.sym == input->weap_id)
+		else if (event->key.keysym.scancode == input->weap_id)
 		{
 			if (gGameHasStarted)
 			{

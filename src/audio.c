@@ -60,16 +60,6 @@ void playGameMusic(void)
 	}
 }
 
-void pauseMusic(void)
-{
-	Mix_PauseMusic();
-}
-
-void unPauseMusic(void)
-{
-	Mix_ResumeMusic();
-}
-
 void stopMusic(void)
 {
 	Mix_HaltMusic();
@@ -85,6 +75,16 @@ void stopMusic(void)
 		Mix_FreeMusic(gGameMusic);
 		gGameMusic = NULL;
 	}
+}
+
+void pauseMusic(void)
+{
+	Mix_PauseMusic();
+}
+
+void unPauseMusic(void)
+{
+	Mix_ResumeMusic();
 }
 
 SDL_bool isPlayingGameMusic(void)

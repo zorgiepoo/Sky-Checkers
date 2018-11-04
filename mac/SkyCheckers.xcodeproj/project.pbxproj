@@ -9,20 +9,19 @@
 /* Begin PBXBuildFile section */
 		002F3C0109D093BD00EBEB88 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002F3C0009D093BD00EBEB88 /* OpenGL.framework */; };
 		002F3C6109D0951E00EBEB88 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002F3C6009D0951E00EBEB88 /* GLUT.framework */; };
-		720C2C241DB4005800551761 /* SDL_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 720C2C201DB4005800551761 /* SDL_image.framework */; };
-		720C2C251DB4005800551761 /* SDL_mixer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 720C2C211DB4005800551761 /* SDL_mixer.framework */; };
-		720C2C261DB4005800551761 /* SDL_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 720C2C221DB4005800551761 /* SDL_ttf.framework */; };
-		720C2C271DB4005800551761 /* SDL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 720C2C231DB4005800551761 /* SDL.framework */; };
-		720C2C281DB4006300551761 /* SDL_image.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 720C2C201DB4005800551761 /* SDL_image.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		720C2C291DB4006300551761 /* SDL_mixer.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 720C2C211DB4005800551761 /* SDL_mixer.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		720C2C2A1DB4006300551761 /* SDL_ttf.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 720C2C221DB4005800551761 /* SDL_ttf.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		720C2C2B1DB4006300551761 /* SDL.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 720C2C231DB4005800551761 /* SDL.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		721B0022204A47C1005AF984 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721B0021204A47C1005AF984 /* SDL2.framework */; };
+		721B0024204A47FB005AF984 /* SDL2_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721B0023204A47FB005AF984 /* SDL2_image.framework */; };
+		721B0026204A482D005AF984 /* SDL2_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721B0025204A482D005AF984 /* SDL2_ttf.framework */; };
+		721B0028204A4855005AF984 /* SDL2_mixer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721B0027204A4855005AF984 /* SDL2_mixer.framework */; };
+		721B0029204A4861005AF984 /* SDL2_mixer.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 721B0027204A4855005AF984 /* SDL2_mixer.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		721B002A204A4861005AF984 /* SDL2_ttf.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 721B0025204A482D005AF984 /* SDL2_ttf.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		721B002B204A4861005AF984 /* SDL2_image.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 721B0023204A47FB005AF984 /* SDL2_image.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		721B002C204A4861005AF984 /* SDL2.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 721B0021204A47C1005AF984 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		770FFA0810B8F465009FD46A /* osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 770FFA0710B8F465009FD46A /* osx.m */; };
 		771B6CA010BE60320014884B /* sc_icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 771B6C9F10BE60320014884B /* sc_icon.icns */; };
 		772B6A850D15CBA000A216BD /* network.c in Sources */ = {isa = PBXBuildFile; fileRef = 772B6A840D15CBA000A216BD /* network.c */; };
 		7744BFA40B33736900BD1D5D /* collision.c in Sources */ = {isa = PBXBuildFile; fileRef = 7744BFA00B33736900BD1D5D /* collision.c */; };
 		774686A20B750F7200F73E92 /* animation.c in Sources */ = {isa = PBXBuildFile; fileRef = 774686A00B750F7200F73E92 /* animation.c */; };
-		774A441D0B2BEA44000C04D9 /* SDLMain.m in Sources */ = {isa = PBXBuildFile; fileRef = 774A441B0B2BEA44000C04D9 /* SDLMain.m */; };
 		774A44200B2BEA58000C04D9 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 774A441E0B2BEA57000C04D9 /* main.c */; };
 		774A44610B2BEB46000C04D9 /* scenery.c in Sources */ = {isa = PBXBuildFile; fileRef = 774A445F0B2BEB46000C04D9 /* scenery.c */; };
 		774A450F0B2BF1FC000C04D9 /* utilities.c in Sources */ = {isa = PBXBuildFile; fileRef = 774A450D0B2BF1FC000C04D9 /* utilities.c */; };
@@ -47,10 +46,10 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				720C2C281DB4006300551761 /* SDL_image.framework in Copy Frameworks into .app bundle */,
-				720C2C291DB4006300551761 /* SDL_mixer.framework in Copy Frameworks into .app bundle */,
-				720C2C2A1DB4006300551761 /* SDL_ttf.framework in Copy Frameworks into .app bundle */,
-				720C2C2B1DB4006300551761 /* SDL.framework in Copy Frameworks into .app bundle */,
+				721B0029204A4861005AF984 /* SDL2_mixer.framework in Copy Frameworks into .app bundle */,
+				721B002A204A4861005AF984 /* SDL2_ttf.framework in Copy Frameworks into .app bundle */,
+				721B002B204A4861005AF984 /* SDL2_image.framework in Copy Frameworks into .app bundle */,
+				721B002C204A4861005AF984 /* SDL2.framework in Copy Frameworks into .app bundle */,
 			);
 			name = "Copy Frameworks into .app bundle";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -64,10 +63,10 @@
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
-		720C2C201DB4005800551761 /* SDL_image.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL_image.framework; path = Frameworks/SDL_image.framework; sourceTree = "<group>"; };
-		720C2C211DB4005800551761 /* SDL_mixer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL_mixer.framework; path = Frameworks/SDL_mixer.framework; sourceTree = "<group>"; };
-		720C2C221DB4005800551761 /* SDL_ttf.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL_ttf.framework; path = Frameworks/SDL_ttf.framework; sourceTree = "<group>"; };
-		720C2C231DB4005800551761 /* SDL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL.framework; path = Frameworks/SDL.framework; sourceTree = "<group>"; };
+		721B0021204A47C1005AF984 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = Frameworks/SDL2.framework; sourceTree = "<group>"; };
+		721B0023204A47FB005AF984 /* SDL2_image.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_image.framework; path = Frameworks/SDL2_image.framework; sourceTree = "<group>"; };
+		721B0025204A482D005AF984 /* SDL2_ttf.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_ttf.framework; path = Frameworks/SDL2_ttf.framework; sourceTree = "<group>"; };
+		721B0027204A4855005AF984 /* SDL2_mixer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_mixer.framework; path = Frameworks/SDL2_mixer.framework; sourceTree = "<group>"; };
 		770FFA0610B8F465009FD46A /* osx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = osx.h; path = ../src/osx.h; sourceTree = "<group>"; };
 		770FFA0710B8F465009FD46A /* osx.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = osx.m; path = ../src/osx.m; sourceTree = "<group>"; };
 		771B6C9F10BE60320014884B /* sc_icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = sc_icon.icns; sourceTree = "<group>"; };
@@ -77,7 +76,6 @@
 		7744BFA10B33736900BD1D5D /* collision.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = collision.h; path = ../src/collision.h; sourceTree = "<group>"; };
 		7746869F0B750F7200F73E92 /* animation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = animation.h; path = ../src/animation.h; sourceTree = "<group>"; };
 		774686A00B750F7200F73E92 /* animation.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = animation.c; path = ../src/animation.c; sourceTree = "<group>"; };
-		774A441B0B2BEA44000C04D9 /* SDLMain.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = SDLMain.m; sourceTree = "<group>"; };
 		774A441E0B2BEA57000C04D9 /* main.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = main.c; path = ../src/main.c; sourceTree = "<group>"; };
 		774A441F0B2BEA57000C04D9 /* maincore.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = maincore.h; path = ../src/maincore.h; sourceTree = "<group>"; };
 		774A445E0B2BEB46000C04D9 /* scenery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = scenery.h; path = ../src/scenery.h; sourceTree = "<group>"; };
@@ -112,34 +110,26 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				720C2C241DB4005800551761 /* SDL_image.framework in Frameworks */,
 				002F3C6109D0951E00EBEB88 /* GLUT.framework in Frameworks */,
-				720C2C251DB4005800551761 /* SDL_mixer.framework in Frameworks */,
-				720C2C261DB4005800551761 /* SDL_ttf.framework in Frameworks */,
 				002F3C0109D093BD00EBEB88 /* OpenGL.framework in Frameworks */,
 				77CCC2B30BA4D374007F9F3A /* Cocoa.framework in Frameworks */,
-				720C2C271DB4005800551761 /* SDL.framework in Frameworks */,
+				721B0022204A47C1005AF984 /* SDL2.framework in Frameworks */,
+				721B0026204A482D005AF984 /* SDL2_ttf.framework in Frameworks */,
+				721B0024204A47FB005AF984 /* SDL2_image.framework in Frameworks */,
+				721B0028204A4855005AF984 /* SDL2_mixer.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		080E96DDFE201D6D7F000001 /* Classes */ = {
-			isa = PBXGroup;
-			children = (
-				774A441B0B2BEA44000C04D9 /* SDLMain.m */,
-			);
-			name = Classes;
-			sourceTree = "<group>";
-		};
 		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				720C2C201DB4005800551761 /* SDL_image.framework */,
-				720C2C211DB4005800551761 /* SDL_mixer.framework */,
-				720C2C221DB4005800551761 /* SDL_ttf.framework */,
-				720C2C231DB4005800551761 /* SDL.framework */,
+				721B0027204A4855005AF984 /* SDL2_mixer.framework */,
+				721B0025204A482D005AF984 /* SDL2_ttf.framework */,
+				721B0023204A47FB005AF984 /* SDL2_image.framework */,
+				721B0021204A47C1005AF984 /* SDL2.framework */,
 				002F3C6009D0951E00EBEB88 /* GLUT.framework */,
 				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
 				002F3C0009D093BD00EBEB88 /* OpenGL.framework */,
@@ -167,7 +157,6 @@
 		29B97314FDCFA39411CA2CEA /* SkyCheckers */ = {
 			isa = PBXGroup;
 			children = (
-				080E96DDFE201D6D7F000001 /* Classes */,
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
@@ -299,7 +288,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				774A441D0B2BEA44000C04D9 /* SDLMain.m in Sources */,
 				774A44200B2BEA58000C04D9 /* main.c in Sources */,
 				774A44610B2BEB46000C04D9 /* scenery.c in Sources */,
 				774A450F0B2BF1FC000C04D9 /* utilities.c in Sources */,
@@ -385,7 +373,7 @@
 		C01FCF4F08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(HOME)/Library/Frameworks",
 					/Library/Frameworks,
@@ -398,7 +386,7 @@
 					/Library/Frameworks/SDL.framework/Headers,
 					"$(HEADER_SEARCH_PATHS)",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
 				ZERO_LINK = NO;
@@ -408,7 +396,7 @@
 		C01FCF5008A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(HOME)/Library/Frameworks",
 					/Library/Frameworks,
@@ -421,7 +409,7 @@
 					/Library/Frameworks/SDL.framework/Headers,
 					"$(HEADER_SEARCH_PATHS)",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
 				SECTORDER_FLAGS = "";

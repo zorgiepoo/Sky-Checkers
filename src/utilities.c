@@ -93,8 +93,6 @@ static void surfaceToGLTexture(SDL_Surface *surface, GLuint *tex)
 	int w, h;
 	SDL_Surface *image;
 	SDL_Rect area;
-	Uint32 saved_flags;
-	Uint8  saved_alpha;
 
 	/* Use the surface width and height expanded to powers of 2 */
 	w = power_of_two(surface->w);
@@ -120,14 +118,9 @@ static void surfaceToGLTexture(SDL_Surface *surface, GLuint *tex)
 	{
 		return;
 	}
-
-	/* Save the alpha blending attributes */
-	saved_flags = surface->flags&(SDL_SRCALPHA|SDL_RLEACCELOK);
-	saved_alpha = surface->format->alpha;
-	if ( (saved_flags & SDL_SRCALPHA) == SDL_SRCALPHA )
-	{
-		SDL_SetAlpha(surface, 0, 0);
-	}
+	
+	// Set alpha property to max
+	SDL_SetSurfaceAlphaMod(surface, 255);
 
 	/* Copy the surface into the GL texture image */
 	area.x = 0;
@@ -135,12 +128,6 @@ static void surfaceToGLTexture(SDL_Surface *surface, GLuint *tex)
 	area.w = surface->w;
 	area.h = surface->h;
 	SDL_BlitSurface(surface, &area, image, &area);
-
-	/* Restore the alpha blending attributes */
-	if ( (saved_flags & SDL_SRCALPHA) == SDL_SRCALPHA )
-	{
-		SDL_SetAlpha(surface, saved_flags, saved_alpha);
-	}
 
 	/* Create an OpenGL texture for the image */
 	
@@ -216,7 +203,7 @@ void zgPrint(const char *format, ...)
 	int formatIndex;
 	int bufferIndex = 0;
 	int stringIndex;
-	char *string;
+	const char *string;
 	char newLine = 1;
 	
 	va_start(ap, format);

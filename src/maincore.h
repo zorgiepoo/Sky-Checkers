@@ -25,20 +25,17 @@
 #include <math.h>
 #include <time.h>
 
-// Fullscreen toggle SDL_Event type
-#define SDL_FULLSCREEN_TOGGLE	27
-
-/* Mac OS X */
+/* macOS */
 
 #ifdef __APPLE__
 #ifdef __MACH__
 #define MAC_OS_X
 
-#include "SDL/SDL.h"
-#include "SDL/SDL_opengl.h"
-#include "SDL_ttf/SDL_ttf.h"
-#include "SDL_image/SDL_image.h"
-#include "SDL_mixer/SDL_mixer.h"
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_opengl.h"
+#include "SDL2_ttf/SDL_ttf.h"
+#include "SDL2_image/SDL_image.h"
+#include "SDL2_mixer/SDL_mixer.h"
 #include <GLUT/glut.h>
 
 #include <unistd.h>
@@ -114,11 +111,4 @@ extern int gCharacterNetLives;
 extern SDL_bool gAudioEffectsFlag;
 extern SDL_bool gAudioMusicFlag;
 
-extern SDL_Rect **gResolutions;
-extern int gResolutionCounter;
-extern int gBestResolutionLimit;
-
-extern int gVsyncFlag;
-extern SDL_bool gFpsFlag;
-extern SDL_bool gFsaaFlag;
-extern SDL_bool gFullscreenFlag;
+extern SDL_Window *gWindow;

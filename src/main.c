@@ -41,8 +41,6 @@ SDL_bool gGameShouldReset;
 int gGameStartNumber;
 int gGameWinner;
 
-SDL_Rect **gResolutions;
-
 Uint32 gVideoFlags;
 
 // Console flag indicating if we can use the console
@@ -56,19 +54,12 @@ SDL_bool gAudioMusicFlag =						SDL_TRUE;
 int gVsyncFlag =								1;
 SDL_bool gFpsFlag =								SDL_FALSE;
 SDL_bool gFsaaFlag =							SDL_TRUE;
-SDL_bool gFullscreenFlag =						SDL_FALSE;
-
-
-SDL_bool gValidDefaults =						SDL_FALSE;
-
-// video counters
-int gResolutionCounter =						-1;
-
-int gBestResolutionLimit =						-1;
 
 // Screen gResolutions
 int gScreenWidth =								0;
 int gScreenHeight =								0;
+
+SDL_bool gValidDefaults =						SDL_FALSE;
 
 // Lives
 int gCharacterLives =							5;
@@ -77,25 +68,24 @@ int gCharacterNetLives =						5;
 // Fullscreen video state.
 SDL_bool gFullscreen =							SDL_FALSE;
 
-static SDL_Surface *gScreen =					NULL;
+SDL_Window *gWindow = NULL;
+static SDL_Renderer *gRenderer = NULL;
 
 static SDL_bool gConsoleActivated =				SDL_FALSE;
 SDL_bool gDrawFPS =								SDL_FALSE;
 
 static int gGameState;
-static SDL_bool gGameLaunched =					SDL_FALSE;
 
 #define MAX_CHARACTER_LIVES 10
 
 void initGame(void);
 
-static void createSurface(Uint32 flags);
+static void createWindow(Uint32 flags);
 static void resizeWindow(int width, int height);
 
-static int compareResolutions(SDL_Rect rectOne, SDL_Rect rectTwo);
 #define MIN_SCREEN_RESOLUTION_WIDTH				640
 #define MIN_SCREEN_RESOLUTION_HEIGHT			480
-static void killResolutionsBelow(int width, int height);
+//static void killResolutionsBelow(int width, int height);
 
 static void initScene(void);
 
@@ -171,10 +161,10 @@ static void initScene(void)
 	if (!gValidDefaults)
 	{
 		// init the inputs
-		initInput(&gRedRoverInput, SDLK_b, SDLK_c, SDLK_f, SDLK_v, SDLK_g);
-		initInput(&gGreenTreeInput, SDLK_l, SDLK_j, SDLK_i, SDLK_k, SDLK_m);
-		initInput(&gBlueLightningInput, SDLK_d, SDLK_a, SDLK_w, SDLK_s, SDLK_z);
-		initInput(&gPinkBubbleGumInput, SDLK_RIGHT, SDLK_LEFT, SDLK_UP, SDLK_DOWN, SDLK_SPACE);
+		initInput(&gRedRoverInput, SDL_SCANCODE_B, SDL_SCANCODE_C, SDL_SCANCODE_F, SDL_SCANCODE_V, SDL_SCANCODE_G);
+		initInput(&gGreenTreeInput, SDL_SCANCODE_L, SDL_SCANCODE_J, SDL_SCANCODE_I, SDL_SCANCODE_K, SDL_SCANCODE_M);
+		initInput(&gBlueLightningInput, SDL_SCANCODE_D, SDL_SCANCODE_A, SDL_SCANCODE_W, SDL_SCANCODE_S, SDL_SCANCODE_Z);
+		initInput(&gPinkBubbleGumInput, SDL_SCANCODE_RIGHT, SDL_SCANCODE_LEFT, SDL_SCANCODE_UP, SDL_SCANCODE_DOWN, SDL_SCANCODE_SPACE);
 
 		// init character states
 		gPinkBubbleGum.state = CHARACTER_HUMAN_STATE;
@@ -333,22 +323,23 @@ static void readDefaults(void)
 	gConsoleFlag = (consoleFlag != 0);
 
 	// video defaults
-	if (fscanf(fp, "screen width: %i\n", &gScreenWidth) < 1) goto cleanup;
-	if (fscanf(fp, "screen height: %i\n", &gScreenHeight) < 1) goto cleanup;
-	if (fscanf(fp, "vsync flag: %i\n", &gVsyncFlag) < 1) goto cleanup;
-	gVsyncFlag = !!gVsyncFlag;
+	int screenWidth = 0;
+	if (fscanf(fp, "screen width: %i\n", &screenWidth) < 1) goto cleanup;
+	
+	int screenHeight = 0;
+	if (fscanf(fp, "screen height: %i\n", &screenHeight) < 1) goto cleanup;
+	
+	int vsyncFlag = 0;
+	if (fscanf(fp, "vsync flag: %i\n", &vsyncFlag) < 1) goto cleanup;
 	
 	int fpsFlag = 0;
 	if (fscanf(fp, "fps flag: %i\n", &fpsFlag) < 1) goto cleanup;
-	gFpsFlag = (fpsFlag != 0);
 	
 	int aaFlag = 0;
 	if (fscanf(fp, "FSAA flag: %i\n", &aaFlag) < 1) goto cleanup;
-	gFsaaFlag = (aaFlag != 0);
 
 	int fullscreenFlag = 0;
 	if (fscanf(fp, "Fullscreen flag: %i\n", &fullscreenFlag) < 1) goto cleanup;
-	gFullscreenFlag = fullscreenFlag;
 
 	if (fscanf(fp, "Number of lives: %i\n", &gCharacterLives) < 1) goto cleanup;
 	if (gCharacterLives > MAX_CHARACTER_LIVES)
@@ -463,7 +454,7 @@ static void writeDefaults(void)
 	fprintf(fp, "vsync flag: %i\n", gVsyncFlag);
 	fprintf(fp, "fps flag: %i\n", gFpsFlag);
 	fprintf(fp, "FSAA flag: %i\n", gFsaaFlag);
-	fprintf(fp, "Fullscreen flag: %i\n", gFullscreenFlag);
+	fprintf(fp, "Fullscreen flag: %i\n", 1);
 
 	fprintf(fp, "\n");
 
@@ -588,11 +579,6 @@ void initGame(void)
 
 	// wait for NEW_GAME_WILL_BEGIN_DELAY seconds until the game can be started.
 	gGameStartNumber = NEW_GAME_WILL_BEGIN_DELAY;
-
-	if (!gConsoleActivated)
-	{
-		SDL_EnableKeyRepeat(1, SDL_DEFAULT_REPEAT_INTERVAL);
-	}
 }
 
 void endGame(void)
@@ -602,11 +588,6 @@ void endGame(void)
 	endAnimation();
 
 	gGameState = GAME_STATE_OFF;
-
-	if (!gConsoleActivated)
-	{
-		SDL_EnableKeyRepeat(0, SDL_DEFAULT_REPEAT_INTERVAL);
-	}
 
 	gGameWinner = NO_CHARACTER;
 	gGameShouldReset = SDL_FALSE;
@@ -979,21 +960,10 @@ static void eventInput(SDL_Event *event, int *quit)
 	switch (event->type)
 	{
 		case SDL_KEYDOWN:
-
-#if defined(WINDOWS) || defined(linux)
-			if (event->key.keysym.sym == SDLK_RETURN && ((SDL_GetModState() & KMOD_LALT) || (SDL_GetModState() & KMOD_RALT)))
-			{
-				event->type = SDL_FULLSCREEN_TOGGLE;
-				SDL_PushEvent(event);
-
-				break;
-			}
-#endif
-
 			if (!gConsoleActivated && gGameState && gGameWinner != NO_CHARACTER &&
-				(event->key.keysym.sym == gPinkBubbleGumInput.weap_id || event->key.keysym.sym == gRedRoverInput.weap_id ||
-				 event->key.keysym.sym == gBlueLightningInput.weap_id || event->key.keysym.sym == gGreenTreeInput.weap_id ||
-				event->key.keysym.sym == SDLK_RETURN || event->key.keysym.sym == SDLK_KP_ENTER))
+				(event->key.keysym.scancode == gPinkBubbleGumInput.weap_id || event->key.keysym.scancode == gRedRoverInput.weap_id ||
+				 event->key.keysym.scancode == gBlueLightningInput.weap_id || event->key.keysym.scancode == gGreenTreeInput.weap_id ||
+				event->key.keysym.scancode == SDL_SCANCODE_RETURN || event->key.keysym.scancode == SDL_SCANCODE_KP_ENTER))
 			{
 				// new game
 				if (!gNetworkConnection || gNetworkConnection->type != NETWORK_CLIENT_TYPE)
@@ -1006,29 +976,11 @@ static void eventInput(SDL_Event *event, int *quit)
 				}
 			}
 
-			if (event->key.keysym.sym == SDLK_RETURN || event->key.keysym.sym == SDLK_KP_ENTER)
+			if (event->key.keysym.scancode == SDL_SCANCODE_RETURN || event->key.keysym.scancode == SDL_SCANCODE_KP_ENTER)
 			{
 				if (gCurrentMenu == gConfigureLivesMenu)
 				{
 					gDrawArrowsForCharacterLivesFlag = !gDrawArrowsForCharacterLivesFlag;
-					if (gAudioEffectsFlag)
-					{
-						playMenuSound();
-					}
-				}
-
-				else if (gCurrentMenu == gScreenResolutionVideoOptionMenu)
-				{
-					gDrawArrowsForScreenResolutionsFlag = !gDrawArrowsForScreenResolutionsFlag;
-					if (gAudioEffectsFlag)
-					{
-						playMenuSound();
-					}
-				}
-
-				else if (gCurrentMenu == gRefreshRateVideoOptionMenu)
-				{
-					gDrawArrowsForRefreshRatesFlag = !gDrawArrowsForRefreshRatesFlag;
 					if (gAudioEffectsFlag)
 					{
 						playMenuSound();
@@ -1055,7 +1007,7 @@ static void eventInput(SDL_Event *event, int *quit)
 				}
 			}
 
-			else if (event->key.keysym.sym == SDLK_DOWN)
+			else if (event->key.keysym.scancode == SDL_SCANCODE_DOWN)
 			{
 				if (gNetworkAddressFieldIsActive)
 					break;
@@ -1078,40 +1030,6 @@ static void eventInput(SDL_Event *event, int *quit)
 						gCharacterNetLives--;
 					}
 					
-				}
-				else if (gDrawArrowsForScreenResolutionsFlag)
-				{
-					// Resolutions are stored largest to smallest starting from gResolutions[0]
-					do
-					{
-						if (gResolutions[gResolutionCounter + 1])
-						{
-							gResolutionCounter++;
-						}
-						else
-						{
-							gResolutionCounter = gBestResolutionLimit;
-						}
-					}
-					while (gResolutions[gResolutionCounter]->w < gResolutions[gResolutionCounter]->h);
-				}
-				else if (gDrawArrowsForRefreshRatesFlag)
-				{
-					if (gFpsFlag)
-					{
-						gFpsFlag = SDL_FALSE;
-					}
-					else if (gVsyncFlag)
-					{
-						gFpsFlag = SDL_TRUE;
-						gVsyncFlag = SDL_FALSE;
-					}
-					else /* if (!gVsyncFlag) */
-					{
-						gVsyncFlag = SDL_TRUE;
-					}
-
-					SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, gVsyncFlag);
 				}
 
 				else if (gDrawArrowsForAIModeFlag)
@@ -1166,7 +1084,7 @@ static void eventInput(SDL_Event *event, int *quit)
 				}
 			}
 
-			else if (event->key.keysym.sym == SDLK_UP)
+			else if (event->key.keysym.scancode == SDL_SCANCODE_UP)
 			{
 				if (gNetworkAddressFieldIsActive)
 					break;
@@ -1188,45 +1106,6 @@ static void eventInput(SDL_Event *event, int *quit)
 					{
 						gCharacterNetLives++;
 					}
-				}
-				else if (gDrawArrowsForScreenResolutionsFlag)
-				{
-					// Resolutions are stored largest to smallest starting from gResolutions[0]
-					do
-					{
-						if (gResolutionCounter == gBestResolutionLimit)
-						{
-							int resolutionIndex;
-							
-							for (resolutionIndex = 0; gResolutions[resolutionIndex]; resolutionIndex++)
-								;
-
-							gResolutionCounter = resolutionIndex - 1;
-						}
-						else
-						{
-							gResolutionCounter--;
-						}
-					}
-					while (gResolutions[gResolutionCounter]->w < gResolutions[gResolutionCounter]->h);
-				}
-				else if (gDrawArrowsForRefreshRatesFlag)
-				{
-					 if (gFpsFlag)
-					 {
-						 gVsyncFlag = SDL_TRUE;
-						 gFpsFlag = SDL_FALSE;
-					 }
-					 else if (gVsyncFlag)
-					 {
-						 gVsyncFlag = SDL_FALSE;
-					 }
-					 else /* if (!gVsyncFlag) */
-					 {
-						 gFpsFlag = SDL_TRUE;
-					 }
-
-					SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, gVsyncFlag);
 				}
 				else if (gDrawArrowsForAIModeFlag)
 				{
@@ -1279,7 +1158,7 @@ static void eventInput(SDL_Event *event, int *quit)
 				}
 			}
 
-			else if (event->key.keysym.sym == SDLK_ESCAPE)
+			else if (event->key.keysym.scancode == SDL_SCANCODE_ESCAPE)
 			{
 				if (!gGameState)
 				{
@@ -1299,14 +1178,6 @@ static void eventInput(SDL_Event *event, int *quit)
 					{
 						gDrawArrowsForNetPlayerLivesFlag = SDL_FALSE;
 					}
-					else if (gDrawArrowsForScreenResolutionsFlag)
-					{
-						gDrawArrowsForScreenResolutionsFlag = SDL_FALSE;
-					}
-					else if (gDrawArrowsForRefreshRatesFlag)
-					{
-						gDrawArrowsForRefreshRatesFlag = SDL_FALSE;
-					}
 					else if (gDrawArrowsForAIModeFlag)
 					{
 						gDrawArrowsForAIModeFlag = SDL_FALSE;
@@ -1314,51 +1185,6 @@ static void eventInput(SDL_Event *event, int *quit)
 					else if (gDrawArrowsForNumberOfNetHumansFlag)
 					{
 						gDrawArrowsForNumberOfNetHumansFlag = SDL_FALSE;
-					}
-					else if (isChildBeingDrawn(gVideoOptionsMenu->mainChild))
-					{
-						// check to see if the surface needs to be created again
-						SDL_bool shouldCreateSurface = SDL_FALSE;
-						int value;
-
-						SDL_GL_GetAttribute(SDL_GL_SWAP_CONTROL, &value);
-
-						if (value != gVsyncFlag)
-						{
-							shouldCreateSurface = SDL_TRUE;
-						}
-
-						SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &value);
-
-						if (value != (int)gFsaaFlag)
-						{
-							shouldCreateSurface = SDL_TRUE;
-						}
-
-						if (gScreenWidth != gResolutions[gResolutionCounter]->w || gScreenHeight != gResolutions[gResolutionCounter]->h)
-						{
-							// set the new size
-							gScreenWidth = gResolutions[gResolutionCounter]->w;
-							gScreenHeight = gResolutions[gResolutionCounter]->h;
-
-							shouldCreateSurface = SDL_TRUE;
-						}
-
-						if (gFullscreenFlag != gFullscreen)
-						{
-							event->type = SDL_FULLSCREEN_TOGGLE;
-							SDL_PushEvent(event);
-						}
-
-						if (shouldCreateSurface)
-						{
-							createSurface(gVideoFlags);
-							// we need to fetch the current list of resolutions again, otherwise, SDL screws up the resolutions
-							gResolutions = SDL_ListModes(NULL, SDL_FULLSCREEN | SDL_HWSURFACE);
-							killResolutionsBelow(MIN_SCREEN_RESOLUTION_WIDTH, MIN_SCREEN_RESOLUTION_HEIGHT);
-						}
-
-						changeMenu(LEFT);
 					}
 					else
 					{
@@ -1403,12 +1229,10 @@ static void eventInput(SDL_Event *event, int *quit)
 					if (gConsoleActivated)
 					{
 						gConsoleActivated = SDL_FALSE;
-						SDL_EnableKeyRepeat(1, SDL_DEFAULT_REPEAT_INTERVAL);
 					}
 					else
 					{
 						gConsoleActivated = SDL_TRUE;
-						SDL_EnableKeyRepeat(0, SDL_DEFAULT_REPEAT_INTERVAL);
 					}
 				}
 			}
@@ -1428,44 +1252,37 @@ static void eventInput(SDL_Event *event, int *quit)
 					performNetworkUserNameBackspace();
 				}
 			}
-
-			// write text to console, make sure that none of the special keys are get in the text (shift, control, caps locks, etc)
-			if (event->key.keysym.unicode != '`' && event->key.keysym.sym != SDLK_LCTRL
-				&& event->key.keysym.sym != SDLK_RIGHT && event->key.keysym.sym != SDLK_LEFT
-				&& event->key.keysym.sym != SDLK_UP && event->key.keysym.sym != SDLK_DOWN
-				&& event->key.keysym.sym != SDLK_F1 && event->key.keysym.sym != SDLK_F2
-				&& event->key.keysym.sym != SDLK_F3 && event->key.keysym.sym != SDLK_F4
-				&& event->key.keysym.sym != SDLK_F4 && event->key.keysym.sym != SDLK_F5
-				&& event->key.keysym.sym != SDLK_F6 && event->key.keysym.sym != SDLK_F7
-				&& event->key.keysym.sym != SDLK_F8 && event->key.keysym.sym != SDLK_F9
-				&& event->key.keysym.sym != SDLK_F10 && event->key.keysym.sym != SDLK_F11
-				&& event->key.keysym.sym != SDLK_F12 && event->key.keysym.sym != SDLK_F13
-				&& event->key.keysym.sym != SDLK_F14 && event->key.keysym.sym != SDLK_F15
-				&& event->key.keysym.sym != SDLK_RCTRL && event->key.keysym.sym != SDLK_LALT
-				&& event->key.keysym.sym != SDLK_RALT && event->key.keysym.sym != SDLK_LSHIFT
-				&& event->key.keysym.sym != SDLK_RSHIFT && event->key.keysym.sym != SDLK_CAPSLOCK
-				&& event->key.keysym.sym != SDLK_LMETA && event->key.keysym.sym != SDLK_RMETA
-				&& event->key.keysym.sym != SDLK_RETURN && event->key.keysym.sym != SDLK_ESCAPE
-				&& event->key.keysym.sym != SDLK_TAB && event->key.keysym.sym != SDLK_BACKSPACE
-				&& event->key.keysym.sym != SDLK_UNKNOWN)
+		case SDL_TEXTINPUT:
+			if (gConsoleActivated || gNetworkAddressFieldIsActive || gNetworkUserNameFieldIsActive)
 			{
-				if (gConsoleActivated)
+				char *text = event->text.text;
+				for (uint8_t textIndex = 0; textIndex < SDL_TEXTINPUTEVENT_TEXT_SIZE; textIndex++)
 				{
-					writeConsoleText((Uint8)event->key.keysym.unicode);
-				}
-				else if (gNetworkAddressFieldIsActive)
-				{
-					writeNetworkAddressText((Uint8)event->key.keysym.unicode);
-				}
-				else if (gNetworkUserNameFieldIsActive)
-				{
-					writeNetworkUserNameText((Uint8)event->key.keysym.unicode);
+					if (text[textIndex] == 0x0 || text[textIndex] == 0x1 || text[textIndex] == '`' || text[textIndex] == '~')
+					{
+						break;
+					}
+					
+					if (gConsoleActivated)
+					{
+						writeConsoleText((Uint8)text[textIndex]);
+					}
+					else if (gNetworkAddressFieldIsActive)
+					{
+						writeNetworkAddressText((Uint8)text[textIndex]);
+					}
+					else if (gNetworkUserNameFieldIsActive)
+					{
+						writeNetworkUserNameText((Uint8)text[textIndex]);
+					}
 				}
 			}
+			
+			break;
 
 		case SDL_JOYBUTTONDOWN:
 		case SDL_JOYAXISMOTION:
-			if (gGameState && gGameWinner != NO_CHARACTER && (SDL_GetAppState() & SDL_APPINPUTFOCUS) &&
+			if (gGameState && gGameWinner != NO_CHARACTER && ((SDL_GetWindowFlags(gWindow) & SDL_WINDOW_INPUT_FOCUS) != 0) &&
 				(event->jbutton.button == gPinkBubbleGumInput.weapjs_id || event->jbutton.button == gRedRoverInput.weapjs_id ||
 				event->jbutton.button == gBlueLightningInput.weapjs_id || event->jbutton.button == gGreenTreeInput.weapjs_id ||
 				event->jaxis.axis == gPinkBubbleGumInput.weapjs_axis_id || event->jaxis.axis == gRedRoverInput.weapjs_id ||
@@ -1483,38 +1300,12 @@ static void eventInput(SDL_Event *event, int *quit)
 			}
 
 			break;
-		case SDL_FULLSCREEN_TOGGLE:
-			// Reset video flags
-			gVideoFlags = SDL_OPENGL;
-			resizeWindow(gScreenWidth, gScreenHeight);
-
-			if (gFullscreen)
-			{
-				createSurface(gVideoFlags);
-
-				gFullscreen = SDL_FALSE;
-				gFullscreenFlag = SDL_FALSE;
-			}
-			else
-			{
-				gVideoFlags |= SDL_FULLSCREEN;
-				createSurface(gVideoFlags);
-
-				gFullscreen = SDL_TRUE;
-				gFullscreenFlag = SDL_TRUE;
-			}
-
-			// we need to fetch the current list of resolutions again, otherwise, SDL screws up the resolutions
-			gResolutions = SDL_ListModes(NULL, SDL_FULLSCREEN | SDL_HWSURFACE);
-			killResolutionsBelow(MIN_SCREEN_RESOLUTION_WIDTH, MIN_SCREEN_RESOLUTION_HEIGHT);
-			
-			break;
-		case SDL_ACTIVEEVENT:
-			if (!(SDL_GetAppState() & SDL_APPINPUTFOCUS))
+		case SDL_WINDOWEVENT:
+			if (event->window.event == SDL_WINDOWEVENT_FOCUS_LOST)
 			{
 				pauseMusic();
 			}
-			else
+			else if (event->window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
 			{
 				unPauseMusic();
 			}
@@ -1547,7 +1338,7 @@ static void eventInput(SDL_Event *event, int *quit)
 	 * Make sure the user isn't trying to toggle fullscreen.
 	 * Other actions, such as changing menus are dealt before here
 	 */
-	if (!((event->key.keysym.sym == SDLK_f || event->key.keysym.sym == SDLK_RETURN) && (SDL_GetModState() & KMOD_LMETA || SDL_GetModState() & KMOD_RMETA || SDL_GetModState() & KMOD_LALT || SDL_GetModState() & KMOD_RALT)) &&
+	if (!((event->key.keysym.scancode == SDL_SCANCODE_F || event->key.keysym.scancode == SDL_SCANCODE_RETURN) && (((SDL_GetModState() & KMOD_LGUI) != 0) || ((SDL_GetModState() & KMOD_RGUI) != 0) || ((SDL_GetModState() & KMOD_LALT) != 0) || ((SDL_GetModState() & KMOD_RALT) != 0))) &&
 		gGameState && (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP || event->type == SDL_JOYBUTTONDOWN || event->type == SDL_JOYBUTTONUP || event->type == SDL_JOYAXISMOTION))
 	{
 		if (!gConsoleActivated)
@@ -1588,29 +1379,6 @@ static void resizeWindow(int width, int height)
 
 	loadSceneryTextures();
 
-	if (gGameLaunched)
-	{
-		deleteCharacterTextures();
-		deleteCharacterLists();
-
-		loadCharacterTextures();
-		buildCharacterLists();
-
-		deleteWeaponList(gRedRover.weap);
-		deleteWeaponList(gGreenTree.weap);
-		deleteWeaponList(gPinkBubbleGum.weap);
-		deleteWeaponList(gBlueLightning.weap);
-
-		buildWeaponList(gRedRover.weap);
-		buildWeaponList(gGreenTree.weap);
-		buildWeaponList(gPinkBubbleGum.weap);
-		buildWeaponList(gBlueLightning.weap);
-	}
-	else
-	{
-		gGameLaunched = SDL_TRUE;
-	}
-
 	reloadGlyphs();
 }
 
@@ -1633,9 +1401,9 @@ static void eventLoop(void)
 		}
 
 		drawScene();
-		SDL_GL_SwapBuffers();
+		SDL_GL_SwapWindow(gWindow);
 		
-		SDL_bool hasAppFocus = (SDL_GetAppState() & SDL_APPINPUTFOCUS) != 0;
+		SDL_bool hasAppFocus = (SDL_GetWindowFlags(gWindow) & SDL_WINDOW_INPUT_FOCUS) != 0;
 		// Restrict game to 30 fps when the fps flag is enabled as well as when we don't have app focus
 		// This will allow the game to use less processing power when it's in the background,
 		// which fixes a bug on macOS where the game can have huge CPU spikes when the window is completly obscured
@@ -1686,138 +1454,15 @@ static void eventLoop(void)
 	}
 }
 
-/*
- * Returns a comparison result of rectOne and rectTwo resolutions.
- * 1 if rectOne > rectTwo
- * 2 if rectTwo > rectOne
- * 0 if rectOne == rectTwo
- */
-static int compareResolutions(SDL_Rect rectOne, SDL_Rect rectTwo)
-{
-	if (rectOne.w > rectTwo.w)
-		return 1;
-	else if (rectOne.w < rectTwo.w)
-		return 2;
-	// the widths must be equal if we're here
-	else if (rectOne.h > rectTwo.h)
-		return 1;
-	else if (rectOne.h < rectTwo.h)
-		return 2;
-	else
-		return 0;
-}
-
-static void killResolutionsBelow(int width, int height)
-{
-	int resolutionCounter;
-	SDL_Rect rectToKill;
-	rectToKill.w = width;
-	rectToKill.h = height;
-	
-	for (resolutionCounter = 0; gResolutions[resolutionCounter]; resolutionCounter++) 
-	{
-		if (compareResolutions(*gResolutions[resolutionCounter], rectToKill) == 2) 
-		{
-			gResolutions[resolutionCounter] = NULL; 
-		}
-	}
-}
-
-static SDL_bool findAndSetResolution(int width, int height)
-{
-	for (gResolutionCounter = 0; gResolutions[gResolutionCounter]; gResolutionCounter++)
-	{
-		if (gResolutions[gResolutionCounter]->w == width && gResolutions[gResolutionCounter]->h == height)
-		{
-			gScreenWidth = gResolutions[gResolutionCounter]->w;
-			gScreenHeight = gResolutions[gResolutionCounter]->h;
-			break;
-		}
-	}
-	
-	return (gScreenWidth != 0 && gScreenHeight != 0);
-}
-
 static void initSDL_GL(void)
 {
-	const SDL_VideoInfo *videoInfo;
-	int bestResIndex;
-
-	// Get video info
-	videoInfo = SDL_GetVideoInfo();
-
-	// The resolution that the user has on as default
-	SDL_Rect bestResolution;
-
-	bestResolution.w = videoInfo->current_w;
-	bestResolution.h = videoInfo->current_h;
-
-	gFullscreen = gFullscreenFlag;
-
-	gResolutions = SDL_ListModes(NULL, SDL_FULLSCREEN | SDL_HWSURFACE);
-	
-	if (gResolutions == NULL)
-	{
-		zgPrint("gResolutions is NULL. Your display doesn't support any of the video resolutions");
-		SDL_Terminate();
-		return;
-	}
-	else  if (gResolutions == (SDL_Rect **)-1)
-	{
-		zgPrint("Your display supports all video gResolutions;^");
-		zgPrint("however, you won't be able to choose which resolution you want in the video options menu.^");
-		zgPrint("It will be 800x500 by default. To change this, you'll need to change the screen and height values in user_data.txt");
-	}
-	
-	// find gScreenWidth and gScreenHeight and set the counter accordingly
-	for (gResolutionCounter = 0; gResolutions[gResolutionCounter]; gResolutionCounter++)
-	{
-		if (gResolutions[gResolutionCounter]->w == gScreenWidth && gResolutions[gResolutionCounter]->h == gScreenHeight)
-			break;
-	}
-
-	// if the defaults fail, try to use 800x500
-	// if that fails, try to use 800x600,
-	// if that fails, try to use 640x480
-	if (gResolutions[gResolutionCounter] == NULL)
-	{
-		if (!findAndSetResolution(800, 500) && !findAndSetResolution(800, 600) && !findAndSetResolution(MIN_SCREEN_RESOLUTION_WIDTH, MIN_SCREEN_RESOLUTION_HEIGHT))
-		{
-			zgPrint("Could not set default resolution!\n");
-			exit(5);
-		}
-	}
-	// otherwise find the users' screen resolution defaults
-	else
-	{
-		if (compareResolutions(*(gResolutions[gResolutionCounter]), bestResolution) == 1)
-		{
-			zgPrint("Defaults resolution might be too high. Try trashing the defaults...Terminating...");
-			SDL_Terminate();
-			return;
-		}
-	}
-
-	// Find the max resolution we can use for the video options. Store it in gBestResolutionLimit
-	for (bestResIndex = 0; gResolutions[bestResIndex]; bestResIndex++)
-	{
-		if (compareResolutions(*gResolutions[bestResIndex], bestResolution) == 0)
-		{
-			gBestResolutionLimit = bestResIndex;
-			break;
-		}
-	}
-	
-	killResolutionsBelow(MIN_SCREEN_RESOLUTION_WIDTH, MIN_SCREEN_RESOLUTION_HEIGHT);
-
 	// Set up flags
-	gVideoFlags = SDL_OPENGL;
-
-	if (gFullscreen)
-	{
-		gVideoFlags |= SDL_FULLSCREEN;
-	}
-
+#ifndef _DEBUG
+	gVideoFlags = SDL_WINDOW_FULLSCREEN_DESKTOP;
+#else
+	gScreenWidth = 800;
+	gScreenHeight = 500;
+#endif
 	// FSAA
 	if (gFsaaFlag)
 	{
@@ -1831,7 +1476,7 @@ static void initSDL_GL(void)
 	}
 	
 	// VSYNC
-	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, gVsyncFlag);
+	SDL_GL_SetSwapInterval(gVsyncFlag);
 
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -1840,37 +1485,41 @@ static void initSDL_GL(void)
 	SDL_ShowCursor(SDL_DISABLE);
 #endif
 
-	createSurface(gVideoFlags);
+	createWindow(gVideoFlags);
 }
 
-static void createSurface(Uint32 flags)
+static void createWindow(Uint32 flags)
 {
-	if (gScreen)
+	if (gWindow != NULL)
 	{
-		SDL_FreeSurface(gScreen);
+		SDL_DestroyWindow(gWindow);
+		gWindow = NULL;
 	}
-
-	gScreen = SDL_SetVideoMode(gScreenWidth, gScreenHeight, 0, flags);
 	
-	if (gScreen == NULL)
+	if (SDL_CreateWindowAndRenderer(gScreenWidth, gScreenHeight, flags, &gWindow, &gRenderer) != 0)
 	{
 		// setting the multi sample buffers and samples when the video device doesn't support it
-		// may cause SDL_SetVideoMode to return NULL, so check if we can still create the screen without
+		// may cause SDL_CreateWindowAndRenderer to return NULL, so check if we can still create the window without
 		// the multi sample buffers and samples
 		if (gFsaaFlag)
 		{
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
-
-			gScreen = SDL_SetVideoMode(gScreenWidth, gScreenHeight, 0, flags);
+			
+			if (SDL_CreateWindowAndRenderer(gScreenWidth, gScreenHeight, flags, &gWindow, &gRenderer) != 0)
+			{
+				zgPrint("Couldn't set %ix%i OpenGL video mode: %e", gScreenWidth, gScreenHeight);
+				exit(4);
+			}
 		}
-
-		if (gScreen == NULL)
+		else
 		{
-			zgPrint("Couldn't set %ix%i OpenGL video mode: %e", gScreenWidth, gScreenHeight);
-			exit(4);
+			zgPrint("Failed to create window & renderer");
+			exit(6);
 		}
 	}
+	
+	SDL_GetWindowSize(gWindow, &gScreenWidth, &gScreenHeight);
 	
 	resizeWindow(gScreenWidth, gScreenHeight);
 
@@ -1889,8 +1538,8 @@ static void createSurface(Uint32 flags)
 	int value;
 	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &value);
 	gFsaaFlag = value;
-
-	SDL_GL_GetAttribute(SDL_GL_SWAP_CONTROL, &value);
+	
+	value = SDL_GL_GetSwapInterval();
 	gVsyncFlag = value;
 }
 
@@ -1925,7 +1574,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	// On Mac OS X we use the system GLUT which is already initialized
+	// On macOS we use the system GLUT which is already initialized
 #ifndef MAC_OS_X
 	glutInit(&argc, argv);
 #endif
@@ -1945,8 +1594,6 @@ int main(int argc, char *argv[])
 	{
 		return -3;
 	};
-
-	SDL_EnableUNICODE(SDL_TRUE);
 
 	readDefaults();
 

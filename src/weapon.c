@@ -387,14 +387,6 @@ void buildWeaponList(Weapon *weap)
 	glEndList();
 }
 
-void deleteWeaponList(Weapon *weap)
-{
-	glDeleteLists(weap->d_list_right, 1);
-	glDeleteLists(weap->d_list_left, 1);
-	glDeleteLists(weap->d_list_up, 1);
-	glDeleteLists(weap->d_list_down, 1);
-}
-
 void drawWeapon(Weapon *weap)
 {
 	if (!weap->drawingState)

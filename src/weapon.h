@@ -41,6 +41,5 @@ typedef struct
 void initWeapon(Weapon *weap);
 
 void buildWeaponList(Weapon *weap);
-void deleteWeaponList(Weapon *weap);
 
 void drawWeapon(Weapon *weap);

@@ -27,7 +27,6 @@
 // Four characters that each have five configured menu actions (right, up, left, down, fire/slicing knife)
 Menu gCharacterConfigureKeys[4][6];
 Menu gJoyStickConfig[4][6];
-Menu *gVideoOptionsMenu;
 
 Menu *gConfigureLivesMenu;
 Menu *gScreenResolutionVideoOptionMenu;
@@ -41,8 +40,6 @@ Menu *gGreenTreePlayerOptionsMenu;
 Menu *gBlueLightningPlayerOptionsMenu;
 
 SDL_bool gDrawArrowsForCharacterLivesFlag =		SDL_FALSE;
-SDL_bool gDrawArrowsForScreenResolutionsFlag =	SDL_FALSE;
-SDL_bool gDrawArrowsForRefreshRatesFlag =		SDL_FALSE;
 SDL_bool gDrawArrowsForAIModeFlag =				SDL_FALSE;
 SDL_bool gDrawArrowsForNumberOfNetHumansFlag =	SDL_FALSE;
 SDL_bool gDrawArrowsForNetPlayerLivesFlag =		SDL_FALSE;
@@ -248,7 +245,7 @@ void networkServerPlayMenuAction(void)
 		return;
     }
 	
-	SDL_CreateThread(serverNetworkThread, NULL);
+	SDL_CreateThread(serverNetworkThread, "server-thread", NULL);
 	
 	initGame();
 	
@@ -467,7 +464,7 @@ void connectToNetworkGameMenuAction(void)
 	gNetworkConnection->hostAddress.sin_addr = *((struct in_addr *)host_entry->h_addr);
 	memset(gNetworkConnection->hostAddress.sin_zero, '\0', sizeof(gNetworkConnection->hostAddress.sin_zero));
 	
-	gNetworkConnection->thread = SDL_CreateThread(clientNetworkThread, NULL);
+	gNetworkConnection->thread = SDL_CreateThread(clientNetworkThread, "client-thread", NULL);
 }
 
 void drawGameOptionsMenu(void)
@@ -750,7 +747,7 @@ void configureKey(unsigned *id)
 {
 	unsigned key = getKey();
 	
-	if (key != SDLK_UNKNOWN)
+	if (key != SDL_SCANCODE_UNKNOWN)
 		*id = key;
 }
 
@@ -1566,16 +1563,6 @@ void audioOptionsMenuAction(void)
 	changeMenu(RIGHT);
 }
 
-// Video options
-void drawVideoOptionsMenu(void)
-{
-	glTranslatef(-1.0, -45.0, -280.0);
-	
-	drawString(20.0, 5.0, "Video Options");
-	
-	glLoadIdentity();
-}
-
 void drawAudioEffectsOptionsMenu(void)
 {
 	glTranslatef(-1.0, 15.0, -280.0);
@@ -1622,117 +1609,9 @@ void audioMusicOptionsMenuAction(void)
 	}
 }
 
-void videoOptionsMenuAction(void)
-{
-	changeMenu(RIGHT);
-}
-
-void drawRefreshRateVideoOptionMenu(void)
-{
-	glTranslatef(-1.0, 15.0, -280.0);
-	
-	if (gFpsFlag)
-	{
-		drawString(25.0, 5.0, "Refresh Rate: 30 FPS");
-	}
-	else if (gVsyncFlag)
-	{
-		drawString(25.0, 5.0, "Refresh Rate: VSYNC");
-	}
-	else /* if (!gVsyncFlag) */
-	{
-		drawString(25.0, 5.0, "Refresh Rate: No VSYNC");
-	}
-	
-	glLoadIdentity();
-	
-	if (gDrawArrowsForRefreshRatesFlag)
-	{
-		glTranslatef(2.5f, 1.35f, -25.0f);
-		glColor3f(0.0f, 0.0f, 0.4f);
-		
-		drawUpAndDownArrowTriangles();
-		
-		glLoadIdentity();
-	}
-}
-
-void drawFsaaVideoOptionMenu(void)
-{
-	glTranslatef(-1.0, 0.0, -280.0);
-	
-	if (gFsaaFlag)
-		drawString(25.0, 5.0, "Anti-aliasing: Yes");
-	else
-		drawString(25.0, 5.0, "Anti-aliasing: No");
-	
-	glLoadIdentity();
-}
-
-void fsaaVideoOptionMenuAction(void)
-{
-	int multiSampleBuffers;
-	int multiSamples;
-	
-	gFsaaFlag = !gFsaaFlag;
-	
-	if (gFsaaFlag)
-	{
-		multiSampleBuffers = 1;
-		multiSamples = 2;
-	}
-	else
-	{
-		multiSampleBuffers = 0;
-		multiSamples = 0;
-	}
-	
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, multiSampleBuffers);
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, multiSamples);
-}
-
-void drawScreenResolutionOptionMenu(void)
-{	
-	glTranslatef(-1.0, -15.0, -280.0);
-	
-	if (gResolutions[gResolutionCounter])
-	{
-		drawStringf(25.0, 5.0, "Screen Resolution: %i x %i", gResolutions[gResolutionCounter]->w, gResolutions[gResolutionCounter]->h);
-	}
-	
-	glLoadIdentity();
-	
-	if (gDrawArrowsForScreenResolutionsFlag)
-	{
-		glTranslatef(2.5f, -1.35f, -25.0f);
-		glColor3f(0.0f, 0.0f, 0.4f);
-		
-		drawUpAndDownArrowTriangles();
-		
-		glLoadIdentity();
-	}
-}
-
-void drawFullscreenVideoOptionMenu(void)
-{
-	glTranslatef(-1.0, -30.0, -280.0);
-	
-	if (gFullscreenFlag)
-		drawString(25.0, 5.0, "Fullscreen: Yes");
-	else
-		drawString(25.0, 5.0, "Fullscreen: No");
-	
-	glLoadIdentity();
-}
-
-void fullscreenVideoOptionMenuAction(void)
-{
-	gFullscreenFlag = !gFullscreenFlag;
-}
-
 void drawQuitMenu(void)
 {
-	glTranslatef(-1.0, -60.0, -280.0);
+	glTranslatef(-1.0, -45.0, -280.0);
 	
 	drawString(12.0, 5.0, "Quit");
 	
@@ -1767,11 +1646,6 @@ void initMenus(void)
 	Menu *audioOptionsMenu =					malloc(sizeof(Menu));
 	Menu *audioEffectsOptionsMenu =				malloc(sizeof(Menu));
 	Menu *audioMusicOptionsMenu =				malloc(sizeof(Menu));
-	gVideoOptionsMenu =							malloc(sizeof(Menu));
-	gRefreshRateVideoOptionMenu =				malloc(sizeof(Menu));
-	Menu *fsaaVideoOptionMenu =					malloc(sizeof(Menu));
-	gScreenResolutionVideoOptionMenu =			malloc(sizeof(Menu));
-	Menu *fullscreenVideoOptionMenu =			malloc(sizeof(Menu));
 	Menu *quitMenu =							malloc(sizeof(Menu));
 	
 	// set action and drawing functions
@@ -1847,21 +1721,6 @@ void initMenus(void)
 	
 	audioMusicOptionsMenu->draw = drawAudioMusicOptionsMenu;
 	audioMusicOptionsMenu->action = audioMusicOptionsMenuAction;
-	
-	gVideoOptionsMenu->draw = drawVideoOptionsMenu;
-	gVideoOptionsMenu->action = videoOptionsMenuAction;
-	
-	gRefreshRateVideoOptionMenu->draw = drawRefreshRateVideoOptionMenu;
-	gRefreshRateVideoOptionMenu->action = NULL;
-	
-	fsaaVideoOptionMenu->draw = drawFsaaVideoOptionMenu;
-	fsaaVideoOptionMenu->action = fsaaVideoOptionMenuAction;
-	
-	gScreenResolutionVideoOptionMenu->draw = drawScreenResolutionOptionMenu;
-	gScreenResolutionVideoOptionMenu->action = NULL;
-	
-	fullscreenVideoOptionMenu->draw = drawFullscreenVideoOptionMenu;
-	fullscreenVideoOptionMenu->action = fullscreenVideoOptionMenuAction;
 	
 	quitMenu->draw = drawQuitMenu;
 	quitMenu->action = SDL_Terminate;
@@ -2026,7 +1885,6 @@ void initMenus(void)
 	addSubMenu(&gMainMenu, networkPlayMenu);
 	addSubMenu(&gMainMenu, gameOptionsMenu);
 	addSubMenu(&gMainMenu, audioOptionsMenu);
-	addSubMenu(&gMainMenu, gVideoOptionsMenu);
 	addSubMenu(&gMainMenu, quitMenu);
 	
 	addSubMenu(networkPlayMenu, networkServerMenu);
@@ -2054,11 +1912,6 @@ void initMenus(void)
 	
 	addSubMenu(audioOptionsMenu, audioEffectsOptionsMenu);
 	addSubMenu(audioOptionsMenu, audioMusicOptionsMenu);
-	
-	addSubMenu(gVideoOptionsMenu, gRefreshRateVideoOptionMenu);
-	addSubMenu(gVideoOptionsMenu, fsaaVideoOptionMenu);
-	addSubMenu(gVideoOptionsMenu, gScreenResolutionVideoOptionMenu);
-	addSubMenu(gVideoOptionsMenu, fullscreenVideoOptionMenu);
 	
 	// characters key config menu
 	addSubMenu(configureKeysMenu, &gCharacterConfigureKeys[0][0]);
@@ -2137,166 +1990,184 @@ static char *convertKeyCodeToString(unsigned theKeyCode)
 {
 	switch (theKeyCode)
 	{
-		case SDLK_RIGHT:
+		case SDL_SCANCODE_RIGHT:
 			sprintf(gKeyCode, "right arrow");
 			break;
-		case SDLK_LEFT:
+		case SDL_SCANCODE_LEFT:
 			sprintf(gKeyCode, "left arrow");
 			break;
-		case SDLK_UP:
+		case SDL_SCANCODE_UP:
 			sprintf(gKeyCode, "up arrow");
 			break;
-		case SDLK_DOWN:
+		case SDL_SCANCODE_DOWN:
 			sprintf(gKeyCode, "down arrow");
 			break;
-		case SDLK_SPACE:
+		case SDL_SCANCODE_SPACE:
 			sprintf(gKeyCode, "spacebar");
 			break;
-		case SDLK_INSERT:
+		case SDL_SCANCODE_INSERT:
 			sprintf(gKeyCode, "insert");
 			break;
-		case SDLK_HOME:
+		case SDL_SCANCODE_HOME:
 			sprintf(gKeyCode, "home");
 			break;
-		case SDLK_END:
+		case SDL_SCANCODE_END:
 			sprintf(gKeyCode, "end");
 			break;
-		case SDLK_PAGEUP:
+		case SDL_SCANCODE_PAGEUP:
 			sprintf(gKeyCode, "pageup");
 			break;
-		case SDLK_PAGEDOWN:
+		case SDL_SCANCODE_PAGEDOWN:
 			sprintf(gKeyCode, "pagedown");
 			break;
-		case SDLK_RSHIFT:
-		case SDLK_LSHIFT:
+		case SDL_SCANCODE_RSHIFT:
+		case SDL_SCANCODE_LSHIFT:
 			sprintf(gKeyCode, "shift");
 			break;
-		case SDLK_BACKSPACE:
+		case SDL_SCANCODE_BACKSPACE:
 			sprintf(gKeyCode, "backspace");
 			break;
-		case SDLK_TAB:
+		case SDL_SCANCODE_TAB:
 			sprintf(gKeyCode, "tab");
 			break;
-		case SDLK_F1:
+		case SDL_SCANCODE_F1:
 			sprintf(gKeyCode, "F1");
 			break;
-		case SDLK_F2:
+		case SDL_SCANCODE_F2:
 			sprintf(gKeyCode, "F2");
 			break;
-		case SDLK_F3:
+		case SDL_SCANCODE_F3:
 			sprintf(gKeyCode, "F3");
 			break;
-		case SDLK_F4:
+		case SDL_SCANCODE_F4:
 			sprintf(gKeyCode, "F4");
 			break;
-		case SDLK_F5:
+		case SDL_SCANCODE_F5:
 			sprintf(gKeyCode, "F5");
 			break;
-		case SDLK_F6:
+		case SDL_SCANCODE_F6:
 			sprintf(gKeyCode, "F6");
 			break;
-		case SDLK_F7:
+		case SDL_SCANCODE_F7:
 			sprintf(gKeyCode, "F7");
 			break;
-		case SDLK_F8:
+		case SDL_SCANCODE_F8:
 			sprintf(gKeyCode, "F8");
 			break;
-		case SDLK_F9:
+		case SDL_SCANCODE_F9:
 			sprintf(gKeyCode, "F9");
 			break;
-		case SDLK_F10:
+		case SDL_SCANCODE_F10:
 			sprintf(gKeyCode, "F10");
 			break;
-		case SDLK_F11:
+		case SDL_SCANCODE_F11:
 			sprintf(gKeyCode, "F11");
 			break;
-		case SDLK_F12:
+		case SDL_SCANCODE_F12:
 			sprintf(gKeyCode, "F12");
 			break;
-		case SDLK_F13:
+		case SDL_SCANCODE_F13:
 			sprintf(gKeyCode, "F13");
 			break;
-		case SDLK_F14:
+		case SDL_SCANCODE_F14:
 			sprintf(gKeyCode, "F14");
 			break;
-		case SDLK_F15:
+		case SDL_SCANCODE_F15:
 			sprintf(gKeyCode, "F15");
 			break;
-		case SDLK_CAPSLOCK:
+		case SDL_SCANCODE_CAPSLOCK:
 			sprintf(gKeyCode, "capslock");
 			break;
-		case SDLK_NUMLOCK:
+		case SDL_SCANCODE_NUMLOCKCLEAR:
 			sprintf(gKeyCode, "numlock");
 			break;
-		case SDLK_SCROLLOCK:
+		case SDL_SCANCODE_SCROLLLOCK:
 			sprintf(gKeyCode, "scrollock");
 			break;
-		case SDLK_RCTRL:
-		case SDLK_LCTRL:
+		case SDL_SCANCODE_RCTRL:
+		case SDL_SCANCODE_LCTRL:
 			sprintf(gKeyCode, "control");
 			break;
-		case SDLK_RALT:
-		case SDLK_LALT:
+		case SDL_SCANCODE_RALT:
+		case SDL_SCANCODE_LALT:
 			sprintf(gKeyCode, "alt");
 			break;
-		case SDLK_RMETA:
-		case SDLK_LMETA:
+		case SDL_SCANCODE_RGUI:
+		case SDL_SCANCODE_LGUI:
 			sprintf(gKeyCode, "meta/command");
 			break;
-		case SDLK_KP0:
+		case SDL_SCANCODE_KP_0:
 			sprintf(gKeyCode, "keypad 0");
 			break;
-		case SDLK_KP1:
+		case SDL_SCANCODE_KP_1:
 			sprintf(gKeyCode, "keypad 1");
 			break;
-		case SDLK_KP2:
+		case SDL_SCANCODE_KP_2:
 			sprintf(gKeyCode, "keypad 2");
 			break;
-		case SDLK_KP3:
+		case SDL_SCANCODE_KP_3:
 			sprintf(gKeyCode, "keypad 3");
 			break;
-		case SDLK_KP4:
+		case SDL_SCANCODE_KP_4:
 			sprintf(gKeyCode, "keypad 4");
 			break;
-		case SDLK_KP5:
+		case SDL_SCANCODE_KP_5:
 			sprintf(gKeyCode, "keypad 5");
 			break;
-		case SDLK_KP6:
+		case SDL_SCANCODE_KP_6:
 			sprintf(gKeyCode, "keypad 6");
 			break;
-		case SDLK_KP7:
+		case SDL_SCANCODE_KP_7:
 			sprintf(gKeyCode, "keypad 7");
 			break;
-		case SDLK_KP8:
+		case SDL_SCANCODE_KP_8:
 			sprintf(gKeyCode, "keypad 8");
 			break;
-		case SDLK_KP9:
+		case SDL_SCANCODE_KP_9:
 			sprintf(gKeyCode, "keypad 9");
 			break;
-		case SDLK_KP_PERIOD:
+		case SDL_SCANCODE_KP_PERIOD:
 			sprintf(gKeyCode, "keypad .");
 			break;
-		case SDLK_KP_DIVIDE:
+		case SDL_SCANCODE_KP_DIVIDE:
 			sprintf(gKeyCode, "keypad /");
 			break;
-		case SDLK_KP_MULTIPLY:
+		case SDL_SCANCODE_KP_MULTIPLY:
 			sprintf(gKeyCode, "keypad *");
 			break;
-		case SDLK_KP_MINUS:
+		case SDL_SCANCODE_KP_MINUS:
 			sprintf(gKeyCode, "keypad -");
 			break;
-		case SDLK_KP_PLUS:
+		case SDL_SCANCODE_KP_PLUS:
 			sprintf(gKeyCode, "keypad +");
 			break;
-		case SDLK_KP_ENTER:
+		case SDL_SCANCODE_KP_ENTER:
 			sprintf(gKeyCode, "keypad enter");
 			break;
-		case SDLK_KP_EQUALS:
+		case SDL_SCANCODE_KP_EQUALS:
 			sprintf(gKeyCode, "keypad =");
 			break;
 			
 		default:
-			sprintf(gKeyCode, "%c", theKeyCode);
+		{
+			const char *name = SDL_GetScancodeName(theKeyCode);
+			if (name == NULL || strlen(name) == 0)
+			{
+				snprintf(gKeyCode, sizeof(gKeyCode) - 1, "keycode %d", theKeyCode);
+			}
+			else
+			{
+				snprintf(gKeyCode, sizeof(gKeyCode) - 1, "%s", name);
+				for (uint8_t index = 0; index < sizeof(gKeyCode); index++)
+				{
+					if (gKeyCode[index] == 0)
+					{
+						break;
+					}
+					gKeyCode[index] = tolower(gKeyCode[index]);
+				}
+			}
+		}
 	}
 	
 	return gKeyCode;
@@ -2316,9 +2187,9 @@ static unsigned getKey(void)
 			{
 				case SDL_KEYDOWN:
 					
-					if (event.key.keysym.sym != SDLK_RETURN && event.key.keysym.sym != SDLK_ESCAPE)
+					if (event.key.keysym.scancode != SDL_SCANCODE_RETURN && event.key.keysym.scancode != SDL_SCANCODE_RETURN2 && event.key.keysym.scancode != SDL_SCANCODE_KP_ENTER && event.key.keysym.scancode != SDL_SCANCODE_ESCAPE)
 					{
-						key = event.key.keysym.sym;
+						key = event.key.keysym.scancode;
 					}
 					
 					quit = SDL_TRUE;
@@ -2349,7 +2220,7 @@ unsigned getJoyStickTrigger(Sint16 *value, Uint8 *axis, int *joy_id)
 			switch (event.type)
 			{
 				case SDL_KEYDOWN:
-					if (event.key.keysym.sym == SDLK_ESCAPE)
+					if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
 						return trigger;
 					
 					break;

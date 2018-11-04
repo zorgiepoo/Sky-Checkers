@@ -135,10 +135,8 @@ void restoreAllBackupStates(void);
 int offlineCharacterState(Character *character);
 
 void loadCharacterTextures(void);
-void deleteCharacterTextures(void);
 
 void buildCharacterLists(void);
-void deleteCharacterLists(void);
 
 void drawRedRoverIcon(void);
 void drawPinkBubbleGumIcon(void);

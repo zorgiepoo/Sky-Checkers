@@ -32,7 +32,6 @@ extern int gUserNameStringIndex;
 
 extern Menu gCharacterConfigureKeys[4][6];
 extern Menu gJoyStickConfig[4][6];
-extern Menu *gVideoOptionsMenu;
 
 extern Menu *gConfigureLivesMenu;
 extern Menu *gScreenResolutionVideoOptionMenu;
@@ -46,8 +45,6 @@ extern Menu *gGreenTreePlayerOptionsMenu;
 extern Menu *gBlueLightningPlayerOptionsMenu;
 
 extern SDL_bool gDrawArrowsForCharacterLivesFlag;
-extern SDL_bool gDrawArrowsForScreenResolutionsFlag;
-extern SDL_bool gDrawArrowsForRefreshRatesFlag;
 extern SDL_bool gDrawArrowsForAIModeFlag;
 extern SDL_bool gDrawArrowsForNumberOfNetHumansFlag;
 extern SDL_bool gDrawArrowsForNetPlayerLivesFlag;
