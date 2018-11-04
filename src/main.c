@@ -1374,8 +1374,6 @@ static void resizeWindow(int width, int height)
 	 * If we don't re-enable it, the depth buffer will be screwed up
 	 */
 	glEnable(GL_DEPTH_TEST);
-	
-	deleteSceneryTextures();
 
 	loadSceneryTextures();
 

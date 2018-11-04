@@ -48,7 +48,6 @@ void loadTiles(void);
 
 SDL_bool availableTile(GLfloat x, GLfloat y);
 
-void deleteSceneryTextures(void);
 void loadSceneryTextures(void);
 
 void drawSky(void);

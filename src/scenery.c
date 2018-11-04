@@ -230,13 +230,6 @@ void loadSceneryTextures(void)
 	loadTexture("Data/Textures/tiletex2.bmp", &gTileTwoTex);
 }
 
-void deleteSceneryTextures(void)
-{
-	glDeleteTextures(1, &gSkyTex);
-	glDeleteTextures(1, &gTileOneTex);
-	glDeleteTextures(1, &gTileTwoTex);
-}
-
 static void drawTile(void)
 {
 	glEnableClientState(GL_VERTEX_ARRAY);
