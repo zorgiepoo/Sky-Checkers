@@ -83,10 +83,6 @@ void initGame(void);
 static void createWindow(Uint32 flags);
 static void resizeWindow(int width, int height);
 
-#define MIN_SCREEN_RESOLUTION_WIDTH				640
-#define MIN_SCREEN_RESOLUTION_HEIGHT			480
-//static void killResolutionsBelow(int width, int height);
-
 static void initScene(void);
 
 static void readDefaults(void);
