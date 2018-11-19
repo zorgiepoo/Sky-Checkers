@@ -45,6 +45,7 @@
 #include "characters.h"
 #include "scenery.h"
 #include "network.h"
+#include "font.h"
 #include "utilities.h"
 
 // "scc~: " length == 6
@@ -121,16 +122,16 @@ SDL_bool performConsoleBackspace(void)
 
 void drawConsoleText(void)
 {
-	int i;
-	int len = strlen(gConsoleString);
-	
 	glColor4f(1.0f, 0.0f, 0.0f, 0.7f);
-	glRasterPos3f(-10.0f, 9.3f, -25.0f);
+	glTranslatef(-7.0f, 9.5f, -25.0f);
 	
-	for (i = 0; i <= len; i++)
+	int length = (int)strlen(gConsoleString);
+	if (length > 0)
 	{
-		glutBitmapCharacter(GLUT_BITMAP_9_BY_15, gConsoleString[i]);
+		drawString(0.16 * length, 0.5f, gConsoleString);
 	}
+	
+	glLoadIdentity();
 }
 
 void executeConsoleCommand(void)

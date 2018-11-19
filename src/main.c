@@ -605,7 +605,6 @@ void drawFramesPerSecond(void)
     static double last_frame_time = -1.0;
 	double now;
 	double dt_fps;
-	int len, i;
 
     if (last_frame_time < 0.0)
 	{
@@ -621,7 +620,7 @@ void drawFramesPerSecond(void)
 
     if (dt_fps > 1.0)
 	{
-		sprintf(fpsString, "fps: %0.2f", frame_count / dt_fps);
+		sprintf(fpsString, "%d", (int)(frame_count / dt_fps));
 
         frame_count = 0;
         last_fps_time = now;
@@ -631,13 +630,12 @@ void drawFramesPerSecond(void)
 
 	// Draw the string
 	glColor3f(0.0f, 0.5f, 0.8f);
-	glRasterPos4f(6.5f, 9.3f, -25.0f, 2.0f);
-
-	len = (int)strlen(fpsString);
-
-	for (i = 0; i < len; i++)
+	size_t length = strlen(fpsString);
+	if (length > 0)
 	{
-		glutBitmapCharacter(GLUT_BITMAP_9_BY_15, fpsString[i]);
+		glTranslatef(9.0f, 9.0f, -25.0f);
+		drawString(0.16f * length, 0.5f, fpsString);
+		glLoadIdentity();
 	}
 }
 
@@ -728,8 +726,8 @@ static void drawScene(void)
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-			drawConsoleText();
 			drawConsole();
+			drawConsoleText();
 
 			glDisable(GL_BLEND);
 		}
@@ -798,15 +796,15 @@ static void drawScene(void)
 
 			glTranslatef(0.0f, -2.0f, 0.0f);
 			drawString(0.5f, 0.5f, "Wins:");
-
-			glRasterPos3f(0.7f, -0.2f, 0.0f);
-			drawGLUTStringf("%i", gPinkBubbleGum.wins);
-
-			glTranslatef(0.0f, -2.0f, 0.0f);
+			
+			glTranslatef(1.0f, 0.0f, 0.0f);
+			drawStringf(0.5f, 0.5f, "%i", gPinkBubbleGum.wins);
+			
+			glTranslatef(-1.0f, -2.0f, 0.0f);
 			drawString(0.5f, 0.5f, "Kills:");
-
-			glRasterPos3f(0.7f, -0.2f, 0.0f);
-			drawGLUTStringf("%i", gPinkBubbleGum.kills);
+			
+			glTranslatef(1.0f, 0.0f, 0.0f);
+			drawStringf(0.5f, 0.5f, "%i", gPinkBubbleGum.kills);
 
 			glLoadIdentity();
 
@@ -818,15 +816,15 @@ static void drawScene(void)
 
 			glTranslatef(0.0f, -2.0f, 0.0f);
 			drawString(0.5, 0.5, "Wins:");
+			
+			glTranslatef(1.0f, 0.0f, 0.0f);
+			drawStringf(0.5f, 0.5f, "%i", gRedRover.wins);
 
-			glRasterPos3f(0.7f, -0.2f, 0.0f);
-			drawGLUTStringf("%i", gRedRover.wins);
-
-			glTranslatef(0.0f, -2.0f, 0.0f);
+			glTranslatef(-1.0f, -2.0f, 0.0f);
 			drawString(0.5, 0.5, "Kills:");
-
-			glRasterPos3f(0.7f, -0.2f, 0.0f);
-			drawGLUTStringf("%i", gRedRover.kills);
+			
+			glTranslatef(1.0f, 0.0f, 0.0f);
+			drawStringf(0.5f, 0.5f, "%i", gRedRover.kills);
 
 			glLoadIdentity();
 
@@ -838,15 +836,15 @@ static void drawScene(void)
 
 			glTranslatef(0.0f, -2.0f, 0.0f);
 			drawString(0.5, 0.5, "Wins:");
+			
+			glTranslatef(1.0f, 0.0f, 0.0f);
+			drawStringf(0.5f, 0.5f, "%i", gGreenTree.wins);
 
-			glRasterPos3f(0.7f, -0.2f, 0.0f);
-			drawGLUTStringf("%i", gGreenTree.wins);
-
-			glTranslatef(0.0f, -2.0f, 0.0f);
+			glTranslatef(-1.0f, -2.0f, 0.0f);
 			drawString(0.5, 0.5, "Kills:");
 
-			glRasterPos3f(0.7f, -0.2f, 0.0f);
-			drawGLUTStringf("%i", gGreenTree.kills);
+			glTranslatef(1.0f, 0.0f, 0.0f);
+			drawStringf(0.5f, 0.5f, "%i", gGreenTree.kills);
 
 			glLoadIdentity();
 
@@ -859,14 +857,14 @@ static void drawScene(void)
 			glTranslatef(0.0f, -2.0f, 0.0f);
 			drawString(0.5f, 0.5f, "Wins:");
 
-			glRasterPos3f(0.7f, -0.2f, 0.0f);
-			drawGLUTStringf("%i", gBlueLightning.wins);
+			glTranslatef(1.0f, 0.0f, 0.0f);
+			drawStringf(0.5f, 0.5f, "%i", gBlueLightning.wins);
 
-			glTranslatef(0.0f, -2.0f, 0.0f);
+			glTranslatef(-1.0f, -2.0f, 0.0f);
 			drawString(0.5, 0.5, "Kills:");
 
-			glRasterPos3f(0.7f, -0.2f, 0.0f);
-			drawGLUTStringf("%i", gBlueLightning.kills);
+			glTranslatef(1.0f, 0.0f, 0.0f);
+			drawStringf(0.5f, 0.5f, "%i", gBlueLightning.kills);
 
 			glLoadIdentity();
 
