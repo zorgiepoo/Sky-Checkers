@@ -315,6 +315,19 @@ static void buildCircle(float *vertices, float *textureCoordinates, float radius
 		textureCoordinates[textureCoordinateIndex] = textureY;
 		textureCoordinateIndex++;
 		
+		if ((pointIndex + 1) % 2 == 0)
+		{
+			vertices[vertexIndex] = 0.0f;
+			vertexIndex++;
+			vertices[vertexIndex] = 0.0f;
+			vertexIndex++;
+			
+			textureCoordinates[textureCoordinateIndex] = 0.5f;
+			textureCoordinateIndex++;
+			textureCoordinates[textureCoordinateIndex] = 0.5f;
+			textureCoordinateIndex++;
+		}
+		
 		float lastX = x;
 		x = cosTheta * x - sinTheta * y;
 		y = sinTheta * lastX + cosTheta * y;
@@ -331,10 +344,10 @@ void buildCharacterModels(void)
 	
 	buildSphere(gCharacterVertices, gCharacterTextureCoordinates, gCharacterIndices, 30, 30, 0.6);
 	
-	gIconVertices = malloc(sizeof(*gIconVertices) * 404);
-	gIconTextureCoordinates = malloc(sizeof(*gIconTextureCoordinates) * 404);
+	gIconVertices = malloc(sizeof(*gIconVertices) * 1204);
+	gIconTextureCoordinates = malloc(sizeof(*gIconTextureCoordinates) * 1204);
 	
-	buildCircle(gIconVertices, gIconTextureCoordinates, 0.4f, 200);
+	buildCircle(gIconVertices, gIconTextureCoordinates, 0.4f, 400);
 }
 
 void drawCharacter(Character *character)
@@ -389,7 +402,7 @@ static void drawCharacterIcon(Character *character)
 	glVertexPointer(2, GL_FLOAT, 0, gIconVertices);
 	glTexCoordPointer(2, GL_FLOAT, 0, gIconTextureCoordinates);
 	
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 202);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 1204 / 2);
 	
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
