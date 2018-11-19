@@ -61,11 +61,12 @@ Character gBlueLightning;
 
 static GLuint gCharacterTex;
 
-// Display for the charcter's icons. Used when displaying how many lives the characters have
-static GLuint gIconList;
+static GLfloat *gCharacterVertices;
+static GLfloat *gCharacterTextureCoordinates;
+static GLushort *gCharacterIndices;
 
-// Icon quadric used for the character's icons that we texture map
-static GLUquadricObj *gIconQuadric;
+static GLfloat *gIconVertices;
+static GLfloat *gIconTextureCoordinates;
 
 static void randomizeCharacterDirection(Character *character);
 
@@ -100,6 +101,10 @@ void loadCharacter(Character *character)
 	character->player_loc = 0;
 	character->destroyed_tile = NULL;
 	
+	character->xRot = 0.0f;
+	character->yRot = 0.0f;
+	character->zRot = 0.0f;
+	
 	character->ai_timer = 0;
 	character->time_alive = 0;
 	
@@ -118,6 +123,9 @@ void initCharacters(void)
 	gRedRover.netState = NETWORK_NO_STATE;
 	gRedRover.netName = NULL;
 	gRedRover.backup_state = 0;
+	gRedRover.red = 0.9f;
+	gRedRover.green = 0.0f;
+	gRedRover.blue = 0.0f;
 	
 	// greenTree
 	loadCharacter(&gGreenTree);
@@ -129,6 +137,9 @@ void initCharacters(void)
 	gGreenTree.netState = NETWORK_NO_STATE;
 	gGreenTree.netName = NULL;
 	gGreenTree.backup_state = 0;
+	gGreenTree.red = 0.3f;
+	gGreenTree.green = 1.0f;
+	gGreenTree.blue = 0.3f;
 	
 	// pinkBubbleGum
 	loadCharacter(&gPinkBubbleGum);
@@ -140,6 +151,9 @@ void initCharacters(void)
 	gPinkBubbleGum.netState = NETWORK_NO_STATE;
 	gPinkBubbleGum.netName = NULL;
 	gPinkBubbleGum.backup_state = 0;
+	gPinkBubbleGum.red = 1.0f;
+	gPinkBubbleGum.green = 0.6f;
+	gPinkBubbleGum.blue = 0.6f;
 	
 	// blueLightning
 	loadCharacter(&gBlueLightning);
@@ -151,6 +165,9 @@ void initCharacters(void)
 	gBlueLightning.netState = NETWORK_NO_STATE;
 	gBlueLightning.netName = NULL;
 	gBlueLightning.backup_state = 0;
+	gBlueLightning.red = 0.3f;
+	gBlueLightning.green = 0.5f;
+	gBlueLightning.blue = 0.6f;
 }
 
 static void restoreCharacterBackupState(Character *character)
@@ -184,79 +201,140 @@ int offlineCharacterState(Character *character)
 void loadCharacterTextures(void)
 {
 	loadTexture("Data/Textures/face.bmp", &gCharacterTex);
-	
-	// Create Quadrics.
-	gRedRover.quadric = gluNewQuadric();
-	gGreenTree.quadric = gluNewQuadric();
-	gPinkBubbleGum.quadric = gluNewQuadric();
-	gBlueLightning.quadric = gluNewQuadric();
-	
-	gIconQuadric = gluNewQuadric();
 }
 
-void buildCharacterLists(void)
+// http://www.songho.ca/opengl/gl_sphere.html
+static void buildSphere(float *vertices, float *textureCoordinates, unsigned short *indices, int stackCount, int sectorCount, float radius)
 {
-	// RedRover
-	gRedRover.characterList = glGenLists(1);
-	glNewList(gRedRover.characterList, GL_COMPILE);
-	glBindTexture(GL_TEXTURE_2D, gCharacterTex);
-	gluQuadricTexture(gRedRover.quadric, GL_TRUE);
+	float stackStep = M_PI / stackCount;
+	float sectorStep = 2 * M_PI / sectorCount;
 	
-	glColor3f(0.9f, 0.0f, 0.0f);
-	gluSphere(gRedRover.quadric, 0.6, 30, 30);
+	int vertexIndex = 0;
+	int textureCoordinateIndex = 0;
 	
-	glEndList();
+	for (int stackIndex = 0; stackIndex <= stackCount; stackIndex++)
+	{
+		float stackAngle = M_PI_2 - stackIndex * stackStep;
+		float xy = radius * cosf(stackAngle);
+		float z = radius * sinf(stackAngle);
+		
+		for (int sectorIndex = 0; sectorIndex <= sectorCount; sectorIndex++)
+		{
+			float sectorAngle = sectorIndex * sectorStep;
+			
+			float x = xy * cosf(sectorAngle);
+			float y = xy * sinf(sectorAngle);
+			
+			vertices[vertexIndex] = x;
+			vertexIndex++;
+			vertices[vertexIndex] = y;
+			vertexIndex++;
+			vertices[vertexIndex] = z;
+			vertexIndex++;
+			
+			float s = (float)sectorIndex / sectorCount;
+			float t = (float)stackIndex / stackCount;
+			
+			textureCoordinates[textureCoordinateIndex] = s;
+			textureCoordinateIndex++;
+			textureCoordinates[textureCoordinateIndex] = t;
+			textureCoordinateIndex++;
+		}
+	}
 	
-	// GreenTree
-	gGreenTree.characterList = glGenLists(1);
-	glNewList(gGreenTree.characterList, GL_COMPILE);
-	glBindTexture(GL_TEXTURE_2D, gCharacterTex);
-	gluQuadricTexture(gGreenTree.quadric, GL_TRUE);
+	unsigned short indiceIndex = 0;
 	
-	glColor3f(0.3f, 1.0f, 0.3f);
-	gluSphere(gGreenTree.quadric, 0.6, 30, 30);
+	for (int stackIndex = 0; stackIndex < stackCount; stackIndex++)
+	{
+		unsigned short k1 = stackIndex * (sectorCount + 1);
+		unsigned short k2 = k1 + sectorCount + 1;
+		
+		for (int sectorIndex = 0; sectorIndex < sectorCount; sectorIndex++)
+		{
+			if (stackIndex != 0)
+			{
+				indices[indiceIndex] = k1;
+				indiceIndex++;
+				indices[indiceIndex] = k2;
+				indiceIndex++;
+				indices[indiceIndex] = k1 + 1;
+				indiceIndex++;
+			}
+			
+			if (stackIndex != (stackCount - 1))
+			{
+				indices[indiceIndex] = k1 + 1;
+				indiceIndex++;
+				indices[indiceIndex] = k2;
+				indiceIndex++;
+				indices[indiceIndex] = k2 + 1;
+				indiceIndex++;
+			}
+			
+			k1++;
+			k2++;
+		}
+	}
+}
+
+// https://stackoverflow.com/questions/27238793/texture-mapping-a-circle
+static void buildCircle(float *vertices, float *textureCoordinates, float radius, int numberOfPoints)
+{
+	float theta = 2 * M_PI / (float)numberOfPoints;
+	float cosTheta = cosf(theta);
+	float sinTheta = sinf(theta);
 	
-	glEndList();
+	int vertexIndex = 0;
+	int textureCoordinateIndex = 0;
 	
-	// PinkBubbleGum
-	gPinkBubbleGum.characterList = glGenLists(1);
-	glNewList(gPinkBubbleGum.characterList, GL_COMPILE);
-	glBindTexture(GL_TEXTURE_2D, gCharacterTex);
-	gluQuadricTexture(gPinkBubbleGum.quadric, GL_TRUE);
+	vertices[vertexIndex] = 0.0f;
+	vertexIndex++;
+	vertices[vertexIndex] = 0.0f;
+	vertexIndex++;
 	
-	glColor3f(1.0f, 0.6f, 0.6f);
-	gluSphere(gPinkBubbleGum.quadric, 0.6, 30, 30);
+	textureCoordinates[textureCoordinateIndex] = 0.5f;
+	textureCoordinateIndex++;
+	textureCoordinates[textureCoordinateIndex] = 0.5f;
+	textureCoordinateIndex++;
 	
-	glEndList();
+	float x = radius;
+	float y = 0.0f;
 	
-	// BlueLightning
-	gBlueLightning.characterList = glGenLists(1);
-	glNewList(gBlueLightning.characterList, GL_COMPILE);
-	glBindTexture(GL_TEXTURE_2D, gCharacterTex);
-	gluQuadricTexture(gBlueLightning.quadric, GL_TRUE);
+	for (int pointIndex = 0; pointIndex <= numberOfPoints; pointIndex++)
+	{
+		vertices[vertexIndex] = x;
+		vertexIndex++;
+		vertices[vertexIndex] = y;
+		vertexIndex++;
+		
+		float textureX = (x / radius + 1.0f) * 0.5f;
+		float textureY = (y / radius + 1.0f) * 0.5f;
+		
+		textureCoordinates[textureCoordinateIndex] = textureX;
+		textureCoordinateIndex++;
+		textureCoordinates[textureCoordinateIndex] = textureY;
+		textureCoordinateIndex++;
+		
+		float lastX = x;
+		x = cosTheta * x - sinTheta * y;
+		y = sinTheta * lastX + cosTheta * y;
+	}
 	
-	glColor3f(0.3f, 0.5f, 0.6f);
-	gluSphere(gBlueLightning.quadric, 0.6, 30, 30);
+	//printf("icon info: %d, %d\n", vertexIndex, textureCoordinateIndex);
+}
+
+void buildCharacterModels(void)
+{
+	gCharacterVertices = malloc(sizeof(*gCharacterVertices) * 2883);
+	gCharacterTextureCoordinates = malloc(sizeof(*gCharacterTextureCoordinates) * 1922);
+	gCharacterIndices = malloc(sizeof(*gCharacterIndices) * 5220);
 	
-	glEndList();
+	buildSphere(gCharacterVertices, gCharacterTextureCoordinates, gCharacterIndices, 30, 30, 0.6);
 	
-	// Icon
-	gIconList = glGenLists(1);
-	glNewList(gIconList, GL_COMPILE);
-	glBindTexture(GL_TEXTURE_2D, gCharacterTex);
-	gluQuadricTexture(gIconQuadric, GL_TRUE);
+	gIconVertices = malloc(sizeof(*gIconVertices) * 404);
+	gIconTextureCoordinates = malloc(sizeof(*gIconTextureCoordinates) * 404);
 	
-	gluDisk(gIconQuadric, 0.0, 0.4, 30, 5);
-	
-	glEndList();
-	
-	// Delete the quadrics. They're not needed anymore.
-	gluDeleteQuadric(gRedRover.quadric);
-	gluDeleteQuadric(gGreenTree.quadric);
-	gluDeleteQuadric(gPinkBubbleGum.quadric);
-	gluDeleteQuadric(gBlueLightning.quadric);
-	
-	gluDeleteQuadric(gIconQuadric);
+	buildCircle(gIconVertices, gIconTextureCoordinates, 0.4f, 200);
 }
 
 void drawCharacter(Character *character)
@@ -277,47 +355,66 @@ void drawCharacter(Character *character)
 	// This rotatation is to control direction.
 	glRotatef(character->zRot, 0.0, 0.0, 1.0);
 	
-	glCallList(character->characterList);
+	glColor3f(character->red, character->green, character->blue);
+	
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	
+	glBindTexture(GL_TEXTURE_2D, gCharacterTex);
+	
+	glVertexPointer(3, GL_FLOAT, 0, gCharacterVertices);
+	glTexCoordPointer(2, GL_FLOAT, 0, gCharacterTextureCoordinates);
+	
+	glDrawElements(GL_TRIANGLES, 5220, GL_UNSIGNED_SHORT, gCharacterIndices);
+	
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	
 	glDisable(GL_TEXTURE_2D);
 	
 	glLoadIdentity();
 }
 
-void drawRedRoverIcon(void)
+static void drawCharacterIcon(Character *character)
 {
-	glColor4f(0.9f, 0.0f, 0.0f, 0.7f);
+	glColor4f(character->red, character->green, character->blue, 0.7f);
 	
 	glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
-	glCallList(gIconList);
+	
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	
+	glBindTexture(GL_TEXTURE_2D, gCharacterTex);
+	
+	glVertexPointer(2, GL_FLOAT, 0, gIconVertices);
+	glTexCoordPointer(2, GL_FLOAT, 0, gIconTextureCoordinates);
+	
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 202);
+	
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	
 	glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
+}
+
+void drawRedRoverIcon(void)
+{
+	drawCharacterIcon(&gRedRover);
 }
 
 void drawPinkBubbleGumIcon(void)
 {
-	glColor4f(1.0f, 0.6f, 0.6f, 0.7f);
-	
-	glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
-	glCallList(gIconList);
-	glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
+	drawCharacterIcon(&gPinkBubbleGum);
 }
 
 void drawGreenTreeIcon(void)
 {
-	glColor4f(0.3f, 1.0f, 0.3f, 0.7f);
-	
-	glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
-	glCallList(gIconList);
-	glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
+	drawCharacterIcon(&gGreenTree);
 }
 
 void drawBlueLightningIcon(void)
 {
-	glColor4f(0.1f, 0.5f, 1.0f, 0.7f);
-	
-	glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
-	glCallList(gIconList);
-	glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
+	drawCharacterIcon(&gBlueLightning);
 }
 
 void drawCharacterIcons(void)
@@ -608,8 +705,8 @@ void moveCharacter(Character *character, int direction)
 			sendCharacterMovement(character);
 		}
 		
-		character->zRot = 90.0;
-		character->xRot = 170.0;
+		character->zRot = 180.0;
+		character->xRot = 0.0;
 		character->yRot = 0.0;
 	}
 	else if (direction == LEFT)
@@ -621,8 +718,8 @@ void moveCharacter(Character *character, int direction)
 			sendCharacterMovement(character);
 		}
 		
-		character->zRot = 270.0;
-		character->xRot = 170.0;
+		character->zRot = 0.0;
+		character->xRot = 0.0;
 		character->yRot = 0.0;
 	}
 	else if (direction == DOWN)
@@ -634,8 +731,8 @@ void moveCharacter(Character *character, int direction)
 			sendCharacterMovement(character);
 		}
 		
-		character->zRot = 180.0;
-		character->xRot = 170.0;
+		character->zRot = 100.0;
+		character->xRot = 0.0;
 		character->yRot = 0.0;
 	}
 	else if (direction == UP)
@@ -647,9 +744,9 @@ void moveCharacter(Character *character, int direction)
 			sendCharacterMovement(character);
 		}
 		
-		character->zRot = 180.0;
-		character->yRot = 180.0;
-		character->xRot = 355.0;
+		character->zRot = 270.0;
+		character->yRot = 0.0;
+		character->xRot = 0.0;
 	}
 }
 
@@ -657,27 +754,27 @@ void turnCharacter(Character *character, int direction)
 {
 	if (direction == RIGHT)
 	{
-		character->zRot = 90.0;
-		character->xRot = 170.0;
+		character->zRot = 180.0;
+		character->xRot = 0.0;
 		character->yRot = 0.0;
 	}
 	else if (direction == LEFT)
 	{
-		character->zRot = 270.0;
-		character->xRot = 170.0;
+		character->zRot = 0.0;
+		character->xRot = 0.0;
 		character->yRot = 0.0;
 	}
 	else if (direction == DOWN)
 	{
-		character->zRot = 180.0;
-		character->xRot = 170.0;
+		character->zRot = 100.0;
+		character->xRot = 0.0;
 		character->yRot = 0.0;
 	}
 	else if (direction == UP)
 	{
-		character->zRot = 180.0;
-		character->yRot = 180.0;
-		character->xRot = 355.0;
+		character->zRot = 270.0;
+		character->yRot = 0.0;
+		character->xRot = 0.0;
 	}
 	
 	character->direction = direction;

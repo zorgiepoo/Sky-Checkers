@@ -55,17 +55,14 @@ extern int gNumberOfNetHumans;
 
 typedef struct _Character
 {
-	/* Character display list that we build */
-	GLuint characterList;
-	
-	/* The character's quadric object that we texture map */
-	GLUquadricObj *quadric;
-	
 	/* x, y, z translate values for character */
 	GLfloat x, y, z;
 	
 	/* Rotation axes of character */
 	GLfloat xRot, yRot, zRot;
+	
+	/* Colors of character faces */
+	GLfloat red, green, blue;
 	
 	/* Direction character is going in */
 	int direction;
@@ -136,7 +133,7 @@ int offlineCharacterState(Character *character);
 
 void loadCharacterTextures(void);
 
-void buildCharacterLists(void);
+void buildCharacterModels(void);
 
 void drawRedRoverIcon(void);
 void drawPinkBubbleGumIcon(void);

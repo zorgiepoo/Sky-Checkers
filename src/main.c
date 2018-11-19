@@ -145,7 +145,7 @@ static void initScene(void)
 	initCharacters();
 
 	loadCharacterTextures();
-	buildCharacterLists();
+	buildCharacterModels();
 
 	// build weapon lists
 	buildWeaponList(gRedRover.weap);
