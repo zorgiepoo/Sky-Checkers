@@ -186,7 +186,15 @@ GLuint loadString(char *string)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	
-	gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, textSurface->w, textSurface->h, GL_RGBA, GL_UNSIGNED_BYTE, textSurface->pixels);
+	// glTexImage2D should accept non-power-of-two sizes in GL 2.0 or later
+	glTexImage2D(GL_TEXTURE_2D,
+				 0,
+				 GL_RGBA,
+				 textSurface->w, textSurface->h,
+				 0,
+				 GL_RGBA,
+				 GL_UNSIGNED_BYTE,
+				 textSurface->pixels);
 	
 	// Cleanup
 	SDL_FreeSurface(fontSurface);
