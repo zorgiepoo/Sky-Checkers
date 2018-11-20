@@ -80,7 +80,6 @@ static int gGameState;
 
 void initGame(void);
 
-static void createWindow(Uint32 flags);
 static void resizeWindow(int width, int height);
 
 static void initScene(void);
@@ -1487,56 +1486,59 @@ static void initSDL_GL(void)
 	SDL_ShowCursor(SDL_DISABLE);
 #endif
 
-	createWindow(gVideoFlags);
-}
-
-static void createWindow(Uint32 flags)
-{
 	if (gWindow != NULL)
 	{
 		SDL_DestroyWindow(gWindow);
 		gWindow = NULL;
 	}
 	
-	if (SDL_CreateWindowAndRenderer(gScreenWidth, gScreenHeight, flags, &gWindow, &gRenderer) != 0)
+	int status = SDL_CreateWindowAndRenderer(gScreenWidth, gScreenHeight, gVideoFlags, &gWindow, &gRenderer);
+	if (gFsaaFlag)
 	{
-		// setting the multi sample buffers and samples when the video device doesn't support it
-		// may cause SDL_CreateWindowAndRenderer to return NULL, so check if we can still create the window without
-		// the multi sample buffers and samples
-		if (gFsaaFlag)
+		int fsaaBuffersValue = 0;
+		SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &fsaaBuffersValue);
+		if (status != 0 || fsaaBuffersValue == 0)
 		{
+			// Anti-aliasing didn't work; try again without anti-aliasing
+			// Otherwise we may be in a state where nothing renders
+			SDL_DestroyWindow(gWindow);
+			gWindow = NULL;
+			
+			SDL_DestroyRenderer(gRenderer);
+			gRenderer = NULL;
+			
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 			
-			if (SDL_CreateWindowAndRenderer(gScreenWidth, gScreenHeight, flags, &gWindow, &gRenderer) != 0)
+			if (SDL_CreateWindowAndRenderer(gScreenWidth, gScreenHeight, gVideoFlags, &gWindow, &gRenderer) != 0)
 			{
 				zgPrint("Couldn't set %ix%i OpenGL video mode: %e", gScreenWidth, gScreenHeight);
 				exit(4);
 			}
 		}
-		else
-		{
-			zgPrint("Failed to create window & renderer");
-			exit(6);
-		}
+	}
+	else if (status != 0)
+	{
+		zgPrint("Couldn't set %ix%i OpenGL video mode: %e", gScreenWidth, gScreenHeight);
+		exit(6);
 	}
 	
 	SDL_GetWindowSize(gWindow, &gScreenWidth, &gScreenHeight);
 	
 	resizeWindow(gScreenWidth, gScreenHeight);
-
+	
 #ifdef WINDOWS
 	// Set the taskbar icon to the icon associated with our executable
 	// For some reason, SDL messes this up
 	/*
-	struct SDL_SysWMinfo wmInfo;
-	if (SDL_GetWMInfo(&wmInfo))
-	{
-		setWindowsIcon(wmInfo.window);
-	}
-	*/
+	 struct SDL_SysWMinfo wmInfo;
+	 if (SDL_GetWMInfo(&wmInfo))
+	 {
+	 setWindowsIcon(wmInfo.window);
+	 }
+	 */
 #endif
-
+	
 	// The attributes we set initially may not be the same after we create the video mode, so
 	// deal with it accordingly
 	int value;
