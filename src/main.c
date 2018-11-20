@@ -1350,17 +1350,27 @@ static void eventInput(SDL_Event *event, int *quit)
 	}
 }
 
+// https://stackoverflow.com/questions/12943164/replacement-for-gluperspective-with-glfrustrum
+static void makeGLPerspective(GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zFar)
+{
+	GLdouble fH = tan( fovY / 360.0 * M_PI ) * zNear;
+	GLdouble fW = fH * aspect;
+	
+	glFrustum(-fW, fW, -fH, fH, zNear, zFar);
+}
+
 static void resizeWindow(int width, int height)
 {
 	glViewport(0, 0, width, height);
-
+	
 	glMatrixMode(GL_PROJECTION);
-
-    glLoadIdentity();
-
-	gluPerspective(45.0f, width / height, 10.0f, 300.0f);
-
-    glMatrixMode(GL_MODELVIEW);
+	
+	glLoadIdentity();
+	
+	// The aspcect ratio is not quite correct, which is a mistake I made a long time ago that is too troubling to fix properly
+	makeGLPerspective(45.0, (GLdouble)(width / height), 10.0, 300.0);
+	
+	glMatrixMode(GL_MODELVIEW);
 
 	/*
 	 * Resizing in SDL makes textures and display lists go bye-bye.
