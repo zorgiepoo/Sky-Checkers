@@ -1527,12 +1527,8 @@ static void initSDL_GL(void)
 	
 	resizeWindow(gScreenWidth, gScreenHeight);
 	
-#ifdef linux
+#ifndef MAC_OS_X
 	SDL_SetWindowTitle(gWindow, "SkyCheckers");
-#endif
-	
-#ifdef WINDOWS
-	SDL_SetWindowTitle(gWindow, "");
 #endif
 	
 #ifdef WINDOWS
