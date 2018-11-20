@@ -1527,6 +1527,14 @@ static void initSDL_GL(void)
 	
 	resizeWindow(gScreenWidth, gScreenHeight);
 	
+#ifdef linux
+	SDL_SetWindowTitle(gWindow, "SkyCheckers");
+#endif
+	
+#ifdef WINDOWS
+	SDL_SetWindowTitle(gWindow, "");
+#endif
+	
 #ifdef WINDOWS
 	// Set the taskbar icon to the icon associated with our executable
 	// For some reason, SDL messes this up
@@ -1579,10 +1587,6 @@ int main(int argc, char *argv[])
         zgPrint("Couldn't initialize SDL: %e");
 		return -1;
 	}
-	
-#ifdef WINDOWS
-	//SDL_WM_SetCaption("", NULL);
-#endif
 
 	initJoySticks();
 
