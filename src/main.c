@@ -1575,11 +1575,6 @@ int main(int argc, char *argv[])
         zgPrint("Couldn't initialize SDL: %e");
 		return -1;
 	}
-
-	// On macOS we use the system GLUT which is already initialized
-#ifndef MAC_OS_X
-	glutInit(&argc, argv);
-#endif
 	
 #ifdef WINDOWS
 	SDL_WM_SetCaption("", NULL);

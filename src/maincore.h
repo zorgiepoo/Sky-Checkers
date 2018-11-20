@@ -36,7 +36,6 @@
 #include "SDL2_ttf/SDL_ttf.h"
 #include "SDL2_image/SDL_image.h"
 #include "SDL2_mixer/SDL_mixer.h"
-#include <GLUT/glut.h>
 
 #include <unistd.h>
 #include <errno.h>
@@ -62,7 +61,6 @@
 #include "SDL_ttf.h"
 #include "SDL_image.h"
 #include "SDL_mixer.h"
-#include <GL/glut.h>
 
 #include <winsock.h>
 #include "windows.h"
@@ -78,8 +76,6 @@
 #include "SDL/SDL_mixer.h"
 #include "SDL/SDL_ttf.h"
 #include "SDL/SDL_image.h"
-
-#include <GL/glut.h>
 
 #include <unistd.h>
 #include <errno.h>
