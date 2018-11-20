@@ -128,7 +128,7 @@ void drawConsoleText(void)
 	int length = (int)strlen(gConsoleString);
 	if (length > 0)
 	{
-		drawString(0.16 * length, 0.5f, gConsoleString);
+		drawString(0.16f * length, 0.5f, gConsoleString);
 	}
 	
 	glLoadIdentity();

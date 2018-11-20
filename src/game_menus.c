@@ -2153,11 +2153,19 @@ static char *convertKeyCodeToString(unsigned theKeyCode)
 			const char *name = SDL_GetScancodeName(theKeyCode);
 			if (name == NULL || strlen(name) == 0)
 			{
+#ifndef WINDOWS
 				snprintf(gKeyCode, sizeof(gKeyCode) - 1, "keycode %d", theKeyCode);
+#else
+				_snprintf_s(gKeyCode, sizeof(gKeyCode), sizeof(gKeyCode) - 1, "keycode %d", theKeyCode);
+#endif
 			}
 			else
 			{
+#ifndef WINDOWS
 				snprintf(gKeyCode, sizeof(gKeyCode) - 1, "%s", name);
+#else
+				_snprintf_s(gKeyCode, sizeof(gKeyCode), sizeof(gKeyCode) - 1, "keycode %d", theKeyCode);
+#endif
 				for (uint8_t index = 0; index < sizeof(gKeyCode); index++)
 				{
 					if (gKeyCode[index] == 0)

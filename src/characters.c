@@ -206,15 +206,15 @@ void loadCharacterTextures(void)
 // http://www.songho.ca/opengl/gl_sphere.html
 static void buildSphere(float *vertices, float *textureCoordinates, unsigned short *indices, int stackCount, int sectorCount, float radius)
 {
-	float stackStep = M_PI / stackCount;
-	float sectorStep = 2 * M_PI / sectorCount;
+	float stackStep = (float)M_PI / stackCount;
+	float sectorStep = 2 * (float)M_PI / sectorCount;
 	
 	int vertexIndex = 0;
 	int textureCoordinateIndex = 0;
 	
 	for (int stackIndex = 0; stackIndex <= stackCount; stackIndex++)
 	{
-		float stackAngle = M_PI_2 - stackIndex * stackStep;
+		float stackAngle = ((float)M_PI / 2.0f) - stackIndex * stackStep;
 		float xy = radius * cosf(stackAngle);
 		float z = radius * sinf(stackAngle);
 		
@@ -280,7 +280,7 @@ static void buildSphere(float *vertices, float *textureCoordinates, unsigned sho
 // https://stackoverflow.com/questions/27238793/texture-mapping-a-circle
 static void buildCircle(float *vertices, float *textureCoordinates, float radius, int numberOfPoints)
 {
-	float theta = 2 * M_PI / (float)numberOfPoints;
+	float theta = 2 * (float)M_PI / (float)numberOfPoints;
 	float cosTheta = cosf(theta);
 	float sinTheta = sinf(theta);
 	
@@ -342,7 +342,7 @@ void buildCharacterModels(void)
 	gCharacterTextureCoordinates = malloc(sizeof(*gCharacterTextureCoordinates) * 1922);
 	gCharacterIndices = malloc(sizeof(*gCharacterIndices) * 5220);
 	
-	buildSphere(gCharacterVertices, gCharacterTextureCoordinates, gCharacterIndices, 30, 30, 0.6);
+	buildSphere(gCharacterVertices, gCharacterTextureCoordinates, gCharacterIndices, 30, 30, 0.6f);
 	
 	gIconVertices = malloc(sizeof(*gIconVertices) * 1204);
 	gIconTextureCoordinates = malloc(sizeof(*gIconTextureCoordinates) * 1204);
