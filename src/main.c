@@ -1405,9 +1405,7 @@ static void eventLoop(void)
 		drawScene();
 		SDL_GL_SwapWindow(gWindow);
 		
-		//SDL_bool hasAppFocus = (SDL_GetWindowFlags(gWindow) & SDL_WINDOW_INPUT_FOCUS) != 0;
-		SDL_bool hasAppFocus = 1;
-		gFpsFlag = 0;
+		SDL_bool hasAppFocus = (SDL_GetWindowFlags(gWindow) & SDL_WINDOW_INPUT_FOCUS) != 0;
 		// Restrict game to 30 fps when the fps flag is enabled as well as when we don't have app focus
 		// This will allow the game to use less processing power when it's in the background,
 		// which fixes a bug on macOS where the game can have huge CPU spikes when the window is completly obscured
