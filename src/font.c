@@ -20,6 +20,8 @@
 #include "font.h"
 #include "utilities.h"
 
+GLuint loadString(char *string);
+
 /* Glyph structure */
 typedef struct
 {
@@ -86,47 +88,6 @@ static void loadGlyph(void)
 	glEnd();
 	
 	glEndList();
-}
-
-// Reloads all the glyphs that we've so far built.
-// Call this when resizing the SDL OpenGL scene.
-void reloadGlyphs(void)
-{	
-	if (gGlyphsCounter == 0)
-		return;
-	
-	int i = 0;
-	
-	glDeleteTextures(gGlyphsCounter, &gGlyphs[i].texture);
-	glDeleteLists(gGlyphs[i].displayList, gGlyphsCounter);
-	
-	// Remember, glyphsCounter starts at zero and gets incremented after every time we load a glyph.
-	// So it'll always be + 1 more than how many glyphs we have loaded so far.
-	for (i = 0; i < gGlyphsCounter; i++)
-	{
-		gGlyphs[i].texture = loadString(gGlyphs[i].character);
-		
-		gGlyphs[i].displayList = glGenLists(1);
-		glNewList(gGlyphs[i].displayList, GL_COMPILE);
-		
-		glBegin(GL_QUADS);
-		
-		zgTexCoord2f(0.0, 0.0);
-		glVertex2f(-gGlyphs[i].width, -gGlyphs[i].height);
-		
-		zgTexCoord2f(0.0, 1.0);
-		glVertex2f(-gGlyphs[i].width, gGlyphs[i].height);
-		
-		zgTexCoord2f(1.0, 1.0);
-		glVertex2f(gGlyphs[i].width, gGlyphs[i].height);
-		
-		zgTexCoord2f(1.0, 0.0);
-		glVertex2f(gGlyphs[i].width, -gGlyphs[i].height);
-		
-		glEnd();
-		
-		glEndList();
-	}
 }
 
 // returns a texture to draw for the string.

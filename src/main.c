@@ -1369,17 +1369,11 @@ static void resizeWindow(int width, int height)
 	makeGLPerspective(45.0, (GLdouble)(width / height), 10.0, 300.0);
 	
 	glMatrixMode(GL_MODELVIEW);
-
-	/*
-	 * Resizing in SDL makes textures and display lists go bye-bye.
-	 * Reload the textures and re-enable GL_DEPTH_TEST.
-	 * If we don't re-enable it, the depth buffer will be screwed up
-	 */
+	
+	// Re-enable GL_DEPTH_TEST
+	// This used to be necessary when the GL context was lost in SDL 1.2
+	// I'm not sure if it's still necessary, but keeping it around for now
 	glEnable(GL_DEPTH_TEST);
-
-	loadSceneryTextures();
-
-	reloadGlyphs();
 }
 
 static void eventLoop(void)

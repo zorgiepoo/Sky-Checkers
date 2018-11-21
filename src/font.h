@@ -23,9 +23,5 @@
 
 SDL_bool initFont(void);
 
-void reloadGlyphs(void);
-
 void drawStringf(GLfloat width, GLfloat height, const char *format, ...);
 void drawString(GLfloat width, GLfloat height, char *string);
-
-GLuint loadString(char *string);
