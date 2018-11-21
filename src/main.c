@@ -120,6 +120,8 @@ static void drawBlackBox(void)
 {
 	glTranslatef(0.0f, 0.0f, -25.0f);
 	
+	glDisable(GL_DEPTH_TEST);
+	
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
@@ -147,6 +149,8 @@ static void drawBlackBox(void)
 	glDisableClientState(GL_VERTEX_ARRAY);
 	
 	glDisable(GL_BLEND);
+	
+	glEnable(GL_DEPTH_TEST);
 	
 	glLoadIdentity();
 }
@@ -764,8 +768,6 @@ static void drawScene(void)
 			glLoadIdentity();
 
 			/* Stats */
-
-			glDisable(GL_DEPTH_TEST);
 			
 			drawBlackBox();
 
@@ -855,15 +857,11 @@ static void drawScene(void)
 
 				glLoadIdentity();
 			}
-			
-			glEnable(GL_DEPTH_TEST);
 		}
 	}
 
 	if (!gGameState)
 	{
-		glDisable(GL_DEPTH_TEST);
-		
 		drawBlackBox();
 
 		glColor4f(0.3f, 0.2f, 1.0f, 0.35f);
@@ -910,8 +908,6 @@ static void drawScene(void)
 
 			glLoadIdentity();
 		}
-		
-		glEnable(GL_DEPTH_TEST);
 	}
 }
 
@@ -1337,11 +1333,6 @@ static void resizeWindow(int width, int height)
 	makeGLPerspective(45.0, (GLdouble)(width / height), 10.0, 300.0);
 	
 	glMatrixMode(GL_MODELVIEW);
-	
-	// Re-enable GL_DEPTH_TEST
-	// This used to be necessary when the GL context was lost in SDL 1.2
-	// I'm not sure if it's still necessary, but keeping it around for now
-	glEnable(GL_DEPTH_TEST);
 }
 
 static void eventLoop(void)

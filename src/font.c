@@ -298,7 +298,6 @@ void drawString(GLfloat width, GLfloat height, const char *string)
 		return;
 	}
 	
-	// Need to disable DEPTH_TEST, otherwise the glyph's context will die if the OpenGL scene is resized.
 	glDisable(GL_DEPTH_TEST);
 	
 	glEnable(GL_TEXTURE_2D);
