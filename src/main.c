@@ -700,34 +700,18 @@ static void drawScene(void)
 	}
 
 	// For this blending to work properly, we have to draw the sky *right* here.
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 	drawSky();
-
-	glDisable(GL_BLEND);
 
 	if (gGameState)
 	{
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 		drawCharacterIcons();
-
-		glDisable(GL_BLEND);
 
 		drawCharacterLives();
 
 		if (gConsoleActivated)
 		{
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 			drawConsole();
 			drawConsoleText();
-
-			glDisable(GL_BLEND);
 		}
 
 		if (gGameWinner != NO_CHARACTER)
@@ -875,10 +859,10 @@ static void drawScene(void)
 				drawString(5.0f, 1.0f, "Fire to play again or Escape to quit");
 
 				glLoadIdentity();
-
-				glDisable(GL_BLEND | GL_TEXTURE_2D);
-				glEnable(GL_DEPTH_TEST);
 			}
+			
+			glDisable(GL_BLEND | GL_TEXTURE_2D);
+			glEnable(GL_DEPTH_TEST);
 		}
 	}
 

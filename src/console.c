@@ -73,8 +73,11 @@ void initConsole(void)
 
 void drawConsole(void)
 {
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
 	glTranslatef(0.0f, 9.0f, -25.0f);
-	glColor4f(0.0f, 0.0f, 0.0f, 0.4f);
+	glColor4f(0.0f, 0.0f, 0.0f, 0.6f);
 	
 	GLfloat vertices[] =
 	{
@@ -96,6 +99,8 @@ void drawConsole(void)
 	glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(*indices), GL_UNSIGNED_BYTE, indices);
 	
 	glDisableClientState(GL_VERTEX_ARRAY);
+	
+	glDisable(GL_BLEND);
 	
 	glLoadIdentity();
 }
