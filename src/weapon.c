@@ -20,6 +20,8 @@
 #include "weapon.h"
 #include "characters.h"
 
+static GLuint gWeaponDisplayList;
+
 void initWeapon(Weapon *weap)
 {	
 	weap->x = 0.0;
@@ -33,13 +35,13 @@ void initWeapon(Weapon *weap)
 
 /*
  * Some considerations in this drawing code are:
- * These objects will be roated to fit correctly on the checkerboard, meaning that the y axis will
+ * These objects will be rotated to fit correctly on the checkerboard, meaning that the y axis will
  * look like the z axis, and that the z axis will look like the y axis when drawing
  */
-void buildWeaponList(Weapon *weap)
+void buildWeaponModel(void)
 {
-	weap->d_list_right = glGenLists(1);
-	glNewList(weap->d_list_right, GL_COMPILE);
+	gWeaponDisplayList = glGenLists(1);
+	glNewList(gWeaponDisplayList, GL_COMPILE);
 	
 	glBegin(GL_QUADS);
 	
@@ -120,267 +122,6 @@ void buildWeaponList(Weapon *weap)
 	glVertex3f(1.0, -1.0, 1.0);
 	glVertex3f(1.0, -1.0, -1.0);
 	glVertex3f(3.0, 0.0, 0.0);
-	
-	glEnd();
-	
-	glEndList();
-	
-	weap->d_list_left = glGenLists(1);
-	glNewList(weap->d_list_left, GL_COMPILE);
-	
-	glBegin(GL_QUADS);
-	
-	// right face
-	glVertex3f(-1.0, -1.0, 1.0);
-	
-	glVertex3f(-1.0, 1.0, 1.0);
-	
-	glVertex3f(1.0, 1.0, 1.0);
-	
-	glVertex3f(1.0, -1.0, 1.0);
-	
-	// left face.
-	glVertex3f(-1.0, -1.0, -1.0);
-	
-	glVertex3f(-1.0, 1.0, -1.0);
-	
-	glVertex3f(1.0, 1.0, -1.0);
-	
-	glVertex3f(1.0, -1.0, -1.0);
-	
-	// front face.
-	glVertex3f(1.0, 1.0, 1.0);
-	
-	glVertex3f(1.0, -1.0, 1.0);
-	
-	glVertex3f(1.0, -1.0, -1.0);
-	
-	glVertex3f(1.0, 1.0, -1.0);
-	
-	// back face.
-	glVertex3f(-1.0, -1.0, 1.0);
-	
-	glVertex3f(-1.0, 1.0, 1.0);
-	
-	glVertex3f(-1.0, 1.0, -1.0);
-	
-	glVertex3f(-1.0, -1.0, -1.0);
-	
-	// top face.
-	glVertex3f(-1.0, 1.0, 1.0);
-	
-	glVertex3f(-1.0, 1.0, -1.0);
-	
-	glVertex3f(1.0, 1.0, -1.0);
-	
-	glVertex3f(1.0, 1.0, 1.0);
-	
-	// bottom face.
-	glVertex3f(-1.0, -1.0, 1.0);
-	
-	glVertex3f(-1.0, -1.0, -1.0);
-	
-	glVertex3f(1.0, -1.0, -1.0);
-	
-	glVertex3f(1.0, -1.0, 1.0);
-	
-	glEnd();
-	
-	glBegin(GL_TRIANGLES);
-	
-	// right side.
-	glVertex3f(-1.0, 1.0, 1.0);
-	glVertex3f(-1.0, -1.0, 1.0);
-	glVertex3f(-3.0, 0.0, 0.0);
-	
-	// left side.
-	glVertex3f(-1.0, 1.0, -1.0);
-	glVertex3f(-1.0, -1.0, -1.0);
-	glVertex3f(-3.0, 0.0, 0.0);
-	
-	// top side.
-	glVertex3f(-1.0, 1.0, 1.0);
-	glVertex3f(-1.0, 1.0, -1.0);
-	glVertex3f(-3.0, 0.0, 0.0);
-	
-	// bottom side.
-	glVertex3f(-1.0, -1.0, 1.0);
-	glVertex3f(-1.0, -1.0, -1.0);
-	glVertex3f(-3.0, 0.0, 0.0);
-	
-	glEnd();
-	
-	glEndList();
-	
-	weap->d_list_up = glGenLists(1);
-	glNewList(weap->d_list_up, GL_COMPILE);
-	
-	glBegin(GL_QUADS);
-	
-	// right face
-	glVertex3f(-1.0, -1.0, 1.0);
-	
-	glVertex3f(-1.0, 1.0, 1.0);
-	
-	glVertex3f(1.0, 1.0, 1.0);
-	
-	glVertex3f(1.0, -1.0, 1.0);
-	
-	// left face.
-	glVertex3f(-1.0, -1.0, -1.0);
-	
-	glVertex3f(-1.0, 1.0, -1.0);
-	
-	glVertex3f(1.0, 1.0, -1.0);
-	
-	glVertex3f(1.0, -1.0, -1.0);
-	
-	// front face.
-	glVertex3f(1.0, 1.0, 1.0);
-	
-	glVertex3f(1.0, -1.0, 1.0);
-	
-	glVertex3f(1.0, -1.0, -1.0);
-	
-	glVertex3f(1.0, 1.0, -1.0);
-	
-	// back face.
-	glVertex3f(-1.0, -1.0, 1.0);
-	
-	glVertex3f(-1.0, 1.0, 1.0);
-	
-	glVertex3f(-1.0, 1.0, -1.0);
-	
-	glVertex3f(-1.0, -1.0, -1.0);
-	
-	// top face.
-	glVertex3f(-1.0, 1.0, 1.0);
-	
-	glVertex3f(-1.0, 1.0, -1.0);
-	
-	glVertex3f(1.0, 1.0, -1.0);
-	
-	glVertex3f(1.0, 1.0, 1.0);
-	
-	// bottom face.
-	glVertex3f(-1.0, -1.0, 1.0);
-	
-	glVertex3f(-1.0, -1.0, -1.0);
-	
-	glVertex3f(1.0, -1.0, -1.0);
-	
-	glVertex3f(1.0, -1.0, 1.0);
-	
-	glEnd();
-	
-	glBegin(GL_TRIANGLES);
-	
-	// right side.
-	glVertex3f(1.0, -1.0, 1.0);
-	glVertex3f(1.0, -1.0, -1.0);
-	glVertex3f(0.0, 3.0, 0.0);
-	
-	// left side.
-	glVertex3f(-1.0, -1.0, 1.0);
-	glVertex3f(-1.0, -1.0, -1.0);
-	glVertex3f(0.0, 3.0, 0.0);
-	
-	// top side.
-	glVertex3f(-1.0, -1.0, 1.0);
-	glVertex3f(1.0, -1.0, 1.0);
-	glVertex3f(0.0, 3.0, 0.0);
-	
-	// bottom side.
-	glVertex3f(-1.0, -1.0, -1.0);
-	glVertex3f(1.0, -1.0, -1.0);
-	glVertex3f(0.0, 3.0, 0.0);
-	
-	glEnd();
-	
-	glEndList();
-	
-	weap->d_list_down = glGenLists(1);
-	glNewList(weap->d_list_down, GL_COMPILE);
-	
-	glBegin(GL_QUADS);
-	
-	// right face
-	glVertex3f(-1.0, -1.0, 1.0);
-	
-	glVertex3f(-1.0, 1.0, 1.0);
-	
-	glVertex3f(1.0, 1.0, 1.0);
-	
-	glVertex3f(1.0, -1.0, 1.0);
-	
-	// left face.
-	glVertex3f(-1.0, -1.0, -1.0);
-	
-	glVertex3f(-1.0, 1.0, -1.0);
-	
-	glVertex3f(1.0, 1.0, -1.0);
-	
-	glVertex3f(1.0, -1.0, -1.0);
-	
-	// front face.
-	glVertex3f(1.0, 1.0, 1.0);
-	
-	glVertex3f(1.0, -1.0, 1.0);
-	
-	glVertex3f(1.0, -1.0, -1.0);
-	
-	glVertex3f(1.0, 1.0, -1.0);
-	
-	// back face.
-	glVertex3f(-1.0, -1.0, 1.0);
-	
-	glVertex3f(-1.0, 1.0, 1.0);
-	
-	glVertex3f(-1.0, 1.0, -1.0);
-	
-	glVertex3f(-1.0, -1.0, -1.0);
-	
-	// top face.
-	glVertex3f(-1.0, 1.0, 1.0);
-	
-	glVertex3f(-1.0, 1.0, -1.0);
-	
-	glVertex3f(1.0, 1.0, -1.0);
-	
-	glVertex3f(1.0, 1.0, 1.0);
-	
-	// bottom face.
-	glVertex3f(-1.0, -1.0, 1.0);
-	
-	glVertex3f(-1.0, -1.0, -1.0);
-	
-	glVertex3f(1.0, -1.0, -1.0);
-	
-	glVertex3f(1.0, -1.0, 1.0);
-	
-	glEnd();
-	
-	glBegin(GL_TRIANGLES);
-	
-	// right side.
-	glVertex3f(1.0, -1.0, 1.0);
-	glVertex3f(1.0, -1.0, -1.0);
-	glVertex3f(0.0, -3.0, 0.0);
-	
-	// left side.
-	glVertex3f(-1.0, -1.0, 1.0);
-	glVertex3f(-1.0, -1.0, -1.0);
-	glVertex3f(0.0, -3.0, 0.0);
-	
-	// top side.
-	glVertex3f(-1.0, -1.0, 1.0);
-	glVertex3f(1.0, -1.0, 1.0);
-	glVertex3f(0.0, -3.0, 0.0);
-	
-	// bottom side.
-	glVertex3f(-1.0, -1.0, -1.0);
-	glVertex3f(1.0, -1.0, -1.0);
-	glVertex3f(0.0, -3.0, 0.0);
 	
 	glEnd();
 	
@@ -402,14 +143,21 @@ void drawWeapon(Weapon *weap)
 	
 	glColor4f(weap->red, weap->green, weap->blue, 0.2f);
 	
-	if (weap->direction == RIGHT)
-		glCallList(weap->d_list_right);
-	else if (weap->direction == LEFT)
-		glCallList(weap->d_list_left);
-	else if (weap->direction == UP)
-		glCallList(weap->d_list_up);
-	else if (weap->direction == DOWN)
-		glCallList(weap->d_list_down);
+	int direction = weap->direction;
+	if (direction == LEFT)
+	{
+		glRotatef(180.0f, 0.0f, 0.0f, 1.0f);
+	}
+	else if (direction == UP)
+	{
+		glRotatef(90.0f, 0.0f, 0.0f, 1.0f);
+	}
+	else if (direction == DOWN)
+	{
+		glRotatef(270.0f, 0.0f, 0.0f, 1.0f);
+	}
+	
+	glCallList(gWeaponDisplayList);
 	
 	glDisable(GL_BLEND);
 	

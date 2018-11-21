@@ -151,11 +151,8 @@ static void initScene(void)
 	loadCharacterTextures();
 	buildCharacterModels();
 
-	// build weapon lists
-	buildWeaponList(gRedRover.weap);
-	buildWeaponList(gGreenTree.weap);
-	buildWeaponList(gPinkBubbleGum.weap);
-	buildWeaponList(gBlueLightning.weap);
+	// build weapon model
+	buildWeaponModel();
 
 	// defaults couldn't be read
 	if (!gValidDefaults)

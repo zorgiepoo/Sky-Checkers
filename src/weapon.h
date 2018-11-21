@@ -29,17 +29,11 @@ typedef struct
 	SDL_bool drawingState;
 	SDL_bool animationState;
 	
-	// display lists.
-	GLuint d_list_right;
-	GLuint d_list_left;
-	GLuint d_list_up;
-	GLuint d_list_down;
-	
 	int direction;
 } Weapon;
 
-void initWeapon(Weapon *weap);
+void buildWeaponModel(void);
 
-void buildWeaponList(Weapon *weap);
+void initWeapon(Weapon *weap);
 
 void drawWeapon(Weapon *weap);
