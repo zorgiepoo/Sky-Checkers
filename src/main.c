@@ -1495,8 +1495,24 @@ static void initSDL_GL(void)
 	
 	if (gWindow == NULL)
 	{
-		zgPrint("Couldn't create SDL window with resolution %ix%i: %e", gScreenWidth, gScreenHeight);
-		exit(4);
+		if (!gFsaaFlag)
+		{
+			zgPrint("Couldn't create SDL window with resolution %ix%i: %e", gScreenWidth, gScreenHeight);
+			exit(4);
+		}
+		else
+		{
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
+			
+			gWindow = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, gScreenWidth, gScreenHeight, gVideoFlags);
+			
+			if (gWindow == NULL)
+			{
+				zgPrint("Couldn't create SDL window with fsaa off with resolution %ix%i: %e", gScreenWidth, gScreenHeight);
+				exit(6);
+			}
+		}
 	}
 	
 	SDL_GLContext glContext = SDL_GL_CreateContext(gWindow);
