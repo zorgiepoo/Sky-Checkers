@@ -26,13 +26,16 @@ GLuint loadString(char *string);
 typedef struct
 {
 	GLuint texture;
-	
 	char *text;
-	
-	GLfloat width, height;
-	
-	GLfloat vertices[8];
 } Glyph;
+
+static GLfloat gFontVertices[] =
+{
+	-1.0f, -1.0f,
+	-1.0f, 1.0f,
+	1.0f, 1.0f,
+	1.0f, -1.0f
+};
 
 static GLfloat gFontTextureCoordinates[] =
 {
@@ -54,7 +57,6 @@ static int gGlyphsCounter =	0;
 static int gMaxGlyphs =		256;
 static Glyph *gGlyphs;
 
-static void loadGlyph(void);
 static int lookUpGlyphIndex(char *string, GLfloat width, GLfloat height);
 
 SDL_bool initFont(void)
@@ -75,21 +77,6 @@ SDL_bool initFont(void)
 	}
 	
 	return SDL_TRUE;
-}
-
-static void loadGlyph(void)
-{
-	gGlyphs[gGlyphsCounter].texture = loadString(gGlyphs[gGlyphsCounter].text);
-	
-	GLfloat vertices[] =
-	{
-		-gGlyphs[gGlyphsCounter].width, -gGlyphs[gGlyphsCounter].height,
-		-gGlyphs[gGlyphsCounter].width, gGlyphs[gGlyphsCounter].height,
-		gGlyphs[gGlyphsCounter].width, gGlyphs[gGlyphsCounter].height,
-		gGlyphs[gGlyphsCounter].width, -gGlyphs[gGlyphsCounter].height
-	};
-	
-	memcpy(gGlyphs[gGlyphsCounter].vertices, vertices, sizeof(vertices));
 }
 
 // returns a texture to draw for the string.
@@ -181,7 +168,7 @@ static int lookUpGlyphIndex(char *string, GLfloat width, GLfloat height)
 	
 	for (i = 0; i <= gGlyphsCounter; i++)
 	{
-		if (gGlyphs[i].text != NULL && strcmp(gGlyphs[i].text, string) == 0 && gGlyphs[i].width == width && gGlyphs[i].height == height)
+		if (gGlyphs[i].text != NULL && strcmp(gGlyphs[i].text, string) == 0)
 		{
 			index = i;
 			break;
@@ -288,12 +275,8 @@ void drawString(GLfloat width, GLfloat height, char *string)
 		}
 		
 		gGlyphs[gGlyphsCounter].text = malloc(strlen(string) + 1);
-		
 		sprintf(gGlyphs[gGlyphsCounter].text, "%s", string);
-		gGlyphs[gGlyphsCounter].width = width;
-		gGlyphs[gGlyphsCounter].height = height;
-		
-		loadGlyph();
+		gGlyphs[gGlyphsCounter].texture = loadString(gGlyphs[gGlyphsCounter].text);
 		
 		gGlyphsCounter++;
 		
@@ -314,10 +297,12 @@ void drawString(GLfloat width, GLfloat height, char *string)
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	
-	glVertexPointer(2, GL_FLOAT, 0, gGlyphs[index].vertices);
+	glVertexPointer(2, GL_FLOAT, 0, gFontVertices);
 	glTexCoordPointer(2, GL_FLOAT, 0, gFontTextureCoordinates);
 	
+	glScalef(width, height, 0.0f);
 	glDrawElements(GL_TRIANGLES, sizeof(gFontIndices) / sizeof(*gFontIndices), GL_UNSIGNED_BYTE, gFontIndices);
+	glScalef(1.0f / width, 1.0f / height, 0.0f);
 	
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
