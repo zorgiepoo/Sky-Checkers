@@ -84,10 +84,16 @@ void drawConsole(void)
 		-10.0f, 1.0f, 1.0f,
 	};
 	
+	GLubyte indices[] =
+	{
+		0, 1, 2,
+		2, 3, 0
+	};
+	
 	glEnableClientState(GL_VERTEX_ARRAY);
 	
 	glVertexPointer(3, GL_FLOAT, 0, vertices);
-	glDrawArrays(GL_QUADS, 0, 4);
+	glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(*indices), GL_UNSIGNED_BYTE, indices);
 	
 	glDisableClientState(GL_VERTEX_ARRAY);
 	

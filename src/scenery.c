@@ -293,7 +293,26 @@ static void drawTile(void)
 	
 	glTexCoordPointer(2, GL_SHORT, 0, textureCoordinates);
 	
-	glDrawArrays(GL_QUADS, 0, 16);
+	GLubyte indices[] =
+	{
+		// Bottom
+		0, 1, 2,
+		2, 3, 0,
+		
+		// Left
+		4, 5, 6,
+		6, 7, 4,
+		
+		// Right
+		8, 9, 10,
+		10, 11, 8,
+		
+		// Front
+		12, 13, 14,
+		14, 15, 12
+	};
+	
+	glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(*indices), GL_UNSIGNED_BYTE, indices);
 	
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -325,6 +344,12 @@ void drawSky(void)
 		0.0f, 1.0f,
 	};
 	
+	GLubyte indices[] =
+	{
+		0, 1, 2,
+		2, 3, 0
+	};
+	
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	
@@ -332,7 +357,7 @@ void drawSky(void)
 	glVertexPointer(3, GL_FLOAT, 0, skyVertices);
 	glTexCoordPointer(2, GL_FLOAT, 0, skyTextureCoordinates);
 	
-	glDrawArrays(GL_QUADS, 0, 4);
+	glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(*indices), GL_UNSIGNED_BYTE, indices);
 	
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
