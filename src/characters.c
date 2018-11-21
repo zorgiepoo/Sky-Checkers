@@ -390,6 +390,11 @@ void drawCharacter(Character *character)
 
 static void drawCharacterIcon(Character *character)
 {
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
+	glEnable(GL_TEXTURE_2D);
+	
 	glColor4f(character->red, character->green, character->blue, 0.7f);
 	
 	glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
@@ -408,6 +413,10 @@ static void drawCharacterIcon(Character *character)
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	
 	glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
+	
+	glDisable(GL_TEXTURE_2D);
+	
+	glDisable(GL_BLEND);
 }
 
 void drawRedRoverIcon(void)
@@ -433,59 +442,23 @@ void drawBlueLightningIcon(void)
 void drawCharacterIcons(void)
 {
 	// pinkBubbleGum icon
-	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
 	glTranslatef(-9.0f, -9.5f, -25.0f);
-	
 	drawPinkBubbleGumIcon();
-	
-	glDisable(GL_BLEND);
-	glDisable(GL_TEXTURE_2D);
-	
 	glLoadIdentity();
 	
 	// redRover icon
-	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
 	glTranslatef(-3.67f, -9.5f, -25.0f);
-	
 	drawRedRoverIcon();
-	
-	glDisable(GL_BLEND);
-	glDisable(GL_TEXTURE_2D);
-	
 	glLoadIdentity();
 	
 	// greenTree icon
-	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
 	glTranslatef(1.63f, -9.5f, -25.0f);
-	
 	drawGreenTreeIcon();
-	
-	glDisable(GL_BLEND);
-	glDisable(GL_TEXTURE_2D);
-	
 	glLoadIdentity();
 	
 	// BlueLightning icon
-	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
 	glTranslatef(6.93f, -9.5f, -25.0f);
-	
 	drawBlueLightningIcon();
-	
-	glDisable(GL_BLEND);
-	glDisable(GL_TEXTURE_2D);
-	
 	glLoadIdentity();
 }
 

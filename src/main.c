@@ -118,6 +118,13 @@ static void initGL(void)
 
 static void drawBlackBox(void)
 {
+	glTranslatef(0.0f, 0.0f, -25.0f);
+	
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
+	glColor4f(0.0f, 0.0f, 0.0f, 0.7f);
+	
 	glEnableClientState(GL_VERTEX_ARRAY);
 	
 	GLfloat vertices[] =
@@ -138,6 +145,10 @@ static void drawBlackBox(void)
 	glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(*indices), GL_UNSIGNED_BYTE, indices);
 
 	glDisableClientState(GL_VERTEX_ARRAY);
+	
+	glDisable(GL_BLEND);
+	
+	glLoadIdentity();
 }
 
 static void initScene(void)
@@ -755,19 +766,8 @@ static void drawScene(void)
 			/* Stats */
 
 			glDisable(GL_DEPTH_TEST);
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-			// Draw black box
-			glTranslatef(0.0, 0.0, -25.0);
-
-			glColor4f(0.0, 0.0, 0.0, 0.5);
-
+			
 			drawBlackBox();
-
-			glLoadIdentity();
-
-			glEnable(GL_TEXTURE_2D);
 
 			/* Display stats */
 
@@ -791,7 +791,6 @@ static void drawScene(void)
 			glLoadIdentity();
 
 			// redRover
-			glEnable(GL_TEXTURE_2D);
 			glTranslatef(-2.0f, 7.0f, -25.0f);
 
 			drawRedRoverIcon();
@@ -811,9 +810,7 @@ static void drawScene(void)
 			glLoadIdentity();
 
 			// greenTree
-			glEnable(GL_TEXTURE_2D);
 			glTranslatef(2.0f, 7.0f, -25.0f);
-
 			drawGreenTreeIcon();
 
 			glTranslatef(0.0f, -2.0f, 0.0f);
@@ -831,9 +828,7 @@ static void drawScene(void)
 			glLoadIdentity();
 
 			// blueLightning
-			glEnable(GL_TEXTURE_2D);
 			glTranslatef(6.0f, 7.0f, -25.0f);
-
 			drawBlueLightningIcon();
 
 			glTranslatef(0.0f, -2.0f, 0.0f);
@@ -861,7 +856,6 @@ static void drawScene(void)
 				glLoadIdentity();
 			}
 			
-			glDisable(GL_BLEND | GL_TEXTURE_2D);
 			glEnable(GL_DEPTH_TEST);
 		}
 	}
@@ -869,17 +863,8 @@ static void drawScene(void)
 	if (!gGameState)
 	{
 		glDisable(GL_DEPTH_TEST);
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-		/* Draw a black box in the menu screen */
-		glTranslatef(0.0f, 0.0f, -25.0f);
-
-		glColor4f(0.0f, 0.0f, 0.0f, 0.7f);
-
+		
 		drawBlackBox();
-
-		glLoadIdentity();
 
 		glColor4f(0.3f, 0.2f, 1.0f, 0.35f);
 		glTranslatef(-1.0f, 27.0f, -100.0f);
@@ -925,8 +910,7 @@ static void drawScene(void)
 
 			glLoadIdentity();
 		}
-
-		glDisable(GL_BLEND);
+		
 		glEnable(GL_DEPTH_TEST);
 	}
 }
