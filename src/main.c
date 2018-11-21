@@ -106,14 +106,14 @@ static void initGL(void)
 	 * Load a few font strings before a game starts up.
 	 * We don't want the user to experience slow font loading times during a game
 	 */
-	drawString(40.0, 10.0, "Game begins in 1");
-	drawString(40.0, 10.0, "Game begins in 2");
-	drawString(40.0, 10.0, "Game begins in 3");
-	drawString(40.0, 10.0, "Game begins in 4");
-	drawString(40.0, 10.0, "Game begins in 5");
+	cacheString("Game begins in 1");
+	cacheString("Game begins in 2");
+	cacheString("Game begins in 3");
+	cacheString("Game begins in 4");
+	cacheString("Game begins in 5");
 
-	drawString(0.5, 0.5, "Wins:");
-	drawString(0.5, 0.5, "Kills:");
+	cacheString("Wins:");
+	cacheString("Kills:");
 }
 
 static void drawBlackBox(void)

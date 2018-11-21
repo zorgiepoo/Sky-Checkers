@@ -57,7 +57,7 @@ static int gGlyphsCounter =	0;
 static int gMaxGlyphs =		256;
 static Glyph *gGlyphs;
 
-static int lookUpGlyphIndex(char *string, GLfloat width, GLfloat height);
+static int lookUpGlyphIndex(const char *string);
 
 SDL_bool initFont(void)
 {
@@ -158,7 +158,7 @@ GLuint loadString(char *string)
 // If so, it returns the index that it is in the glyphs array.
 // otherwise, returns -1 if the glyph index can't be found, which will probably mean we'll
 // want to compile the character later on and add it to the collection of compiled glyphs.
-static int lookUpGlyphIndex(char *string, GLfloat width, GLfloat height)
+static int lookUpGlyphIndex(const char *string)
 {	
 	int i;
 	int index = -1;
@@ -256,18 +256,17 @@ void drawStringf(GLfloat width, GLfloat height, const char *format, ...)
 	drawString(width, height, buffer);
 }
 
-void drawString(GLfloat width, GLfloat height, char *string)
-{	
+int cacheString(const char *string)
+{
 	if (string == NULL)
-		return;
+	{
+		return -1;
+	}
 	
-	int index = lookUpGlyphIndex(string, width, height);
-	
+	int index = lookUpGlyphIndex(string);
 	if (index == -1)
 	{
 		// Add the new glyph and cache it so we can re-use it.
-		// Then proceed on into drawing it.
-		
 		if (gGlyphsCounter == gMaxGlyphs)
 		{
 			gMaxGlyphs += 256;
@@ -279,9 +278,23 @@ void drawString(GLfloat width, GLfloat height, char *string)
 		gGlyphs[gGlyphsCounter].texture = loadString(gGlyphs[gGlyphsCounter].text);
 		
 		gGlyphsCounter++;
-		
-		// Now that we've loaded the new glyph, wait till the next time this function is called.
-		// If we don't wait, there may be a graphics glitch in drawing the glyph/string.
+	}
+	
+	// If we just loaded the glyph, we will return an invalid index and wait the next time this is called
+	// to avoid potential glitches
+	return index;
+}
+
+void drawString(GLfloat width, GLfloat height, const char *string)
+{	
+	if (string == NULL)
+	{
+		return;
+	}
+	
+	int index = cacheString(string);
+	if (index == -1)
+	{
 		return;
 	}
 	

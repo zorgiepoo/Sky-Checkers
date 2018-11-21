@@ -24,4 +24,6 @@
 SDL_bool initFont(void);
 
 void drawStringf(GLfloat width, GLfloat height, const char *format, ...);
-void drawString(GLfloat width, GLfloat height, char *string);
+void drawString(GLfloat width, GLfloat height, const char *string);
+
+int cacheString(const char *string);
