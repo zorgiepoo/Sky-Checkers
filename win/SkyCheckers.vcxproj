@@ -21,6 +21,7 @@
     <ClInclude Include="..\src\game_menus.h" />
     <ClInclude Include="..\src\input.h" />
     <ClInclude Include="..\src\maincore.h" />
+    <ClInclude Include="..\src\math_3d.h" />
     <ClInclude Include="..\src\menu.h" />
     <ClInclude Include="..\src\network.h" />
     <ClInclude Include="..\src\scenery.h" />
