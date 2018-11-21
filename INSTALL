@@ -16,7 +16,6 @@ apt-get install libsdl2-ttf-dev
 apt-get install libsdl2-image-dev
 
 On CentOS, I executed:
-(TODO: I need to update these...)
 
 yum groupinstall 'Development Tools'
 yum install epel-release
