@@ -65,6 +65,7 @@
 		721B0023204A47FB005AF984 /* SDL2_image.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_image.framework; path = Frameworks/SDL2_image.framework; sourceTree = "<group>"; };
 		721B0025204A482D005AF984 /* SDL2_ttf.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_ttf.framework; path = Frameworks/SDL2_ttf.framework; sourceTree = "<group>"; };
 		721B0027204A4855005AF984 /* SDL2_mixer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_mixer.framework; path = Frameworks/SDL2_mixer.framework; sourceTree = "<group>"; };
+		72A14F1721A5E26200606E14 /* math_3d.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = math_3d.h; path = ../src/math_3d.h; sourceTree = "<group>"; };
 		770FFA0610B8F465009FD46A /* osx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = osx.h; path = ../src/osx.h; sourceTree = "<group>"; };
 		770FFA0710B8F465009FD46A /* osx.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = osx.m; path = ../src/osx.m; sourceTree = "<group>"; };
 		771B6C9F10BE60320014884B /* sc_icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = sc_icon.icns; sourceTree = "<group>"; };
@@ -165,6 +166,7 @@
 		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
+				72A14F1721A5E26200606E14 /* math_3d.h */,
 				770FFA0610B8F465009FD46A /* osx.h */,
 				770FFA0710B8F465009FD46A /* osx.m */,
 				774A441F0B2BEA57000C04D9 /* maincore.h */,

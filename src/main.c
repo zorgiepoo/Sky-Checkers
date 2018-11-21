@@ -30,6 +30,9 @@
 #include "network.h"
 #include "utilities.h"
 
+#define MATH_3D_IMPLEMENTATION
+#include "math_3d.h"
+
 static const int GAME_STATE_OFF =				0;
 static const int GAME_STATE_ON =				1;
 
@@ -1309,25 +1312,15 @@ static void eventInput(SDL_Event *event, int *quit)
 	}
 }
 
-// https://stackoverflow.com/questions/12943164/replacement-for-gluperspective-with-glfrustrum
-static void makeGLPerspective(GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zFar)
-{
-	GLdouble fH = tan( fovY / 360.0 * M_PI ) * zNear;
-	GLdouble fW = fH * aspect;
-	
-	glFrustum(-fW, fW, -fH, fH, zNear, zFar);
-}
-
 static void resizeWindow(int width, int height)
 {
 	glViewport(0, 0, width, height);
 	
 	glMatrixMode(GL_PROJECTION);
 	
-	glLoadIdentity();
-	
 	// The aspcect ratio is not quite correct, which is a mistake I made a long time ago that is too troubling to fix properly
-	makeGLPerspective(45.0, (GLdouble)(width / height), 10.0, 300.0);
+	mat4_t projectionMatrix = m4_perspective(45.0f, (float)(width / height), 10.0f, 300.0f);
+	glLoadMatrixf(&projectionMatrix.m00);
 	
 	glMatrixMode(GL_MODELVIEW);
 }
