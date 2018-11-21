@@ -1510,18 +1510,6 @@ static void initSDL_GL(void)
 	
 	resizeWindow(gScreenWidth, gScreenHeight);
 	
-#ifdef WINDOWS
-	// Set the taskbar icon to the icon associated with our executable
-	// For some reason, SDL messes this up
-	/*
-	 struct SDL_SysWMinfo wmInfo;
-	 if (SDL_GetWMInfo(&wmInfo))
-	 {
-	 setWindowsIcon(wmInfo.window);
-	 }
-	 */
-#endif
-	
 	// The attributes we set initially may not be the same after we create the video mode, so
 	// deal with it accordingly
 	int value;

@@ -22,5 +22,3 @@
 #include <stdio.h>
 
 FILE *getUserDataFile(const char *mode);
-
-void setWindowsIcon(void *windowHandle);
