@@ -178,15 +178,6 @@ void loadTexture(const char *filePath, GLuint *tex)
 }
 
 /*
- * Y Axis is inverted when using OpenGL in an SDL Application.
- * This function non-inverts it.
- */
-void zgTexCoord2f(GLfloat x, GLfloat y)
-{
-	glTexCoord2f(x, 1.0f - y);
-}
-
-/*
  * This function does what printf does (however limited), except that it prints
  * to stderr and appends a '\n' to the string for us. This function was created because
  * of lazyness. It can also print out SDL error messages with just typing %e (no arguements needed).
