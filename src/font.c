@@ -26,12 +26,27 @@ GLuint loadString(char *string);
 typedef struct
 {
 	GLuint texture;
-	GLuint displayList;
 	
-	char *character;
+	char *text;
 	
 	GLfloat width, height;
+	
+	GLfloat vertices[8];
 } Glyph;
+
+static GLfloat gFontTextureCoordinates[] =
+{
+	0.0f, 1.0f,
+	0.0f, 0.0f,
+	1.0f, 0.0f,
+	1.0f, 1.0f
+};
+
+static GLubyte gFontIndices[] =
+{
+	0, 1, 2,
+	2, 3, 0
+};
 
 // records how many glyphs we've loaded with a counter
 static int gGlyphsCounter =	0;
@@ -56,7 +71,7 @@ SDL_bool initFont(void)
 	
 	for (i = 0; i < gMaxGlyphs; i++)
 	{
-		gGlyphs[i].character = NULL;
+		gGlyphs[i].text = NULL;
 	}
 	
 	return SDL_TRUE;
@@ -64,30 +79,17 @@ SDL_bool initFont(void)
 
 static void loadGlyph(void)
 {
-	gGlyphs[gGlyphsCounter].texture = loadString(gGlyphs[gGlyphsCounter].character);
+	gGlyphs[gGlyphsCounter].texture = loadString(gGlyphs[gGlyphsCounter].text);
 	
-	gGlyphs[gGlyphsCounter].displayList = glGenLists(1);
+	GLfloat vertices[] =
+	{
+		-gGlyphs[gGlyphsCounter].width, -gGlyphs[gGlyphsCounter].height,
+		-gGlyphs[gGlyphsCounter].width, gGlyphs[gGlyphsCounter].height,
+		gGlyphs[gGlyphsCounter].width, gGlyphs[gGlyphsCounter].height,
+		gGlyphs[gGlyphsCounter].width, -gGlyphs[gGlyphsCounter].height
+	};
 	
-	glNewList(gGlyphs[gGlyphsCounter].displayList, GL_COMPILE);
-		
-	glBegin(GL_QUADS);
-	// 20, 5
-	// 0.5, 0.5
-	zgTexCoord2f(0.0, 0.0);
-	glVertex2f(-gGlyphs[gGlyphsCounter].width, -gGlyphs[gGlyphsCounter].height);
-	
-	zgTexCoord2f(0.0, 1.0);
-	glVertex2f(-gGlyphs[gGlyphsCounter].width, gGlyphs[gGlyphsCounter].height);
-	
-	zgTexCoord2f(1.0, 1.0);
-	glVertex2f(gGlyphs[gGlyphsCounter].width, gGlyphs[gGlyphsCounter].height);
-	
-	zgTexCoord2f(1.0, 0.0);
-	glVertex2f(gGlyphs[gGlyphsCounter].width, -gGlyphs[gGlyphsCounter].height);
-	
-	glEnd();
-	
-	glEndList();
+	memcpy(gGlyphs[gGlyphsCounter].vertices, vertices, sizeof(vertices));
 }
 
 // returns a texture to draw for the string.
@@ -179,7 +181,7 @@ static int lookUpGlyphIndex(char *string, GLfloat width, GLfloat height)
 	
 	for (i = 0; i <= gGlyphsCounter; i++)
 	{
-		if (gGlyphs[i].character != NULL && strcmp(gGlyphs[i].character, string) == 0 && gGlyphs[i].width == width && gGlyphs[i].height == height)
+		if (gGlyphs[i].text != NULL && strcmp(gGlyphs[i].text, string) == 0 && gGlyphs[i].width == width && gGlyphs[i].height == height)
 		{
 			index = i;
 			break;
@@ -285,9 +287,9 @@ void drawString(GLfloat width, GLfloat height, char *string)
 			gGlyphs = realloc(gGlyphs, gMaxGlyphs);
 		}
 		
-		gGlyphs[gGlyphsCounter].character = malloc(strlen(string) + 1);
+		gGlyphs[gGlyphsCounter].text = malloc(strlen(string) + 1);
 		
-		sprintf(gGlyphs[gGlyphsCounter].character, "%s", string);
+		sprintf(gGlyphs[gGlyphsCounter].text, "%s", string);
 		gGlyphs[gGlyphsCounter].width = width;
 		gGlyphs[gGlyphsCounter].height = height;
 		
@@ -309,7 +311,16 @@ void drawString(GLfloat width, GLfloat height, char *string)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
-	glCallList(gGlyphs[index].displayList);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	
+	glVertexPointer(2, GL_FLOAT, 0, gGlyphs[index].vertices);
+	glTexCoordPointer(2, GL_FLOAT, 0, gFontTextureCoordinates);
+	
+	glDrawElements(GL_TRIANGLES, sizeof(gFontIndices) / sizeof(*gFontIndices), GL_UNSIGNED_BYTE, gFontIndices);
+	
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	
 	glDisable(GL_BLEND);
 	
