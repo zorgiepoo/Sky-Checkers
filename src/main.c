@@ -69,7 +69,6 @@ int gCharacterNetLives =						5;
 SDL_bool gFullscreen =							SDL_FALSE;
 
 SDL_Window *gWindow = NULL;
-static SDL_Renderer *gRenderer = NULL;
 
 static SDL_bool gConsoleActivated =				SDL_FALSE;
 SDL_bool gDrawFPS =								SDL_FALSE;
@@ -1458,22 +1457,23 @@ static void eventLoop(void)
 static void initSDL_GL(void)
 {
 	// Set up flags
+	gVideoFlags = SDL_WINDOW_OPENGL;
 #ifndef _DEBUG
-	gVideoFlags = SDL_WINDOW_FULLSCREEN_DESKTOP;
+	gVideoFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 #else
 	gScreenWidth = 800;
 	gScreenHeight = 500;
 #endif
+	
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+	
 	// FSAA
 	if (gFsaaFlag)
 	{
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 2);
-	}
-	else
-	{
-		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
-		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 	}
 	
 	// VSYNC
@@ -1485,51 +1485,30 @@ static void initSDL_GL(void)
 #ifndef _DEBUG
 	SDL_ShowCursor(SDL_DISABLE);
 #endif
-
-	if (gWindow != NULL)
+	
+#ifndef MAC_OS_X
+	const char *windowTitle = "SkyCheckers";
+#else
+	const char *windowTitle = "";
+#endif
+	gWindow = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, gScreenWidth, gScreenHeight, gVideoFlags);
+	
+	if (gWindow == NULL)
 	{
-		SDL_DestroyWindow(gWindow);
-		gWindow = NULL;
+		zgPrint("Couldn't create SDL window with resolution %ix%i: %e", gScreenWidth, gScreenHeight);
+		exit(4);
 	}
 	
-	int status = SDL_CreateWindowAndRenderer(gScreenWidth, gScreenHeight, gVideoFlags, &gWindow, &gRenderer);
-	if (gFsaaFlag)
+	SDL_GLContext glContext = SDL_GL_CreateContext(gWindow);
+	if (glContext == NULL)
 	{
-		int fsaaBuffersValue = 0;
-		SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &fsaaBuffersValue);
-		if (status != 0 || fsaaBuffersValue == 0)
-		{
-			// Anti-aliasing didn't work; try again without anti-aliasing
-			// Otherwise we may be in a state where nothing renders
-			SDL_DestroyWindow(gWindow);
-			gWindow = NULL;
-			
-			SDL_DestroyRenderer(gRenderer);
-			gRenderer = NULL;
-			
-			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
-			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
-			
-			if (SDL_CreateWindowAndRenderer(gScreenWidth, gScreenHeight, gVideoFlags, &gWindow, &gRenderer) != 0)
-			{
-				zgPrint("Couldn't set %ix%i OpenGL video mode: %e", gScreenWidth, gScreenHeight);
-				exit(4);
-			}
-		}
-	}
-	else if (status != 0)
-	{
-		zgPrint("Couldn't set %ix%i OpenGL video mode: %e", gScreenWidth, gScreenHeight);
-		exit(6);
+		zgPrint("Couldn't create OpenGL context: %e");
+		exit(5);
 	}
 	
 	SDL_GetWindowSize(gWindow, &gScreenWidth, &gScreenHeight);
 	
 	resizeWindow(gScreenWidth, gScreenHeight);
-	
-#ifndef MAC_OS_X
-	SDL_SetWindowTitle(gWindow, "SkyCheckers");
-#endif
 	
 #ifdef WINDOWS
 	// Set the taskbar icon to the icon associated with our executable
