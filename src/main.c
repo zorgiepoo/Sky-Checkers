@@ -151,9 +151,6 @@ static void initScene(void)
 	loadCharacterTextures();
 	buildCharacterModels();
 
-	// build weapon model
-	buildWeaponModel();
-
 	// defaults couldn't be read
 	if (!gValidDefaults)
 	{

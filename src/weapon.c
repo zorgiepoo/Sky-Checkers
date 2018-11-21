@@ -20,7 +20,111 @@
 #include "weapon.h"
 #include "characters.h"
 
-static GLuint gWeaponDisplayList;
+static GLfloat gWeaponVertices[] =
+{
+	// Cube part
+	
+	// right face
+	-1.0, -1.0, 1.0,
+	-1.0, 1.0, 1.0,
+	1.0, 1.0, 1.0,
+	1.0, -1.0, 1.0,
+	
+	// left face
+	-1.0, -1.0, -1.0,
+	-1.0, 1.0, -1.0,
+	1.0, 1.0, -1.0,
+	1.0, -1.0, -1.0,
+	
+	// front face
+	1.0, 1.0, 1.0,
+	1.0, -1.0, 1.0,
+	1.0, -1.0, -1.0,
+	1.0, 1.0, -1.0,
+	
+	// back face
+	-1.0, -1.0, 1.0,
+	-1.0, 1.0, 1.0,
+	-1.0, 1.0, -1.0,
+	-1.0, -1.0, -1.0,
+	
+	// top face
+	-1.0, 1.0, 1.0,
+	-1.0, 1.0, -1.0,
+	1.0, 1.0, -1.0,
+	1.0, 1.0, 1.0,
+	
+	// bottom face
+	-1.0, -1.0, 1.0,
+	-1.0, -1.0, -1.0,
+	1.0, -1.0, -1.0,
+	1.0, -1.0, 1.0,
+	
+	// Prism part
+	
+	// right side
+	1.0, 1.0, 1.0,
+	1.0, -1.0, 1.0,
+	3.0, 0.0, 0.0,
+	
+	// left side
+	1.0, 1.0, -1.0,
+	1.0, -1.0, -1.0,
+	3.0, 0.0, 0.0,
+	
+	// top side
+	1.0, 1.0, 1.0,
+	1.0, 1.0, -1.0,
+	3.0, 0.0, 0.0,
+	
+	// bottom side
+	1.0, -1.0, 1.0,
+	1.0, -1.0, -1.0,
+	3.0, 0.0, 0.0
+};
+
+static GLubyte gWeaponIndices[] =
+{
+	// Cube part
+	
+	// right face
+	0, 1, 2,
+	2, 3, 0,
+	
+	// left face
+	4, 5, 6,
+	6, 7, 4,
+	
+	// front face
+	8, 9, 10,
+	10, 11, 8,
+	
+	// back face
+	12, 13, 14,
+	14, 15, 12,
+	
+	// top face
+	16, 17, 18,
+	18, 19, 16,
+	
+	// bottom face
+	20, 21, 22,
+	22, 23, 20,
+	
+	// Prism part
+	
+	// right side
+	24, 25, 26,
+	
+	// left side
+	27, 28, 29,
+	
+	// top side
+	30, 31, 32,
+	
+	// bottom side
+	33, 34, 35
+};
 
 void initWeapon(Weapon *weap)
 {	
@@ -31,101 +135,6 @@ void initWeapon(Weapon *weap)
 	weap->drawingState = SDL_FALSE;
 	weap->animationState = SDL_FALSE;
 	weap->direction = 0;
-}
-
-/*
- * Some considerations in this drawing code are:
- * These objects will be rotated to fit correctly on the checkerboard, meaning that the y axis will
- * look like the z axis, and that the z axis will look like the y axis when drawing
- */
-void buildWeaponModel(void)
-{
-	gWeaponDisplayList = glGenLists(1);
-	glNewList(gWeaponDisplayList, GL_COMPILE);
-	
-	glBegin(GL_QUADS);
-	
-	// right face
-	glVertex3f(-1.0, -1.0, 1.0);
-	
-	glVertex3f(-1.0, 1.0, 1.0);
-	
-	glVertex3f(1.0, 1.0, 1.0);
-	
-	glVertex3f(1.0, -1.0, 1.0);
-	
-	// left face.
-	glVertex3f(-1.0, -1.0, -1.0);
-	
-	glVertex3f(-1.0, 1.0, -1.0);
-	
-	glVertex3f(1.0, 1.0, -1.0);
-	
-	glVertex3f(1.0, -1.0, -1.0);
-	
-	// front face.
-	glVertex3f(1.0, 1.0, 1.0);
-	
-	glVertex3f(1.0, -1.0, 1.0);
-	
-	glVertex3f(1.0, -1.0, -1.0);
-	
-	glVertex3f(1.0, 1.0, -1.0);
-	
-	// back face.
-	glVertex3f(-1.0, -1.0, 1.0);
-	
-	glVertex3f(-1.0, 1.0, 1.0);
-	
-	glVertex3f(-1.0, 1.0, -1.0);
-	
-	glVertex3f(-1.0, -1.0, -1.0);
-	
-	// top face.
-	glVertex3f(-1.0, 1.0, 1.0);
-	
-	glVertex3f(-1.0, 1.0, -1.0);
-	
-	glVertex3f(1.0, 1.0, -1.0);
-	
-	glVertex3f(1.0, 1.0, 1.0);
-	
-	// bottom face.
-	glVertex3f(-1.0, -1.0, 1.0);
-	
-	glVertex3f(-1.0, -1.0, -1.0);
-	
-	glVertex3f(1.0, -1.0, -1.0);
-	
-	glVertex3f(1.0, -1.0, 1.0);
-	
-	glEnd();
-	
-	glBegin(GL_TRIANGLES);
-	
-	// right side.
-	glVertex3f(1.0, 1.0, 1.0);
-	glVertex3f(1.0, -1.0, 1.0);
-	glVertex3f(3.0, 0.0, 0.0);
-	
-	// left side.
-	glVertex3f(1.0, 1.0, -1.0);
-	glVertex3f(1.0, -1.0, -1.0);
-	glVertex3f(3.0, 0.0, 0.0);
-	
-	// top side.
-	glVertex3f(1.0, 1.0, 1.0);
-	glVertex3f(1.0, 1.0, -1.0);
-	glVertex3f(3.0, 0.0, 0.0);
-	
-	// bottom side.
-	glVertex3f(1.0, -1.0, 1.0);
-	glVertex3f(1.0, -1.0, -1.0);
-	glVertex3f(3.0, 0.0, 0.0);
-	
-	glEnd();
-	
-	glEndList();
 }
 
 void drawWeapon(Weapon *weap)
@@ -157,7 +166,12 @@ void drawWeapon(Weapon *weap)
 		glRotatef(270.0f, 0.0f, 0.0f, 1.0f);
 	}
 	
-	glCallList(gWeaponDisplayList);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	
+	glVertexPointer(3, GL_FLOAT, 0, gWeaponVertices);
+	glDrawElements(GL_TRIANGLES, sizeof(gWeaponIndices) / sizeof(*gWeaponIndices), GL_UNSIGNED_BYTE, gWeaponIndices);
+	
+	glDisableClientState(GL_VERTEX_ARRAY);
 	
 	glDisable(GL_BLEND);
 	

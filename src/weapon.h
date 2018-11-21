@@ -32,8 +32,6 @@ typedef struct
 	int direction;
 } Weapon;
 
-void buildWeaponModel(void);
-
 void initWeapon(Weapon *weap);
 
 void drawWeapon(Weapon *weap);
