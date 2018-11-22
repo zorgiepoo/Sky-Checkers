@@ -32,6 +32,7 @@ typedef struct
 void mt_init();
 unsigned long mt_random();
 
+GLuint textureFromPixelData(const void *pixels, int width, int height);
 void loadTexture(const char *filePath, GLuint *tex);
 
 void zgPrint(const char *format, ...);

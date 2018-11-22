@@ -127,24 +127,7 @@ GLuint loadString(char *string)
 	if (SDL_BlitSurface(fontSurface, NULL, textSurface, NULL) == -1)
 		zgPrint("blitting failed");
 	
-	GLuint texture = 0;
-	
-	// generate texture
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	
-	// glTexImage2D should accept non-power-of-two sizes in GL 2.0 or later
-	glTexImage2D(GL_TEXTURE_2D,
-				 0,
-				 GL_RGBA,
-				 textSurface->w, textSurface->h,
-				 0,
-				 GL_RGBA,
-				 GL_UNSIGNED_BYTE,
-				 textSurface->pixels);
+	GLuint texture = textureFromPixelData(textSurface->pixels, textSurface->w, textSurface->h);
 	
 	// Cleanup
 	SDL_FreeSurface(fontSurface);

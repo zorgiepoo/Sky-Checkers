@@ -85,6 +85,26 @@ unsigned long mt_random() {
 	 */
 }
 
+GLuint textureFromPixelData(const void *pixels, int width, int height)
+{
+	GLuint tex = 0;
+	
+	glGenTextures(1, &tex);
+	glBindTexture(GL_TEXTURE_2D, tex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D,
+				 0,
+				 GL_RGBA,
+				 width, height,
+				 0,
+				 GL_RGBA,
+				 GL_UNSIGNED_BYTE,
+				 pixels);
+	
+	return tex;
+}
+
 // The code from this function is taken from https://www.opengl.org/discussion_boards/showthread.php/163677-SDL_image-Opengl
 // which is derived from SDL 1.2 source code which is licensed under LGPL:
 // https://github.com/klange/SDL/blob/master/test/testgl.c
@@ -130,19 +150,7 @@ static void surfaceToGLTexture(SDL_Surface *surface, GLuint *tex)
 	SDL_BlitSurface(surface, &area, image, &area);
 
 	/* Create an OpenGL texture for the image */
-	
-	glGenTextures(1, tex);
-	glBindTexture(GL_TEXTURE_2D, *tex);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D,
-		     0,
-		     GL_RGBA,
-		     w, h,
-		     0,
-		     GL_RGBA,
-		     GL_UNSIGNED_BYTE,
-		     image->pixels);
+	*tex = textureFromPixelData(image->pixels, w, h);
 			 
 	SDL_FreeSurface(image); /* No longer needed */
 }
