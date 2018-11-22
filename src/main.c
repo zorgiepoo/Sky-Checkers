@@ -657,17 +657,19 @@ static void drawScoresForCharacter(Character *character, mat4_t projectionMatrix
 	mat4_t iconModelViewMatrix = m4_translation((vec3_t){x, y, z});
 	drawCharacterIcon(iconModelViewMatrix, character);
 	
+	color4_t characterColor = (color4_t){character->red, character->green, character->blue, 0.7f};
+	
 	mat4_t winsLabelModelViewMatrix = m4_mul(iconModelViewMatrix, m4_translation((vec3_t){0.0f, -2.0f, 0.0f}));
-	drawString(projectionMatrix, winsLabelModelViewMatrix, color, 0.5f, 0.5f, "Wins:");
+	drawString(projectionMatrix, winsLabelModelViewMatrix, characterColor, 0.5f, 0.5f, "Wins:");
 	
 	mat4_t winsModelViewMatrix = m4_mul(winsLabelModelViewMatrix, m4_translation((vec3_t){1.0f, 0.0f, 0.0f}));
-	drawStringf(projectionMatrix, winsModelViewMatrix, color, 0.5f, 0.5f, "%i", character->wins);
+	drawStringf(projectionMatrix, winsModelViewMatrix, characterColor, 0.5f, 0.5f, "%i", character->wins);
 	
 	mat4_t killsLabelModelViewMatrix = m4_mul(winsModelViewMatrix, m4_translation((vec3_t){-1.0f, -2.0f, 0.0f}));
-	drawString(projectionMatrix, killsLabelModelViewMatrix, color, 0.5f, 0.5f, "Kills:");
+	drawString(projectionMatrix, killsLabelModelViewMatrix, characterColor, 0.5f, 0.5f, "Kills:");
 	
 	mat4_t killsModelViewMatrix = m4_mul(killsLabelModelViewMatrix, m4_translation((vec3_t){1.0f, 0.0f, 0.0f}));
-	drawStringf(projectionMatrix, killsModelViewMatrix, color, 0.5f, 0.5f, "%i", character->kills);
+	drawStringf(projectionMatrix, killsModelViewMatrix, characterColor, 0.5f, 0.5f, "%i", character->kills);
 }
 
 static void drawScene(void)
