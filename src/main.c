@@ -118,7 +118,8 @@ static void initGL(void)
 
 static void drawBlackBox(void)
 {
-	glTranslatef(0.0f, 0.0f, -25.0f);
+	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 0.0f, -25.0f});
+	glLoadMatrixf(&modelViewMatrix.m00);
 	
 	glDisable(GL_DEPTH_TEST);
 	
@@ -152,7 +153,8 @@ static void drawBlackBox(void)
 	
 	glEnable(GL_DEPTH_TEST);
 	
-	glLoadIdentity();
+	mat4_t identityMatrix = m4_identity();
+	glLoadMatrixf(&identityMatrix.m00);
 }
 
 static void initScene(void)
@@ -642,24 +644,46 @@ void drawFramesPerSecond(void)
 	frame_count++;
 
 	// Draw the string
-	glColor3f(0.0f, 0.5f, 0.8f);
 	size_t length = strlen(fpsString);
 	if (length > 0)
 	{
-		glTranslatef(9.0f, 9.0f, -25.0f);
-		drawString(0.16f * length, 0.5f, fpsString);
-		glLoadIdentity();
+		glColor3f(0.0f, 0.5f, 0.8f);
+		
+		mat4_t modelViewMatrix = m4_translation((vec3_t){9.0f, 9.0f, -25.0f});
+		drawString(modelViewMatrix, 0.16f * length, 0.5f, fpsString);
+		
+		mat4_t identityMatrix = m4_identity();
+		glLoadMatrixf(&identityMatrix.m00);
 	}
+}
+
+static void drawScoresForCharacter(Character *character, float x, float y, float z)
+{
+	mat4_t iconModelViewMatrix = m4_translation((vec3_t){x, y, z});
+	drawCharacterIcon(iconModelViewMatrix, character);
+	
+	mat4_t winsLabelModelViewMatrix = m4_mul(iconModelViewMatrix, m4_translation((vec3_t){0.0f, -2.0f, 0.0f}));
+	drawString(winsLabelModelViewMatrix, 0.5f, 0.5f, "Wins:");
+	
+	mat4_t winsModelViewMatrix = m4_mul(winsLabelModelViewMatrix, m4_translation((vec3_t){1.0f, 0.0f, 0.0f}));
+	drawStringf(winsModelViewMatrix, 0.5f, 0.5f, "%i", character->wins);
+	
+	mat4_t killsLabelModelViewMatrix = m4_mul(winsModelViewMatrix, m4_translation((vec3_t){-1.0f, -2.0f, 0.0f}));
+	drawString(killsLabelModelViewMatrix, 0.5f, 0.5f, "Kills:");
+	
+	mat4_t killsModelViewMatrix = m4_mul(killsLabelModelViewMatrix, m4_translation((vec3_t){1.0f, 0.0f, 0.0f}));
+	drawStringf(killsModelViewMatrix, 0.5f, 0.5f, "%i", character->kills);
+	
+	mat4_t identityMatrix = m4_identity();
+	glLoadMatrixf(&identityMatrix.m00);
 }
 
 static void drawScene(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glLoadIdentity();
 
 	if (gGameState)
 	{
-		// weapons.
 		drawWeapon(gRedRover.weap);
 		drawWeapon(gGreenTree.weap);
 		drawWeapon(gPinkBubbleGum.weap);
@@ -680,7 +704,8 @@ static void drawScene(void)
 		if (!gGameHasStarted)
 		{
 			glColor4f(0.0, 0.0, 1.0, 0.5);
-			glTranslatef(-1.0, 80.0, -280.0);
+			
+			mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 80.0, -280.0});
 
 			if (gPinkBubbleGum.netState == NETWORK_PENDING_STATE || gRedRover.netState == NETWORK_PENDING_STATE || gGreenTree.netState == NETWORK_PENDING_STATE || gBlueLightning.netState == NETWORK_PENDING_STATE)
 			{
@@ -689,28 +714,31 @@ static void drawScene(void)
 					// be sure to take account the plural form of player(s)
 					if (gNetworkConnection->numberOfPlayersToWaitFor > 1)
 					{
-						drawStringf(50.0, 10.0, "Waiting for %i players to connect...", gNetworkConnection->numberOfPlayersToWaitFor);
+						drawStringf(modelViewMatrix, 50.0, 10.0, "Waiting for %i players to connect...", gNetworkConnection->numberOfPlayersToWaitFor);
 					}
 					else if (gNetworkConnection->numberOfPlayersToWaitFor == 0)
 					{
-						drawString(50.0, 10.0, "Waiting for players to connect...");
+						drawString(modelViewMatrix, 50.0, 10.0, "Waiting for players to connect...");
 					}
 					else
 					{
-						drawString(50.0, 10.0, "Waiting for 1 player to connect...");
+						drawString(modelViewMatrix, 50.0, 10.0, "Waiting for 1 player to connect...");
 					}
 				}
 			}
 
 			else if (gGameStartNumber > 0)
-				drawStringf(40.0, 10.0, "Game begins in %i", gGameStartNumber);
+			{
+				drawStringf(modelViewMatrix, 40.0, 10.0, "Game begins in %i", gGameStartNumber);
+			}
 
 			else if (gGameStartNumber == 0)
 			{
 				gGameHasStarted = SDL_TRUE;
 			}
 
-			glLoadIdentity();
+			mat4_t identityMatrix = m4_identity();
+			glLoadMatrixf(&identityMatrix.m00);
 		}
 	}
 
@@ -731,131 +759,65 @@ static void drawScene(void)
 
 		if (gGameWinner != NO_CHARACTER)
 		{
-			glTranslatef(70.0f, 100.0f, -280.0f);
+			mat4_t winLoseModelViewMatrix = m4_translation((vec3_t){70.0f, 100.0f, -280.0f});
+			
 			glColor4f(1.0f, 1.0f, 1.0f, 0.8f);
 
 			if (gNetworkConnection)
 			{
 				if (gGameWinner == IDOfCharacter(gNetworkConnection->input->character))
 				{
-					drawString(20.0, 10.0, "You win!");
+					drawString(winLoseModelViewMatrix, 20.0, 10.0, "You win!");
 				}
 				else
 				{
-					drawString(20.0, 10.0, "You lose!");
+					drawString(winLoseModelViewMatrix, 20.0, 10.0, "You lose!");
 				}
 			}
 			else
 			{
 				if (gGameWinner == RED_ROVER)
 				{
-					drawString(40.0, 10.0, "Red Rover wins!");
+					drawString(winLoseModelViewMatrix, 40.0, 10.0, "Red Rover wins!");
 				}
 				else if (gGameWinner == GREEN_TREE)
 				{
-					drawString(40.0, 10.0, "Green Tree wins!");
+					drawString(winLoseModelViewMatrix, 40.0, 10.0, "Green Tree wins!");
 				}
 				else if (gGameWinner == PINK_BUBBLE_GUM)
 				{
-					drawString(40.0, 10.0, "Pink Bubblegum wins!");
+					drawString(winLoseModelViewMatrix, 40.0, 10.0, "Pink Bubblegum wins!");
 				}
 				else if (gGameWinner == BLUE_LIGHTNING)
 				{
-					drawString(40.0, 10.0, "Blue Lightning wins!");
+					drawString(winLoseModelViewMatrix, 40.0, 10.0, "Blue Lightning wins!");
 				}
 			}
 
-			glLoadIdentity();
+			mat4_t identityMatrix = m4_identity();
+			glLoadMatrixf(&identityMatrix.m00);
 
 			/* Stats */
 			
 			drawBlackBox();
 
 			/* Display stats */
-
-			// pinkBubbleGum
-			glTranslatef(-6.0, 7.0, -25.0);
-
-			drawPinkBubbleGumIcon();
-
-			glTranslatef(0.0f, -2.0f, 0.0f);
-			drawString(0.5f, 0.5f, "Wins:");
 			
-			glTranslatef(1.0f, 0.0f, 0.0f);
-			drawStringf(0.5f, 0.5f, "%i", gPinkBubbleGum.wins);
-			
-			glTranslatef(-1.0f, -2.0f, 0.0f);
-			drawString(0.5f, 0.5f, "Kills:");
-			
-			glTranslatef(1.0f, 0.0f, 0.0f);
-			drawStringf(0.5f, 0.5f, "%i", gPinkBubbleGum.kills);
-
-			glLoadIdentity();
-
-			// redRover
-			glTranslatef(-2.0f, 7.0f, -25.0f);
-
-			drawRedRoverIcon();
-
-			glTranslatef(0.0f, -2.0f, 0.0f);
-			drawString(0.5, 0.5, "Wins:");
-			
-			glTranslatef(1.0f, 0.0f, 0.0f);
-			drawStringf(0.5f, 0.5f, "%i", gRedRover.wins);
-
-			glTranslatef(-1.0f, -2.0f, 0.0f);
-			drawString(0.5, 0.5, "Kills:");
-			
-			glTranslatef(1.0f, 0.0f, 0.0f);
-			drawStringf(0.5f, 0.5f, "%i", gRedRover.kills);
-
-			glLoadIdentity();
-
-			// greenTree
-			glTranslatef(2.0f, 7.0f, -25.0f);
-			drawGreenTreeIcon();
-
-			glTranslatef(0.0f, -2.0f, 0.0f);
-			drawString(0.5, 0.5, "Wins:");
-			
-			glTranslatef(1.0f, 0.0f, 0.0f);
-			drawStringf(0.5f, 0.5f, "%i", gGreenTree.wins);
-
-			glTranslatef(-1.0f, -2.0f, 0.0f);
-			drawString(0.5, 0.5, "Kills:");
-
-			glTranslatef(1.0f, 0.0f, 0.0f);
-			drawStringf(0.5f, 0.5f, "%i", gGreenTree.kills);
-
-			glLoadIdentity();
-
-			// blueLightning
-			glTranslatef(6.0f, 7.0f, -25.0f);
-			drawBlueLightningIcon();
-
-			glTranslatef(0.0f, -2.0f, 0.0f);
-			drawString(0.5f, 0.5f, "Wins:");
-
-			glTranslatef(1.0f, 0.0f, 0.0f);
-			drawStringf(0.5f, 0.5f, "%i", gBlueLightning.wins);
-
-			glTranslatef(-1.0f, -2.0f, 0.0f);
-			drawString(0.5, 0.5, "Kills:");
-
-			glTranslatef(1.0f, 0.0f, 0.0f);
-			drawStringf(0.5f, 0.5f, "%i", gBlueLightning.kills);
-
-			glLoadIdentity();
+			drawScoresForCharacter(&gPinkBubbleGum, -6.0, 7.0, -25.0);
+			drawScoresForCharacter(&gRedRover, -2.0f, 7.0f, -25.0f);
+			drawScoresForCharacter(&gGreenTree, 2.0f, 7.0f, -25.0f);
+			drawScoresForCharacter(&gBlueLightning, 6.0f, 7.0f, -25.0f);
 
 			if (!gNetworkConnection || gNetworkConnection->type != NETWORK_CLIENT_TYPE)
 			{
 				// Draw a "Press ENTER to play again" notice
-				glTranslatef(0.0f, -7.0f, -25.0f);
+				mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, -7.0f, -25.0f});
 				glColor4f(0.0f, 0.0f, 0.4f, 0.4f);
 
-				drawString(5.0f, 1.0f, "Fire to play again or Escape to quit");
+				drawString(modelViewMatrix, 5.0f, 1.0f, "Fire to play again or Escape to quit");
 
-				glLoadIdentity();
+				mat4_t identityMatrix = m4_identity();
+				glLoadMatrixf(&identityMatrix.m00);
 			}
 		}
 	}
@@ -863,13 +825,14 @@ static void drawScene(void)
 	if (!gGameState)
 	{
 		drawBlackBox();
+		
+		mat4_t gameTitleModelViewMatrix = m4_translation((vec3_t){-1.0f, 27.0f, -100.0f});
 
 		glColor4f(0.3f, 0.2f, 1.0f, 0.35f);
-		glTranslatef(-1.0f, 27.0f, -100.0f);
+		drawString(gameTitleModelViewMatrix, 20.0, 5.0, "Sky Checkers");
 
-		drawString(20.0, 5.0, "Sky Checkers");
-
-		glLoadIdentity();
+		mat4_t identityMatrix = m4_identity();
+		glLoadMatrixf(&identityMatrix.m00);
 
 		drawMenus();
 
@@ -878,19 +841,20 @@ static void drawScene(void)
 			isChildBeingDrawn(&gJoyStickConfig[2][1]) /* greenTreeRightgJoyStickConfig */		||
 			isChildBeingDrawn(&gJoyStickConfig[3][1]) /* blueLightningConfigJoyStick */)
 		{
-			glTranslatef(-1.0f, 50.0f, -280.0f);
+			mat4_t translationMatrix = m4_translation((vec3_t){-1.0f, 50.0f, -280.0f});
+			mat4_t rotationMatrix = m4_rotation_x(M_PI / 4.0f);
+			mat4_t instructionsModelViewMatrix = m4_mul(translationMatrix, rotationMatrix);
 
 			glColor4f(0.3f, 0.2f, 1.0f, 0.6f);
 
-			glRotatef(45.0f, 1.0f, 0.0f, 0.0f);
+			drawString(instructionsModelViewMatrix, 100.0, 5.0, "Click enter to modify a mapping value and input in a button on your joystick. Click Escape to exit out.");
+			
+			mat4_t noticeModelViewMatrix = m4_mul(instructionsModelViewMatrix, m4_translation((vec3_t){0.0f, -20.0f, 0.0f}));
 
-			drawString(100.0, 5.0, "Click enter to modify a mapping value and input in a button on your joystick. Click Escape to exit out.");
+			drawString(noticeModelViewMatrix, 50.0, 5.0, "(Joysticks only function in-game)");
 
-			glTranslatef(0.0f, -20.0f, 0.0f);
-
-			drawString(50.0, 5.0, "(Joysticks only function in-game)");
-
-			glLoadIdentity();
+			mat4_t identityMatrix = m4_identity();
+			glLoadMatrixf(&identityMatrix.m00);
 		}
 
 		else if (isChildBeingDrawn(&gCharacterConfigureKeys[0][1]) /* pinkBubbleGum */	||
@@ -898,15 +862,16 @@ static void drawScene(void)
 				 isChildBeingDrawn(&gCharacterConfigureKeys[2][1]) /* greenTree */		||
 				 isChildBeingDrawn(&gCharacterConfigureKeys[3][1]) /* blueLightning */)
 		{
-			glTranslatef(-1.0f, 50.0f, -280.0f);
+			mat4_t translationMatrix = m4_translation((vec3_t){-1.0f, 50.0f, -280.0f});
+			mat4_t rotationMatrix = m4_rotation_x(M_PI / 4.0f);
+			mat4_t instructionsModelViewMatrix = m4_mul(translationMatrix, rotationMatrix);
 
 			glColor4f(0.3f, 0.2f, 1.0f, 0.6f);
 
-			glRotatef(45.0f, 1.0f, 0.0f, 0.0f);
+			drawString(instructionsModelViewMatrix, 100.0, 5.0, "Click enter to modify a mapping value and input in a key. Click Escape to exit out.");
 
-			drawString(100.0, 5.0, "Click enter to modify a mapping value and input in a key. Click Escape to exit out.");
-
-			glLoadIdentity();
+			mat4_t identityMatrix = m4_identity();
+			glLoadMatrixf(&identityMatrix.m00);
 		}
 	}
 }

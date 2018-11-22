@@ -21,6 +21,7 @@
 #include "utilities.h"
 #include "console.h"
 #include "collision.h"
+#include "math_3d.h"
 
 static void loadTileLocations(void);
 static void loadTileColors(void);
@@ -324,7 +325,8 @@ void drawSky(void)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA);
 	
-	glTranslatef(0.0, 0.0, -25.0);
+	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 0.0f, -25.0f});
+	glLoadMatrixf(&modelViewMatrix.m00);
 	
 	glColor4f(1.0f, 1.0f, 1.0f, 0.9f);
 	
@@ -365,20 +367,23 @@ void drawSky(void)
 	glDisable(GL_TEXTURE_2D);
 	glDisable(GL_BLEND);
 	
-	glLoadIdentity();
+	mat4_t identityMatrix = m4_identity();
+	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void drawTiles(void)
 {
 	glEnable(GL_TEXTURE_2D);
 	
-	int i;
 	SDL_bool drawTileOneFirst = SDL_FALSE;
 	
-	for (i = 1; i <= 64; i++)
+	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * (M_PI / 180.0f));
+	
+	for (int i = 1; i <= 64; i++)
 	{
-		glRotatef(-40.0, 1.0, 0.0, 0.0);
-		glTranslatef(gTiles[i].x , gTiles[i].y, gTiles[i].z);
+		mat4_t modelTranslationMatrix = m4_translation((vec3_t){gTiles[i].x , gTiles[i].y, gTiles[i].z});
+		mat4_t modelViewMatrix = m4_mul(worldRotationMatrix, modelTranslationMatrix);
+		glLoadMatrixf(&modelViewMatrix.m00);
 		
 		// If it's at an odd row number, set drawTileOneFirst to TRUE, otherwise set it to FALSE.
 		if ((i >= 1 && i <= 8) || (i >= 17 && i <= 24) || (i >= 33 && i <= 40) || (i >= 49 && i <= 56))
@@ -403,9 +408,10 @@ void drawTiles(void)
 		}
 		
 		drawTile();
-		
-		glLoadIdentity();
 	}
 	
 	glDisable(GL_TEXTURE_2D);
+	
+	mat4_t identityMatrix = m4_identity();
+	glLoadMatrixf(&identityMatrix.m00);
 }

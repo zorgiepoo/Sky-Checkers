@@ -20,10 +20,11 @@
 #pragma once
 
 #include "maincore.h"
+#include "math_3d.h"
 
 SDL_bool initFont(void);
 
-void drawStringf(GLfloat width, GLfloat height, const char *format, ...);
-void drawString(GLfloat width, GLfloat height, const char *string);
+void drawStringf(mat4_t modelViewMatrix, GLfloat width, GLfloat height, const char *format, ...);
+void drawString(mat4_t modelViewMatrix, GLfloat width, GLfloat height, const char *string);
 
 int cacheString(const char *string);

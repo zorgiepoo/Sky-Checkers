@@ -47,6 +47,7 @@
 #include "network.h"
 #include "font.h"
 #include "utilities.h"
+#include "math_3d.h"
 
 // "scc~: " length == 6
 static const unsigned int MIN_CONSOLE_STRING_LENGTH = 6;
@@ -76,7 +77,9 @@ void drawConsole(void)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
-	glTranslatef(0.0f, 9.0f, -25.0f);
+	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 9.0f, -25.0f});
+	glLoadMatrixf(&modelViewMatrix.m00);
+	
 	glColor4f(0.0f, 0.0f, 0.0f, 0.6f);
 	
 	GLfloat vertices[] =
@@ -102,7 +105,8 @@ void drawConsole(void)
 	
 	glDisable(GL_BLEND);
 	
-	glLoadIdentity();
+	mat4_t identityMatrix = m4_identity();
+	glLoadMatrixf(&modelViewMatrix.m00);
 }
 
 void writeConsoleText(Uint8 text)
@@ -134,15 +138,17 @@ SDL_bool performConsoleBackspace(void)
 void drawConsoleText(void)
 {
 	glColor4f(1.0f, 0.0f, 0.0f, 0.7f);
-	glTranslatef(-7.0f, 9.5f, -25.0f);
+	
+	mat4_t modelViewMatrix = m4_translation((vec3_t){-7.0f, 9.5f, -25.0f});
 	
 	int length = (int)strlen(gConsoleString);
 	if (length > 0)
 	{
-		drawString(0.16f * length, 0.5f, gConsoleString);
+		drawString(modelViewMatrix, 0.16f * length, 0.5f, gConsoleString);
 	}
 	
-	glLoadIdentity();
+	mat4_t identityMatrix = m4_identity();
+	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void executeConsoleCommand(void)
@@ -232,10 +238,6 @@ static GLfloat getConsoleValue(void)
 		value = gRedRover.y;
 	else if (strcmp(gConsoleString, "scc~: get redRover.z") == 0)
 		value = gRedRover.z;
-	else if (strcmp(gConsoleString, "scc~: get redRover.xrot") == 0)
-		value = gRedRover.xRot;
-	else if (strcmp(gConsoleString, "scc~: get redRover.yrot") == 0)
-		value = gRedRover.yRot;
 	else if (strcmp(gConsoleString, "scc~: get redRover.zrot") == 0)
 		value = gRedRover.zRot;
 	else if (strcmp(gConsoleString, "scc~: get redRover.direction") == 0)
@@ -274,10 +276,6 @@ static GLfloat getConsoleValue(void)
 		value = gGreenTree.y;
 	else if (strcmp(gConsoleString, "scc~: get greenTree.z") == 0)
 		value = gGreenTree.z;
-	else if (strcmp(gConsoleString, "scc~: get greenTree.xrot") == 0)
-		value = gGreenTree.xRot;
-	else if (strcmp(gConsoleString, "scc~: get greenTree.yrot") == 0)
-		value = gGreenTree.yRot;
 	else if (strcmp(gConsoleString, "scc~: get greenTree.zrot") == 0)
 		value = gGreenTree.zRot;
 	else if (strcmp(gConsoleString, "scc~: get greenTree.direction") == 0)
@@ -316,10 +314,6 @@ static GLfloat getConsoleValue(void)
 		value = gPinkBubbleGum.y;
 	else if (strcmp(gConsoleString, "scc~: get pinkBubbleGum.z") == 0)
 		value = gPinkBubbleGum.z;
-	else if (strcmp(gConsoleString, "scc~: get pinkBubbleGum.xrot") == 0)
-		value = gPinkBubbleGum.xRot;
-	else if (strcmp(gConsoleString, "scc~: get pinkBubbleGum.yrot") == 0)
-		value = gPinkBubbleGum.yRot;
 	else if (strcmp(gConsoleString, "scc~: get pinkBubbleGum.zrot") == 0)
 		value = gPinkBubbleGum.zRot;
 	else if (strcmp(gConsoleString, "scc~: get pinkBubbleGum.direction") == 0)
@@ -358,10 +352,6 @@ static GLfloat getConsoleValue(void)
 		value = gBlueLightning.y;
 	else if (strcmp(gConsoleString, "scc~: get blueLightning.z") == 0)
 		value = gBlueLightning.z;
-	else if (strcmp(gConsoleString, "scc~: get blueLightning.xrot") == 0)
-		value = gBlueLightning.xRot;
-	else if (strcmp(gConsoleString, "scc~: get blueLightning.yrot") == 0)
-		value = gBlueLightning.yRot;
 	else if (strcmp(gConsoleString, "scc~: get blueLightning.zrot") == 0)
 		value = gBlueLightning.zRot;
 	else if (strcmp(gConsoleString, "scc~: get blueLightning.direction") == 0)
@@ -539,14 +529,6 @@ static GLfloat setConsoleValue(SDL_bool *errorFlag)
 		{
 			gRedRover.z = value;
 		}
-		else if (strcmp(input, "scc~: redRover.xrot") == 0)
-		{
-			gRedRover.xRot = value;
-		}
-		else if (strcmp(input, "scc~: redRover.yrot") == 0)
-		{
-			gRedRover.yRot = value;
-		}
 		else if (strcmp(input, "scc~: redRover.zrot") == 0)
 		{
 			gRedRover.zRot = value;
@@ -616,14 +598,6 @@ static GLfloat setConsoleValue(SDL_bool *errorFlag)
 		else if (strcmp(input, "scc~: greenTree.z") == 0)
 		{
 			gGreenTree.z = value;
-		}
-		else if (strcmp(input, "scc~: greenTree.xrot") == 0)
-		{
-			gGreenTree.xRot = value;
-		}
-		else if (strcmp(input, "scc~: greenTree.yrot") == 0)
-		{
-			gGreenTree.yRot = value;
 		}
 		else if (strcmp(input, "scc~: greenTree.zrot") == 0)
 		{
@@ -695,14 +669,6 @@ static GLfloat setConsoleValue(SDL_bool *errorFlag)
 		{
 			gPinkBubbleGum.z = value;
 		}
-		else if (strcmp(input, "scc~: pinkBubbleGum.xrot") == 0)
-		{
-			gPinkBubbleGum.xRot = value;
-		}
-		else if (strcmp(input, "scc~: pinkBubbleGum.yrot") == 0)
-		{
-			gPinkBubbleGum.yRot = value;
-		}
 		else if (strcmp(input, "scc~: pinkBubbleGum.zrot") == 0)
 		{
 			gPinkBubbleGum.zRot = value;
@@ -772,14 +738,6 @@ static GLfloat setConsoleValue(SDL_bool *errorFlag)
 		else if (strcmp(input, "scc~: blueLightning.z") == 0)
 		{
 			gBlueLightning.z = value;
-		}
-		else if (strcmp(input, "scc~: blueLightning.xrot") == 0)
-		{
-			gBlueLightning.xRot = value;
-		}
-		else if (strcmp(input, "scc~: blueLightning.yrot") == 0)
-		{
-			gBlueLightning.yRot = value;
 		}
 		else if (strcmp(input, "scc~: blueLightning.zrot") == 0)
 		{

@@ -179,7 +179,7 @@ static int lookUpGlyphIndex(const char *string)
 }
 
 // partially copied from zgPrint(...)
-void drawStringf(GLfloat width, GLfloat height, const char *format, ...)
+void drawStringf(mat4_t modelViewMatrix, GLfloat width, GLfloat height, const char *format, ...)
 {
 	va_list ap;
 	char buffer[256];
@@ -253,7 +253,7 @@ void drawStringf(GLfloat width, GLfloat height, const char *format, ...)
 	
 	buffer[bufferIndex] = '\0';
 	
-	drawString(width, height, buffer);
+	drawString(modelViewMatrix, width, height, buffer);
 }
 
 int cacheString(const char *string)
@@ -285,7 +285,7 @@ int cacheString(const char *string)
 	return index;
 }
 
-void drawString(GLfloat width, GLfloat height, const char *string)
+void drawString(mat4_t modelViewMatrix, GLfloat width, GLfloat height, const char *string)
 {	
 	if (string == NULL)
 	{
@@ -312,9 +312,12 @@ void drawString(GLfloat width, GLfloat height, const char *string)
 	glVertexPointer(2, GL_FLOAT, 0, gFontVertices);
 	glTexCoordPointer(2, GL_FLOAT, 0, gFontTextureCoordinates);
 	
-	glScalef(width, height, 0.0f);
+	mat4_t scaleMatrix = m4_scaling((vec3_t){width, height, 0.0f});
+	mat4_t transformMatrix = m4_mul(modelViewMatrix, scaleMatrix);
+	
+	glLoadMatrixf(&transformMatrix.m00);
 	glDrawElements(GL_TRIANGLES, sizeof(gFontIndices) / sizeof(*gFontIndices), GL_UNSIGNED_BYTE, gFontIndices);
-	glScalef(1.0f / width, 1.0f / height, 0.0f);
+	glLoadMatrixf(&modelViewMatrix.m00);
 	
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);

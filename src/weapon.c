@@ -19,6 +19,7 @@
 
 #include "weapon.h"
 #include "characters.h"
+#include "math_3d.h"
 
 static GLfloat gWeaponVertices[] =
 {
@@ -145,26 +146,33 @@ void drawWeapon(Weapon *weap)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
-	glRotatef(-40, 1.0, 0.0, 0.0);
-	glTranslatef(-7.0, 12.5, -23.0);
+	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * (M_PI / 180.0f));
+	mat4_t worldTranslationMatrix = m4_translation((vec3_t){-7.0f, 12.5f, -23.0f});
+	mat4_t modelTranslationMatrix = m4_translation((vec3_t){weap->x, weap->y, weap->z});
 	
-	glTranslatef(weap->x, weap->y, weap->z);
+	mat4_t weaponMatrix = m4_mul(m4_mul(worldRotationMatrix, worldTranslationMatrix), modelTranslationMatrix);
 	
 	glColor4f(weap->red, weap->green, weap->blue, 0.2f);
 	
+	float weaponRotationAngle = 0.0f;
 	int direction = weap->direction;
 	if (direction == LEFT)
 	{
-		glRotatef(180.0f, 0.0f, 0.0f, 1.0f);
+		weaponRotationAngle = M_PI;
 	}
 	else if (direction == UP)
 	{
-		glRotatef(90.0f, 0.0f, 0.0f, 1.0f);
+		weaponRotationAngle = M_PI / 2.0f;
 	}
 	else if (direction == DOWN)
 	{
-		glRotatef(270.0f, 0.0f, 0.0f, 1.0f);
+		weaponRotationAngle = 3.0f * M_PI / 2.0;
 	}
+	
+	mat4_t weaponRotationMatrix = m4_rotation_z(weaponRotationAngle);
+	mat4_t modelViewMatrix = m4_mul(weaponMatrix, weaponRotationMatrix);
+	
+	glLoadMatrixf(&modelViewMatrix.m00);
 	
 	glEnableClientState(GL_VERTEX_ARRAY);
 	
@@ -175,5 +183,6 @@ void drawWeapon(Weapon *weap)
 	
 	glDisable(GL_BLEND);
 	
-	glLoadIdentity();
+	mat4_t identityMatrix = m4_identity();
+	glLoadMatrixf(&identityMatrix.m00);
 }

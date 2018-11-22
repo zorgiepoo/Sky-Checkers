@@ -101,10 +101,6 @@ void loadCharacter(Character *character)
 	character->player_loc = 0;
 	character->destroyed_tile = NULL;
 	
-	character->xRot = 0.0f;
-	character->yRot = 0.0f;
-	character->zRot = 0.0f;
-	
 	character->ai_timer = 0;
 	character->time_alive = 0;
 	
@@ -358,15 +354,13 @@ void drawCharacter(Character *character)
 	
 	glEnable(GL_TEXTURE_2D);
 	
-	glRotatef(-40, 1.0, 0.0, 0.0);
-	glTranslatef(-7.0, 12.5, -25.0);
+	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * (M_PI / 180.0f));
+	mat4_t worldTranslationMatrix = m4_translation((vec3_t){-7.0f, 12.5f, -25.0f});
+	mat4_t modelTranslationMatrix = m4_translation((vec3_t){character->x, character->y, character->z});
+	mat4_t modelRotationMatrix = m4_rotation_z(character->zRot);
 	
-	glTranslatef(character->x, character->y, character->z);
-	
-	glRotatef(character->xRot, 1.0, 0.0, 0.0);
-	glRotatef(character->yRot, 0.0, 1.0, 0.0);
-	// This rotatation is to control direction.
-	glRotatef(character->zRot, 0.0, 0.0, 1.0);
+	mat4_t modelViewMatrix = m4_mul(m4_mul(m4_mul(worldRotationMatrix, worldTranslationMatrix), modelTranslationMatrix), modelRotationMatrix);
+	glLoadMatrixf(&modelViewMatrix.m00);
 	
 	glColor3f(character->red, character->green, character->blue);
 	
@@ -385,10 +379,11 @@ void drawCharacter(Character *character)
 	
 	glDisable(GL_TEXTURE_2D);
 	
-	glLoadIdentity();
+	mat4_t identityMatrix = m4_identity();
+	glLoadMatrixf(&identityMatrix.m00);
 }
 
-static void drawCharacterIcon(Character *character)
+void drawCharacterIcon(mat4_t modelViewMatrix, Character *character)
 {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -397,7 +392,10 @@ static void drawCharacterIcon(Character *character)
 	
 	glColor4f(character->red, character->green, character->blue, 0.7f);
 	
-	glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
+	mat4_t rotationMatrix = m4_rotation_x(M_PI);
+	mat4_t rotatedIconModelViewMatrix = m4_mul(modelViewMatrix, rotationMatrix);
+	
+	glLoadMatrixf(&rotatedIconModelViewMatrix.m00);
 	
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -412,118 +410,83 @@ static void drawCharacterIcon(Character *character)
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	
-	glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
-	
 	glDisable(GL_TEXTURE_2D);
 	
 	glDisable(GL_BLEND);
 }
 
-void drawRedRoverIcon(void)
+static void translateAndDrawCharacterIcon(Character *character, float x, float y, float z)
 {
-	drawCharacterIcon(&gRedRover);
-}
-
-void drawPinkBubbleGumIcon(void)
-{
-	drawCharacterIcon(&gPinkBubbleGum);
-}
-
-void drawGreenTreeIcon(void)
-{
-	drawCharacterIcon(&gGreenTree);
-}
-
-void drawBlueLightningIcon(void)
-{
-	drawCharacterIcon(&gBlueLightning);
+	mat4_t modelViewMatrix = m4_translation((vec3_t){x, y, z});
+	drawCharacterIcon(modelViewMatrix, character);
+	
+	mat4_t identityMatrix = m4_identity();
+	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void drawCharacterIcons(void)
 {
-	// pinkBubbleGum icon
-	glTranslatef(-9.0f, -9.5f, -25.0f);
-	drawPinkBubbleGumIcon();
-	glLoadIdentity();
-	
-	// redRover icon
-	glTranslatef(-3.67f, -9.5f, -25.0f);
-	drawRedRoverIcon();
-	glLoadIdentity();
-	
-	// greenTree icon
-	glTranslatef(1.63f, -9.5f, -25.0f);
-	drawGreenTreeIcon();
-	glLoadIdentity();
-	
-	// BlueLightning icon
-	glTranslatef(6.93f, -9.5f, -25.0f);
-	drawBlueLightningIcon();
-	glLoadIdentity();
+	translateAndDrawCharacterIcon(&gPinkBubbleGum, -9.0f, -9.5f, -25.0f);
+	translateAndDrawCharacterIcon(&gRedRover, -3.67f, -9.5f, -25.0f);
+	translateAndDrawCharacterIcon(&gGreenTree, 1.63f, -9.5f, -25.0f);
+	translateAndDrawCharacterIcon(&gBlueLightning, 6.93f, -9.5f, -25.0f);
 }
 
-static void drawCharacterLive(Character *character, char *playerNumberString)
+static void drawCharacterLive(mat4_t modelViewMatrix, Character *character, const char *playerNumberString)
 {
 	if (character->lives != 0)
 	{
-		drawStringf(0.5, 0.5, "%i", character->lives);
+		drawStringf(modelViewMatrix, 0.5, 0.5, "%i", character->lives);
 	}
 	
-	glTranslatef(2.0, 0.0, 0.0);
+	mat4_t playerDescriptionMatrix = m4_mul(modelViewMatrix, m4_translation((vec3_t){2.0f, 0.0f, 0.0f}));
 	
 	if (gNetworkConnection)
 	{
 		if (character->netName)
 		{
-			drawString(1.0, 0.5, character->netName);
+			drawString(playerDescriptionMatrix, 1.0, 0.5, character->netName);
 		}
 		// this is a clever way to see if this character is going to be an AI or a networked player
 		else if ((gNetworkConnection->type == NETWORK_SERVER_TYPE && character->netState == NETWORK_PLAYING_STATE) ||
 				 (gNetworkConnection->type == NETWORK_CLIENT_TYPE && gPinkBubbleGum.netState == NETWORK_PLAYING_STATE))
 		{
-			drawString(1.0, 0.5, "[AI]");
+			drawString(playerDescriptionMatrix, 1.0, 0.5, "[AI]");
 		}
 	}
 	else
 	{
 		if (character->state == CHARACTER_AI_STATE)
 		{
-			drawString(1.0, 0.5, "[AI]");
+			drawString(playerDescriptionMatrix, 1.0, 0.5, "[AI]");
 		}
 		else
 		{
-			drawString(1.0, 0.5, playerNumberString);
+			drawString(playerDescriptionMatrix, 1.0, 0.5, playerNumberString);
 		}
 	}
 	
-	glLoadIdentity();
+	mat4_t identityMatrix = m4_identity();
+	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void drawCharacterLives(void)
 {	
 	// PinkBubbleGum
-	glTranslatef(-12.3f, -14.4f, -38.0f);
 	glColor4f(1.0f, 0.6f, 0.6f, 1.0f);
-	
-	drawCharacterLive(&gPinkBubbleGum, "[P1]");
+	drawCharacterLive(m4_translation((vec3_t){-12.3f, -14.4f, -38.0f}), &gPinkBubbleGum, "[P1]");
 	
 	// RedRover
-	glTranslatef(-4.2f, -14.4f, -38.0f);
 	glColor4f(0.9f, 0.0f, 0.0f, 1.0f);
-	
-	drawCharacterLive(&gRedRover, "[P2]");
+	drawCharacterLive(m4_translation((vec3_t){-4.2f, -14.4f, -38.0f}), &gRedRover, "[P2]");
 	
 	// GreenTree
-	glTranslatef(3.9f, -14.4f, -38.0f);
 	glColor4f(0.0f, 1.0f, 0.0f, 1.0f);
-	
-	drawCharacterLive(&gGreenTree, "[P3]");
+	drawCharacterLive(m4_translation((vec3_t){3.9f, -14.4f, -38.0f}), &gGreenTree, "[P3]");
 	
 	// BlueLightning
-	glTranslatef(12.0f, -14.4f, -38.0f);
 	glColor4f(0.0f, 0.0f, 1.0f, 1.0f);
-	
-	drawCharacterLive(&gBlueLightning, "[P4]");
+	drawCharacterLive(m4_translation((vec3_t){12.0f, -14.4f, -38.0f}), &gBlueLightning, "[P4]");
 }
 
 /*
@@ -625,27 +588,19 @@ static void randomizeCharacterDirection(Character *character)
 	
 	if (character->direction == RIGHT)
 	{
-		character->zRot = 90.0;
-		character->xRot = 170.0;
-		character->yRot = 0.0;
+		character->zRot = M_PI;
 	}
 	else if (character->direction == LEFT)
 	{
-		character->zRot = 270.0;
-		character->xRot = 170.0;
-		character->yRot = 0.0;
+		character->zRot = 0.0;
 	}
 	else if (character->direction == DOWN)
 	{
-		character->zRot = 180.0;
-		character->xRot = 170.0;
-		character->yRot = 0.0;
+		character->zRot = 100.0 * (M_PI / 180.0f);
 	}
 	else if (character->direction == UP)
 	{
-		character->zRot = 180.0;
-		character->yRot = 180.0;
-		character->xRot = 355.0;
+		character->zRot = 3.0f * M_PI / 2.0f;
 	}
 }
 
@@ -691,9 +646,7 @@ void moveCharacter(Character *character, int direction)
 			sendCharacterMovement(character);
 		}
 		
-		character->zRot = 180.0;
-		character->xRot = 0.0;
-		character->yRot = 0.0;
+		character->zRot = M_PI;
 	}
 	else if (direction == LEFT)
 	{
@@ -705,8 +658,6 @@ void moveCharacter(Character *character, int direction)
 		}
 		
 		character->zRot = 0.0;
-		character->xRot = 0.0;
-		character->yRot = 0.0;
 	}
 	else if (direction == DOWN)
 	{
@@ -717,9 +668,7 @@ void moveCharacter(Character *character, int direction)
 			sendCharacterMovement(character);
 		}
 		
-		character->zRot = 100.0;
-		character->xRot = 0.0;
-		character->yRot = 0.0;
+		character->zRot = 100.0 * (M_PI / 180.0f);
 	}
 	else if (direction == UP)
 	{
@@ -730,9 +679,7 @@ void moveCharacter(Character *character, int direction)
 			sendCharacterMovement(character);
 		}
 		
-		character->zRot = 270.0;
-		character->yRot = 0.0;
-		character->xRot = 0.0;
+		character->zRot = 3.0f * M_PI / 2.0f;
 	}
 }
 
@@ -740,27 +687,19 @@ void turnCharacter(Character *character, int direction)
 {
 	if (direction == RIGHT)
 	{
-		character->zRot = 180.0;
-		character->xRot = 0.0;
-		character->yRot = 0.0;
+		character->zRot = M_PI;
 	}
 	else if (direction == LEFT)
 	{
 		character->zRot = 0.0;
-		character->xRot = 0.0;
-		character->yRot = 0.0;
 	}
 	else if (direction == DOWN)
 	{
-		character->zRot = 100.0;
-		character->xRot = 0.0;
-		character->yRot = 0.0;
+		character->zRot = 100.0 * (M_PI / 180.0f);
 	}
 	else if (direction == UP)
 	{
-		character->zRot = 270.0;
-		character->yRot = 0.0;
-		character->xRot = 0.0;
+		character->zRot = 3.0f * M_PI / 2.0f;
 	}
 	
 	character->direction = direction;

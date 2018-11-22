@@ -22,6 +22,7 @@
 #include "maincore.h"
 #include "scenery.h"
 #include "weapon.h"
+#include "math_3d.h"
 
 extern const int NO_DIRECTION;
 extern const int RIGHT;
@@ -59,7 +60,7 @@ typedef struct _Character
 	GLfloat x, y, z;
 	
 	/* Rotation axes of character */
-	GLfloat xRot, yRot, zRot;
+	GLfloat zRot;
 	
 	/* Colors of character faces */
 	GLfloat red, green, blue;
@@ -135,10 +136,7 @@ void loadCharacterTextures(void);
 
 void buildCharacterModels(void);
 
-void drawRedRoverIcon(void);
-void drawPinkBubbleGumIcon(void);
-void drawGreenTreeIcon(void);
-void drawBlueLightningIcon(void);
+void drawCharacterIcon(mat4_t modelViewMatrix, Character *character);
 void drawCharacterIcons(void);
 
 void drawCharacter(Character *character);
