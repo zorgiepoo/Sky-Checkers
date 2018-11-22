@@ -95,6 +95,12 @@ void drawPlayMenu(Renderer *renderer, color4_t preferredColor)
 	drawString(renderer, modelViewMatrix, preferredColor, 12.0, 5.0, "Play");
 }
 
+void playGameAction(void *context)
+{
+	SDL_Window *window = (SDL_Window *)context;
+	initGame(window);
+}
+
 void drawNetworkPlayMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 0.0, -280.0});
@@ -102,7 +108,7 @@ void drawNetworkPlayMenu(Renderer *renderer, color4_t preferredColor)
 	drawString(renderer, modelViewMatrix, preferredColor, 20.0, 5.0, "Network Play");
 }
 
-void networkPlayMenuAction(void)
+void networkPlayMenuAction(void *context)
 {
 	changeMenu(RIGHT);
 }
@@ -122,7 +128,7 @@ void drawNetworkUserNameFieldMenu(Renderer *renderer, color4_t preferredColor)
 	}
 }
 
-void networkUserNameFieldMenuAction(void)
+void networkUserNameFieldMenuAction(void *context)
 {
 	gNetworkUserNameFieldIsActive = !gNetworkUserNameFieldIsActive;
 }
@@ -154,7 +160,7 @@ void drawNetworkServerMenu(Renderer *renderer, color4_t preferredColor)
 	drawString(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Server");
 }
 
-void networkServerMenuAction(void)
+void networkServerMenuAction(void *context)
 {
 	changeMenu(RIGHT);
 }
@@ -166,7 +172,7 @@ void drawNetworkServerPlayMenu(Renderer *renderer, color4_t preferredColor)
 	drawString(renderer, modelViewMatrix, preferredColor, 20.0, 5.0, "Start Game");
 }
 
-void networkServerPlayMenuAction(void)
+void networkServerPlayMenuAction(void *context)
 {
 	gPinkBubbleGum.backup_state = gPinkBubbleGum.state;
 	gRedRover.backup_state = gRedRover.state;
@@ -239,7 +245,8 @@ void networkServerPlayMenuAction(void)
 	
 	SDL_CreateThread(serverNetworkThread, "server-thread", NULL);
 	
-	initGame(gWindow);
+	SDL_Window *window = (SDL_Window *)context;
+	initGame(window);
 	
 	gRedRoverInput.character = gNetworkConnection->input->character;
 	gBlueLightningInput.character = gNetworkConnection->input->character;
@@ -262,7 +269,7 @@ void drawNetworkServerNumberOfPlayersMenu(Renderer *renderer, color4_t preferred
 	}
 }
 
-void networkServerNumberOfPlayersMenuAction(void)
+void networkServerNumberOfPlayersMenuAction(void *context)
 {
 	gDrawArrowsForNumberOfNetHumansFlag = !gDrawArrowsForNumberOfNetHumansFlag;
 }
@@ -286,7 +293,7 @@ void drawNetworkServerAIModeMenu(Renderer *renderer, color4_t preferredColor)
 	}
 }
 
-void networkServerAIModeMenuAction(void)
+void networkServerAIModeMenuAction(void *context)
 {
 }
 
@@ -302,7 +309,7 @@ void drawNetworkServerPlayerLivesMenu(Renderer *renderer, color4_t preferredColo
 	}
 }
 
-void networkServerPlayerLivesMenuAction(void)
+void networkServerPlayerLivesMenuAction(void *context)
 {
 	gDrawArrowsForNetPlayerLivesFlag = !gDrawArrowsForNetPlayerLivesFlag;
 }
@@ -314,7 +321,7 @@ void drawNetworkClientMenu(Renderer *renderer, color4_t preferredColor)
 	drawString(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Client");
 }
 
-void networkClientMenuAction(void)
+void networkClientMenuAction(void *context)
 {
 	changeMenu(RIGHT);
 }
@@ -335,7 +342,7 @@ void drawNetworkAddressFieldMenu(Renderer *renderer, color4_t preferredColor)
 	}
 }
 
-void networkAddressFieldMenuAction(void)
+void networkAddressFieldMenuAction(void *context)
 {
 	gNetworkAddressFieldIsActive = !gNetworkAddressFieldIsActive;
 }
@@ -367,7 +374,7 @@ void drawConnectToNetworkGameMenu(Renderer *renderer, color4_t preferredColor)
 	drawString(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Connect");
 }
 
-void connectToNetworkGameMenuAction(void)
+void connectToNetworkGameMenuAction(void *context)
 {
 	if (gNetworkConnection && gNetworkConnection->shouldRun)
 	{
@@ -429,7 +436,7 @@ void connectToNetworkGameMenuAction(void)
 	gNetworkConnection->hostAddress.sin_addr = *((struct in_addr *)host_entry->h_addr);
 	memset(gNetworkConnection->hostAddress.sin_zero, '\0', sizeof(gNetworkConnection->hostAddress.sin_zero));
 	
-	gNetworkConnection->thread = SDL_CreateThread(clientNetworkThread, "client-thread", NULL);
+	gNetworkConnection->thread = SDL_CreateThread(clientNetworkThread, "client-thread", context);
 }
 
 void drawGameOptionsMenu(Renderer *renderer, color4_t preferredColor)
@@ -439,7 +446,7 @@ void drawGameOptionsMenu(Renderer *renderer, color4_t preferredColor)
 	drawString(renderer, modelViewMatrix, preferredColor, 20.0, 5.0, "Game Options");
 }
 
-void gameOptionsMenuAction(void)
+void gameOptionsMenuAction(void *context)
 {
 	changeMenu(RIGHT);
 }
@@ -451,7 +458,7 @@ void drawPlayerOptionsMenu(Renderer *renderer, color4_t preferredColor)
 	drawString(renderer, modelViewMatrix, preferredColor, 20.0, 5.0, "Configure Players");
 }
 
-void playerOptionsMenuAction(void)
+void playerOptionsMenuAction(void *context)
 {
 	changeMenu(RIGHT);
 }
@@ -463,7 +470,7 @@ void drawConfigureKeysMenu(Renderer *renderer, color4_t preferredColor)
 	drawString(renderer, modelViewMatrix, preferredColor, 20.0, 5.0, "Configure Keys");
 }
 
-void configureKeysMenuAction(void)
+void configureKeysMenuAction(void *context)
 {
 	changeMenu(RIGHT);
 }
@@ -475,7 +482,7 @@ void drawJoySticksConfigureMenu(Renderer *renderer, color4_t preferredColor)
 	drawString(renderer, modelViewMatrix, preferredColor, 20.0, 5.0, "Configure Joy Sticks");
 }
 
-void joySticksConfigureMenuAction(void)
+void joySticksConfigureMenuAction(void *context)
 {
 	changeMenu(RIGHT);
 }
@@ -490,7 +497,7 @@ void drawPinkBubbleGumPlayerOptionsMenu(Renderer *renderer, color4_t preferredCo
 		drawString(renderer, modelViewMatrix, preferredColor, 20.0, 5.0, "Pink Bubblegum: Bot");
 }
 
-void pinkBubbleGumPlayerOptionsMenuAction(void)
+void pinkBubbleGumPlayerOptionsMenuAction(void *context)
 {
 	if (gPinkBubbleGum.state == CHARACTER_HUMAN_STATE)
 	{
@@ -520,7 +527,7 @@ void drawRedRoverPlayerOptionsMenu(Renderer *renderer, color4_t preferredColor)
 	}
 }
 
-void redRoverPlayerOptionsMenuAction(void)
+void redRoverPlayerOptionsMenuAction(void *context)
 {
 	if (gRedRover.state == CHARACTER_HUMAN_STATE)
 	{
@@ -549,7 +556,7 @@ void drawGreenTreePlayerOptionsMenu(Renderer *renderer, color4_t preferredColor)
 	}
 }
 
-void greenTreePlayerOptionsMenuAction(void)
+void greenTreePlayerOptionsMenuAction(void *context)
 {
 	if (gGreenTree.state == CHARACTER_HUMAN_STATE)
 	{
@@ -577,7 +584,7 @@ void drawBlueLightningPlayerOptionsMenu(Renderer *renderer, color4_t preferredCo
 	}
 }
 
-void blueLightningPlayerOptionsMenuAction(void)
+void blueLightningPlayerOptionsMenuAction(void *context)
 {
 	if (gBlueLightning.state == CHARACTER_HUMAN_STATE)
 	{
@@ -627,7 +634,7 @@ void drawPinkBubbleGumConfigKey(Renderer *renderer, color4_t preferredColor)
 	drawString(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Pink Bubblegum");
 }
 
-void pinkBubbleGumKeyMenuAction(void)
+void pinkBubbleGumKeyMenuAction(void *context)
 {
 	changeMenu(RIGHT);
 }
@@ -639,7 +646,7 @@ void drawRedRoverConfigKey(Renderer *renderer, color4_t preferredColor)
 	drawString(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Red Rover");
 }
 
-void redRoverKeyMenuAction(void)
+void redRoverKeyMenuAction(void *context)
 {
 	changeMenu(RIGHT);
 }
@@ -651,7 +658,7 @@ void drawGreenTreeConfigKey(Renderer *renderer, color4_t preferredColor)
 	drawString(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Green Tree");
 }
 
-void greenTreeKeyMenuAction(void)
+void greenTreeKeyMenuAction(void *context)
 {
 	changeMenu(RIGHT);
 }
@@ -663,7 +670,7 @@ void drawBlueLightningConfigKey(Renderer *renderer, color4_t preferredColor)
 	drawString(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Blue Lightning");
 }
 
-void blueLightningKeyMenuAction(void)
+void blueLightningKeyMenuAction(void *context)
 {
 	changeMenu(RIGHT);
 }
@@ -684,7 +691,7 @@ void drawPinkBubbleGumConfigRightKey(Renderer *renderer, color4_t preferredColor
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Right: %s", convertKeyCodeToString(gPinkBubbleGumInput.r_id));
 }
 
-void pinkBubbleGumRightKeyMenuAction(void)
+void pinkBubbleGumRightKeyMenuAction(void *context)
 {	
 	configureKey(&gPinkBubbleGumInput.r_id);
 }
@@ -696,7 +703,7 @@ void drawPinkBubbleGumConfigLeftKey(Renderer *renderer, color4_t preferredColor)
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Left: %s", convertKeyCodeToString(gPinkBubbleGumInput.l_id));
 }
 
-void pinkBubbleGumLeftKeyMenuAction(void)
+void pinkBubbleGumLeftKeyMenuAction(void *context)
 {
 	configureKey(&gPinkBubbleGumInput.l_id);
 }
@@ -708,7 +715,7 @@ void drawPinkBubbleGumConfigUpKey(Renderer *renderer, color4_t preferredColor)
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Up: %s", convertKeyCodeToString(gPinkBubbleGumInput.u_id));
 }
 
-void pinkBubbleGumUpKeyMenuAction(void)
+void pinkBubbleGumUpKeyMenuAction(void *context)
 {
 	configureKey(&gPinkBubbleGumInput.u_id);
 }
@@ -720,7 +727,7 @@ void drawPinkBubbleGumConfigDownKey(Renderer *renderer, color4_t preferredColor)
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Down: %s", convertKeyCodeToString(gPinkBubbleGumInput.d_id));
 }
 
-void pinkBubbleGumDownKeyMenuAction(void)
+void pinkBubbleGumDownKeyMenuAction(void *context)
 {
 	configureKey(&gPinkBubbleGumInput.d_id);
 }
@@ -732,7 +739,7 @@ void drawPinkBubbleGumConfigFireKey(Renderer *renderer, color4_t preferredColor)
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Fire: %s", convertKeyCodeToString(gPinkBubbleGumInput.weap_id));
 }
 
-void pinkBubbleGumFireKeyMenuAction(void)
+void pinkBubbleGumFireKeyMenuAction(void *context)
 {
 	configureKey(&gPinkBubbleGumInput.weap_id);
 }
@@ -744,7 +751,7 @@ void drawRedRoverConfigRightKey(Renderer *renderer, color4_t preferredColor)
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Right: %s", convertKeyCodeToString(gRedRoverInput.r_id));
 }
 
-void redRoverRightKeyMenuAction(void)
+void redRoverRightKeyMenuAction(void *context)
 {
 	configureKey(&gRedRoverInput.r_id);
 }
@@ -756,7 +763,7 @@ void drawRedRoverConfigLeftKey(Renderer *renderer, color4_t preferredColor)
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Left: %s", convertKeyCodeToString(gRedRoverInput.l_id));
 }
 
-void redRoverLeftKeyMenuAction(void)
+void redRoverLeftKeyMenuAction(void *context)
 {
 	configureKey(&gRedRoverInput.l_id);
 }
@@ -768,7 +775,7 @@ void drawRedRoverConfigUpKey(Renderer *renderer, color4_t preferredColor)
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Up: %s", convertKeyCodeToString(gRedRoverInput.u_id));
 }
 
-void redRoverUpKeyMenuAction(void)
+void redRoverUpKeyMenuAction(void *context)
 {
 	configureKey(&gRedRoverInput.u_id);
 }
@@ -780,7 +787,7 @@ void drawRedRoverConfigDownKey(Renderer *renderer, color4_t preferredColor)
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Down: %s", convertKeyCodeToString(gRedRoverInput.d_id));
 }
 
-void redRoverDownKeyMenuAction(void)
+void redRoverDownKeyMenuAction(void *context)
 {
 	configureKey(&gRedRoverInput.d_id);
 }
@@ -792,7 +799,7 @@ void drawRedRoverConfigFireKey(Renderer *renderer, color4_t preferredColor)
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Fire: %s", convertKeyCodeToString(gRedRoverInput.weap_id));
 }
 
-void redRoverFireKeyMenuAction(void)
+void redRoverFireKeyMenuAction(void *context)
 {
 	configureKey(&gRedRoverInput.weap_id);
 }
@@ -804,7 +811,7 @@ void drawGreenTreeConfigRightKey(Renderer *renderer, color4_t preferredColor)
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Right: %s", convertKeyCodeToString(gGreenTreeInput.r_id));
 }
 
-void greenTreeRightKeyMenuAction(void)
+void greenTreeRightKeyMenuAction(void *context)
 {
 	configureKey(&gGreenTreeInput.r_id);
 }
@@ -816,7 +823,7 @@ void drawGreenTreeConfigLeftKey(Renderer *renderer, color4_t preferredColor)
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Left: %s", convertKeyCodeToString(gGreenTreeInput.l_id));
 }
 
-void greenTreeLeftKeyMenuAction(void)
+void greenTreeLeftKeyMenuAction(void *context)
 {
 	configureKey(&gGreenTreeInput.l_id);
 }
@@ -828,7 +835,7 @@ void drawGreenTreeConfigUpKey(Renderer *renderer, color4_t preferredColor)
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Up: %s", convertKeyCodeToString(gGreenTreeInput.u_id));
 }
 
-void greenTreeUpKeyMenuAction(void)
+void greenTreeUpKeyMenuAction(void *context)
 {
 	configureKey(&gGreenTreeInput.u_id);
 }
@@ -840,7 +847,7 @@ void drawGreenTreeConfigDownKey(Renderer *renderer, color4_t preferredColor)
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Down: %s", convertKeyCodeToString(gGreenTreeInput.d_id));
 }
 
-void greenTreeDownKeyMenuAction(void)
+void greenTreeDownKeyMenuAction(void *context)
 {
 	configureKey(&gGreenTreeInput.d_id);
 }
@@ -852,7 +859,7 @@ void drawGreenTreeConfigFireKey(Renderer *renderer, color4_t preferredColor)
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Fire: %s", convertKeyCodeToString(gGreenTreeInput.weap_id));
 }
 
-void greenTreeFireKeyMenuAction(void)
+void greenTreeFireKeyMenuAction(void *context)
 {
 	configureKey(&gGreenTreeInput.weap_id);
 }
@@ -864,7 +871,7 @@ void drawBlueLightningConfigRightKey(Renderer *renderer, color4_t preferredColor
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Right: %s", convertKeyCodeToString(gBlueLightningInput.r_id));
 }
 
-void blueLightningRightKeyMenuAction(void)
+void blueLightningRightKeyMenuAction(void *context)
 {
 	configureKey(&gBlueLightningInput.r_id);
 }
@@ -876,7 +883,7 @@ void drawBlueLightningConfigLeftKey(Renderer *renderer, color4_t preferredColor)
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Left: %s", convertKeyCodeToString(gBlueLightningInput.l_id));
 }
 
-void blueLightningLeftKeyMenuAction(void)
+void blueLightningLeftKeyMenuAction(void *context)
 {
 	configureKey(&gBlueLightningInput.l_id);
 }
@@ -888,7 +895,7 @@ void drawBlueLightningConfigUpKey(Renderer *renderer, color4_t preferredColor)
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Up: %s", convertKeyCodeToString(gBlueLightningInput.u_id));
 }
 
-void blueLightningUpKeyMenuAction(void)
+void blueLightningUpKeyMenuAction(void *context)
 {
 	configureKey(&gBlueLightningInput.u_id);
 }
@@ -900,7 +907,7 @@ void drawBlueLightningConfigDownKey(Renderer *renderer, color4_t preferredColor)
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Down: %s", convertKeyCodeToString(gBlueLightningInput.d_id));
 }
 
-void blueLightningDownKeyMenuAction(void)
+void blueLightningDownKeyMenuAction(void *context)
 {
 	configureKey(&gBlueLightningInput.d_id);
 }
@@ -912,7 +919,7 @@ void drawBlueLightningConfigFireKey(Renderer *renderer, color4_t preferredColor)
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Fire: %s", convertKeyCodeToString(gBlueLightningInput.weap_id));
 }
 
-void blueLightningFireKeyMenuAction(void)
+void blueLightningFireKeyMenuAction(void *context)
 {
 	configureKey(&gBlueLightningInput.weap_id);
 }
@@ -925,7 +932,7 @@ void drawPinkBubbleGumConfigJoyStick(Renderer *renderer, color4_t preferredColor
 }
 
 // config joy sticks.
-void pinkBubbleGumConfigJoyStickAction(void)
+void pinkBubbleGumConfigJoyStickAction(void *context)
 {
 	changeMenu(RIGHT);
 }
@@ -1113,7 +1120,7 @@ void drawPinkBubbleGumRightgJoyStickConfig(Renderer *renderer, color4_t preferre
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Right: %s", gPinkBubbleGumInput.joy_right);
 }
 
-void pinkBubbleGumConfigRightJoyStickAction(void)
+void pinkBubbleGumConfigRightJoyStickAction(void *context)
 {
 	configureJoyStick(&gPinkBubbleGumInput, RIGHT);
 }
@@ -1125,7 +1132,7 @@ void drawPinkBubbleGumLeftgJoyStickConfig(Renderer *renderer, color4_t preferred
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Left: %s", gPinkBubbleGumInput.joy_left);
 }
 
-void pinkBubbleGumConfigLeftJoyStickAction(void)
+void pinkBubbleGumConfigLeftJoyStickAction(void *context)
 {
 	configureJoyStick(&gPinkBubbleGumInput, LEFT);
 }
@@ -1137,7 +1144,7 @@ void drawPinkBubbleGumUpgJoyStickConfig(Renderer *renderer, color4_t preferredCo
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Up: %s", gPinkBubbleGumInput.joy_up);
 }
 
-void pinkBubbleGumConfigUpJoyStickAction(void)
+void pinkBubbleGumConfigUpJoyStickAction(void *context)
 {
 	configureJoyStick(&gPinkBubbleGumInput, UP);
 }
@@ -1149,7 +1156,7 @@ void drawPinkBubbleGumDowngJoyStickConfig(Renderer *renderer, color4_t preferred
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Down: %s", gPinkBubbleGumInput.joy_down);
 }
 
-void pinkBubbleGumConfigDownJoyStickAction(void)
+void pinkBubbleGumConfigDownJoyStickAction(void *context)
 {
 	configureJoyStick(&gPinkBubbleGumInput, DOWN);
 }
@@ -1161,7 +1168,7 @@ void drawPinkBubbleGumFiregJoyStickConfig(Renderer *renderer, color4_t preferred
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Fire: %s", gPinkBubbleGumInput.joy_weap);
 }
 
-void pinkBubbleGumConfigFireJoyStickAction(void)
+void pinkBubbleGumConfigFireJoyStickAction(void *context)
 {
 	configureJoyStick(&gPinkBubbleGumInput, WEAPON);
 }
@@ -1174,7 +1181,7 @@ void drawRedRoverConfigJoyStick(Renderer *renderer, color4_t preferredColor)
 	drawString(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Red Rover");
 }
 
-void redRoverConfigJoyStickAction(void)
+void redRoverConfigJoyStickAction(void *context)
 {
 	changeMenu(RIGHT);
 }
@@ -1186,7 +1193,7 @@ void drawRedRoverRightgJoyStickConfig(Renderer *renderer, color4_t preferredColo
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Right: %s", gRedRoverInput.joy_right);
 }
 
-void redRoverConfigRightJoyStickAction(void)
+void redRoverConfigRightJoyStickAction(void *context)
 {
 	configureJoyStick(&gRedRoverInput, RIGHT);
 }
@@ -1198,7 +1205,7 @@ void drawRedRoverLeftgJoyStickConfig(Renderer *renderer, color4_t preferredColor
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Left: %s", gRedRoverInput.joy_left);
 }
 
-void redRoverConfigLeftJoyStickAction(void)
+void redRoverConfigLeftJoyStickAction(void *context)
 {
 	configureJoyStick(&gRedRoverInput, LEFT);
 }
@@ -1210,7 +1217,7 @@ void drawRedRoverUpgJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Up: %s", gRedRoverInput.joy_up);
 }
 
-void redRoverConfigUpJoyStickAction(void)
+void redRoverConfigUpJoyStickAction(void *context)
 {
 	configureJoyStick(&gRedRoverInput, UP);
 }
@@ -1222,7 +1229,7 @@ void drawRedRoverDowngJoyStickConfig(Renderer *renderer, color4_t preferredColor
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Down: %s", gRedRoverInput.joy_down);
 }
 
-void redRoverConfigDownJoyStickAction(void)
+void redRoverConfigDownJoyStickAction(void *context)
 {
 	configureJoyStick(&gRedRoverInput, DOWN);
 }
@@ -1234,7 +1241,7 @@ void drawRedRoverFiregJoyStickConfig(Renderer *renderer, color4_t preferredColor
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Fire: %s", gRedRoverInput.joy_weap);
 }
 
-void redRoverConfigFireJoyStickAction(void)
+void redRoverConfigFireJoyStickAction(void *context)
 {
 	configureJoyStick(&gRedRoverInput, WEAPON);
 }
@@ -1247,7 +1254,7 @@ void drawGreenTreeConfigJoyStick(Renderer *renderer, color4_t preferredColor)
 	drawString(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Green Tree");
 }
 
-void greenTreeConfigJoyStickAction(void)
+void greenTreeConfigJoyStickAction(void *context)
 {
 	changeMenu(RIGHT);
 }
@@ -1259,7 +1266,7 @@ void drawGreenTreeRightgJoyStickConfig(Renderer *renderer, color4_t preferredCol
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Right: %s", gGreenTreeInput.joy_right);
 }
 
-void greenTreeConfigRightJoyStickAction(void)
+void greenTreeConfigRightJoyStickAction(void *context)
 {
 	configureJoyStick(&gGreenTreeInput, RIGHT);
 }
@@ -1271,7 +1278,7 @@ void drawGreenTreeLeftgJoyStickConfig(Renderer *renderer, color4_t preferredColo
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Left: %s", gGreenTreeInput.joy_left);
 }
 
-void greenTreeConfigLeftJoyStickAction(void)
+void greenTreeConfigLeftJoyStickAction(void *context)
 {
 	configureJoyStick(&gGreenTreeInput, LEFT);
 }
@@ -1283,7 +1290,7 @@ void drawGreenTreeUpgJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Up: %s", gGreenTreeInput.joy_up);
 }
 
-void greenTreeConfigUpJoyStickAction(void)
+void greenTreeConfigUpJoyStickAction(void *context)
 {
 	configureJoyStick(&gGreenTreeInput, UP);
 }
@@ -1295,7 +1302,7 @@ void drawGreenTreeDowngJoyStickConfig(Renderer *renderer, color4_t preferredColo
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Down: %s", gGreenTreeInput.joy_down);
 }
 
-void greenTreeConfigDownJoyStickAction(void)
+void greenTreeConfigDownJoyStickAction(void *context)
 {
 	configureJoyStick(&gGreenTreeInput, DOWN);
 }
@@ -1307,7 +1314,7 @@ void drawGreenTreeFiregJoyStickConfig(Renderer *renderer, color4_t preferredColo
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Fire: %s", gGreenTreeInput.joy_weap);
 }
 
-void greenTreeConfigFireJoyStickAction(void)
+void greenTreeConfigFireJoyStickAction(void *context)
 {
 	configureJoyStick(&gGreenTreeInput, WEAPON);
 }
@@ -1320,7 +1327,7 @@ void drawBlueLightningConfigJoyStick(Renderer *renderer, color4_t preferredColor
 	drawString(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Blue Lightning");
 }
 
-void blueLightningConfigJoyStickAction(void)
+void blueLightningConfigJoyStickAction(void *context)
 {
 	changeMenu(RIGHT);
 }
@@ -1332,7 +1339,7 @@ void drawBlueLightningRightgJoyStickConfig(Renderer *renderer, color4_t preferre
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Right: %s", gBlueLightningInput.joy_right);
 }
 
-void blueLightningConfigRightJoyStickAction(void)
+void blueLightningConfigRightJoyStickAction(void *context)
 {
 	configureJoyStick(&gBlueLightningInput, RIGHT);
 }
@@ -1344,7 +1351,7 @@ void drawBlueLightningLeftgJoyStickConfig(Renderer *renderer, color4_t preferred
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Left: %s", gBlueLightningInput.joy_left);
 }
 
-void blueLightningConfigLeftJoyStickAction(void)
+void blueLightningConfigLeftJoyStickAction(void *context)
 {
 	configureJoyStick(&gBlueLightningInput, LEFT);
 }
@@ -1356,7 +1363,7 @@ void drawBlueLightningUpgJoyStickConfig(Renderer *renderer, color4_t preferredCo
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Up: %s", gBlueLightningInput.joy_up);
 }
 
-void blueLightningConfigUpJoyStickAction(void)
+void blueLightningConfigUpJoyStickAction(void *context)
 {
 	configureJoyStick(&gBlueLightningInput, UP);
 }
@@ -1368,7 +1375,7 @@ void drawBlueLightningDowngJoyStickConfig(Renderer *renderer, color4_t preferred
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Down: %s", gBlueLightningInput.joy_down);
 }
 
-void blueLightningConfigDownJoyStickAction(void)
+void blueLightningConfigDownJoyStickAction(void *context)
 {
 	configureJoyStick(&gBlueLightningInput, DOWN);
 }
@@ -1380,7 +1387,7 @@ void drawBlueLightningFiregJoyStickConfig(Renderer *renderer, color4_t preferred
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Fire: %s", gBlueLightningInput.joy_weap);
 }
 
-void blueLightningConfigFireJoyStickAction(void)
+void blueLightningConfigFireJoyStickAction(void *context)
 {
 	configureJoyStick(&gBlueLightningInput, WEAPON);
 }
@@ -1393,7 +1400,7 @@ void drawAudioOptionsMenu(Renderer *renderer, color4_t preferredColor)
 	drawString(renderer, modelViewMatrix, preferredColor, 20.0, 5.0, "Audio Options");
 }
 
-void audioOptionsMenuAction(void)
+void audioOptionsMenuAction(void *context)
 {
 	changeMenu(RIGHT);
 }
@@ -1412,7 +1419,7 @@ void drawAudioEffectsOptionsMenu(Renderer *renderer, color4_t preferredColor)
 	}
 }
 
-void audioEffectsOptionsMenuAction(void)
+void audioEffectsOptionsMenuAction(void *context)
 {
 	gAudioEffectsFlag = !gAudioEffectsFlag;
 }
@@ -1431,7 +1438,7 @@ void drawAudioMusicOptionsMenu(Renderer *renderer, color4_t preferredColor)
 	}
 }
 
-void audioMusicOptionsMenuAction(void)
+void audioMusicOptionsMenuAction(void *context)
 {
 	gAudioMusicFlag = !gAudioMusicFlag;
 	if (!gAudioMusicFlag)
@@ -1447,9 +1454,11 @@ void drawQuitMenu(Renderer *renderer, color4_t preferredColor)
 	drawString(renderer, modelViewMatrix, preferredColor, 12.0, 5.0, "Quit");
 }
 
-static void makeGame(void)
+void quitMenuAction(void *context)
 {
-	initGame(gWindow);
+	SDL_Event event;
+	event.type = SDL_QUIT;
+	SDL_PushEvent(&event);
 }
 
 void initMenus(void)
@@ -1484,7 +1493,7 @@ void initMenus(void)
 	
 	// set action and drawing functions
 	playMenu->draw = drawPlayMenu;
-	playMenu->action = makeGame;
+	playMenu->action = playGameAction;
 	
 	networkPlayMenu->draw = drawNetworkPlayMenu;
 	networkPlayMenu->action = networkPlayMenuAction;
@@ -1557,7 +1566,7 @@ void initMenus(void)
 	audioMusicOptionsMenu->action = audioMusicOptionsMenuAction;
 	
 	quitMenu->draw = drawQuitMenu;
-	quitMenu->action = SDL_Terminate;
+	quitMenu->action = quitMenuAction;
 	
 	// character config menu keys
 	gCharacterConfigureKeys[0][0].draw = drawPinkBubbleGumConfigKey;

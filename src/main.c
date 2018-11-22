@@ -66,9 +66,6 @@ SDL_bool gDrawFPS =								SDL_FALSE;
 
 static int gGameState;
 
-// TODO: I want to remove this eventually
-SDL_Window *gWindow;
-
 #define MAX_CHARACTER_LIVES 10
 
 void initGame(SDL_Window *window);
@@ -852,7 +849,7 @@ static void eventInput(SDL_Event *event, SDL_Window *window, int *quit)
 
 				else if (!gGameState)
 				{
-					invokeMenu();
+					invokeMenu(window);
 				}
 
 				else if (gConsoleActivated)
@@ -1330,8 +1327,6 @@ int main(int argc, char *argv[])
 	
 	Renderer renderer;
 	createRenderer(&renderer, windowWidth, windowHeight, videoFlags, vsync, fsaa);
-	
-	gWindow = renderer.window;
 	
 	// Initialize game related things
 	// init random number generator

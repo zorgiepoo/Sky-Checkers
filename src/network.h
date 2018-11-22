@@ -48,7 +48,7 @@ void networkInitialization(void);
 void networkCleanup(void);
 
 int serverNetworkThread(void *unused);
-int clientNetworkThread(void *unused);
+int clientNetworkThread(void *context);
 
 void sendToClients(int exception, const char *format, ...);
 

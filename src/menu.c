@@ -101,7 +101,7 @@ SDL_bool isChildBeingDrawn(Menu *child)
 	return child->parent == gCurrentMenu->parent;
 }
 
-void invokeMenu(void)
+void invokeMenu(void *context)
 {	
 	if (gAudioEffectsFlag)
 	{
@@ -109,7 +109,7 @@ void invokeMenu(void)
 	}
 	
 	if (gCurrentMenu->action != NULL)
-		gCurrentMenu->action();
+		gCurrentMenu->action(context);
 	else
 		zgPrint("gCurrentMenu's action() function is NULL");
 }

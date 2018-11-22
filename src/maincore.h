@@ -106,6 +106,3 @@ extern int gCharacterNetLives;
 
 extern SDL_bool gAudioEffectsFlag;
 extern SDL_bool gAudioMusicFlag;
-
-// TODO: I want to remove this
-extern SDL_Window *gWindow;

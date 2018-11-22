@@ -25,5 +25,3 @@ void mt_init();
 unsigned long mt_random();
 
 void zgPrint(const char *format, ...);
-
-void SDL_Terminate(void);

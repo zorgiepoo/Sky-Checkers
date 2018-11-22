@@ -186,13 +186,3 @@ void zgPrint(const char *format, ...)
 	if (newLine == 1)
 		fprintf(stderr, "\n");
 }
-
-/* Function for terminating our SDL application whenever we want */
-void SDL_Terminate(void)
-{
-	SDL_Event event;
-	
-	event.type = SDL_QUIT;
-	
-	SDL_PushEvent(&event);
-}

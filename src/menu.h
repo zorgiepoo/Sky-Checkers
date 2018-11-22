@@ -39,7 +39,7 @@ typedef struct _Menu
 	
 	// Function that gets called when the menu is invoked.
 	// invokeMenu() calls this, of which you have to call yourself (like when a return key is pressed for example).
-	void (*action)(void);
+	void (*action)(void *context);
 	
 	// drawMenus() calls this function to draw the menu.
 	// you have control over how this function draws.
@@ -56,6 +56,6 @@ void addSubMenu(Menu *parentMenu, Menu *childMenu);
 SDL_bool isChildBeingDrawn(Menu *child);
 
 // need to call these yourself.
-void invokeMenu(void);
+void invokeMenu(void *context);
 void drawMenus(Renderer *renderer);
 void changeMenu(int direction);
