@@ -317,7 +317,6 @@ void drawString(mat4_t modelViewMatrix, GLfloat width, GLfloat height, const cha
 	
 	glLoadMatrixf(&transformMatrix.m00);
 	glDrawElements(GL_TRIANGLES, sizeof(gFontIndices) / sizeof(*gFontIndices), GL_UNSIGNED_BYTE, gFontIndices);
-	glLoadMatrixf(&modelViewMatrix.m00);
 	
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
