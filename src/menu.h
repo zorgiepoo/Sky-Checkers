@@ -21,7 +21,7 @@
 
 #include "maincore.h"
 #include "math_3d.h"
-#include "utilities.h" // for color4_t
+#include "renderer.h"
 
 typedef struct _Menu
 {
@@ -43,7 +43,7 @@ typedef struct _Menu
 	
 	// drawMenus() calls this function to draw the menu.
 	// you have control over how this function draws.
-	void (*draw)(mat4_t projectionMatrix, color4_t color);
+	void (*draw)(Renderer *renderer, color4_t preferredColor);
 } Menu;
 
 extern Menu gMainMenu;
@@ -57,5 +57,5 @@ SDL_bool isChildBeingDrawn(Menu *child);
 
 // need to call these yourself.
 void invokeMenu(void);
-void drawMenus(mat4_t projectionMatrix);
+void drawMenus(Renderer *renderer);
 void changeMenu(int direction);

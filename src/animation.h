@@ -23,7 +23,7 @@
 #include "characters.h"
 #include "input.h"
 
-SDL_bool startAnimation(void);
+SDL_bool startAnimation(SDL_Window *window);
 void endAnimation(void);
 
 void prepareCharactersDeath(Character *player);

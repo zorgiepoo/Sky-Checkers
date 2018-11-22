@@ -44,10 +44,6 @@ SDL_bool gGameShouldReset;
 int gGameStartNumber;
 int gGameWinner;
 
-static mat4_t gProjectionMatrix;
-
-Uint32 gVideoFlags;
-
 // Console flag indicating if we can use the console
 SDL_bool gConsoleFlag =							SDL_FALSE;
 
@@ -56,13 +52,7 @@ SDL_bool gAudioEffectsFlag =					SDL_TRUE;
 SDL_bool gAudioMusicFlag =						SDL_TRUE;
 
 // video flags
-int gVsyncFlag =								1;
 SDL_bool gFpsFlag =								SDL_FALSE;
-SDL_bool gFsaaFlag =							SDL_TRUE;
-
-// Screen gResolutions
-int gScreenWidth =								0;
-int gScreenHeight =								0;
 
 SDL_bool gValidDefaults =						SDL_FALSE;
 
@@ -71,52 +61,22 @@ int gCharacterLives =							5;
 int gCharacterNetLives =						5;
 
 // Fullscreen video state.
-SDL_bool gFullscreen =							SDL_FALSE;
-
-SDL_Window *gWindow = NULL;
-
 static SDL_bool gConsoleActivated =				SDL_FALSE;
 SDL_bool gDrawFPS =								SDL_FALSE;
 
 static int gGameState;
 
+// TODO: I want to remove this eventually
+SDL_Window *gWindow;
+
 #define MAX_CHARACTER_LIVES 10
 
-void initGame(void);
+void initGame(SDL_Window *window);
 
-static void resizeWindow(int width, int height);
-
-static void initScene(void);
+static void initScene(Renderer *renderer);
 
 static void readDefaults(void);
-static void writeDefaults(void);
-
-static void initGL(void)
-{
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glClearDepth(1.0f);
-
-	glDepthFunc(GL_LEQUAL);
-	glEnable(GL_DEPTH_TEST);
-
-	// initialize random number generator
-	mt_init();
-
-	initScene();
-
-	/*
-	 * Load a few font strings before a game starts up.
-	 * We don't want the user to experience slow font loading times during a game
-	 */
-	cacheString("Game begins in 1");
-	cacheString("Game begins in 2");
-	cacheString("Game begins in 3");
-	cacheString("Game begins in 4");
-	cacheString("Game begins in 5");
-
-	cacheString("Wins:");
-	cacheString("Kills:");
-}
+static void writeDefaults(Renderer *renderer);
 
 static void drawBlackBox(void)
 {
@@ -157,15 +117,15 @@ static void drawBlackBox(void)
 	glEnable(GL_DEPTH_TEST);
 }
 
-static void initScene(void)
+static void initScene(Renderer *renderer)
 {
-	loadSceneryTextures();
+	loadSceneryTextures(renderer);
 
 	initTiles();
 
 	initCharacters();
 
-	loadCharacterTextures();
+	loadCharacterTextures(renderer);
 	buildCharacterModels();
 
 	// defaults couldn't be read
@@ -443,7 +403,7 @@ cleanup:
 	fclose(fp);
 }
 
-static void writeDefaults(void)
+static void writeDefaults(Renderer *renderer)
 {
 	FILE *fp = getUserDataFile("w");
 
@@ -460,11 +420,11 @@ static void writeDefaults(void)
 	fprintf(fp, "Console flag: %i\n\n", gConsoleFlag);
 
 	// video defaults
-	fprintf(fp, "screen width: %i\n", gScreenWidth);
-	fprintf(fp, "screen height: %i\n", gScreenHeight);
-	fprintf(fp, "vsync flag: %i\n", gVsyncFlag);
+	fprintf(fp, "screen width: %i\n", renderer->windowWidth);
+	fprintf(fp, "screen height: %i\n", renderer->windowHeight);
+	fprintf(fp, "vsync flag: %i\n", renderer->vsync);
 	fprintf(fp, "fps flag: %i\n", gFpsFlag);
-	fprintf(fp, "FSAA flag: %i\n", gFsaaFlag);
+	fprintf(fp, "FSAA flag: %i\n", renderer->fsaa);
 	fprintf(fp, "Fullscreen flag: %i\n", 1);
 
 	fprintf(fp, "\n");
@@ -565,7 +525,7 @@ static void writeDefaults(void)
 	fclose(fp);
 }
 
-void initGame(void)
+void initGame(SDL_Window *window)
 {
 	loadTiles();
 
@@ -574,7 +534,7 @@ void initGame(void)
 	loadCharacter(&gPinkBubbleGum);
 	loadCharacter(&gBlueLightning);
 
-	if (!startAnimation())
+	if (!startAnimation(window))
 	{
 		zgPrint("Timer is long gone");
 	}
@@ -613,7 +573,7 @@ void closeGameResources(void)
 }
 
 // frames per second function.
-void drawFramesPerSecond(mat4_t projectionMatrix)
+void drawFramesPerSecond(Renderer *renderer)
 {
 	static unsigned frame_count = 0;
     static double last_fps_time = -1.0;
@@ -648,11 +608,11 @@ void drawFramesPerSecond(mat4_t projectionMatrix)
 	if (length > 0)
 	{
 		mat4_t modelViewMatrix = m4_translation((vec3_t){9.0f, 9.0f, -25.0f});
-		drawString(projectionMatrix, modelViewMatrix, (color4_t){0.0f, 0.5f, 0.8f, 1.0f}, 0.16f * length, 0.5f, fpsString);
+		drawString(renderer, modelViewMatrix, (color4_t){0.0f, 0.5f, 0.8f, 1.0f}, 0.16f * length, 0.5f, fpsString);
 	}
 }
 
-static void drawScoresForCharacter(Character *character, mat4_t projectionMatrix, color4_t color, float x, float y, float z)
+static void drawScoresForCharacter(Renderer *renderer, Character *character, color4_t color, float x, float y, float z)
 {
 	mat4_t iconModelViewMatrix = m4_translation((vec3_t){x, y, z});
 	drawCharacterIcon(iconModelViewMatrix, character);
@@ -660,23 +620,21 @@ static void drawScoresForCharacter(Character *character, mat4_t projectionMatrix
 	color4_t characterColor = (color4_t){character->red, character->green, character->blue, 0.7f};
 	
 	mat4_t winsLabelModelViewMatrix = m4_mul(iconModelViewMatrix, m4_translation((vec3_t){0.0f, -2.0f, 0.0f}));
-	drawString(projectionMatrix, winsLabelModelViewMatrix, characterColor, 0.5f, 0.5f, "Wins:");
+	drawString(renderer, winsLabelModelViewMatrix, characterColor, 0.5f, 0.5f, "Wins:");
 	
 	mat4_t winsModelViewMatrix = m4_mul(winsLabelModelViewMatrix, m4_translation((vec3_t){1.0f, 0.0f, 0.0f}));
-	drawStringf(projectionMatrix, winsModelViewMatrix, characterColor, 0.5f, 0.5f, "%i", character->wins);
+	drawStringf(renderer, winsModelViewMatrix, characterColor, 0.5f, 0.5f, "%i", character->wins);
 	
 	mat4_t killsLabelModelViewMatrix = m4_mul(winsModelViewMatrix, m4_translation((vec3_t){-1.0f, -2.0f, 0.0f}));
-	drawString(projectionMatrix, killsLabelModelViewMatrix, characterColor, 0.5f, 0.5f, "Kills:");
+	drawString(renderer, killsLabelModelViewMatrix, characterColor, 0.5f, 0.5f, "Kills:");
 	
 	mat4_t killsModelViewMatrix = m4_mul(killsLabelModelViewMatrix, m4_translation((vec3_t){1.0f, 0.0f, 0.0f}));
-	drawStringf(projectionMatrix, killsModelViewMatrix, characterColor, 0.5f, 0.5f, "%i", character->kills);
+	drawStringf(renderer, killsModelViewMatrix, characterColor, 0.5f, 0.5f, "%i", character->kills);
 }
 
-static void drawScene(void)
+static void drawScene(Renderer *renderer)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
-	mat4_t projectionMatrix = gProjectionMatrix;
 
 	if (gGameState)
 	{
@@ -694,7 +652,7 @@ static void drawScene(void)
 
 		if (gDrawFPS)
 		{
-			drawFramesPerSecond(projectionMatrix);
+			drawFramesPerSecond(renderer);
 		}
 
 		if (!gGameHasStarted)
@@ -710,22 +668,22 @@ static void drawScene(void)
 					// be sure to take account the plural form of player(s)
 					if (gNetworkConnection->numberOfPlayersToWaitFor > 1)
 					{
-						drawStringf(projectionMatrix, modelViewMatrix, textColor, 50.0, 10.0, "Waiting for %i players to connect...", gNetworkConnection->numberOfPlayersToWaitFor);
+						drawStringf(renderer, modelViewMatrix, textColor, 50.0, 10.0, "Waiting for %i players to connect...", gNetworkConnection->numberOfPlayersToWaitFor);
 					}
 					else if (gNetworkConnection->numberOfPlayersToWaitFor == 0)
 					{
-						drawString(projectionMatrix, modelViewMatrix, textColor, 50.0, 10.0, "Waiting for players to connect...");
+						drawString(renderer, modelViewMatrix, textColor, 50.0, 10.0, "Waiting for players to connect...");
 					}
 					else
 					{
-						drawString(projectionMatrix, modelViewMatrix, textColor, 50.0, 10.0, "Waiting for 1 player to connect...");
+						drawString(renderer, modelViewMatrix, textColor, 50.0, 10.0, "Waiting for 1 player to connect...");
 					}
 				}
 			}
 
 			else if (gGameStartNumber > 0)
 			{
-				drawStringf(projectionMatrix, modelViewMatrix, textColor, 40.0, 10.0, "Game begins in %i", gGameStartNumber);
+				drawStringf(renderer, modelViewMatrix, textColor, 40.0, 10.0, "Game begins in %i", gGameStartNumber);
 			}
 
 			else if (gGameStartNumber == 0)
@@ -742,12 +700,12 @@ static void drawScene(void)
 	{
 		drawCharacterIcons();
 
-		drawCharacterLives(projectionMatrix);
+		drawCharacterLives(renderer);
 
 		if (gConsoleActivated)
 		{
 			drawConsole();
-			drawConsoleText(projectionMatrix);
+			drawConsoleText(renderer);
 		}
 
 		if (gGameWinner != NO_CHARACTER)
@@ -759,30 +717,30 @@ static void drawScene(void)
 			{
 				if (gGameWinner == IDOfCharacter(gNetworkConnection->input->character))
 				{
-					drawString(projectionMatrix, winLoseModelViewMatrix, textColor, 20.0, 10.0, "You win!");
+					drawString(renderer, winLoseModelViewMatrix, textColor, 20.0, 10.0, "You win!");
 				}
 				else
 				{
-					drawString(projectionMatrix, winLoseModelViewMatrix, textColor, 20.0, 10.0, "You lose!");
+					drawString(renderer, winLoseModelViewMatrix, textColor, 20.0, 10.0, "You lose!");
 				}
 			}
 			else
 			{
 				if (gGameWinner == RED_ROVER)
 				{
-					drawString(projectionMatrix, winLoseModelViewMatrix, textColor, 40.0, 10.0, "Red Rover wins!");
+					drawString(renderer, winLoseModelViewMatrix, textColor, 40.0, 10.0, "Red Rover wins!");
 				}
 				else if (gGameWinner == GREEN_TREE)
 				{
-					drawString(projectionMatrix, winLoseModelViewMatrix, textColor, 40.0, 10.0, "Green Tree wins!");
+					drawString(renderer, winLoseModelViewMatrix, textColor, 40.0, 10.0, "Green Tree wins!");
 				}
 				else if (gGameWinner == PINK_BUBBLE_GUM)
 				{
-					drawString(projectionMatrix, winLoseModelViewMatrix, textColor, 40.0, 10.0, "Pink Bubblegum wins!");
+					drawString(renderer, winLoseModelViewMatrix, textColor, 40.0, 10.0, "Pink Bubblegum wins!");
 				}
 				else if (gGameWinner == BLUE_LIGHTNING)
 				{
-					drawString(projectionMatrix, winLoseModelViewMatrix, textColor, 40.0, 10.0, "Blue Lightning wins!");
+					drawString(renderer, winLoseModelViewMatrix, textColor, 40.0, 10.0, "Blue Lightning wins!");
 				}
 			}
 
@@ -792,17 +750,17 @@ static void drawScene(void)
 
 			/* Display stats */
 			
-			drawScoresForCharacter(&gPinkBubbleGum, projectionMatrix, textColor, -6.0, 7.0, -25.0);
-			drawScoresForCharacter(&gRedRover, projectionMatrix, textColor, -2.0f, 7.0f, -25.0f);
-			drawScoresForCharacter(&gGreenTree, projectionMatrix, textColor, 2.0f, 7.0f, -25.0f);
-			drawScoresForCharacter(&gBlueLightning, projectionMatrix, textColor, 6.0f, 7.0f, -25.0f);
+			drawScoresForCharacter(renderer, &gPinkBubbleGum, textColor, -6.0, 7.0, -25.0);
+			drawScoresForCharacter(renderer, &gRedRover, textColor, -2.0f, 7.0f, -25.0f);
+			drawScoresForCharacter(renderer, &gGreenTree, textColor, 2.0f, 7.0f, -25.0f);
+			drawScoresForCharacter(renderer, &gBlueLightning, textColor, 6.0f, 7.0f, -25.0f);
 
 			if (!gNetworkConnection || gNetworkConnection->type != NETWORK_CLIENT_TYPE)
 			{
 				// Draw a "Press ENTER to play again" notice
 				mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, -7.0f, -25.0f});
 
-				drawString(projectionMatrix, modelViewMatrix, (color4_t){0.0f, 0.0f, 0.4f, 0.4f}, 5.0f, 1.0f, "Fire to play again or Escape to quit");
+				drawString(renderer, modelViewMatrix, (color4_t){0.0f, 0.0f, 0.4f, 0.4f}, 5.0f, 1.0f, "Fire to play again or Escape to quit");
 			}
 		}
 	}
@@ -813,9 +771,9 @@ static void drawScene(void)
 		
 		mat4_t gameTitleModelViewMatrix = m4_translation((vec3_t){-1.0f, 27.0f, -100.0f});
 		
-		drawString(projectionMatrix, gameTitleModelViewMatrix, (color4_t){0.3f, 0.2f, 1.0f, 0.35f}, 20.0, 5.0, "Sky Checkers");
+		drawString(renderer, gameTitleModelViewMatrix, (color4_t){0.3f, 0.2f, 1.0f, 0.35f}, 20.0, 5.0, "Sky Checkers");
 
-		drawMenus(gProjectionMatrix);
+		drawMenus(renderer);
 
 		if (isChildBeingDrawn(&gJoyStickConfig[0][1]) /* pinkBubbleGumConfigRightJoyStick */	||
 			isChildBeingDrawn(&gJoyStickConfig[1][1]) /* redRoverConfigRightJoyStick */			||
@@ -828,11 +786,11 @@ static void drawScene(void)
 			
 			color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 0.6f};
 
-			drawString(projectionMatrix, instructionsModelViewMatrix, textColor, 100.0, 5.0, "Click enter to modify a mapping value and input in a button on your joystick. Click Escape to exit out.");
+			drawString(renderer, instructionsModelViewMatrix, textColor, 100.0, 5.0, "Click enter to modify a mapping value and input in a button on your joystick. Click Escape to exit out.");
 			
 			mat4_t noticeModelViewMatrix = m4_mul(instructionsModelViewMatrix, m4_translation((vec3_t){0.0f, -20.0f, 0.0f}));
 
-			drawString(projectionMatrix, noticeModelViewMatrix, textColor, 50.0, 5.0, "(Joysticks only function in-game)");
+			drawString(renderer, noticeModelViewMatrix, textColor, 50.0, 5.0, "(Joysticks only function in-game)");
 		}
 
 		else if (isChildBeingDrawn(&gCharacterConfigureKeys[0][1]) /* pinkBubbleGum */	||
@@ -846,12 +804,12 @@ static void drawScene(void)
 			
 			color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 0.6f};
 
-			drawString(projectionMatrix, instructionsModelViewMatrix, textColor, 100.0, 5.0, "Click enter to modify a mapping value and input in a key. Click Escape to exit out.");
+			drawString(renderer, instructionsModelViewMatrix, textColor, 100.0, 5.0, "Click enter to modify a mapping value and input in a key. Click Escape to exit out.");
 		}
 	}
 }
 
-static void eventInput(SDL_Event *event, int *quit)
+static void eventInput(SDL_Event *event, SDL_Window *window, int *quit)
 {
 	switch (event->type)
 	{
@@ -1178,7 +1136,7 @@ static void eventInput(SDL_Event *event, int *quit)
 
 		case SDL_JOYBUTTONDOWN:
 		case SDL_JOYAXISMOTION:
-			if (gGameState && gGameWinner != NO_CHARACTER && ((SDL_GetWindowFlags(gWindow) & SDL_WINDOW_INPUT_FOCUS) != 0) &&
+			if (gGameState && gGameWinner != NO_CHARACTER && ((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) &&
 				(event->jbutton.button == gPinkBubbleGumInput.weapjs_id || event->jbutton.button == gRedRoverInput.weapjs_id ||
 				event->jbutton.button == gBlueLightningInput.weapjs_id || event->jbutton.button == gGreenTreeInput.weapjs_id ||
 				event->jaxis.axis == gPinkBubbleGumInput.weapjs_axis_id || event->jaxis.axis == gRedRoverInput.weapjs_id ||
@@ -1207,24 +1165,6 @@ static void eventInput(SDL_Event *event, int *quit)
 			}
 			break;
 		case SDL_QUIT:
-			/* Save defaults */
-			writeDefaults();
-
-			if (gNetworkConnection)
-			{
-				if (gNetworkConnection->type == NETWORK_SERVER_TYPE)
-				{
-					sendToClients(0, "qu");
-				}
-				else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE && gNetworkConnection->isConnected)
-				{
-					char buffer[256];
-					sprintf(buffer, "qu%i", IDOfCharacter(gNetworkConnection->input->character));
-
-					sendto(gNetworkConnection->socket, buffer, strlen(buffer), 0, (struct sockaddr *)&gNetworkConnection->hostAddress, sizeof(gNetworkConnection->hostAddress));
-				}
-			}
-
 			*quit = SDL_TRUE;
 			break;
 	}
@@ -1239,33 +1179,20 @@ static void eventInput(SDL_Event *event, int *quit)
 	{
 		if (!gConsoleActivated)
 		{
-			performDownAction(&gRedRoverInput, event);
-			performDownAction(&gGreenTreeInput, event);
-			performDownAction(&gPinkBubbleGumInput, event);
-			performDownAction(&gBlueLightningInput, event);
+			performDownAction(&gRedRoverInput, window, event);
+			performDownAction(&gGreenTreeInput, window, event);
+			performDownAction(&gPinkBubbleGumInput, window, event);
+			performDownAction(&gBlueLightningInput, window, event);
 		}
 
-		performUpAction(&gRedRoverInput, event);
-		performUpAction(&gGreenTreeInput, event);
-		performUpAction(&gPinkBubbleGumInput, event);
-		performUpAction(&gBlueLightningInput, event);
+		performUpAction(&gRedRoverInput, window, event);
+		performUpAction(&gGreenTreeInput, window, event);
+		performUpAction(&gPinkBubbleGumInput, window, event);
+		performUpAction(&gBlueLightningInput, window, event);
 	}
 }
 
-static void resizeWindow(int width, int height)
-{
-	glViewport(0, 0, width, height);
-	
-	glMatrixMode(GL_PROJECTION);
-	
-	// The aspect ratio is not quite correct, which is a mistake I made a long time ago that is too troubling to fix properly
-	gProjectionMatrix = m4_perspective(45.0f, (float)(width / height), 10.0f, 300.0f);
-	glLoadMatrixf(&gProjectionMatrix.m00);
-	
-	glMatrixMode(GL_MODELVIEW);
-}
-
-static void eventLoop(void)
+static void eventLoop(Renderer *renderer)
 {
 	SDL_Event event;
 	int done = 0;
@@ -1280,13 +1207,13 @@ static void eventLoop(void)
 		//check for events.
 		while (SDL_PollEvent(&event))
 		{
-			eventInput(&event, &done);
+			eventInput(&event, renderer->window, &done);
 		}
 
-		drawScene();
-		SDL_GL_SwapWindow(gWindow);
+		drawScene(renderer);
+		swapBuffers(renderer);
 		
-		SDL_bool hasAppFocus = (SDL_GetWindowFlags(gWindow) & SDL_WINDOW_INPUT_FOCUS) != 0;
+		SDL_bool hasAppFocus = (SDL_GetWindowFlags(renderer->window) & SDL_WINDOW_INPUT_FOCUS) != 0;
 		// Restrict game to 30 fps when the fps flag is enabled as well as when we don't have app focus
 		// This will allow the game to use less processing power when it's in the background,
 		// which fixes a bug on macOS where the game can have huge CPU spikes when the window is completly obscured
@@ -1314,7 +1241,7 @@ static void eventLoop(void)
 		if (gGameShouldReset)
 		{
 			endGame();
-			initGame();
+			initGame(renderer->window);
 		}
 
 		// deal with what music to play
@@ -1335,88 +1262,6 @@ static void eventLoop(void)
 			}
 		}
 	}
-}
-
-static void initSDL_GL(void)
-{
-	// Set up flags
-	gVideoFlags = SDL_WINDOW_OPENGL;
-#ifndef _DEBUG
-	gVideoFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-#else
-	gScreenWidth = 800;
-	gScreenHeight = 500;
-#endif
-	
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-	
-	// FSAA
-	if (gFsaaFlag)
-	{
-		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 2);
-	}
-	
-	// VSYNC
-	SDL_GL_SetSwapInterval(gVsyncFlag);
-
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
-#ifndef _DEBUG
-	SDL_ShowCursor(SDL_DISABLE);
-#endif
-	
-#ifndef MAC_OS_X
-	const char *windowTitle = "SkyCheckers";
-#else
-	const char *windowTitle = "";
-#endif
-	gWindow = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, gScreenWidth, gScreenHeight, gVideoFlags);
-	
-	if (gWindow == NULL)
-	{
-		if (!gFsaaFlag)
-		{
-			zgPrint("Couldn't create SDL window with resolution %ix%i: %e", gScreenWidth, gScreenHeight);
-			exit(4);
-		}
-		else
-		{
-			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
-			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
-			
-			gWindow = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, gScreenWidth, gScreenHeight, gVideoFlags);
-			
-			if (gWindow == NULL)
-			{
-				zgPrint("Couldn't create SDL window with fsaa off with resolution %ix%i: %e", gScreenWidth, gScreenHeight);
-				exit(6);
-			}
-		}
-	}
-	
-	SDL_GLContext glContext = SDL_GL_CreateContext(gWindow);
-	if (glContext == NULL)
-	{
-		zgPrint("Couldn't create OpenGL context: %e");
-		exit(5);
-	}
-	
-	SDL_GetWindowSize(gWindow, &gScreenWidth, &gScreenHeight);
-	
-	resizeWindow(gScreenWidth, gScreenHeight);
-	
-	// The attributes we set initially may not be the same after we create the video mode, so
-	// deal with it accordingly
-	int value;
-	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &value);
-	gFsaaFlag = value;
-	
-	value = SDL_GL_GetSwapInterval();
-	gVsyncFlag = value;
 }
 
 void initJoySticks(void)
@@ -1464,12 +1309,72 @@ int main(int argc, char *argv[])
 
 	readDefaults();
 
-	initSDL_GL();
-    initGL();
+	// Create renderer
+	uint32_t videoFlags = SDL_WINDOW_OPENGL;
+#ifndef _DEBUG
+	videoFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+#endif
+	
+	int32_t windowWidth;
+	int32_t windowHeight;
+#ifndef _DEBUG
+	windowWidth = 0;
+	windowHeight = 0;
+#else
+	windowWidth = 800;
+	windowHeight = 500;
+#endif
+	
+	SDL_bool vsync = SDL_TRUE;
+	SDL_bool fsaa = SDL_TRUE;
+	
+	Renderer renderer;
+	createRenderer(&renderer, windowWidth, windowHeight, videoFlags, vsync, fsaa);
+	
+	gWindow = renderer.window;
+	
+	// Initialize game related things
+	// init random number generator
+	mt_init();
+	
+	initScene(&renderer);
+	
+	/*
+	 * Load a few font strings before a game starts up.
+	 * We don't want the user to experience slow font loading times during a game
+	 */
+	cacheString(&renderer, "Game begins in 1");
+	cacheString(&renderer, "Game begins in 2");
+	cacheString(&renderer, "Game begins in 3");
+	cacheString(&renderer, "Game begins in 4");
+	cacheString(&renderer, "Game begins in 5");
+	
+	cacheString(&renderer, "Wins:");
+	cacheString(&renderer, "Kills:");
 
-    eventLoop();
+	// Start the game event loop
+    eventLoop(&renderer);
+	
+	// Prepare to quit
+	
+	// Save user defaults
+	writeDefaults(&renderer);
+	
+	if (gNetworkConnection)
+	{
+		if (gNetworkConnection->type == NETWORK_SERVER_TYPE)
+		{
+			sendToClients(0, "qu");
+		}
+		else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE && gNetworkConnection->isConnected)
+		{
+			char buffer[256];
+			sprintf(buffer, "qu%i", IDOfCharacter(gNetworkConnection->input->character));
+			
+			sendto(gNetworkConnection->socket, buffer, strlen(buffer), 0, (struct sockaddr *)&gNetworkConnection->hostAddress, sizeof(gNetworkConnection->hostAddress));
+		}
+	}
 
 	SDL_Quit();
-
     return 0;
 }

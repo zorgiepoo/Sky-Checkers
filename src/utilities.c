@@ -19,9 +19,7 @@
 
 #include "utilities.h"
 #include <stdarg.h>
-
-static void surfaceToGLTexture(SDL_Surface *surface, GLuint *tex);
-static int power_of_two(int input);
+#include "renderer.h"
 
 /*
  * Using the Mersenne Twister Random number generator
@@ -83,106 +81,6 @@ unsigned long mt_random() {
 	 r ^= (r << 15) & 0xEFC60000;
 	 r ^= (r >> 18);
 	 */
-}
-
-GLuint textureFromPixelData(const void *pixels, int width, int height)
-{
-	GLuint tex = 0;
-	
-	glGenTextures(1, &tex);
-	glBindTexture(GL_TEXTURE_2D, tex);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D,
-				 0,
-				 GL_RGBA,
-				 width, height,
-				 0,
-				 GL_RGBA,
-				 GL_UNSIGNED_BYTE,
-				 pixels);
-	
-	return tex;
-}
-
-// The code from this function is taken from https://www.opengl.org/discussion_boards/showthread.php/163677-SDL_image-Opengl
-// which is derived from SDL 1.2 source code which is licensed under LGPL:
-// https://github.com/klange/SDL/blob/master/test/testgl.c
-static void surfaceToGLTexture(SDL_Surface *surface, GLuint *tex)
-{
-	int w, h;
-	SDL_Surface *image;
-	SDL_Rect area;
-
-	/* Use the surface width and height expanded to powers of 2 */
-	w = power_of_two(surface->w);
-	h = power_of_two(surface->h);
-
-	image = SDL_CreateRGBSurface(
-			SDL_SWSURFACE,
-			w, h,
-			32,
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN /* OpenGL RGBA masks */
-			0x000000FF, 
-			0x0000FF00, 
-			0x00FF0000, 
-			0xFF000000
-#else
-			0xFF000000,
-			0x00FF0000, 
-			0x0000FF00, 
-			0x000000FF
-#endif
-		       );
-	if ( image == NULL )
-	{
-		return;
-	}
-	
-	// Set alpha property to max
-	SDL_SetSurfaceAlphaMod(surface, 255);
-
-	/* Copy the surface into the GL texture image */
-	area.x = 0;
-	area.y = 0;
-	area.w = surface->w;
-	area.h = surface->h;
-	SDL_BlitSurface(surface, &area, image, &area);
-
-	/* Create an OpenGL texture for the image */
-	*tex = textureFromPixelData(image->pixels, w, h);
-			 
-	SDL_FreeSurface(image); /* No longer needed */
-}
-
-// This function is derived from same place as surfaceToGLTexture() code is
-static int power_of_two(int input)
-{
-	int value = 1;
-
-	while ( value < input )
-	{
-		value <<= 1;
-	}
-	
-	return value;
-}
-
-void loadTexture(const char *filePath, GLuint *tex)
-{
-	SDL_Surface *texImage;
-	
-	texImage = IMG_Load(filePath);
-	
-	if (texImage == NULL)
-	{
-		printf("Couldn't load texture: %s\n", filePath);
-		SDL_Quit();
-	}
-	
-	surfaceToGLTexture(texImage, tex);
-	
-	SDL_FreeSurface(texImage);
 }
 
 /*

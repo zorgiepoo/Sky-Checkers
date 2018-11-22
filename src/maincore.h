@@ -91,7 +91,7 @@
 
 /* Game Globals */
 
-void initGame(void);
+void initGame(SDL_Window *window);
 void endGame(void);
 void closeGameResources(void);
 
@@ -107,4 +107,5 @@ extern int gCharacterNetLives;
 extern SDL_bool gAudioEffectsFlag;
 extern SDL_bool gAudioMusicFlag;
 
+// TODO: I want to remove this
 extern SDL_Window *gWindow;

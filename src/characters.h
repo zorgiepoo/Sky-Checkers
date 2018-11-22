@@ -23,6 +23,7 @@
 #include "scenery.h"
 #include "weapon.h"
 #include "math_3d.h"
+#include "renderer.h"
 
 extern const int NO_DIRECTION;
 extern const int RIGHT;
@@ -132,7 +133,7 @@ void loadCharacter(Character *character);
 void restoreAllBackupStates(void);
 int offlineCharacterState(Character *character);
 
-void loadCharacterTextures(void);
+void loadCharacterTextures(Renderer *renderer);
 
 void buildCharacterModels(void);
 
@@ -141,7 +142,7 @@ void drawCharacterIcons(void);
 
 void drawCharacter(Character *character);
 
-void drawCharacterLives(mat4_t projectionMatrix);
+void drawCharacterLives(Renderer *renderer);
 
 void getOtherCharacters(Character *characterA, Character **characterB, Character **characterC, Character **characterD);
 

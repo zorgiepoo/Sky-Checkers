@@ -20,6 +20,7 @@
 #pragma once
 
 #include "maincore.h"
+#include "renderer.h"
 
 typedef struct _tile
 {
@@ -48,7 +49,7 @@ void loadTiles(void);
 
 SDL_bool availableTile(GLfloat x, GLfloat y);
 
-void loadSceneryTextures(void);
+void loadSceneryTextures(Renderer *renderer);
 
 void drawSky(void);
 void drawTiles(void);

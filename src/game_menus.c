@@ -24,6 +24,7 @@
 #include "audio.h"
 #include "utilities.h" // for SDL_Terminate()
 #include "math_3d.h"
+#include "renderer.h"
 
 // Four characters that each have five configured menu actions (right, up, left, down, fire/slicing knife)
 Menu gCharacterConfigureKeys[4][6];
@@ -87,18 +88,18 @@ static void drawUpAndDownArrowTriangles(mat4_t modelViewMatrix)
 
 /* A bunch of menu drawing and action functions! */
 
-void drawPlayMenu(mat4_t projectionMatrix, color4_t preferredColor)
+void drawPlayMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 15.0, -280.0});
 	
-	drawString(projectionMatrix, modelViewMatrix, preferredColor, 12.0, 5.0, "Play");
+	drawString(renderer, modelViewMatrix, preferredColor, 12.0, 5.0, "Play");
 }
 
-void drawNetworkPlayMenu(mat4_t projectionMatrix, color4_t preferredColor)
+void drawNetworkPlayMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 0.0, -280.0});
 	
-	drawString(projectionMatrix, modelViewMatrix, preferredColor, 20.0, 5.0, "Network Play");
+	drawString(renderer, modelViewMatrix, preferredColor, 20.0, 5.0, "Network Play");
 }
 
 void networkPlayMenuAction(void)
@@ -106,18 +107,18 @@ void networkPlayMenuAction(void)
 	changeMenu(RIGHT);
 }
 
-void drawNetworkUserNameFieldMenu(mat4_t projectionMatrix, color4_t preferredColor)
+void drawNetworkUserNameFieldMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t nameLabelModelViewMatrix = m4_translation((vec3_t){-5.0f, -15.0f, -280.0f});
 	
-	drawString(projectionMatrix, nameLabelModelViewMatrix, preferredColor, 10.0f, 5.0f, "Name:");
+	drawString(renderer, nameLabelModelViewMatrix, preferredColor, 10.0f, 5.0f, "Name:");
 	
 	color4_t color  =  gNetworkUserNameFieldIsActive ? (color4_t){0.0f, 0.0f, 0.8f, 1.0f} : preferredColor;
 	
 	if (strlen(gUserNameString) > 0)
 	{
 		mat4_t nameModelViewMatrix = m4_mul(nameLabelModelViewMatrix, m4_translation((vec3_t){strlen(gUserNameString) + 15.0f, 0.0f, 0.0f}));
-		drawString(projectionMatrix, nameModelViewMatrix, color, strlen(gUserNameString) + 2.0f, 5.0f, gUserNameString);
+		drawString(renderer, nameModelViewMatrix, color, strlen(gUserNameString) + 2.0f, 5.0f, gUserNameString);
 	}
 }
 
@@ -146,11 +147,11 @@ void performNetworkUserNameBackspace(void)
 	}
 }
 
-void drawNetworkServerMenu(mat4_t projectionMatrix, color4_t preferredColor)
+void drawNetworkServerMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 15.0, -280.0});
 	
-	drawString(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Server");
+	drawString(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Server");
 }
 
 void networkServerMenuAction(void)
@@ -158,11 +159,11 @@ void networkServerMenuAction(void)
 	changeMenu(RIGHT);
 }
 
-void drawNetworkServerPlayMenu(mat4_t projectionMatrix, color4_t preferredColor)
+void drawNetworkServerPlayMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-20.0, 0.0, -280.0});
 	
-	drawString(projectionMatrix, modelViewMatrix, preferredColor, 20.0, 5.0, "Start Game");
+	drawString(renderer, modelViewMatrix, preferredColor, 20.0, 5.0, "Start Game");
 }
 
 void networkServerPlayMenuAction(void)
@@ -238,7 +239,7 @@ void networkServerPlayMenuAction(void)
 	
 	SDL_CreateThread(serverNetworkThread, "server-thread", NULL);
 	
-	initGame();
+	initGame(gWindow);
 	
 	gRedRoverInput.character = gNetworkConnection->input->character;
 	gBlueLightningInput.character = gNetworkConnection->input->character;
@@ -249,11 +250,11 @@ void networkServerPlayMenuAction(void)
 	changeMenu(LEFT);
 }
 
-void drawNetworkServerNumberOfPlayersMenu(mat4_t projectionMatrix, color4_t preferredColor)
+void drawNetworkServerNumberOfPlayersMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t numberPlayersModelViewMatrix = m4_translation((vec3_t){-20.0f, -15.0f, -280.0f});
 	
-	drawStringf(projectionMatrix, numberPlayersModelViewMatrix, preferredColor, 20.0f, 5.0f, "Net-Players: %i", gNumberOfNetHumans);
+	drawStringf(renderer, numberPlayersModelViewMatrix, preferredColor, 20.0f, 5.0f, "Net-Players: %i", gNumberOfNetHumans);
 	
 	if (gDrawArrowsForNumberOfNetHumansFlag)
 	{
@@ -266,18 +267,18 @@ void networkServerNumberOfPlayersMenuAction(void)
 	gDrawArrowsForNumberOfNetHumansFlag = !gDrawArrowsForNumberOfNetHumansFlag;
 }
 
-void drawNetworkServerAIModeMenu(mat4_t projectionMatrix, color4_t preferredColor)
+void drawNetworkServerAIModeMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t botModeModelViewMatrix = m4_translation((vec3_t){-20.0, -30.0, -280.0});
 	
 	if (gAINetMode == AI_EASY_MODE)
-		drawString(projectionMatrix, botModeModelViewMatrix, preferredColor, 20.0, 5.0, "Bot Mode: Easy");
+		drawString(renderer, botModeModelViewMatrix, preferredColor, 20.0, 5.0, "Bot Mode: Easy");
 	
 	else if (gAINetMode == AI_MEDIUM_MODE)
-		drawString(projectionMatrix, botModeModelViewMatrix, preferredColor, 20.0, 5.0, "Bot Mode: Medium");
+		drawString(renderer, botModeModelViewMatrix, preferredColor, 20.0, 5.0, "Bot Mode: Medium");
 	
 	else if (gAINetMode == AI_HARD_MODE)
-		drawString(projectionMatrix, botModeModelViewMatrix, preferredColor, 20.0, 5.0, "Bot Mode: Hard");
+		drawString(renderer, botModeModelViewMatrix, preferredColor, 20.0, 5.0, "Bot Mode: Hard");
 	
 	if (gDrawArrowsForAIModeFlag)
 	{
@@ -289,11 +290,11 @@ void networkServerAIModeMenuAction(void)
 {
 }
 
-void drawNetworkServerPlayerLivesMenu(mat4_t projectionMatrix, color4_t preferredColor)
+void drawNetworkServerPlayerLivesMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t playerLivesModelViewMatrix = m4_translation((vec3_t){-20.0, -45.0, -280.0});
 	
-	drawStringf(projectionMatrix, playerLivesModelViewMatrix, preferredColor, 20.0, 5.0, "Player Lives: %i", gCharacterNetLives);
+	drawStringf(renderer, playerLivesModelViewMatrix, preferredColor, 20.0, 5.0, "Player Lives: %i", gCharacterNetLives);
 	
 	if (gDrawArrowsForNetPlayerLivesFlag)
 	{
@@ -306,11 +307,11 @@ void networkServerPlayerLivesMenuAction(void)
 	gDrawArrowsForNetPlayerLivesFlag = !gDrawArrowsForNetPlayerLivesFlag;
 }
 
-void drawNetworkClientMenu(mat4_t projectionMatrix, color4_t preferredColor)
+void drawNetworkClientMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 0.0, -280.0});
 	
-	drawString(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Client");
+	drawString(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Client");
 }
 
 void networkClientMenuAction(void)
@@ -318,11 +319,11 @@ void networkClientMenuAction(void)
 	changeMenu(RIGHT);
 }
 
-void drawNetworkAddressFieldMenu(mat4_t projectionMatrix, color4_t preferredColor)
+void drawNetworkAddressFieldMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t hostLabelModelViewMatrix = m4_translation((vec3_t){-40.0, 0.0, -280.0});
 	
-	drawString(projectionMatrix, hostLabelModelViewMatrix, preferredColor, 20.0, 5.0, "Host Address:");
+	drawString(renderer, hostLabelModelViewMatrix, preferredColor, 20.0, 5.0, "Host Address:");
 	
 	color4_t color = gNetworkAddressFieldIsActive ? (color4_t){0.0f, 0.0f, 0.8f, 1.0f} : preferredColor;
 	
@@ -330,7 +331,7 @@ void drawNetworkAddressFieldMenu(mat4_t projectionMatrix, color4_t preferredColo
 	{
 		mat4_t hostModelViewMatrix = m4_mul(hostLabelModelViewMatrix, m4_translation((vec3_t){strlen(gServerAddressString) + 28.0f, 0.0f, 0.0f}));
 		
-		drawString(projectionMatrix, hostModelViewMatrix, color, strlen(gServerAddressString) + 5.0f, 5.0f, gServerAddressString);
+		drawString(renderer, hostModelViewMatrix, color, strlen(gServerAddressString) + 5.0f, 5.0f, gServerAddressString);
 	}
 }
 
@@ -359,11 +360,11 @@ void performNetworkAddressBackspace(void)
 	}
 }
 
-void drawConnectToNetworkGameMenu(mat4_t projectionMatrix, color4_t preferredColor)
+void drawConnectToNetworkGameMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-45.0, -15.0, -280.0});
 	
-	drawString(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Connect");
+	drawString(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Connect");
 }
 
 void connectToNetworkGameMenuAction(void)
@@ -431,11 +432,11 @@ void connectToNetworkGameMenuAction(void)
 	gNetworkConnection->thread = SDL_CreateThread(clientNetworkThread, "client-thread", NULL);
 }
 
-void drawGameOptionsMenu(mat4_t projectionMatrix, color4_t preferredColor)
+void drawGameOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f, -15.0f, -280.0f});
 	
-	drawString(projectionMatrix, modelViewMatrix, preferredColor, 20.0, 5.0, "Game Options");
+	drawString(renderer, modelViewMatrix, preferredColor, 20.0, 5.0, "Game Options");
 }
 
 void gameOptionsMenuAction(void)
@@ -443,11 +444,11 @@ void gameOptionsMenuAction(void)
 	changeMenu(RIGHT);
 }
 
-void drawPlayerOptionsMenu(mat4_t projectionMatrix, color4_t preferredColor)
+void drawPlayerOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f, 15.0f, -280.0f});
 	
-	drawString(projectionMatrix, modelViewMatrix, preferredColor, 20.0, 5.0, "Configure Players");
+	drawString(renderer, modelViewMatrix, preferredColor, 20.0, 5.0, "Configure Players");
 }
 
 void playerOptionsMenuAction(void)
@@ -455,11 +456,11 @@ void playerOptionsMenuAction(void)
 	changeMenu(RIGHT);
 }
 
-void drawConfigureKeysMenu(mat4_t projectionMatrix, color4_t preferredColor)
+void drawConfigureKeysMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f, 0.0f, -280.0f});
 	
-	drawString(projectionMatrix, modelViewMatrix, preferredColor, 20.0, 5.0, "Configure Keys");
+	drawString(renderer, modelViewMatrix, preferredColor, 20.0, 5.0, "Configure Keys");
 }
 
 void configureKeysMenuAction(void)
@@ -467,11 +468,11 @@ void configureKeysMenuAction(void)
 	changeMenu(RIGHT);
 }
 
-void drawJoySticksConfigureMenu(mat4_t projectionMatrix, color4_t preferredColor)
+void drawJoySticksConfigureMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f, -15.0f, -280.0f});
 	
-	drawString(projectionMatrix, modelViewMatrix, preferredColor, 20.0, 5.0, "Configure Joy Sticks");
+	drawString(renderer, modelViewMatrix, preferredColor, 20.0, 5.0, "Configure Joy Sticks");
 }
 
 void joySticksConfigureMenuAction(void)
@@ -479,14 +480,14 @@ void joySticksConfigureMenuAction(void)
 	changeMenu(RIGHT);
 }
 
-void drawPinkBubbleGumPlayerOptionsMenu(mat4_t projectionMatrix, color4_t preferredColor)
+void drawPinkBubbleGumPlayerOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f, 15.0f, -280.0f});
 	
 	if (gPinkBubbleGum.state == CHARACTER_HUMAN_STATE)
-		drawString(projectionMatrix, modelViewMatrix, preferredColor, 20.0, 5.0, "Pink Bubblegum: Human");
+		drawString(renderer, modelViewMatrix, preferredColor, 20.0, 5.0, "Pink Bubblegum: Human");
 	else if (gPinkBubbleGum.state == CHARACTER_AI_STATE)
-		drawString(projectionMatrix, modelViewMatrix, preferredColor, 20.0, 5.0, "Pink Bubblegum: Bot");
+		drawString(renderer, modelViewMatrix, preferredColor, 20.0, 5.0, "Pink Bubblegum: Bot");
 }
 
 void pinkBubbleGumPlayerOptionsMenuAction(void)
@@ -504,18 +505,18 @@ void pinkBubbleGumPlayerOptionsMenuAction(void)
 	}
 }
 
-void drawRedRoverPlayerOptionsMenu(mat4_t projectionMatrix, color4_t preferredColor)
+void drawRedRoverPlayerOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f, 0.0f, -280.0f});
 	color4_t color = (gPinkBubbleGum.state == CHARACTER_AI_STATE) ? (color4_t){0.0f, 0.0f, 0.0f, 0.5f} : preferredColor;
 	
 	if (gRedRover.state == CHARACTER_HUMAN_STATE)
 	{
-		drawString(projectionMatrix, modelViewMatrix, color, 20.0, 5.0, "Red Rover: Human");
+		drawString(renderer, modelViewMatrix, color, 20.0, 5.0, "Red Rover: Human");
 	}
 	else
 	{
-		drawString(projectionMatrix, modelViewMatrix, color, 20.0, 5.0, "Red Rover: Bot");
+		drawString(renderer, modelViewMatrix, color, 20.0, 5.0, "Red Rover: Bot");
 	}
 }
 
@@ -533,18 +534,18 @@ void redRoverPlayerOptionsMenuAction(void)
 	}
 }
 
-void drawGreenTreePlayerOptionsMenu(mat4_t projectionMatrix, color4_t preferredColor)
+void drawGreenTreePlayerOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f, -15.0f, -280.0f});
 	color4_t color = (gRedRover.state == CHARACTER_AI_STATE) ? (color4_t){0.0, 0.0, 0.0, 0.5} : preferredColor;
 	
 	if (gGreenTree.state == CHARACTER_HUMAN_STATE)
 	{
-		drawString(projectionMatrix, modelViewMatrix, color, 20.0, 5.0, "Green Tree: Human");
+		drawString(renderer, modelViewMatrix, color, 20.0, 5.0, "Green Tree: Human");
 	}
 	else if (gGreenTree.state == CHARACTER_AI_STATE)
 	{
-		drawString(projectionMatrix, modelViewMatrix, color, 20.0, 5.0, "Green Tree: Bot");
+		drawString(renderer, modelViewMatrix, color, 20.0, 5.0, "Green Tree: Bot");
 	}
 }
 
@@ -561,18 +562,18 @@ void greenTreePlayerOptionsMenuAction(void)
 	}
 }
 
-void drawBlueLightningPlayerOptionsMenu(mat4_t projectionMatrix, color4_t preferredColor)
+void drawBlueLightningPlayerOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f, -30.0f, -280.0f});
 	color4_t color = (gGreenTree.state == CHARACTER_AI_STATE) ? (color4_t){0.0, 0.0, 0.0, 0.5} : preferredColor;
 	
 	if (gBlueLightning.state == CHARACTER_HUMAN_STATE)
 	{
-		drawString(projectionMatrix, modelViewMatrix, color, 20.0, 5.0, "Blue Lightning: Human");
+		drawString(renderer, modelViewMatrix, color, 20.0, 5.0, "Blue Lightning: Human");
 	}
 	else if (gBlueLightning.state == CHARACTER_AI_STATE)
 	{
-		drawString(projectionMatrix, modelViewMatrix, color, 20.0, 5.0, "Blue Lightning: Bot");
+		drawString(renderer, modelViewMatrix, color, 20.0, 5.0, "Blue Lightning: Bot");
 	}
 }
 
@@ -588,18 +589,18 @@ void blueLightningPlayerOptionsMenuAction(void)
 	}
 }
 
-void drawAIModeOptionsMenu(mat4_t projectionMatrix, color4_t preferredColor)
+void drawAIModeOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modeModelViewMatrix = m4_translation((vec3_t){-1.0f, -45.0f, -280.0f});
 	
 	if (gAIMode == AI_EASY_MODE)
-		drawString(projectionMatrix, modeModelViewMatrix, preferredColor, 20.0, 5.0, "Bot Mode: Easy");
+		drawString(renderer, modeModelViewMatrix, preferredColor, 20.0, 5.0, "Bot Mode: Easy");
 	
 	else if (gAIMode == AI_MEDIUM_MODE)
-		drawString(projectionMatrix, modeModelViewMatrix, preferredColor, 20.0, 5.0, "Bot Mode: Medium");
+		drawString(renderer, modeModelViewMatrix, preferredColor, 20.0, 5.0, "Bot Mode: Medium");
 	
 	else if (gAIMode == AI_HARD_MODE)
-		drawString(projectionMatrix, modeModelViewMatrix, preferredColor, 20.0, 5.0, "Bot Mode: Hard");
+		drawString(renderer, modeModelViewMatrix, preferredColor, 20.0, 5.0, "Bot Mode: Hard");
 	
 	if (gDrawArrowsForAIModeFlag)
 	{
@@ -607,11 +608,11 @@ void drawAIModeOptionsMenu(mat4_t projectionMatrix, color4_t preferredColor)
 	}
 }
 
-void drawConfigureLivesMenu(mat4_t projectionMatrix, color4_t preferredColor)
+void drawConfigureLivesMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t livesModelViewMatrix = m4_translation((vec3_t){-1.0f, -60.0f, -280.0f});
 	
-	drawStringf(projectionMatrix, livesModelViewMatrix, preferredColor, 20.0, 5.0, "Player Lives: %i", gCharacterLives);
+	drawStringf(renderer, livesModelViewMatrix, preferredColor, 20.0, 5.0, "Player Lives: %i", gCharacterLives);
 	
 	if (gDrawArrowsForCharacterLivesFlag)
 	{
@@ -619,11 +620,11 @@ void drawConfigureLivesMenu(mat4_t projectionMatrix, color4_t preferredColor)
 	}
 }
 
-void drawPinkBubbleGumConfigKey(mat4_t projectionMatrix, color4_t preferredColor)
+void drawPinkBubbleGumConfigKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f, 15.0f, -280.0f});
 	
-	drawString(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Pink Bubblegum");
+	drawString(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Pink Bubblegum");
 }
 
 void pinkBubbleGumKeyMenuAction(void)
@@ -631,11 +632,11 @@ void pinkBubbleGumKeyMenuAction(void)
 	changeMenu(RIGHT);
 }
 
-void drawRedRoverConfigKey(mat4_t projectionMatrix, color4_t preferredColor)
+void drawRedRoverConfigKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f, 0.0f, -280.0f});
 	
-	drawString(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Red Rover");
+	drawString(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Red Rover");
 }
 
 void redRoverKeyMenuAction(void)
@@ -643,11 +644,11 @@ void redRoverKeyMenuAction(void)
 	changeMenu(RIGHT);
 }
 
-void drawGreenTreeConfigKey(mat4_t projectionMatrix, color4_t preferredColor)
+void drawGreenTreeConfigKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f, -15.0f, -280.0f});
 	
-	drawString(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Green Tree");
+	drawString(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Green Tree");
 }
 
 void greenTreeKeyMenuAction(void)
@@ -655,11 +656,11 @@ void greenTreeKeyMenuAction(void)
 	changeMenu(RIGHT);
 }
 
-void drawBlueLightningConfigKey(mat4_t projectionMatrix, color4_t preferredColor)
+void drawBlueLightningConfigKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f, -30.0f, -280.0f});
 	
-	drawString(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Blue Lightning");
+	drawString(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Blue Lightning");
 }
 
 void blueLightningKeyMenuAction(void)
@@ -676,11 +677,11 @@ void configureKey(unsigned *id)
 }
 
 // start configuration menus
-void drawPinkBubbleGumConfigRightKey(mat4_t projectionMatrix, color4_t preferredColor)
+void drawPinkBubbleGumConfigRightKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 15.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Right: %s", convertKeyCodeToString(gPinkBubbleGumInput.r_id));
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Right: %s", convertKeyCodeToString(gPinkBubbleGumInput.r_id));
 }
 
 void pinkBubbleGumRightKeyMenuAction(void)
@@ -688,11 +689,11 @@ void pinkBubbleGumRightKeyMenuAction(void)
 	configureKey(&gPinkBubbleGumInput.r_id);
 }
 
-void drawPinkBubbleGumConfigLeftKey(mat4_t projectionMatrix, color4_t preferredColor)
+void drawPinkBubbleGumConfigLeftKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 0.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Left: %s", convertKeyCodeToString(gPinkBubbleGumInput.l_id));
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Left: %s", convertKeyCodeToString(gPinkBubbleGumInput.l_id));
 }
 
 void pinkBubbleGumLeftKeyMenuAction(void)
@@ -700,11 +701,11 @@ void pinkBubbleGumLeftKeyMenuAction(void)
 	configureKey(&gPinkBubbleGumInput.l_id);
 }
 
-void drawPinkBubbleGumConfigUpKey(mat4_t projectionMatrix, color4_t preferredColor)
+void drawPinkBubbleGumConfigUpKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -15.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Up: %s", convertKeyCodeToString(gPinkBubbleGumInput.u_id));
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Up: %s", convertKeyCodeToString(gPinkBubbleGumInput.u_id));
 }
 
 void pinkBubbleGumUpKeyMenuAction(void)
@@ -712,11 +713,11 @@ void pinkBubbleGumUpKeyMenuAction(void)
 	configureKey(&gPinkBubbleGumInput.u_id);
 }
 
-void drawPinkBubbleGumConfigDownKey(mat4_t projectionMatrix, color4_t preferredColor)
+void drawPinkBubbleGumConfigDownKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -30.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Down: %s", convertKeyCodeToString(gPinkBubbleGumInput.d_id));
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Down: %s", convertKeyCodeToString(gPinkBubbleGumInput.d_id));
 }
 
 void pinkBubbleGumDownKeyMenuAction(void)
@@ -724,11 +725,11 @@ void pinkBubbleGumDownKeyMenuAction(void)
 	configureKey(&gPinkBubbleGumInput.d_id);
 }
 
-void drawPinkBubbleGumConfigFireKey(mat4_t projectionMatrix, color4_t preferredColor)
+void drawPinkBubbleGumConfigFireKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -45.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Fire: %s", convertKeyCodeToString(gPinkBubbleGumInput.weap_id));
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Fire: %s", convertKeyCodeToString(gPinkBubbleGumInput.weap_id));
 }
 
 void pinkBubbleGumFireKeyMenuAction(void)
@@ -736,11 +737,11 @@ void pinkBubbleGumFireKeyMenuAction(void)
 	configureKey(&gPinkBubbleGumInput.weap_id);
 }
 
-void drawRedRoverConfigRightKey(mat4_t projectionMatrix, color4_t preferredColor)
+void drawRedRoverConfigRightKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 15.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Right: %s", convertKeyCodeToString(gRedRoverInput.r_id));
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Right: %s", convertKeyCodeToString(gRedRoverInput.r_id));
 }
 
 void redRoverRightKeyMenuAction(void)
@@ -748,11 +749,11 @@ void redRoverRightKeyMenuAction(void)
 	configureKey(&gRedRoverInput.r_id);
 }
 
-void drawRedRoverConfigLeftKey(mat4_t projectionMatrix, color4_t preferredColor)
+void drawRedRoverConfigLeftKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 0.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Left: %s", convertKeyCodeToString(gRedRoverInput.l_id));
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Left: %s", convertKeyCodeToString(gRedRoverInput.l_id));
 }
 
 void redRoverLeftKeyMenuAction(void)
@@ -760,11 +761,11 @@ void redRoverLeftKeyMenuAction(void)
 	configureKey(&gRedRoverInput.l_id);
 }
 
-void drawRedRoverConfigUpKey(mat4_t projectionMatrix, color4_t preferredColor)
+void drawRedRoverConfigUpKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -15.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Up: %s", convertKeyCodeToString(gRedRoverInput.u_id));
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Up: %s", convertKeyCodeToString(gRedRoverInput.u_id));
 }
 
 void redRoverUpKeyMenuAction(void)
@@ -772,11 +773,11 @@ void redRoverUpKeyMenuAction(void)
 	configureKey(&gRedRoverInput.u_id);
 }
 
-void drawRedRoverConfigDownKey(mat4_t projectionMatrix, color4_t preferredColor)
+void drawRedRoverConfigDownKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -30.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Down: %s", convertKeyCodeToString(gRedRoverInput.d_id));
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Down: %s", convertKeyCodeToString(gRedRoverInput.d_id));
 }
 
 void redRoverDownKeyMenuAction(void)
@@ -784,11 +785,11 @@ void redRoverDownKeyMenuAction(void)
 	configureKey(&gRedRoverInput.d_id);
 }
 
-void drawRedRoverConfigFireKey(mat4_t projectionMatrix, color4_t preferredColor)
+void drawRedRoverConfigFireKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -45.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Fire: %s", convertKeyCodeToString(gRedRoverInput.weap_id));
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Fire: %s", convertKeyCodeToString(gRedRoverInput.weap_id));
 }
 
 void redRoverFireKeyMenuAction(void)
@@ -796,11 +797,11 @@ void redRoverFireKeyMenuAction(void)
 	configureKey(&gRedRoverInput.weap_id);
 }
 
-void drawGreenTreeConfigRightKey(mat4_t projectionMatrix, color4_t preferredColor)
+void drawGreenTreeConfigRightKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 15.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Right: %s", convertKeyCodeToString(gGreenTreeInput.r_id));
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Right: %s", convertKeyCodeToString(gGreenTreeInput.r_id));
 }
 
 void greenTreeRightKeyMenuAction(void)
@@ -808,11 +809,11 @@ void greenTreeRightKeyMenuAction(void)
 	configureKey(&gGreenTreeInput.r_id);
 }
 
-void drawGreenTreeConfigLeftKey(mat4_t projectionMatrix, color4_t preferredColor)
+void drawGreenTreeConfigLeftKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 0.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Left: %s", convertKeyCodeToString(gGreenTreeInput.l_id));
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Left: %s", convertKeyCodeToString(gGreenTreeInput.l_id));
 }
 
 void greenTreeLeftKeyMenuAction(void)
@@ -820,11 +821,11 @@ void greenTreeLeftKeyMenuAction(void)
 	configureKey(&gGreenTreeInput.l_id);
 }
 
-void drawGreenTreeConfigUpKey(mat4_t projectionMatrix, color4_t preferredColor)
+void drawGreenTreeConfigUpKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -15.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Up: %s", convertKeyCodeToString(gGreenTreeInput.u_id));
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Up: %s", convertKeyCodeToString(gGreenTreeInput.u_id));
 }
 
 void greenTreeUpKeyMenuAction(void)
@@ -832,11 +833,11 @@ void greenTreeUpKeyMenuAction(void)
 	configureKey(&gGreenTreeInput.u_id);
 }
 
-void drawGreenTreeConfigDownKey(mat4_t projectionMatrix, color4_t preferredColor)
+void drawGreenTreeConfigDownKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -30.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Down: %s", convertKeyCodeToString(gGreenTreeInput.d_id));
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Down: %s", convertKeyCodeToString(gGreenTreeInput.d_id));
 }
 
 void greenTreeDownKeyMenuAction(void)
@@ -844,11 +845,11 @@ void greenTreeDownKeyMenuAction(void)
 	configureKey(&gGreenTreeInput.d_id);
 }
 
-void drawGreenTreeConfigFireKey(mat4_t projectionMatrix, color4_t preferredColor)
+void drawGreenTreeConfigFireKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -45.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Fire: %s", convertKeyCodeToString(gGreenTreeInput.weap_id));
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Fire: %s", convertKeyCodeToString(gGreenTreeInput.weap_id));
 }
 
 void greenTreeFireKeyMenuAction(void)
@@ -856,11 +857,11 @@ void greenTreeFireKeyMenuAction(void)
 	configureKey(&gGreenTreeInput.weap_id);
 }
 
-void drawBlueLightningConfigRightKey(mat4_t projectionMatrix, color4_t preferredColor)
+void drawBlueLightningConfigRightKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 15.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Right: %s", convertKeyCodeToString(gBlueLightningInput.r_id));
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Right: %s", convertKeyCodeToString(gBlueLightningInput.r_id));
 }
 
 void blueLightningRightKeyMenuAction(void)
@@ -868,11 +869,11 @@ void blueLightningRightKeyMenuAction(void)
 	configureKey(&gBlueLightningInput.r_id);
 }
 
-void drawBlueLightningConfigLeftKey(mat4_t projectionMatrix, color4_t preferredColor)
+void drawBlueLightningConfigLeftKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 0.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Left: %s", convertKeyCodeToString(gBlueLightningInput.l_id));
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Left: %s", convertKeyCodeToString(gBlueLightningInput.l_id));
 }
 
 void blueLightningLeftKeyMenuAction(void)
@@ -880,11 +881,11 @@ void blueLightningLeftKeyMenuAction(void)
 	configureKey(&gBlueLightningInput.l_id);
 }
 
-void drawBlueLightningConfigUpKey(mat4_t projectionMatrix, color4_t preferredColor)
+void drawBlueLightningConfigUpKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -15.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Up: %s", convertKeyCodeToString(gBlueLightningInput.u_id));
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Up: %s", convertKeyCodeToString(gBlueLightningInput.u_id));
 }
 
 void blueLightningUpKeyMenuAction(void)
@@ -892,11 +893,11 @@ void blueLightningUpKeyMenuAction(void)
 	configureKey(&gBlueLightningInput.u_id);
 }
 
-void drawBlueLightningConfigDownKey(mat4_t projectionMatrix, color4_t preferredColor)
+void drawBlueLightningConfigDownKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -30.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Down: %s", convertKeyCodeToString(gBlueLightningInput.d_id));
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Down: %s", convertKeyCodeToString(gBlueLightningInput.d_id));
 }
 
 void blueLightningDownKeyMenuAction(void)
@@ -904,11 +905,11 @@ void blueLightningDownKeyMenuAction(void)
 	configureKey(&gBlueLightningInput.d_id);
 }
 
-void drawBlueLightningConfigFireKey(mat4_t projectionMatrix, color4_t preferredColor)
+void drawBlueLightningConfigFireKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -45.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Fire: %s", convertKeyCodeToString(gBlueLightningInput.weap_id));
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Fire: %s", convertKeyCodeToString(gBlueLightningInput.weap_id));
 }
 
 void blueLightningFireKeyMenuAction(void)
@@ -916,11 +917,11 @@ void blueLightningFireKeyMenuAction(void)
 	configureKey(&gBlueLightningInput.weap_id);
 }
 
-void drawPinkBubbleGumConfigJoyStick(mat4_t projectionMatrix, color4_t preferredColor)
+void drawPinkBubbleGumConfigJoyStick(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 15.0, -280.0});
 	
-	drawString(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Pink Bubblegum");
+	drawString(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Pink Bubblegum");
 }
 
 // config joy sticks.
@@ -1105,11 +1106,11 @@ void configureJoyStick(Input *input, int type)
 	}
 }
 
-void drawPinkBubbleGumRightgJoyStickConfig(mat4_t projectionMatrix, color4_t preferredColor)
+void drawPinkBubbleGumRightgJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {	
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 15.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Right: %s", gPinkBubbleGumInput.joy_right);
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Right: %s", gPinkBubbleGumInput.joy_right);
 }
 
 void pinkBubbleGumConfigRightJoyStickAction(void)
@@ -1117,11 +1118,11 @@ void pinkBubbleGumConfigRightJoyStickAction(void)
 	configureJoyStick(&gPinkBubbleGumInput, RIGHT);
 }
 
-void drawPinkBubbleGumLeftgJoyStickConfig(mat4_t projectionMatrix, color4_t preferredColor)
+void drawPinkBubbleGumLeftgJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 0.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Left: %s", gPinkBubbleGumInput.joy_left);
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Left: %s", gPinkBubbleGumInput.joy_left);
 }
 
 void pinkBubbleGumConfigLeftJoyStickAction(void)
@@ -1129,11 +1130,11 @@ void pinkBubbleGumConfigLeftJoyStickAction(void)
 	configureJoyStick(&gPinkBubbleGumInput, LEFT);
 }
 
-void drawPinkBubbleGumUpgJoyStickConfig(mat4_t projectionMatrix, color4_t preferredColor)
+void drawPinkBubbleGumUpgJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -15.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Up: %s", gPinkBubbleGumInput.joy_up);
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Up: %s", gPinkBubbleGumInput.joy_up);
 }
 
 void pinkBubbleGumConfigUpJoyStickAction(void)
@@ -1141,11 +1142,11 @@ void pinkBubbleGumConfigUpJoyStickAction(void)
 	configureJoyStick(&gPinkBubbleGumInput, UP);
 }
 
-void drawPinkBubbleGumDowngJoyStickConfig(mat4_t projectionMatrix, color4_t preferredColor)
+void drawPinkBubbleGumDowngJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -30.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Down: %s", gPinkBubbleGumInput.joy_down);
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Down: %s", gPinkBubbleGumInput.joy_down);
 }
 
 void pinkBubbleGumConfigDownJoyStickAction(void)
@@ -1153,11 +1154,11 @@ void pinkBubbleGumConfigDownJoyStickAction(void)
 	configureJoyStick(&gPinkBubbleGumInput, DOWN);
 }
 
-void drawPinkBubbleGumFiregJoyStickConfig(mat4_t projectionMatrix, color4_t preferredColor)
+void drawPinkBubbleGumFiregJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -45.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Fire: %s", gPinkBubbleGumInput.joy_weap);
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Fire: %s", gPinkBubbleGumInput.joy_weap);
 }
 
 void pinkBubbleGumConfigFireJoyStickAction(void)
@@ -1166,11 +1167,11 @@ void pinkBubbleGumConfigFireJoyStickAction(void)
 }
 
 // RedRover
-void drawRedRoverConfigJoyStick(mat4_t projectionMatrix, color4_t preferredColor)
+void drawRedRoverConfigJoyStick(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 0.0, -280.0});
 	
-	drawString(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Red Rover");
+	drawString(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Red Rover");
 }
 
 void redRoverConfigJoyStickAction(void)
@@ -1178,11 +1179,11 @@ void redRoverConfigJoyStickAction(void)
 	changeMenu(RIGHT);
 }
 
-void drawRedRoverRightgJoyStickConfig(mat4_t projectionMatrix, color4_t preferredColor)
+void drawRedRoverRightgJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {	
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 15.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Right: %s", gRedRoverInput.joy_right);
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Right: %s", gRedRoverInput.joy_right);
 }
 
 void redRoverConfigRightJoyStickAction(void)
@@ -1190,11 +1191,11 @@ void redRoverConfigRightJoyStickAction(void)
 	configureJoyStick(&gRedRoverInput, RIGHT);
 }
 
-void drawRedRoverLeftgJoyStickConfig(mat4_t projectionMatrix, color4_t preferredColor)
+void drawRedRoverLeftgJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 0.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Left: %s", gRedRoverInput.joy_left);
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Left: %s", gRedRoverInput.joy_left);
 }
 
 void redRoverConfigLeftJoyStickAction(void)
@@ -1202,11 +1203,11 @@ void redRoverConfigLeftJoyStickAction(void)
 	configureJoyStick(&gRedRoverInput, LEFT);
 }
 
-void drawRedRoverUpgJoyStickConfig(mat4_t projectionMatrix, color4_t preferredColor)
+void drawRedRoverUpgJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -15.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Up: %s", gRedRoverInput.joy_up);
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Up: %s", gRedRoverInput.joy_up);
 }
 
 void redRoverConfigUpJoyStickAction(void)
@@ -1214,11 +1215,11 @@ void redRoverConfigUpJoyStickAction(void)
 	configureJoyStick(&gRedRoverInput, UP);
 }
 
-void drawRedRoverDowngJoyStickConfig(mat4_t projectionMatrix, color4_t preferredColor)
+void drawRedRoverDowngJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -30.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Down: %s", gRedRoverInput.joy_down);
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Down: %s", gRedRoverInput.joy_down);
 }
 
 void redRoverConfigDownJoyStickAction(void)
@@ -1226,11 +1227,11 @@ void redRoverConfigDownJoyStickAction(void)
 	configureJoyStick(&gRedRoverInput, DOWN);
 }
 
-void drawRedRoverFiregJoyStickConfig(mat4_t projectionMatrix, color4_t preferredColor)
+void drawRedRoverFiregJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -45.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Fire: %s", gRedRoverInput.joy_weap);
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Fire: %s", gRedRoverInput.joy_weap);
 }
 
 void redRoverConfigFireJoyStickAction(void)
@@ -1239,11 +1240,11 @@ void redRoverConfigFireJoyStickAction(void)
 }
 
 // GreenTree
-void drawGreenTreeConfigJoyStick(mat4_t projectionMatrix, color4_t preferredColor)
+void drawGreenTreeConfigJoyStick(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -15.0, -280.0});
 	
-	drawString(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Green Tree");
+	drawString(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Green Tree");
 }
 
 void greenTreeConfigJoyStickAction(void)
@@ -1251,11 +1252,11 @@ void greenTreeConfigJoyStickAction(void)
 	changeMenu(RIGHT);
 }
 
-void drawGreenTreeRightgJoyStickConfig(mat4_t projectionMatrix, color4_t preferredColor)
+void drawGreenTreeRightgJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {	
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 15.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Right: %s", gGreenTreeInput.joy_right);
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Right: %s", gGreenTreeInput.joy_right);
 }
 
 void greenTreeConfigRightJoyStickAction(void)
@@ -1263,11 +1264,11 @@ void greenTreeConfigRightJoyStickAction(void)
 	configureJoyStick(&gGreenTreeInput, RIGHT);
 }
 
-void drawGreenTreeLeftgJoyStickConfig(mat4_t projectionMatrix, color4_t preferredColor)
+void drawGreenTreeLeftgJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 0.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Left: %s", gGreenTreeInput.joy_left);
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Left: %s", gGreenTreeInput.joy_left);
 }
 
 void greenTreeConfigLeftJoyStickAction(void)
@@ -1275,11 +1276,11 @@ void greenTreeConfigLeftJoyStickAction(void)
 	configureJoyStick(&gGreenTreeInput, LEFT);
 }
 
-void drawGreenTreeUpgJoyStickConfig(mat4_t projectionMatrix, color4_t preferredColor)
+void drawGreenTreeUpgJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -15.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Up: %s", gGreenTreeInput.joy_up);
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Up: %s", gGreenTreeInput.joy_up);
 }
 
 void greenTreeConfigUpJoyStickAction(void)
@@ -1287,11 +1288,11 @@ void greenTreeConfigUpJoyStickAction(void)
 	configureJoyStick(&gGreenTreeInput, UP);
 }
 
-void drawGreenTreeDowngJoyStickConfig(mat4_t projectionMatrix, color4_t preferredColor)
+void drawGreenTreeDowngJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -30.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Down: %s", gGreenTreeInput.joy_down);
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Down: %s", gGreenTreeInput.joy_down);
 }
 
 void greenTreeConfigDownJoyStickAction(void)
@@ -1299,11 +1300,11 @@ void greenTreeConfigDownJoyStickAction(void)
 	configureJoyStick(&gGreenTreeInput, DOWN);
 }
 
-void drawGreenTreeFiregJoyStickConfig(mat4_t projectionMatrix, color4_t preferredColor)
+void drawGreenTreeFiregJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -45.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Fire: %s", gGreenTreeInput.joy_weap);
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Fire: %s", gGreenTreeInput.joy_weap);
 }
 
 void greenTreeConfigFireJoyStickAction(void)
@@ -1312,11 +1313,11 @@ void greenTreeConfigFireJoyStickAction(void)
 }
 
 // BlueLightning
-void drawBlueLightningConfigJoyStick(mat4_t projectionMatrix, color4_t preferredColor)
+void drawBlueLightningConfigJoyStick(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -30.0, -280.0});
 	
-	drawString(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Blue Lightning");
+	drawString(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Blue Lightning");
 }
 
 void blueLightningConfigJoyStickAction(void)
@@ -1324,11 +1325,11 @@ void blueLightningConfigJoyStickAction(void)
 	changeMenu(RIGHT);
 }
 
-void drawBlueLightningRightgJoyStickConfig(mat4_t projectionMatrix, color4_t preferredColor)
+void drawBlueLightningRightgJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {	
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 15.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Right: %s", gBlueLightningInput.joy_right);
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Right: %s", gBlueLightningInput.joy_right);
 }
 
 void blueLightningConfigRightJoyStickAction(void)
@@ -1336,11 +1337,11 @@ void blueLightningConfigRightJoyStickAction(void)
 	configureJoyStick(&gBlueLightningInput, RIGHT);
 }
 
-void drawBlueLightningLeftgJoyStickConfig(mat4_t projectionMatrix, color4_t preferredColor)
+void drawBlueLightningLeftgJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 0.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Left: %s", gBlueLightningInput.joy_left);
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Left: %s", gBlueLightningInput.joy_left);
 }
 
 void blueLightningConfigLeftJoyStickAction(void)
@@ -1348,11 +1349,11 @@ void blueLightningConfigLeftJoyStickAction(void)
 	configureJoyStick(&gBlueLightningInput, LEFT);
 }
 
-void drawBlueLightningUpgJoyStickConfig(mat4_t projectionMatrix, color4_t preferredColor)
+void drawBlueLightningUpgJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -15.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Up: %s", gBlueLightningInput.joy_up);
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Up: %s", gBlueLightningInput.joy_up);
 }
 
 void blueLightningConfigUpJoyStickAction(void)
@@ -1360,11 +1361,11 @@ void blueLightningConfigUpJoyStickAction(void)
 	configureJoyStick(&gBlueLightningInput, UP);
 }
 
-void drawBlueLightningDowngJoyStickConfig(mat4_t projectionMatrix, color4_t preferredColor)
+void drawBlueLightningDowngJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -30.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Down: %s", gBlueLightningInput.joy_down);
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Down: %s", gBlueLightningInput.joy_down);
 }
 
 void blueLightningConfigDownJoyStickAction(void)
@@ -1372,11 +1373,11 @@ void blueLightningConfigDownJoyStickAction(void)
 	configureJoyStick(&gBlueLightningInput, DOWN);
 }
 
-void drawBlueLightningFiregJoyStickConfig(mat4_t projectionMatrix, color4_t preferredColor)
+void drawBlueLightningFiregJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -45.0, -280.0});
 	
-	drawStringf(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Fire: %s", gBlueLightningInput.joy_weap);
+	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Fire: %s", gBlueLightningInput.joy_weap);
 }
 
 void blueLightningConfigFireJoyStickAction(void)
@@ -1385,11 +1386,11 @@ void blueLightningConfigFireJoyStickAction(void)
 }
 
 // Audio options
-void drawAudioOptionsMenu(mat4_t projectionMatrix, color4_t preferredColor)
+void drawAudioOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -30.0, -280.0});
 	
-	drawString(projectionMatrix, modelViewMatrix, preferredColor, 20.0, 5.0, "Audio Options");
+	drawString(renderer, modelViewMatrix, preferredColor, 20.0, 5.0, "Audio Options");
 }
 
 void audioOptionsMenuAction(void)
@@ -1397,17 +1398,17 @@ void audioOptionsMenuAction(void)
 	changeMenu(RIGHT);
 }
 
-void drawAudioEffectsOptionsMenu(mat4_t projectionMatrix, color4_t preferredColor)
+void drawAudioEffectsOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 15.0, -280.0});
 	
 	if (gAudioEffectsFlag)
 	{
-		drawString(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Effects: On");
+		drawString(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Effects: On");
 	}
 	else
 	{
-		drawString(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Effects: Off");
+		drawString(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Effects: Off");
 	}
 }
 
@@ -1416,17 +1417,17 @@ void audioEffectsOptionsMenuAction(void)
 	gAudioEffectsFlag = !gAudioEffectsFlag;
 }
 
-void drawAudioMusicOptionsMenu(mat4_t projectionMatrix, color4_t preferredColor)
+void drawAudioMusicOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 0.0, -280.0});
 	
 	if (gAudioMusicFlag)
 	{
-		drawString(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Music: On");
+		drawString(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Music: On");
 	}
 	else
 	{
-		drawString(projectionMatrix, modelViewMatrix, preferredColor, 15.0, 5.0, "Music: Off");
+		drawString(renderer, modelViewMatrix, preferredColor, 15.0, 5.0, "Music: Off");
 	}
 }
 
@@ -1439,11 +1440,16 @@ void audioMusicOptionsMenuAction(void)
 	}
 }
 
-void drawQuitMenu(mat4_t projectionMatrix, color4_t preferredColor)
+void drawQuitMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -45.0, -280.0});
 	
-	drawString(projectionMatrix, modelViewMatrix, preferredColor, 12.0, 5.0, "Quit");
+	drawString(renderer, modelViewMatrix, preferredColor, 12.0, 5.0, "Quit");
+}
+
+static void makeGame(void)
+{
+	initGame(gWindow);
 }
 
 void initMenus(void)
@@ -1478,7 +1484,7 @@ void initMenus(void)
 	
 	// set action and drawing functions
 	playMenu->draw = drawPlayMenu;
-	playMenu->action = initGame;
+	playMenu->action = makeGame;
 	
 	networkPlayMenu->draw = drawNetworkPlayMenu;
 	networkPlayMenu->action = networkPlayMenuAction;

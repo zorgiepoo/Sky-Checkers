@@ -224,11 +224,11 @@ static void linkColumn(int index)
 	gTiles[index].down = NULL;
 }
 
-void loadSceneryTextures(void)
+void loadSceneryTextures(Renderer *renderer)
 {
-	loadTexture("Data/Textures/sky.bmp", &gSkyTex);
-	loadTexture("Data/Textures/tiletex.bmp", &gTileOneTex);
-	loadTexture("Data/Textures/tiletex2.bmp", &gTileTwoTex);
+	loadTexture(renderer, "Data/Textures/sky.bmp", &gSkyTex);
+	loadTexture(renderer, "Data/Textures/tiletex.bmp", &gTileOneTex);
+	loadTexture(renderer, "Data/Textures/tiletex2.bmp", &gTileTwoTex);
 }
 
 void drawSky(void)

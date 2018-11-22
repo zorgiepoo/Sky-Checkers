@@ -20,7 +20,7 @@
 #include "font.h"
 #include "utilities.h"
 
-GLuint loadString(char *string);
+GLuint loadString(Renderer *renderer, const char *string);
 
 /* Glyph structure */
 typedef struct
@@ -80,7 +80,7 @@ SDL_bool initFont(void)
 }
 
 // returns a texture to draw for the string.
-GLuint loadString(char *string)
+GLuint loadString(Renderer *renderer, const char *string)
 {	
 	if (string == NULL)
 		return 0;
@@ -127,7 +127,7 @@ GLuint loadString(char *string)
 	if (SDL_BlitSurface(fontSurface, NULL, textSurface, NULL) == -1)
 		zgPrint("blitting failed");
 	
-	GLuint texture = textureFromPixelData(textSurface->pixels, textSurface->w, textSurface->h);
+	GLuint texture = textureFromPixelData(renderer, textSurface->pixels, textSurface->w, textSurface->h);
 	
 	// Cleanup
 	SDL_FreeSurface(fontSurface);
@@ -162,7 +162,7 @@ static int lookUpGlyphIndex(const char *string)
 }
 
 // partially copied from zgPrint(...)
-void drawStringf(mat4_t projectionMatrix, mat4_t modelViewMatrix, color4_t color, GLfloat width, GLfloat height, const char *format, ...)
+void drawStringf(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, GLfloat width, GLfloat height, const char *format, ...)
 {
 	va_list ap;
 	char buffer[256];
@@ -236,10 +236,10 @@ void drawStringf(mat4_t projectionMatrix, mat4_t modelViewMatrix, color4_t color
 	
 	buffer[bufferIndex] = '\0';
 	
-	drawString(projectionMatrix, modelViewMatrix, color, width, height, buffer);
+	drawString(renderer, modelViewMatrix, color, width, height, buffer);
 }
 
-int cacheString(const char *string)
+int cacheString(Renderer *renderer, const char *string)
 {
 	if (string == NULL)
 	{
@@ -258,7 +258,7 @@ int cacheString(const char *string)
 		
 		gGlyphs[gGlyphsCounter].text = malloc(strlen(string) + 1);
 		sprintf(gGlyphs[gGlyphsCounter].text, "%s", string);
-		gGlyphs[gGlyphsCounter].texture = loadString(gGlyphs[gGlyphsCounter].text);
+		gGlyphs[gGlyphsCounter].texture = loadString(renderer, gGlyphs[gGlyphsCounter].text);
 		
 		gGlyphsCounter++;
 	}
@@ -268,14 +268,14 @@ int cacheString(const char *string)
 	return index;
 }
 
-void drawString(mat4_t projectionMatrix, mat4_t modelViewMatrix, color4_t color, GLfloat width, GLfloat height, const char *string)
+void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, GLfloat width, GLfloat height, const char *string)
 {	
 	if (string == NULL)
 	{
 		return;
 	}
 	
-	int index = cacheString(string);
+	int index = cacheString(renderer, string);
 	if (index == -1)
 	{
 		return;

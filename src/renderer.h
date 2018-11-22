@@ -12,7 +12,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ 
  * You should have received a copy of the GNU General Public License
  * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -21,21 +21,33 @@
 
 #include "maincore.h"
 #include "math_3d.h"
-#include "renderer.h"
 
-void initConsole(void);
+typedef struct
+{
+	SDL_Window *window;
+	mat4_t projectionMatrix;
+	
+	int32_t screenWidth;
+	int32_t screenHeight;
+	
+	int32_t windowWidth;
+	int32_t windowHeight;
+	
+	SDL_bool vsync;
+	SDL_bool fsaa;
+} Renderer;
 
-void buildBlackBorderDisplayList(void);
-void deleteBlackBorderDisplayList(void);
+typedef struct
+{
+	float red;
+	float green;
+	float blue;
+	float alpha;
+} color4_t;
 
-void drawConsole(void);
+void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa);
 
-void writeConsoleText(Uint8 text);
+void swapBuffers(Renderer *renderer);
 
-SDL_bool performConsoleBackspace(void);
-
-void drawConsoleText(Renderer *renderer);
-
-void executeConsoleCommand(void);
-
-void clearConsole(void);
+void loadTexture(Renderer *renderer, const char *filePath, uint32_t *tex);
+uint32_t textureFromPixelData(Renderer *renderer, const void *pixels, int32_t width, int32_t height);

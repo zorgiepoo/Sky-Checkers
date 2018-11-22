@@ -102,10 +102,10 @@ Character *characterFromInput(Input *characterInput)
 	return NULL;
 }
 
-void performDownAction(Input *input, SDL_Event *event)
+void performDownAction(Input *input, SDL_Window *window, SDL_Event *event)
 {
 	// this is a check for joysticks, mainly
-	if ((SDL_GetWindowFlags(gWindow) & SDL_WINDOW_INPUT_FOCUS) == 0)
+	if ((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) == 0)
 	{
 		return;
 	}
@@ -314,9 +314,9 @@ void performDownAction(Input *input, SDL_Event *event)
 	}
 }
 
-void performUpAction(Input *input, SDL_Event *event)
+void performUpAction(Input *input, SDL_Window *window, SDL_Event *event)
 {
-	if ((SDL_GetWindowFlags(gWindow) & SDL_WINDOW_INPUT_FOCUS) == 0)
+	if ((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) == 0)
 	{
 		return;
 	}

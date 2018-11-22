@@ -90,8 +90,8 @@ void initInput(Input *input, int right, int left, int up, int down, int weapon);
 
 Character *characterFromInput(Input *characterInput);
 
-void performDownAction(Input *input, SDL_Event *event);
-void performUpAction(Input *input, SDL_Event *event);
+void performDownAction(Input *input, SDL_Window *window, SDL_Event *event);
+void performUpAction(Input *input, SDL_Window *window, SDL_Event *event);
 
 void moveCharacterFromInput(Input *input);
 void turnOffDirectionsExcept(Input *input, int direction);

@@ -21,19 +21,8 @@
 
 #include "maincore.h"
 
-typedef struct
-{
-	float red;
-	float green;
-	float blue;
-	float alpha;
-} color4_t;
-
 void mt_init();
 unsigned long mt_random();
-
-GLuint textureFromPixelData(const void *pixels, int width, int height);
-void loadTexture(const char *filePath, GLuint *tex);
 
 void zgPrint(const char *format, ...);
 

@@ -54,14 +54,14 @@ static SDL_TimerID gTimer;
 
 /* Functions */
 
-static Uint32 timedEvents(Uint32 interval, void* param);
+static Uint32 timedEvents(Uint32 interval, void *param);
 
 static void colorTile(Tile *tile, Weapon *weap);
 
-static void animateWeapAndTiles(Character *player);
+static void animateWeapAndTiles(SDL_Window *window, Character *player);
 
-static void firstTileLayerAnimation(int beginAnimating, int endAnimating);
-static void secondTileLayerAnimation(int beginAnimating, int endAnimating);
+static void firstTileLayerAnimation(SDL_Window *window, int beginAnimating, int endAnimating);
+static void secondTileLayerAnimation(SDL_Window *window, int beginAnimating, int endAnimating);
 
 static void loadFirstTileAnimationLayer(void);
 static void loadSecondTileAnimationLayer(void);
@@ -72,7 +72,7 @@ static void recoverDestroyedTiles(void);
 static void killCharacter(Input *characterInput);
 static void recoverCharacter(Character *player);
 
-static Uint32 timedEvents(Uint32 interval, void* param)
+static Uint32 timedEvents(Uint32 interval, void *param)
 {
 	SDL_Event event;
 	
@@ -80,6 +80,8 @@ static Uint32 timedEvents(Uint32 interval, void* param)
     event.user.code = 1;
     event.user.data1 = 0;
     event.user.data2 = 0;
+	
+	SDL_Window *window = (SDL_Window *)param;
 	
 	gSecondTimer += TIMER_INTERVAL / 1000.0f;
 	
@@ -141,13 +143,13 @@ static Uint32 timedEvents(Uint32 interval, void* param)
 	static const int BEGIN_TILE_LAYER_ANIMATION =	100;
 	static const int END_TILE_LAYER_ANIMATION =	200;
 	
-	firstTileLayerAnimation(BEGIN_TILE_LAYER_ANIMATION, END_TILE_LAYER_ANIMATION);
-	secondTileLayerAnimation(BEGIN_TILE_LAYER_ANIMATION, END_TILE_LAYER_ANIMATION);
+	firstTileLayerAnimation(window, BEGIN_TILE_LAYER_ANIMATION, END_TILE_LAYER_ANIMATION);
+	secondTileLayerAnimation(window, BEGIN_TILE_LAYER_ANIMATION, END_TILE_LAYER_ANIMATION);
 	
-	animateWeapAndTiles(&gRedRover);
-	animateWeapAndTiles(&gGreenTree);
-	animateWeapAndTiles(&gPinkBubbleGum);
-	animateWeapAndTiles(&gBlueLightning);
+	animateWeapAndTiles(window, &gRedRover);
+	animateWeapAndTiles(window, &gGreenTree);
+	animateWeapAndTiles(window, &gPinkBubbleGum);
+	animateWeapAndTiles(window, &gBlueLightning);
 	
 	collapseTiles();
 	recoverDestroyedTiles();
@@ -183,11 +185,11 @@ static void colorTile(Tile *tile, Weapon *weap)
 	}
 }
 
-static void animateWeapAndTiles(Character *player)
+static void animateWeapAndTiles(SDL_Window *window, Character *player)
 {
 	if (player->weap->animationState)
 	{
-		if (player->animation_timer == 0 && ((SDL_GetWindowFlags(gWindow) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
+		if (player->animation_timer == 0 && ((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 		{
 			playShootingSound();
 		}
@@ -295,7 +297,7 @@ static void animateWeapAndTiles(Character *player)
 				player->destroyed_tile->state = SDL_FALSE;
 				player->destroyed_tile->z -= TILE_FALLING_SPEED;
 				
-				if (((SDL_GetWindowFlags(gWindow) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
+				if (((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 				{
 					playTileFallingSound();
 				}
@@ -341,7 +343,7 @@ static void animateWeapAndTiles(Character *player)
  * First layer of tiles to destroy (most outter one).
  * This animation is activated by setting gFirstLayerAnimationTimer = 1
  */
-static void firstTileLayerAnimation(int beginAnimating, int endAnimating)
+static void firstTileLayerAnimation(SDL_Window *window, int beginAnimating, int endAnimating)
 {
 	// Color the tiles gray
 	if (gLayerColorIndex != 0 && gFirstLayerAnimationTimer > beginAnimating)
@@ -355,7 +357,7 @@ static void firstTileLayerAnimation(int beginAnimating, int endAnimating)
 			gTiles[gTilesLayer[gLayerColorIndex]].green = 0.33f;
 			gTiles[gTilesLayer[gLayerColorIndex]].blue = 0.36f;
 			
-			if (((SDL_GetWindowFlags(gWindow) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
+			if (((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 			{
 				playGrayStoneColorSound();
 			}
@@ -381,7 +383,7 @@ static void firstTileLayerAnimation(int beginAnimating, int endAnimating)
 			gTiles[gTilesLayer[gLayerDeathIndex]].z -= TILE_FALLING_SPEED;
 			gTiles[gTilesLayer[gLayerDeathIndex]].isDead = SDL_TRUE;
 			
-			if (((SDL_GetWindowFlags(gWindow) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
+			if (((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 			{
 				playTileFallingSound();
 			}
@@ -405,7 +407,7 @@ static void firstTileLayerAnimation(int beginAnimating, int endAnimating)
  * Second layer of tiles to destroy (second most outter one)
  * This animation is activated by setting gSecondLayerAnimationTimer = 1
  */
-static void secondTileLayerAnimation(int beginAnimating, int endAnimating)
+static void secondTileLayerAnimation(SDL_Window *window, int beginAnimating, int endAnimating)
 {
 	// Color the tiles gray
 	if (gLayerTwoColorIndex != 0 && gSecondLayerAnimationTimer > beginAnimating)
@@ -419,7 +421,7 @@ static void secondTileLayerAnimation(int beginAnimating, int endAnimating)
 			gTiles[gTilesLayer[gLayerTwoColorIndex]].green = 0.33f;
 			gTiles[gTilesLayer[gLayerTwoColorIndex]].blue = 0.36f;
 			
-			if (((SDL_GetWindowFlags(gWindow) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
+			if (((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 			{
 				playGrayStoneColorSound();
 			}
@@ -445,7 +447,7 @@ static void secondTileLayerAnimation(int beginAnimating, int endAnimating)
 			gTiles[gTilesLayer[gLayerTwoDeathIndex]].z -= TILE_FALLING_SPEED;
 			gTiles[gTilesLayer[gLayerTwoDeathIndex]].isDead = SDL_TRUE;
 			
-			if (((SDL_GetWindowFlags(gWindow) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
+			if (((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 			{
 				playTileFallingSound();
 			}
@@ -786,7 +788,7 @@ static void loadSecondTileAnimationLayer(void)
 	gTilesLayer[20] = 42;
 }
 
-SDL_bool startAnimation(void)
+SDL_bool startAnimation(SDL_Window *window)
 {
 	if (SDL_Init(SDL_INIT_TIMER) < 0)
 	{
@@ -796,7 +798,7 @@ SDL_bool startAnimation(void)
 	
 	loadFirstTileAnimationLayer();
 	
-	gTimer = SDL_AddTimer(TIMER_INTERVAL, timedEvents, 0);
+	gTimer = SDL_AddTimer(TIMER_INTERVAL, timedEvents, window);
 	
 	return SDL_TRUE;
 }

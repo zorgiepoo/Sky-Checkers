@@ -16,6 +16,7 @@
 		721B002A204A4861005AF984 /* SDL2_ttf.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 721B0025204A482D005AF984 /* SDL2_ttf.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		721B002B204A4861005AF984 /* SDL2_image.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 721B0023204A47FB005AF984 /* SDL2_image.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		721B002C204A4861005AF984 /* SDL2.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 721B0021204A47C1005AF984 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		72A14F3121A71C6900606E14 /* renderer.c in Sources */ = {isa = PBXBuildFile; fileRef = 72A14F2F21A71C6700606E14 /* renderer.c */; };
 		770FFA0810B8F465009FD46A /* osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 770FFA0710B8F465009FD46A /* osx.m */; };
 		771B6CA010BE60320014884B /* sc_icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 771B6C9F10BE60320014884B /* sc_icon.icns */; };
 		772B6A850D15CBA000A216BD /* network.c in Sources */ = {isa = PBXBuildFile; fileRef = 772B6A840D15CBA000A216BD /* network.c */; };
@@ -66,6 +67,8 @@
 		721B0025204A482D005AF984 /* SDL2_ttf.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_ttf.framework; path = Frameworks/SDL2_ttf.framework; sourceTree = "<group>"; };
 		721B0027204A4855005AF984 /* SDL2_mixer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_mixer.framework; path = Frameworks/SDL2_mixer.framework; sourceTree = "<group>"; };
 		72A14F1721A5E26200606E14 /* math_3d.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = math_3d.h; path = ../src/math_3d.h; sourceTree = "<group>"; };
+		72A14F2F21A71C6700606E14 /* renderer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = renderer.c; path = ../src/renderer.c; sourceTree = "<group>"; };
+		72A14F3021A71C6800606E14 /* renderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = renderer.h; path = ../src/renderer.h; sourceTree = "<group>"; };
 		770FFA0610B8F465009FD46A /* osx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = osx.h; path = ../src/osx.h; sourceTree = "<group>"; };
 		770FFA0710B8F465009FD46A /* osx.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = osx.m; path = ../src/osx.m; sourceTree = "<group>"; };
 		771B6C9F10BE60320014884B /* sc_icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = sc_icon.icns; sourceTree = "<group>"; };
@@ -193,6 +196,8 @@
 				772B6A840D15CBA000A216BD /* network.c */,
 				77DC8A500B2FA1DD0080334C /* console.h */,
 				77DC8A510B2FA1DD0080334C /* console.c */,
+				72A14F3021A71C6800606E14 /* renderer.h */,
+				72A14F2F21A71C6700606E14 /* renderer.c */,
 				774A450C0B2BF1FC000C04D9 /* utilities.h */,
 				774A450D0B2BF1FC000C04D9 /* utilities.c */,
 				776592620BA35B4300167AF7 /* font.h */,
@@ -301,6 +306,7 @@
 				778FA7910D0656FA002A3C26 /* ai.c in Sources */,
 				772B6A850D15CBA000A216BD /* network.c in Sources */,
 				77CBEDEB10B3B3EB0006B1BE /* audio.c in Sources */,
+				72A14F3121A71C6900606E14 /* renderer.c in Sources */,
 				770FFA0810B8F465009FD46A /* osx.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
