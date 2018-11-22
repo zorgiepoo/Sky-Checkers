@@ -28,7 +28,7 @@ void initConsole(void);
 void buildBlackBorderDisplayList(void);
 void deleteBlackBorderDisplayList(void);
 
-void drawConsole(void);
+void drawConsole(Renderer *renderer);
 
 void writeConsoleText(Uint8 text);
 

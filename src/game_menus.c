@@ -62,7 +62,7 @@ static char *convertKeyCodeToString(unsigned theKeyCode);
 static unsigned getKey(void);
 static unsigned getJoyStickTrigger(Sint16 *value, Uint8 *axis, int *joy_id);
 
-static void drawUpAndDownArrowTriangles(mat4_t modelViewMatrix)
+static void drawUpAndDownArrowTriangles(Renderer *renderer, mat4_t modelViewMatrix)
 {
 	glColor3f(0.0f, 0.0f, 0.4f);
 	glLoadMatrixf(&modelViewMatrix.m00);
@@ -265,7 +265,7 @@ void drawNetworkServerNumberOfPlayersMenu(Renderer *renderer, color4_t preferred
 	
 	if (gDrawArrowsForNumberOfNetHumansFlag)
 	{
-		drawUpAndDownArrowTriangles(m4_translation((vec3_t){0.35f, -1.3f, -25.0f}));
+		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){0.35f, -1.3f, -25.0f}));
 	}
 }
 
@@ -289,7 +289,7 @@ void drawNetworkServerAIModeMenu(Renderer *renderer, color4_t preferredColor)
 	
 	if (gDrawArrowsForAIModeFlag)
 	{
-		drawUpAndDownArrowTriangles(m4_translation((vec3_t){0.35f, -2.7f, -25.0f}));
+		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){0.35f, -2.7f, -25.0f}));
 	}
 }
 
@@ -305,7 +305,7 @@ void drawNetworkServerPlayerLivesMenu(Renderer *renderer, color4_t preferredColo
 	
 	if (gDrawArrowsForNetPlayerLivesFlag)
 	{
-		drawUpAndDownArrowTriangles(m4_translation((vec3_t){0.35f, -4.0f, -25.0f}));
+		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){0.35f, -4.0f, -25.0f}));
 	}
 }
 
@@ -611,7 +611,7 @@ void drawAIModeOptionsMenu(Renderer *renderer, color4_t preferredColor)
 	
 	if (gDrawArrowsForAIModeFlag)
 	{
-		drawUpAndDownArrowTriangles(m4_translation((vec3_t){2.0f, -4.1f, -25.0f}));
+		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){2.0f, -4.1f, -25.0f}));
 	}
 }
 
@@ -623,7 +623,7 @@ void drawConfigureLivesMenu(Renderer *renderer, color4_t preferredColor)
 	
 	if (gDrawArrowsForCharacterLivesFlag)
 	{
-		drawUpAndDownArrowTriangles(m4_translation((vec3_t){2.0f, -5.4f, -25.0f}));
+		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){2.0f, -5.4f, -25.0f}));
 	}
 }
 

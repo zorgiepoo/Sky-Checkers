@@ -346,7 +346,7 @@ void buildCharacterModels(void)
 	buildCircle(gIconVertices, gIconTextureCoordinates, 0.4f, 400);
 }
 
-void drawCharacter(Character *character)
+void drawCharacter(Renderer *renderer, Character *character)
 {
 	// don't draw the character if he's not on in the scene
 	if (character->z <= -170.0)
@@ -380,7 +380,7 @@ void drawCharacter(Character *character)
 	glDisable(GL_TEXTURE_2D);
 }
 
-void drawCharacterIcon(mat4_t modelViewMatrix, Character *character)
+void drawCharacterIcon(Renderer *renderer, mat4_t modelViewMatrix, Character *character)
 {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -412,18 +412,18 @@ void drawCharacterIcon(mat4_t modelViewMatrix, Character *character)
 	glDisable(GL_BLEND);
 }
 
-static void translateAndDrawCharacterIcon(Character *character, float x, float y, float z)
+static void translateAndDrawCharacterIcon(Renderer *renderer, Character *character, float x, float y, float z)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){x, y, z});
-	drawCharacterIcon(modelViewMatrix, character);
+	drawCharacterIcon(renderer, modelViewMatrix, character);
 }
 
-void drawCharacterIcons(void)
+void drawCharacterIcons(Renderer *renderer)
 {
-	translateAndDrawCharacterIcon(&gPinkBubbleGum, -9.0f, -9.5f, -25.0f);
-	translateAndDrawCharacterIcon(&gRedRover, -3.67f, -9.5f, -25.0f);
-	translateAndDrawCharacterIcon(&gGreenTree, 1.63f, -9.5f, -25.0f);
-	translateAndDrawCharacterIcon(&gBlueLightning, 6.93f, -9.5f, -25.0f);
+	translateAndDrawCharacterIcon(renderer, &gPinkBubbleGum, -9.0f, -9.5f, -25.0f);
+	translateAndDrawCharacterIcon(renderer, &gRedRover, -3.67f, -9.5f, -25.0f);
+	translateAndDrawCharacterIcon(renderer, &gGreenTree, 1.63f, -9.5f, -25.0f);
+	translateAndDrawCharacterIcon(renderer, &gBlueLightning, 6.93f, -9.5f, -25.0f);
 }
 
 static void drawCharacterLive(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, Character *character, const char *playerNumberString)

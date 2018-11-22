@@ -20,6 +20,7 @@
 #pragma once
 
 #include "maincore.h"
+#include "renderer.h"
 
 typedef struct
 {
@@ -34,4 +35,4 @@ typedef struct
 
 void initWeapon(Weapon *weap);
 
-void drawWeapon(Weapon *weap);
+void drawWeapon(Renderer *renderer, Weapon *weap);

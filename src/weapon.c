@@ -138,7 +138,7 @@ void initWeapon(Weapon *weap)
 	weap->direction = 0;
 }
 
-void drawWeapon(Weapon *weap)
+void drawWeapon(Renderer *renderer, Weapon *weap)
 {
 	if (!weap->drawingState)
 		return;

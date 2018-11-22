@@ -71,7 +71,7 @@ void initConsole(void)
 	gConsoleStringIndex = MIN_CONSOLE_STRING_LENGTH;
 }
 
-void drawConsole(void)
+void drawConsole(Renderer *renderer)
 {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

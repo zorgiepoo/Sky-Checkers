@@ -137,10 +137,10 @@ void loadCharacterTextures(Renderer *renderer);
 
 void buildCharacterModels(void);
 
-void drawCharacterIcon(mat4_t modelViewMatrix, Character *character);
-void drawCharacterIcons(void);
+void drawCharacterIcon(Renderer *renderer, mat4_t modelViewMatrix, Character *character);
+void drawCharacterIcons(Renderer *renderer);
 
-void drawCharacter(Character *character);
+void drawCharacter(Renderer *renderer, Character *character);
 
 void drawCharacterLives(Renderer *renderer);
 

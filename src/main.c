@@ -75,7 +75,7 @@ static void initScene(Renderer *renderer);
 static void readDefaults(void);
 static void writeDefaults(Renderer *renderer);
 
-static void drawBlackBox(void)
+static void drawBlackBox(Renderer *renderer)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 0.0f, -25.0f});
 	glLoadMatrixf(&modelViewMatrix.m00);
@@ -612,7 +612,7 @@ void drawFramesPerSecond(Renderer *renderer)
 static void drawScoresForCharacter(Renderer *renderer, Character *character, color4_t color, float x, float y, float z)
 {
 	mat4_t iconModelViewMatrix = m4_translation((vec3_t){x, y, z});
-	drawCharacterIcon(iconModelViewMatrix, character);
+	drawCharacterIcon(renderer, iconModelViewMatrix, character);
 	
 	color4_t characterColor = (color4_t){character->red, character->green, character->blue, 0.7f};
 	
@@ -635,17 +635,17 @@ static void drawScene(Renderer *renderer)
 
 	if (gGameState)
 	{
-		drawWeapon(gRedRover.weap);
-		drawWeapon(gGreenTree.weap);
-		drawWeapon(gPinkBubbleGum.weap);
-		drawWeapon(gBlueLightning.weap);
+		drawWeapon(renderer, gRedRover.weap);
+		drawWeapon(renderer, gGreenTree.weap);
+		drawWeapon(renderer, gPinkBubbleGum.weap);
+		drawWeapon(renderer, gBlueLightning.weap);
 
-		drawCharacter(&gRedRover);
-		drawCharacter(&gGreenTree);
-		drawCharacter(&gPinkBubbleGum);
-		drawCharacter(&gBlueLightning);
+		drawCharacter(renderer, &gRedRover);
+		drawCharacter(renderer, &gGreenTree);
+		drawCharacter(renderer, &gPinkBubbleGum);
+		drawCharacter(renderer, &gBlueLightning);
 
-		drawTiles();
+		drawTiles(renderer);
 
 		if (gDrawFPS)
 		{
@@ -691,17 +691,17 @@ static void drawScene(Renderer *renderer)
 	}
 
 	// For this blending to work properly, we have to draw the sky *right* here.
-	drawSky();
+	drawSky(renderer);
 
 	if (gGameState)
 	{
-		drawCharacterIcons();
+		drawCharacterIcons(renderer);
 
 		drawCharacterLives(renderer);
 
 		if (gConsoleActivated)
 		{
-			drawConsole();
+			drawConsole(renderer);
 			drawConsoleText(renderer);
 		}
 
@@ -743,7 +743,7 @@ static void drawScene(Renderer *renderer)
 
 			/* Stats */
 			
-			drawBlackBox();
+			drawBlackBox(renderer);
 
 			/* Display stats */
 			
@@ -764,7 +764,7 @@ static void drawScene(Renderer *renderer)
 
 	if (!gGameState)
 	{
-		drawBlackBox();
+		drawBlackBox(renderer);
 		
 		mat4_t gameTitleModelViewMatrix = m4_translation((vec3_t){-1.0f, 27.0f, -100.0f});
 		

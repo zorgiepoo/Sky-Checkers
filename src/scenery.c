@@ -231,7 +231,7 @@ void loadSceneryTextures(Renderer *renderer)
 	loadTexture(renderer, "Data/Textures/tiletex2.bmp", &gTileTwoTex);
 }
 
-void drawSky(void)
+void drawSky(Renderer *renderer)
 {	
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_BLEND);
@@ -280,7 +280,7 @@ void drawSky(void)
 	glDisable(GL_BLEND);
 }
 
-void drawTiles(void)
+void drawTiles(Renderer *renderer)
 {
 	glEnable(GL_TEXTURE_2D);
 	
