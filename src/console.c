@@ -104,9 +104,6 @@ void drawConsole(void)
 	glDisableClientState(GL_VERTEX_ARRAY);
 	
 	glDisable(GL_BLEND);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&modelViewMatrix.m00);
 }
 
 void writeConsoleText(Uint8 text)
@@ -146,9 +143,6 @@ void drawConsoleText(void)
 	{
 		drawString(modelViewMatrix, 0.16f * length, 0.5f, gConsoleString);
 	}
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void executeConsoleCommand(void)

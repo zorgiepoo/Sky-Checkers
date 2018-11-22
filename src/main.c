@@ -152,9 +152,6 @@ static void drawBlackBox(void)
 	glDisable(GL_BLEND);
 	
 	glEnable(GL_DEPTH_TEST);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 static void initScene(void)
@@ -651,9 +648,6 @@ void drawFramesPerSecond(void)
 		
 		mat4_t modelViewMatrix = m4_translation((vec3_t){9.0f, 9.0f, -25.0f});
 		drawString(modelViewMatrix, 0.16f * length, 0.5f, fpsString);
-		
-		mat4_t identityMatrix = m4_identity();
-		glLoadMatrixf(&identityMatrix.m00);
 	}
 }
 
@@ -673,9 +667,6 @@ static void drawScoresForCharacter(Character *character, float x, float y, float
 	
 	mat4_t killsModelViewMatrix = m4_mul(killsLabelModelViewMatrix, m4_translation((vec3_t){1.0f, 0.0f, 0.0f}));
 	drawStringf(killsModelViewMatrix, 0.5f, 0.5f, "%i", character->kills);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 static void drawScene(void)
@@ -736,9 +727,6 @@ static void drawScene(void)
 			{
 				gGameHasStarted = SDL_TRUE;
 			}
-
-			mat4_t identityMatrix = m4_identity();
-			glLoadMatrixf(&identityMatrix.m00);
 		}
 	}
 
@@ -794,9 +782,6 @@ static void drawScene(void)
 				}
 			}
 
-			mat4_t identityMatrix = m4_identity();
-			glLoadMatrixf(&identityMatrix.m00);
-
 			/* Stats */
 			
 			drawBlackBox();
@@ -815,9 +800,6 @@ static void drawScene(void)
 				glColor4f(0.0f, 0.0f, 0.4f, 0.4f);
 
 				drawString(modelViewMatrix, 5.0f, 1.0f, "Fire to play again or Escape to quit");
-
-				mat4_t identityMatrix = m4_identity();
-				glLoadMatrixf(&identityMatrix.m00);
 			}
 		}
 	}
@@ -830,9 +812,6 @@ static void drawScene(void)
 
 		glColor4f(0.3f, 0.2f, 1.0f, 0.35f);
 		drawString(gameTitleModelViewMatrix, 20.0, 5.0, "Sky Checkers");
-
-		mat4_t identityMatrix = m4_identity();
-		glLoadMatrixf(&identityMatrix.m00);
 
 		drawMenus();
 
@@ -852,9 +831,6 @@ static void drawScene(void)
 			mat4_t noticeModelViewMatrix = m4_mul(instructionsModelViewMatrix, m4_translation((vec3_t){0.0f, -20.0f, 0.0f}));
 
 			drawString(noticeModelViewMatrix, 50.0, 5.0, "(Joysticks only function in-game)");
-
-			mat4_t identityMatrix = m4_identity();
-			glLoadMatrixf(&identityMatrix.m00);
 		}
 
 		else if (isChildBeingDrawn(&gCharacterConfigureKeys[0][1]) /* pinkBubbleGum */	||
@@ -869,9 +845,6 @@ static void drawScene(void)
 			glColor4f(0.3f, 0.2f, 1.0f, 0.6f);
 
 			drawString(instructionsModelViewMatrix, 100.0, 5.0, "Click enter to modify a mapping value and input in a key. Click Escape to exit out.");
-
-			mat4_t identityMatrix = m4_identity();
-			glLoadMatrixf(&identityMatrix.m00);
 		}
 	}
 }

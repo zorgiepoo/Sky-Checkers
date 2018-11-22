@@ -89,9 +89,6 @@ void drawPlayMenu(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 15.0, -280.0});
 	
 	drawString(modelViewMatrix, 12.0, 5.0, "Play");
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void drawNetworkPlayMenu(void)
@@ -99,9 +96,6 @@ void drawNetworkPlayMenu(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 0.0, -280.0});
 	
 	drawString(modelViewMatrix, 20.0, 5.0, "Network Play");
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void networkPlayMenuAction(void)
@@ -125,9 +119,6 @@ void drawNetworkUserNameFieldMenu(void)
 		mat4_t nameModelViewMatrix = m4_mul(nameLabelModelViewMatrix, m4_translation((vec3_t){strlen(gUserNameString) + 15.0f, 0.0f, 0.0f}));
 		drawString(nameModelViewMatrix, strlen(gUserNameString) + 2.0f, 5.0f, gUserNameString);
 	}
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void networkUserNameFieldMenuAction(void)
@@ -160,9 +151,6 @@ void drawNetworkServerMenu(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 15.0, -280.0});
 	
 	drawString(modelViewMatrix, 15.0, 5.0, "Server");
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void networkServerMenuAction(void)
@@ -175,9 +163,6 @@ void drawNetworkServerPlayMenu(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-20.0, 0.0, -280.0});
 	
 	drawString(modelViewMatrix, 20.0, 5.0, "Start Game");
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void networkServerPlayMenuAction(void)
@@ -279,9 +264,6 @@ void drawNetworkServerNumberOfPlayersMenu(void)
 		
 		drawUpAndDownArrowTriangles();
 	}
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void networkServerNumberOfPlayersMenuAction(void)
@@ -311,9 +293,6 @@ void drawNetworkServerAIModeMenu(void)
 		
 		drawUpAndDownArrowTriangles();
 	}
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void networkServerAIModeMenuAction(void)
@@ -335,9 +314,6 @@ void drawNetworkServerPlayerLivesMenu(void)
 		
 		drawUpAndDownArrowTriangles();
 	}
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void networkServerPlayerLivesMenuAction(void)
@@ -350,9 +326,6 @@ void drawNetworkClientMenu(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 0.0, -280.0});
 	
 	drawString(modelViewMatrix, 15.0, 5.0, "Client");
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void networkClientMenuAction(void)
@@ -377,9 +350,6 @@ void drawNetworkAddressFieldMenu(void)
 		
 		drawString(hostModelViewMatrix, strlen(gServerAddressString) + 5.0f, 5.0f, gServerAddressString);
 	}
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void networkAddressFieldMenuAction(void)
@@ -412,9 +382,6 @@ void drawConnectToNetworkGameMenu(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-45.0, -15.0, -280.0});
 	
 	drawString(modelViewMatrix, 15.0, 5.0, "Connect");
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void connectToNetworkGameMenuAction(void)
@@ -487,9 +454,6 @@ void drawGameOptionsMenu(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f, -15.0f, -280.0f});
 	
 	drawString(modelViewMatrix, 20.0, 5.0, "Game Options");
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void gameOptionsMenuAction(void)
@@ -502,9 +466,6 @@ void drawPlayerOptionsMenu(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f, 15.0f, -280.0f});
 	
 	drawString(modelViewMatrix, 20.0, 5.0, "Configure Players");
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void playerOptionsMenuAction(void)
@@ -517,9 +478,6 @@ void drawConfigureKeysMenu(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f, 0.0f, -280.0f});
 	
 	drawString(modelViewMatrix, 20.0, 5.0, "Configure Keys");
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void configureKeysMenuAction(void)
@@ -532,9 +490,6 @@ void drawJoySticksConfigureMenu(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f, -15.0f, -280.0f});
 	
 	drawString(modelViewMatrix, 20.0, 5.0, "Configure Joy Sticks");
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void joySticksConfigureMenuAction(void)
@@ -550,9 +505,6 @@ void drawPinkBubbleGumPlayerOptionsMenu(void)
 		drawString(modelViewMatrix, 20.0, 5.0, "Pink Bubblegum: Human");
 	else if (gPinkBubbleGum.state == CHARACTER_AI_STATE)
 		drawString(modelViewMatrix, 20.0, 5.0, "Pink Bubblegum: Bot");
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void pinkBubbleGumPlayerOptionsMenuAction(void)
@@ -583,9 +535,6 @@ void drawRedRoverPlayerOptionsMenu(void)
 		drawString(modelViewMatrix, 20.0, 5.0, "Red Rover: Human");
 	else
 		drawString(modelViewMatrix, 20.0, 5.0, "Red Rover: Bot");
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void redRoverPlayerOptionsMenuAction(void)
@@ -619,9 +568,6 @@ void drawGreenTreePlayerOptionsMenu(void)
 	{
 		drawString(modelViewMatrix, 20.0, 5.0, "Green Tree: Bot");
 	}
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void greenTreePlayerOptionsMenuAction(void)
@@ -650,9 +596,6 @@ void drawBlueLightningPlayerOptionsMenu(void)
 		drawStringf(modelViewMatrix, 20.0, 5.0, "Blue Lightning: Human");
 	else if (gBlueLightning.state == CHARACTER_AI_STATE)
 		drawString(modelViewMatrix, 20.0, 5.0, "Blue Lightning: Bot");
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void blueLightningPlayerOptionsMenuAction(void)
@@ -688,9 +631,6 @@ void drawAIModeOptionsMenu(void)
 		glLoadMatrixf(&arrowsModelViewMatrix.m00);
 		drawUpAndDownArrowTriangles();
 	}
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void drawConfigureLivesMenu(void)
@@ -707,9 +647,6 @@ void drawConfigureLivesMenu(void)
 		glLoadMatrixf(&arrowsModelViewMatrix.m00);
 		drawUpAndDownArrowTriangles();
 	}
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void drawPinkBubbleGumConfigKey(void)
@@ -717,9 +654,6 @@ void drawPinkBubbleGumConfigKey(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f, 15.0f, -280.0f});
 	
 	drawString(modelViewMatrix, 15.0, 5.0, "Pink Bubblegum");
-
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void pinkBubbleGumKeyMenuAction(void)
@@ -732,9 +666,6 @@ void drawRedRoverConfigKey(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f, 0.0f, -280.0f});
 	
 	drawString(modelViewMatrix, 15.0, 5.0, "Red Rover");
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void redRoverKeyMenuAction(void)
@@ -747,9 +678,6 @@ void drawGreenTreeConfigKey(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f, -15.0f, -280.0f});
 	
 	drawString(modelViewMatrix, 15.0, 5.0, "Green Tree");
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void greenTreeKeyMenuAction(void)
@@ -762,9 +690,6 @@ void drawBlueLightningConfigKey(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f, -30.0f, -280.0f});
 	
 	drawString(modelViewMatrix, 15.0, 5.0, "Blue Lightning");
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void blueLightningKeyMenuAction(void)
@@ -786,9 +711,6 @@ void drawPinkBubbleGumConfigRightKey(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 15.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Right: %s", convertKeyCodeToString(gPinkBubbleGumInput.r_id));
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void pinkBubbleGumRightKeyMenuAction(void)
@@ -801,9 +723,6 @@ void drawPinkBubbleGumConfigLeftKey(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 0.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Left: %s", convertKeyCodeToString(gPinkBubbleGumInput.l_id));
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void pinkBubbleGumLeftKeyMenuAction(void)
@@ -816,9 +735,6 @@ void drawPinkBubbleGumConfigUpKey(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -15.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Up: %s", convertKeyCodeToString(gPinkBubbleGumInput.u_id));
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void pinkBubbleGumUpKeyMenuAction(void)
@@ -831,9 +747,6 @@ void drawPinkBubbleGumConfigDownKey(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -30.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Down: %s", convertKeyCodeToString(gPinkBubbleGumInput.d_id));
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void pinkBubbleGumDownKeyMenuAction(void)
@@ -846,9 +759,6 @@ void drawPinkBubbleGumConfigFireKey(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -45.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Fire: %s", convertKeyCodeToString(gPinkBubbleGumInput.weap_id));
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void pinkBubbleGumFireKeyMenuAction(void)
@@ -861,9 +771,6 @@ void drawRedRoverConfigRightKey(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 15.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Right: %s", convertKeyCodeToString(gRedRoverInput.r_id));
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void redRoverRightKeyMenuAction(void)
@@ -876,9 +783,6 @@ void drawRedRoverConfigLeftKey(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 0.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Left: %s", convertKeyCodeToString(gRedRoverInput.l_id));
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void redRoverLeftKeyMenuAction(void)
@@ -891,9 +795,6 @@ void drawRedRoverConfigUpKey(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -15.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Up: %s", convertKeyCodeToString(gRedRoverInput.u_id));
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void redRoverUpKeyMenuAction(void)
@@ -906,9 +807,6 @@ void drawRedRoverConfigDownKey(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -30.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Down: %s", convertKeyCodeToString(gRedRoverInput.d_id));
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void redRoverDownKeyMenuAction(void)
@@ -921,9 +819,6 @@ void drawRedRoverConfigFireKey(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -45.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Fire: %s", convertKeyCodeToString(gRedRoverInput.weap_id));
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void redRoverFireKeyMenuAction(void)
@@ -936,9 +831,6 @@ void drawGreenTreeConfigRightKey(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 15.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Right: %s", convertKeyCodeToString(gGreenTreeInput.r_id));
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void greenTreeRightKeyMenuAction(void)
@@ -951,9 +843,6 @@ void drawGreenTreeConfigLeftKey(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 0.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Left: %s", convertKeyCodeToString(gGreenTreeInput.l_id));
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void greenTreeLeftKeyMenuAction(void)
@@ -966,9 +855,6 @@ void drawGreenTreeConfigUpKey(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -15.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Up: %s", convertKeyCodeToString(gGreenTreeInput.u_id));
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void greenTreeUpKeyMenuAction(void)
@@ -981,9 +867,6 @@ void drawGreenTreeConfigDownKey(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -30.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Down: %s", convertKeyCodeToString(gGreenTreeInput.d_id));
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void greenTreeDownKeyMenuAction(void)
@@ -996,9 +879,6 @@ void drawGreenTreeConfigFireKey(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -45.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Fire: %s", convertKeyCodeToString(gGreenTreeInput.weap_id));
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void greenTreeFireKeyMenuAction(void)
@@ -1011,9 +891,6 @@ void drawBlueLightningConfigRightKey(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 15.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Right: %s", convertKeyCodeToString(gBlueLightningInput.r_id));
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void blueLightningRightKeyMenuAction(void)
@@ -1026,9 +903,6 @@ void drawBlueLightningConfigLeftKey(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 0.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Left: %s", convertKeyCodeToString(gBlueLightningInput.l_id));
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void blueLightningLeftKeyMenuAction(void)
@@ -1041,9 +915,6 @@ void drawBlueLightningConfigUpKey(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -15.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Up: %s", convertKeyCodeToString(gBlueLightningInput.u_id));
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void blueLightningUpKeyMenuAction(void)
@@ -1056,9 +927,6 @@ void drawBlueLightningConfigDownKey(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -30.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Down: %s", convertKeyCodeToString(gBlueLightningInput.d_id));
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void blueLightningDownKeyMenuAction(void)
@@ -1071,9 +939,6 @@ void drawBlueLightningConfigFireKey(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -45.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Fire: %s", convertKeyCodeToString(gBlueLightningInput.weap_id));
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void blueLightningFireKeyMenuAction(void)
@@ -1086,9 +951,6 @@ void drawPinkBubbleGumConfigJoyStick(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 15.0, -280.0});
 	
 	drawString(modelViewMatrix, 15.0, 5.0, "Pink Bubblegum");
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 // config joy sticks.
@@ -1278,9 +1140,6 @@ void drawPinkBubbleGumRightgJoyStickConfig(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 15.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Right: %s", gPinkBubbleGumInput.joy_right);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void pinkBubbleGumConfigRightJoyStickAction(void)
@@ -1293,9 +1152,6 @@ void drawPinkBubbleGumLeftgJoyStickConfig(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 0.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Left: %s", gPinkBubbleGumInput.joy_left);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void pinkBubbleGumConfigLeftJoyStickAction(void)
@@ -1308,9 +1164,6 @@ void drawPinkBubbleGumUpgJoyStickConfig(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -15.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Up: %s", gPinkBubbleGumInput.joy_up);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void pinkBubbleGumConfigUpJoyStickAction(void)
@@ -1323,9 +1176,6 @@ void drawPinkBubbleGumDowngJoyStickConfig(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -30.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Down: %s", gPinkBubbleGumInput.joy_down);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void pinkBubbleGumConfigDownJoyStickAction(void)
@@ -1338,9 +1188,6 @@ void drawPinkBubbleGumFiregJoyStickConfig(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -45.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Fire: %s", gPinkBubbleGumInput.joy_weap);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void pinkBubbleGumConfigFireJoyStickAction(void)
@@ -1354,9 +1201,6 @@ void drawRedRoverConfigJoyStick(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 0.0, -280.0});
 	
 	drawString(modelViewMatrix, 15.0, 5.0, "Red Rover");
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void redRoverConfigJoyStickAction(void)
@@ -1369,9 +1213,6 @@ void drawRedRoverRightgJoyStickConfig(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 15.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Right: %s", gRedRoverInput.joy_right);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void redRoverConfigRightJoyStickAction(void)
@@ -1384,9 +1225,6 @@ void drawRedRoverLeftgJoyStickConfig(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 0.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Left: %s", gRedRoverInput.joy_left);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void redRoverConfigLeftJoyStickAction(void)
@@ -1399,9 +1237,6 @@ void drawRedRoverUpgJoyStickConfig(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -15.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Up: %s", gRedRoverInput.joy_up);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void redRoverConfigUpJoyStickAction(void)
@@ -1414,9 +1249,6 @@ void drawRedRoverDowngJoyStickConfig(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -30.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Down: %s", gRedRoverInput.joy_down);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void redRoverConfigDownJoyStickAction(void)
@@ -1429,9 +1261,6 @@ void drawRedRoverFiregJoyStickConfig(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -45.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Fire: %s", gRedRoverInput.joy_weap);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void redRoverConfigFireJoyStickAction(void)
@@ -1445,9 +1274,6 @@ void drawGreenTreeConfigJoyStick(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -15.0, -280.0});
 	
 	drawString(modelViewMatrix, 15.0, 5.0, "Green Tree");
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void greenTreeConfigJoyStickAction(void)
@@ -1460,9 +1286,6 @@ void drawGreenTreeRightgJoyStickConfig(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 15.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Right: %s", gGreenTreeInput.joy_right);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void greenTreeConfigRightJoyStickAction(void)
@@ -1475,9 +1298,6 @@ void drawGreenTreeLeftgJoyStickConfig(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 0.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Left: %s", gGreenTreeInput.joy_left);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void greenTreeConfigLeftJoyStickAction(void)
@@ -1490,9 +1310,6 @@ void drawGreenTreeUpgJoyStickConfig(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -15.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Up: %s", gGreenTreeInput.joy_up);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void greenTreeConfigUpJoyStickAction(void)
@@ -1505,9 +1322,6 @@ void drawGreenTreeDowngJoyStickConfig(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -30.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Down: %s", gGreenTreeInput.joy_down);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void greenTreeConfigDownJoyStickAction(void)
@@ -1520,9 +1334,6 @@ void drawGreenTreeFiregJoyStickConfig(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -45.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Fire: %s", gGreenTreeInput.joy_weap);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void greenTreeConfigFireJoyStickAction(void)
@@ -1536,9 +1347,6 @@ void drawBlueLightningConfigJoyStick(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -30.0, -280.0});
 	
 	drawString(modelViewMatrix, 15.0, 5.0, "Blue Lightning");
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void blueLightningConfigJoyStickAction(void)
@@ -1551,9 +1359,6 @@ void drawBlueLightningRightgJoyStickConfig(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 15.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Right: %s", gBlueLightningInput.joy_right);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void blueLightningConfigRightJoyStickAction(void)
@@ -1566,9 +1371,6 @@ void drawBlueLightningLeftgJoyStickConfig(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 0.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Left: %s", gBlueLightningInput.joy_left);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void blueLightningConfigLeftJoyStickAction(void)
@@ -1581,9 +1383,6 @@ void drawBlueLightningUpgJoyStickConfig(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -15.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Up: %s", gBlueLightningInput.joy_up);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void blueLightningConfigUpJoyStickAction(void)
@@ -1596,9 +1395,6 @@ void drawBlueLightningDowngJoyStickConfig(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -30.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Down: %s", gBlueLightningInput.joy_down);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void blueLightningConfigDownJoyStickAction(void)
@@ -1611,9 +1407,6 @@ void drawBlueLightningFiregJoyStickConfig(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -45.0, -280.0});
 	
 	drawStringf(modelViewMatrix, 15.0, 5.0, "Fire: %s", gBlueLightningInput.joy_weap);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void blueLightningConfigFireJoyStickAction(void)
@@ -1627,9 +1420,6 @@ void drawAudioOptionsMenu(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -30.0, -280.0});
 	
 	drawString(modelViewMatrix, 20.0, 5.0, "Audio Options");
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void audioOptionsMenuAction(void)
@@ -1649,9 +1439,6 @@ void drawAudioEffectsOptionsMenu(void)
 	{
 		drawString(modelViewMatrix, 15.0, 5.0, "Effects: Off");
 	}
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void audioEffectsOptionsMenuAction(void)
@@ -1671,9 +1458,6 @@ void drawAudioMusicOptionsMenu(void)
 	{
 		drawString(modelViewMatrix, 15.0, 5.0, "Music: Off");
 	}
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void audioMusicOptionsMenuAction(void)
@@ -1690,9 +1474,6 @@ void drawQuitMenu(void)
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, -45.0, -280.0});
 	
 	drawString(modelViewMatrix, 12.0, 5.0, "Quit");
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void initMenus(void)

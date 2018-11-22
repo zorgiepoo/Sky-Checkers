@@ -366,9 +366,6 @@ void drawSky(void)
 	
 	glDisable(GL_TEXTURE_2D);
 	glDisable(GL_BLEND);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void drawTiles(void)
@@ -411,7 +408,4 @@ void drawTiles(void)
 	}
 	
 	glDisable(GL_TEXTURE_2D);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }

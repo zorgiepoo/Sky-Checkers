@@ -182,7 +182,4 @@ void drawWeapon(Weapon *weap)
 	glDisableClientState(GL_VERTEX_ARRAY);
 	
 	glDisable(GL_BLEND);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }

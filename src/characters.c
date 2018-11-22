@@ -378,9 +378,6 @@ void drawCharacter(Character *character)
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	
 	glDisable(GL_TEXTURE_2D);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void drawCharacterIcon(mat4_t modelViewMatrix, Character *character)
@@ -419,9 +416,6 @@ static void translateAndDrawCharacterIcon(Character *character, float x, float y
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){x, y, z});
 	drawCharacterIcon(modelViewMatrix, character);
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void drawCharacterIcons(void)
@@ -465,9 +459,6 @@ static void drawCharacterLive(mat4_t modelViewMatrix, Character *character, cons
 			drawString(playerDescriptionMatrix, 1.0, 0.5, playerNumberString);
 		}
 	}
-	
-	mat4_t identityMatrix = m4_identity();
-	glLoadMatrixf(&identityMatrix.m00);
 }
 
 void drawCharacterLives(void)
