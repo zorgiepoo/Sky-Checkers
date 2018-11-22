@@ -61,8 +61,11 @@ static char *convertKeyCodeToString(unsigned theKeyCode);
 static unsigned getKey(void);
 static unsigned getJoyStickTrigger(Sint16 *value, Uint8 *axis, int *joy_id);
 
-static void drawUpAndDownArrowTriangles(void)
+static void drawUpAndDownArrowTriangles(mat4_t modelViewMatrix)
 {
+	glColor3f(0.0f, 0.0f, 0.4f);
+	glLoadMatrixf(&modelViewMatrix.m00);
+	
 	glEnableClientState(GL_VERTEX_ARRAY);
 	
 	GLfloat vertices[] =
@@ -257,12 +260,7 @@ void drawNetworkServerNumberOfPlayersMenu(void)
 	
 	if (gDrawArrowsForNumberOfNetHumansFlag)
 	{
-		glColor3f(0.0f, 0.0f, 0.4f);
-		
-		mat4_t arrowsModelViewMatrix = m4_translation((vec3_t){0.35f, -1.3f, -25.0f});
-		glLoadMatrixf(&arrowsModelViewMatrix.m00);
-		
-		drawUpAndDownArrowTriangles();
+		drawUpAndDownArrowTriangles(m4_translation((vec3_t){0.35f, -1.3f, -25.0f}));
 	}
 }
 
@@ -286,12 +284,7 @@ void drawNetworkServerAIModeMenu(void)
 	
 	if (gDrawArrowsForAIModeFlag)
 	{
-		glColor3f(0.0f, 0.0f, 0.4f);
-		
-		mat4_t arrowsModelViewMatrix = m4_translation((vec3_t){0.35f, -2.7f, -25.0f});
-		glLoadMatrixf(&arrowsModelViewMatrix.m00);
-		
-		drawUpAndDownArrowTriangles();
+		drawUpAndDownArrowTriangles(m4_translation((vec3_t){0.35f, -2.7f, -25.0f}));
 	}
 }
 
@@ -307,12 +300,7 @@ void drawNetworkServerPlayerLivesMenu(void)
 	
 	if (gDrawArrowsForNetPlayerLivesFlag)
 	{
-		glColor3f(0.0f, 0.0f, 0.4f);
-		
-		mat4_t arrowsModelViewMatrix = m4_translation((vec3_t){0.35f, -4.0f, -25.0f});
-		glLoadMatrixf(&arrowsModelViewMatrix.m00);
-		
-		drawUpAndDownArrowTriangles();
+		drawUpAndDownArrowTriangles(m4_translation((vec3_t){0.35f, -4.0f, -25.0f}));
 	}
 }
 
@@ -625,11 +613,7 @@ void drawAIModeOptionsMenu(void)
 	
 	if (gDrawArrowsForAIModeFlag)
 	{
-		glColor3f(0.0f, 0.0f, 0.4f);
-		
-		mat4_t arrowsModelViewMatrix = m4_translation((vec3_t){2.0f, -4.1f, -25.0f});
-		glLoadMatrixf(&arrowsModelViewMatrix.m00);
-		drawUpAndDownArrowTriangles();
+		drawUpAndDownArrowTriangles(m4_translation((vec3_t){2.0f, -4.1f, -25.0f}));
 	}
 }
 
@@ -641,11 +625,7 @@ void drawConfigureLivesMenu(void)
 	
 	if (gDrawArrowsForCharacterLivesFlag)
 	{
-		glColor3f(0.0f, 0.0f, 0.4f);
-		
-		mat4_t arrowsModelViewMatrix = m4_translation((vec3_t){2.0f, -5.4f, -25.0f});
-		glLoadMatrixf(&arrowsModelViewMatrix.m00);
-		drawUpAndDownArrowTriangles();
+		drawUpAndDownArrowTriangles(m4_translation((vec3_t){2.0f, -5.4f, -25.0f}));
 	}
 }
 
