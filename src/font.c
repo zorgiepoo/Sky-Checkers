@@ -179,7 +179,7 @@ static int lookUpGlyphIndex(const char *string)
 }
 
 // partially copied from zgPrint(...)
-void drawStringf(mat4_t modelViewMatrix, GLfloat width, GLfloat height, const char *format, ...)
+void drawStringf(mat4_t projectionMatrix, mat4_t modelViewMatrix, color4_t color, GLfloat width, GLfloat height, const char *format, ...)
 {
 	va_list ap;
 	char buffer[256];
@@ -253,7 +253,7 @@ void drawStringf(mat4_t modelViewMatrix, GLfloat width, GLfloat height, const ch
 	
 	buffer[bufferIndex] = '\0';
 	
-	drawString(modelViewMatrix, width, height, buffer);
+	drawString(projectionMatrix, modelViewMatrix, color, width, height, buffer);
 }
 
 int cacheString(const char *string)
@@ -285,7 +285,7 @@ int cacheString(const char *string)
 	return index;
 }
 
-void drawString(mat4_t modelViewMatrix, GLfloat width, GLfloat height, const char *string)
+void drawString(mat4_t projectionMatrix, mat4_t modelViewMatrix, color4_t color, GLfloat width, GLfloat height, const char *string)
 {	
 	if (string == NULL)
 	{
@@ -297,6 +297,8 @@ void drawString(mat4_t modelViewMatrix, GLfloat width, GLfloat height, const cha
 	{
 		return;
 	}
+	
+	glColor4fv(&color.red);
 	
 	glDisable(GL_DEPTH_TEST);
 	

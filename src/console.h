@@ -20,6 +20,7 @@
 #pragma once
 
 #include "maincore.h"
+#include "math_3d.h"
 
 void initConsole(void);
 
@@ -32,7 +33,7 @@ void writeConsoleText(Uint8 text);
 
 SDL_bool performConsoleBackspace(void);
 
-void drawConsoleText(void);
+void drawConsoleText(mat4_t projectionMatrix);
 
 void executeConsoleCommand(void);
 

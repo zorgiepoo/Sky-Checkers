@@ -47,7 +47,6 @@
 #include "network.h"
 #include "font.h"
 #include "utilities.h"
-#include "math_3d.h"
 
 // "scc~: " length == 6
 static const unsigned int MIN_CONSOLE_STRING_LENGTH = 6;
@@ -132,16 +131,14 @@ SDL_bool performConsoleBackspace(void)
 	return SDL_FALSE;
 }
 
-void drawConsoleText(void)
+void drawConsoleText(mat4_t projectionMatrix)
 {
-	glColor4f(1.0f, 0.0f, 0.0f, 0.7f);
-	
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-7.0f, 9.5f, -25.0f});
 	
 	int length = (int)strlen(gConsoleString);
 	if (length > 0)
 	{
-		drawString(modelViewMatrix, 0.16f * length, 0.5f, gConsoleString);
+		drawString(projectionMatrix, modelViewMatrix, (color4_t){1.0f, 0.0f, 0.0f, 0.7f}, 0.16f * length, 0.5f, gConsoleString);
 	}
 }
 

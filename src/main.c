@@ -44,6 +44,8 @@ SDL_bool gGameShouldReset;
 int gGameStartNumber;
 int gGameWinner;
 
+static mat4_t gProjectionMatrix;
+
 Uint32 gVideoFlags;
 
 // Console flag indicating if we can use the console
@@ -145,6 +147,7 @@ static void drawBlackBox(void)
 	};
 
 	glVertexPointer(3, GL_FLOAT, 0, vertices);
+	
 	glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(*indices), GL_UNSIGNED_BYTE, indices);
 
 	glDisableClientState(GL_VERTEX_ARRAY);
@@ -610,7 +613,7 @@ void closeGameResources(void)
 }
 
 // frames per second function.
-void drawFramesPerSecond(void)
+void drawFramesPerSecond(mat4_t projectionMatrix)
 {
 	static unsigned frame_count = 0;
     static double last_fps_time = -1.0;
@@ -644,34 +647,34 @@ void drawFramesPerSecond(void)
 	size_t length = strlen(fpsString);
 	if (length > 0)
 	{
-		glColor3f(0.0f, 0.5f, 0.8f);
-		
 		mat4_t modelViewMatrix = m4_translation((vec3_t){9.0f, 9.0f, -25.0f});
-		drawString(modelViewMatrix, 0.16f * length, 0.5f, fpsString);
+		drawString(projectionMatrix, modelViewMatrix, (color4_t){0.0f, 0.5f, 0.8f, 1.0f}, 0.16f * length, 0.5f, fpsString);
 	}
 }
 
-static void drawScoresForCharacter(Character *character, float x, float y, float z)
+static void drawScoresForCharacter(Character *character, mat4_t projectionMatrix, color4_t color, float x, float y, float z)
 {
 	mat4_t iconModelViewMatrix = m4_translation((vec3_t){x, y, z});
 	drawCharacterIcon(iconModelViewMatrix, character);
 	
 	mat4_t winsLabelModelViewMatrix = m4_mul(iconModelViewMatrix, m4_translation((vec3_t){0.0f, -2.0f, 0.0f}));
-	drawString(winsLabelModelViewMatrix, 0.5f, 0.5f, "Wins:");
+	drawString(projectionMatrix, winsLabelModelViewMatrix, color, 0.5f, 0.5f, "Wins:");
 	
 	mat4_t winsModelViewMatrix = m4_mul(winsLabelModelViewMatrix, m4_translation((vec3_t){1.0f, 0.0f, 0.0f}));
-	drawStringf(winsModelViewMatrix, 0.5f, 0.5f, "%i", character->wins);
+	drawStringf(projectionMatrix, winsModelViewMatrix, color, 0.5f, 0.5f, "%i", character->wins);
 	
 	mat4_t killsLabelModelViewMatrix = m4_mul(winsModelViewMatrix, m4_translation((vec3_t){-1.0f, -2.0f, 0.0f}));
-	drawString(killsLabelModelViewMatrix, 0.5f, 0.5f, "Kills:");
+	drawString(projectionMatrix, killsLabelModelViewMatrix, color, 0.5f, 0.5f, "Kills:");
 	
 	mat4_t killsModelViewMatrix = m4_mul(killsLabelModelViewMatrix, m4_translation((vec3_t){1.0f, 0.0f, 0.0f}));
-	drawStringf(killsModelViewMatrix, 0.5f, 0.5f, "%i", character->kills);
+	drawStringf(projectionMatrix, killsModelViewMatrix, color, 0.5f, 0.5f, "%i", character->kills);
 }
 
 static void drawScene(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+	mat4_t projectionMatrix = gProjectionMatrix;
 
 	if (gGameState)
 	{
@@ -689,12 +692,12 @@ static void drawScene(void)
 
 		if (gDrawFPS)
 		{
-			drawFramesPerSecond();
+			drawFramesPerSecond(projectionMatrix);
 		}
 
 		if (!gGameHasStarted)
 		{
-			glColor4f(0.0, 0.0, 1.0, 0.5);
+			color4_t textColor = (color4_t){0.0, 0.0, 1.0, 0.5};
 			
 			mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 80.0, -280.0});
 
@@ -705,22 +708,22 @@ static void drawScene(void)
 					// be sure to take account the plural form of player(s)
 					if (gNetworkConnection->numberOfPlayersToWaitFor > 1)
 					{
-						drawStringf(modelViewMatrix, 50.0, 10.0, "Waiting for %i players to connect...", gNetworkConnection->numberOfPlayersToWaitFor);
+						drawStringf(projectionMatrix, modelViewMatrix, textColor, 50.0, 10.0, "Waiting for %i players to connect...", gNetworkConnection->numberOfPlayersToWaitFor);
 					}
 					else if (gNetworkConnection->numberOfPlayersToWaitFor == 0)
 					{
-						drawString(modelViewMatrix, 50.0, 10.0, "Waiting for players to connect...");
+						drawString(projectionMatrix, modelViewMatrix, textColor, 50.0, 10.0, "Waiting for players to connect...");
 					}
 					else
 					{
-						drawString(modelViewMatrix, 50.0, 10.0, "Waiting for 1 player to connect...");
+						drawString(projectionMatrix, modelViewMatrix, textColor, 50.0, 10.0, "Waiting for 1 player to connect...");
 					}
 				}
 			}
 
 			else if (gGameStartNumber > 0)
 			{
-				drawStringf(modelViewMatrix, 40.0, 10.0, "Game begins in %i", gGameStartNumber);
+				drawStringf(projectionMatrix, modelViewMatrix, textColor, 40.0, 10.0, "Game begins in %i", gGameStartNumber);
 			}
 
 			else if (gGameStartNumber == 0)
@@ -737,48 +740,47 @@ static void drawScene(void)
 	{
 		drawCharacterIcons();
 
-		drawCharacterLives();
+		drawCharacterLives(projectionMatrix);
 
 		if (gConsoleActivated)
 		{
 			drawConsole();
-			drawConsoleText();
+			drawConsoleText(projectionMatrix);
 		}
 
 		if (gGameWinner != NO_CHARACTER)
 		{
 			mat4_t winLoseModelViewMatrix = m4_translation((vec3_t){70.0f, 100.0f, -280.0f});
-			
-			glColor4f(1.0f, 1.0f, 1.0f, 0.8f);
+			color4_t textColor = (color4_t){1.0f, 1.0f, 1.0f, 0.8f};
 
 			if (gNetworkConnection)
 			{
 				if (gGameWinner == IDOfCharacter(gNetworkConnection->input->character))
 				{
-					drawString(winLoseModelViewMatrix, 20.0, 10.0, "You win!");
+					drawString(projectionMatrix, winLoseModelViewMatrix, textColor, 20.0, 10.0, "You win!");
 				}
 				else
 				{
-					drawString(winLoseModelViewMatrix, 20.0, 10.0, "You lose!");
+					drawString(projectionMatrix, winLoseModelViewMatrix, textColor, 20.0, 10.0, "You lose!");
 				}
 			}
 			else
 			{
 				if (gGameWinner == RED_ROVER)
 				{
-					drawString(winLoseModelViewMatrix, 40.0, 10.0, "Red Rover wins!");
+					drawString(projectionMatrix, winLoseModelViewMatrix, textColor, 40.0, 10.0, "Red Rover wins!");
 				}
 				else if (gGameWinner == GREEN_TREE)
 				{
-					drawString(winLoseModelViewMatrix, 40.0, 10.0, "Green Tree wins!");
+					drawString(projectionMatrix, winLoseModelViewMatrix, textColor, 40.0, 10.0, "Green Tree wins!");
 				}
 				else if (gGameWinner == PINK_BUBBLE_GUM)
 				{
-					drawString(winLoseModelViewMatrix, 40.0, 10.0, "Pink Bubblegum wins!");
+					drawString(projectionMatrix, winLoseModelViewMatrix, textColor, 40.0, 10.0, "Pink Bubblegum wins!");
 				}
 				else if (gGameWinner == BLUE_LIGHTNING)
 				{
-					drawString(winLoseModelViewMatrix, 40.0, 10.0, "Blue Lightning wins!");
+					drawString(projectionMatrix, winLoseModelViewMatrix, textColor, 40.0, 10.0, "Blue Lightning wins!");
 				}
 			}
 
@@ -788,18 +790,17 @@ static void drawScene(void)
 
 			/* Display stats */
 			
-			drawScoresForCharacter(&gPinkBubbleGum, -6.0, 7.0, -25.0);
-			drawScoresForCharacter(&gRedRover, -2.0f, 7.0f, -25.0f);
-			drawScoresForCharacter(&gGreenTree, 2.0f, 7.0f, -25.0f);
-			drawScoresForCharacter(&gBlueLightning, 6.0f, 7.0f, -25.0f);
+			drawScoresForCharacter(&gPinkBubbleGum, projectionMatrix, textColor, -6.0, 7.0, -25.0);
+			drawScoresForCharacter(&gRedRover, projectionMatrix, textColor, -2.0f, 7.0f, -25.0f);
+			drawScoresForCharacter(&gGreenTree, projectionMatrix, textColor, 2.0f, 7.0f, -25.0f);
+			drawScoresForCharacter(&gBlueLightning, projectionMatrix, textColor, 6.0f, 7.0f, -25.0f);
 
 			if (!gNetworkConnection || gNetworkConnection->type != NETWORK_CLIENT_TYPE)
 			{
 				// Draw a "Press ENTER to play again" notice
 				mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, -7.0f, -25.0f});
-				glColor4f(0.0f, 0.0f, 0.4f, 0.4f);
 
-				drawString(modelViewMatrix, 5.0f, 1.0f, "Fire to play again or Escape to quit");
+				drawString(projectionMatrix, modelViewMatrix, (color4_t){0.0f, 0.0f, 0.4f, 0.4f}, 5.0f, 1.0f, "Fire to play again or Escape to quit");
 			}
 		}
 	}
@@ -809,11 +810,10 @@ static void drawScene(void)
 		drawBlackBox();
 		
 		mat4_t gameTitleModelViewMatrix = m4_translation((vec3_t){-1.0f, 27.0f, -100.0f});
+		
+		drawString(projectionMatrix, gameTitleModelViewMatrix, (color4_t){0.3f, 0.2f, 1.0f, 0.35f}, 20.0, 5.0, "Sky Checkers");
 
-		glColor4f(0.3f, 0.2f, 1.0f, 0.35f);
-		drawString(gameTitleModelViewMatrix, 20.0, 5.0, "Sky Checkers");
-
-		drawMenus();
+		drawMenus(gProjectionMatrix);
 
 		if (isChildBeingDrawn(&gJoyStickConfig[0][1]) /* pinkBubbleGumConfigRightJoyStick */	||
 			isChildBeingDrawn(&gJoyStickConfig[1][1]) /* redRoverConfigRightJoyStick */			||
@@ -823,14 +823,14 @@ static void drawScene(void)
 			mat4_t translationMatrix = m4_translation((vec3_t){-1.0f, 50.0f, -280.0f});
 			mat4_t rotationMatrix = m4_rotation_x(M_PI / 4.0f);
 			mat4_t instructionsModelViewMatrix = m4_mul(translationMatrix, rotationMatrix);
+			
+			color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 0.6f};
 
-			glColor4f(0.3f, 0.2f, 1.0f, 0.6f);
-
-			drawString(instructionsModelViewMatrix, 100.0, 5.0, "Click enter to modify a mapping value and input in a button on your joystick. Click Escape to exit out.");
+			drawString(projectionMatrix, instructionsModelViewMatrix, textColor, 100.0, 5.0, "Click enter to modify a mapping value and input in a button on your joystick. Click Escape to exit out.");
 			
 			mat4_t noticeModelViewMatrix = m4_mul(instructionsModelViewMatrix, m4_translation((vec3_t){0.0f, -20.0f, 0.0f}));
 
-			drawString(noticeModelViewMatrix, 50.0, 5.0, "(Joysticks only function in-game)");
+			drawString(projectionMatrix, noticeModelViewMatrix, textColor, 50.0, 5.0, "(Joysticks only function in-game)");
 		}
 
 		else if (isChildBeingDrawn(&gCharacterConfigureKeys[0][1]) /* pinkBubbleGum */	||
@@ -841,10 +841,10 @@ static void drawScene(void)
 			mat4_t translationMatrix = m4_translation((vec3_t){-1.0f, 50.0f, -280.0f});
 			mat4_t rotationMatrix = m4_rotation_x(M_PI / 4.0f);
 			mat4_t instructionsModelViewMatrix = m4_mul(translationMatrix, rotationMatrix);
+			
+			color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 0.6f};
 
-			glColor4f(0.3f, 0.2f, 1.0f, 0.6f);
-
-			drawString(instructionsModelViewMatrix, 100.0, 5.0, "Click enter to modify a mapping value and input in a key. Click Escape to exit out.");
+			drawString(projectionMatrix, instructionsModelViewMatrix, textColor, 100.0, 5.0, "Click enter to modify a mapping value and input in a key. Click Escape to exit out.");
 		}
 	}
 }
@@ -1256,9 +1256,9 @@ static void resizeWindow(int width, int height)
 	
 	glMatrixMode(GL_PROJECTION);
 	
-	// The aspcect ratio is not quite correct, which is a mistake I made a long time ago that is too troubling to fix properly
-	mat4_t projectionMatrix = m4_perspective(45.0f, (float)(width / height), 10.0f, 300.0f);
-	glLoadMatrixf(&projectionMatrix.m00);
+	// The aspect ratio is not quite correct, which is a mistake I made a long time ago that is too troubling to fix properly
+	gProjectionMatrix = m4_perspective(45.0f, (float)(width / height), 10.0f, 300.0f);
+	glLoadMatrixf(&gProjectionMatrix.m00);
 	
 	glMatrixMode(GL_MODELVIEW);
 }

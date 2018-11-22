@@ -231,94 +231,6 @@ void loadSceneryTextures(void)
 	loadTexture("Data/Textures/tiletex2.bmp", &gTileTwoTex);
 }
 
-static void drawTile(void)
-{
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	
-	GLfloat vertices[] =
-	{
-		// Bottom
-		-1.0f, -1.0f, 1.0f,
-		-1.0f, -1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f,
-		1.0f, -1.0f, 1.0f,
-		
-		// Left
-		-1.0f, 1.0f, 1.0f,
-		-1.0, 1.0, -1.0,
-		-1.0, -1.0, -1.0,
-		-1.0, -1.0, 1.0,
-		
-		// Right
-		1.0, 1.0, 1.0,
-		1.0, 1.0, -1.0,
-		1.0, -1.0, -1.0,
-		1.0, -1.0, 1.0,
-		
-		// Front
-		-1.0, 1.0, 1.0,
-		-1.0, -1.0, 1.0,
-		1.0, -1.0, 1.0,
-		1.0, 1.0, 1.0,
-	};
-	
-	glVertexPointer(3, GL_FLOAT, 0, vertices);
-	
-	GLshort textureCoordinates[] =
-	{
-		// Bottom
-		0, 1,
-		0, 0,
-		1, 0,
-		1, 1,
-		
-		// Left
-		1, 0,
-		0, 0,
-		0, 1,
-		1, 1,
-		
-		// Right
-		0, 0,
-		1, 0,
-		1, 1,
-		0, 1,
-		
-		// Front
-		0, 0,
-		0, 1,
-		1, 1,
-		1, 0,
-	};
-	
-	glTexCoordPointer(2, GL_SHORT, 0, textureCoordinates);
-	
-	GLubyte indices[] =
-	{
-		// Bottom
-		0, 1, 2,
-		2, 3, 0,
-		
-		// Left
-		4, 5, 6,
-		6, 7, 4,
-		
-		// Right
-		8, 9, 10,
-		10, 11, 8,
-		
-		// Front
-		12, 13, 14,
-		14, 15, 12
-	};
-	
-	glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(*indices), GL_UNSIGNED_BYTE, indices);
-	
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-}
-
 void drawSky(void)
 {	
 	glEnable(GL_TEXTURE_2D);
@@ -404,7 +316,91 @@ void drawTiles(void)
 			glBindTexture(GL_TEXTURE_2D, gTileTwoTex);
 		}
 		
-		drawTile();
+		// Draw the tile
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		
+		GLfloat vertices[] =
+		{
+			// Bottom
+			-1.0f, -1.0f, 1.0f,
+			-1.0f, -1.0f, -1.0f,
+			1.0f, -1.0f, -1.0f,
+			1.0f, -1.0f, 1.0f,
+			
+			// Left
+			-1.0f, 1.0f, 1.0f,
+			-1.0, 1.0, -1.0,
+			-1.0, -1.0, -1.0,
+			-1.0, -1.0, 1.0,
+			
+			// Right
+			1.0, 1.0, 1.0,
+			1.0, 1.0, -1.0,
+			1.0, -1.0, -1.0,
+			1.0, -1.0, 1.0,
+			
+			// Front
+			-1.0, 1.0, 1.0,
+			-1.0, -1.0, 1.0,
+			1.0, -1.0, 1.0,
+			1.0, 1.0, 1.0,
+		};
+		
+		glVertexPointer(3, GL_FLOAT, 0, vertices);
+		
+		GLshort textureCoordinates[] =
+		{
+			// Bottom
+			0, 1,
+			0, 0,
+			1, 0,
+			1, 1,
+			
+			// Left
+			1, 0,
+			0, 0,
+			0, 1,
+			1, 1,
+			
+			// Right
+			0, 0,
+			1, 0,
+			1, 1,
+			0, 1,
+			
+			// Front
+			0, 0,
+			0, 1,
+			1, 1,
+			1, 0,
+		};
+		
+		glTexCoordPointer(2, GL_SHORT, 0, textureCoordinates);
+		
+		GLubyte indices[] =
+		{
+			// Bottom
+			0, 1, 2,
+			2, 3, 0,
+			
+			// Left
+			4, 5, 6,
+			6, 7, 4,
+			
+			// Right
+			8, 9, 10,
+			10, 11, 8,
+			
+			// Front
+			12, 13, 14,
+			14, 15, 12
+		};
+		
+		glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(*indices), GL_UNSIGNED_BYTE, indices);
+		
+		glDisableClientState(GL_VERTEX_ARRAY);
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	}
 	
 	glDisable(GL_TEXTURE_2D);

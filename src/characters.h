@@ -141,7 +141,7 @@ void drawCharacterIcons(void);
 
 void drawCharacter(Character *character);
 
-void drawCharacterLives(void);
+void drawCharacterLives(mat4_t projectionMatrix);
 
 void getOtherCharacters(Character *characterA, Character **characterB, Character **characterC, Character **characterD);
 

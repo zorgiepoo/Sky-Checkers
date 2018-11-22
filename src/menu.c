@@ -114,7 +114,7 @@ void invokeMenu(void)
 		zgPrint("gCurrentMenu's action() function is NULL");
 }
 
-void drawMenus(void)
+void drawMenus(mat4_t projectionMatrix)
 {
 	Menu *theMenu;
 	
@@ -127,13 +127,15 @@ void drawMenus(void)
 	// Don't enter in the while loop if there's only one item.
 	if (gCurrentMenu->under == NULL)
 	{
-		// selected color
-		glColor4f(1.0f, 1.0f, 1.0f, 0.7f);
-		
 		if (gCurrentMenu->draw != NULL)
-			gCurrentMenu->draw();
+		{
+			// Use a selected color
+			gCurrentMenu->draw(projectionMatrix, (color4_t){1.0f, 1.0f, 1.0f, 0.7f});
+		}
 		else
+		{
 			zgPrint("Current menu's draw function is NULL. Under if (gCurrentMenu->under == NULL) condition");
+		}
 		return;
 	}
 	
@@ -142,20 +144,26 @@ void drawMenus(void)
 	// iterate through menus and draw each one of them.
 	while ((theMenu = theMenu->under) != gCurrentMenu)
 	{
-		// non-selected color
-		glColor4f(179.0f / 255.0f, 179.0f / 255.0f, 179.0f / 255.0f, 0.5f);
 		if (theMenu->draw != NULL)
-			theMenu->draw();
+		{
+			// Use a non-selected color
+			theMenu->draw(projectionMatrix, (color4_t){179.0f / 255.0f, 179.0f / 255.0f, 179.0f / 255.0f, 0.5f});
+		}
 		else
+		{
 			zgPrint("theMenu's draw function is NULL. Under while ((theMenu = theMenu->under) != gCurrentMenu)");
+		}
 	}
 	
 	// draw the last child that didn't get to be in the loop
-	glColor4f(1.0f, 1.0f, 1.0f, 0.7f);
 	if (gCurrentMenu->draw != NULL)
-		gCurrentMenu->draw();
+	{
+		gCurrentMenu->draw(projectionMatrix, (color4_t){1.0f, 1.0f, 1.0f, 0.7f});
+	}
 	else
+	{
 		zgPrint("Current menu's draw function is NULL. Last step in drawMenus");
+	}
 }
 
 void changeMenu(int direction)

@@ -21,6 +21,14 @@
 
 #include "maincore.h"
 
+typedef struct
+{
+	float red;
+	float green;
+	float blue;
+	float alpha;
+} color4_t;
+
 void mt_init();
 unsigned long mt_random();
 

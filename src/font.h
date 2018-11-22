@@ -21,10 +21,11 @@
 
 #include "maincore.h"
 #include "math_3d.h"
+#include "utilities.h" // for color4_t
 
 SDL_bool initFont(void);
 
-void drawStringf(mat4_t modelViewMatrix, GLfloat width, GLfloat height, const char *format, ...);
-void drawString(mat4_t modelViewMatrix, GLfloat width, GLfloat height, const char *string);
+void drawStringf(mat4_t projectionMatrix, mat4_t modelViewMatrix, color4_t color, GLfloat width, GLfloat height, const char *format, ...);
+void drawString(mat4_t projectionMatrix, mat4_t modelViewMatrix, color4_t color, GLfloat width, GLfloat height, const char *string);
 
 int cacheString(const char *string);
