@@ -21,7 +21,7 @@
 #include "characters.h"
 #include "math_3d.h"
 
-static GLfloat gWeaponVertices[] =
+static float gWeaponVertices[] =
 {
 	// Cube part
 	
@@ -84,7 +84,7 @@ static GLfloat gWeaponVertices[] =
 	3.0, 0.0, 0.0
 };
 
-static GLubyte gWeaponIndices[] =
+static uint8_t gWeaponIndices[] =
 {
 	// Cube part
 	
@@ -143,16 +143,11 @@ void drawWeapon(Renderer *renderer, Weapon *weap)
 	if (!weap->drawingState)
 		return;
 	
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
 	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * (M_PI / 180.0f));
 	mat4_t worldTranslationMatrix = m4_translation((vec3_t){-7.0f, 12.5f, -23.0f});
 	mat4_t modelTranslationMatrix = m4_translation((vec3_t){weap->x, weap->y, weap->z});
 	
 	mat4_t weaponMatrix = m4_mul(m4_mul(worldRotationMatrix, worldTranslationMatrix), modelTranslationMatrix);
-	
-	glColor4f(weap->red, weap->green, weap->blue, 0.2f);
 	
 	float weaponRotationAngle = 0.0f;
 	int direction = weap->direction;
@@ -172,14 +167,5 @@ void drawWeapon(Renderer *renderer, Weapon *weap)
 	mat4_t weaponRotationMatrix = m4_rotation_z(weaponRotationAngle);
 	mat4_t modelViewMatrix = m4_mul(weaponMatrix, weaponRotationMatrix);
 	
-	glLoadMatrixf(&modelViewMatrix.m00);
-	
-	glEnableClientState(GL_VERTEX_ARRAY);
-	
-	glVertexPointer(3, GL_FLOAT, 0, gWeaponVertices);
-	glDrawElements(GL_TRIANGLES, sizeof(gWeaponIndices) / sizeof(*gWeaponIndices), GL_UNSIGNED_BYTE, gWeaponIndices);
-	
-	glDisableClientState(GL_VERTEX_ARRAY);
-	
-	glDisable(GL_BLEND);
+	drawVerticesFromIndices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, gWeaponVertices, 3, gWeaponIndices, RENDERER_INT8_TYPE, sizeof(gWeaponIndices) / sizeof(*gWeaponIndices), (color4_t){weap->red, weap->green, weap->blue, 0.2f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
 }

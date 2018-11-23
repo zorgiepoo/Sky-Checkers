@@ -24,16 +24,16 @@
 
 typedef struct _tile
 {
-	GLfloat x;
-	GLfloat y;
-	GLfloat z;
+	float x;
+	float y;
+	float z;
 	struct _tile *right;
 	struct _tile *left;
 	struct _tile *down;
 	struct _tile *up;
-	GLfloat red, green, blue;
+	float red, green, blue;
 	// default colors
-	GLfloat d_red, d_green, d_blue;
+	float d_red, d_green, d_blue;
 	
 	SDL_bool state;
 	SDL_bool isDead;
@@ -47,7 +47,7 @@ extern Tile gTiles[65];
 void initTiles(void);
 void loadTiles(void);
 
-SDL_bool availableTile(GLfloat x, GLfloat y);
+SDL_bool availableTile(float x, float y);
 
 void loadSceneryTextures(Renderer *renderer);
 

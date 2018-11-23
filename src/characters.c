@@ -59,14 +59,14 @@ Character gGreenTree;
 Character gPinkBubbleGum;
 Character gBlueLightning;
 
-static GLuint gCharacterTex;
+static uint32_t gCharacterTex;
 
-static GLfloat *gCharacterVertices;
-static GLfloat *gCharacterTextureCoordinates;
-static GLushort *gCharacterIndices;
+static float *gCharacterVertices;
+static float *gCharacterTextureCoordinates;
+static uint16_t *gCharacterIndices;
 
-static GLfloat *gIconVertices;
-static GLfloat *gIconTextureCoordinates;
+static float *gIconVertices;
+static float *gIconTextureCoordinates;
 
 static void randomizeCharacterDirection(Character *character);
 
@@ -348,11 +348,9 @@ void buildCharacterModels(void)
 
 void drawCharacter(Renderer *renderer, Character *character)
 {
-	// don't draw the character if he's not on in the scene
+	// don't draw the character if they're not in the scene
 	if (character->z <= -170.0)
 		return;
-	
-	glEnable(GL_TEXTURE_2D);
 	
 	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * (M_PI / 180.0f));
 	mat4_t worldTranslationMatrix = m4_translation((vec3_t){-7.0f, 12.5f, -25.0f});
@@ -360,56 +358,16 @@ void drawCharacter(Renderer *renderer, Character *character)
 	mat4_t modelRotationMatrix = m4_rotation_z(character->zRot);
 	
 	mat4_t modelViewMatrix = m4_mul(m4_mul(m4_mul(worldRotationMatrix, worldTranslationMatrix), modelTranslationMatrix), modelRotationMatrix);
-	glLoadMatrixf(&modelViewMatrix.m00);
 	
-	glColor3f(character->red, character->green, character->blue);
-	
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	
-	glBindTexture(GL_TEXTURE_2D, gCharacterTex);
-	
-	glVertexPointer(3, GL_FLOAT, 0, gCharacterVertices);
-	glTexCoordPointer(2, GL_FLOAT, 0, gCharacterTextureCoordinates);
-	
-	glDrawElements(GL_TRIANGLES, 5220, GL_UNSIGNED_SHORT, gCharacterIndices);
-	
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	
-	glDisable(GL_TEXTURE_2D);
+	drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, gCharacterTex, RENDERER_TRIANGLE_MODE, gCharacterVertices, 3, gCharacterTextureCoordinates, RENDERER_FLOAT_TYPE, gCharacterIndices, RENDERER_INT16_TYPE, 5220, (color4_t){character->red, character->green, character->blue, 1.0f}, RENDERER_OPTION_NONE);
 }
 
 void drawCharacterIcon(Renderer *renderer, mat4_t modelViewMatrix, Character *character)
 {
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
-	glEnable(GL_TEXTURE_2D);
-	
-	glColor4f(character->red, character->green, character->blue, 0.7f);
-	
 	mat4_t rotationMatrix = m4_rotation_x(M_PI);
 	mat4_t rotatedIconModelViewMatrix = m4_mul(modelViewMatrix, rotationMatrix);
 	
-	glLoadMatrixf(&rotatedIconModelViewMatrix.m00);
-	
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	
-	glBindTexture(GL_TEXTURE_2D, gCharacterTex);
-	
-	glVertexPointer(2, GL_FLOAT, 0, gIconVertices);
-	glTexCoordPointer(2, GL_FLOAT, 0, gIconTextureCoordinates);
-	
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 1204 / 2);
-	
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	
-	glDisable(GL_TEXTURE_2D);
-	
-	glDisable(GL_BLEND);
+	drawTextureWithVertices(renderer, rotatedIconModelViewMatrix, gCharacterTex, RENDERER_TRIANGLE_STRIP_MODE, gIconVertices, 2, gIconTextureCoordinates, RENDERER_FLOAT_TYPE, 1204 / 2, (color4_t){character->red, character->green, character->blue, 0.7f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
 }
 
 static void translateAndDrawCharacterIcon(Renderer *renderer, Character *character, float x, float y, float z)
@@ -561,11 +519,11 @@ void spawnCharacter(Character *character)
 		randOne = (mt_random() % 15);
 		randTwo = (mt_random() % 15);
 		
-		isFree = availableTile((GLfloat)randOne, (GLfloat)randTwo);
+		isFree = availableTile((float)randOne, (float)randTwo);
 	}
 	
-	character->x = (GLfloat)randOne;
-	character->y = (GLfloat)randTwo;
+	character->x = (float)randOne;
+	character->y = (float)randTwo;
 	character->z = 2.0;
 }
 

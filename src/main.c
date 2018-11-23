@@ -78,18 +78,8 @@ static void writeDefaults(Renderer *renderer);
 static void drawBlackBox(Renderer *renderer)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 0.0f, -25.0f});
-	glLoadMatrixf(&modelViewMatrix.m00);
 	
-	glDisable(GL_DEPTH_TEST);
-	
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
-	glColor4f(0.0f, 0.0f, 0.0f, 0.7f);
-	
-	glEnableClientState(GL_VERTEX_ARRAY);
-	
-	GLfloat vertices[] =
+	float vertices[] =
 	{
 		-17.3f, 17.3f, -13.0f,
 		17.3f, 17.3f, -13.0f,
@@ -97,21 +87,13 @@ static void drawBlackBox(Renderer *renderer)
 		-17.3f, -17.3f, -13.0f
 	};
 	
-	GLubyte indices[] =
+	uint8_t indices[] =
 	{
 		0, 1, 2,
 		2, 3, 0
 	};
-
-	glVertexPointer(3, GL_FLOAT, 0, vertices);
 	
-	glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(*indices), GL_UNSIGNED_BYTE, indices);
-
-	glDisableClientState(GL_VERTEX_ARRAY);
-	
-	glDisable(GL_BLEND);
-	
-	glEnable(GL_DEPTH_TEST);
+	drawVerticesFromIndices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertices, 3, indices, RENDERER_INT8_TYPE, sizeof(indices) / sizeof(*indices), (color4_t){0.0f, 0.0f, 0.0f, 0.7f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
 }
 
 static void initScene(Renderer *renderer)
@@ -631,7 +613,7 @@ static void drawScoresForCharacter(Renderer *renderer, Character *character, col
 
 static void drawScene(Renderer *renderer)
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	clearColorAndDepthBuffers(renderer);
 
 	if (gGameState)
 	{

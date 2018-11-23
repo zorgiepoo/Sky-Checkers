@@ -20,16 +20,16 @@
 #include "font.h"
 #include "utilities.h"
 
-GLuint loadString(Renderer *renderer, const char *string);
+uint32_t loadString(Renderer *renderer, const char *string);
 
 /* Glyph structure */
 typedef struct
 {
-	GLuint texture;
+	uint32_t texture;
 	char *text;
 } Glyph;
 
-static GLfloat gFontVertices[] =
+static float gFontVertices[] =
 {
 	-1.0f, -1.0f,
 	-1.0f, 1.0f,
@@ -37,7 +37,7 @@ static GLfloat gFontVertices[] =
 	1.0f, -1.0f
 };
 
-static GLfloat gFontTextureCoordinates[] =
+static float gFontTextureCoordinates[] =
 {
 	0.0f, 1.0f,
 	0.0f, 0.0f,
@@ -45,7 +45,7 @@ static GLfloat gFontTextureCoordinates[] =
 	1.0f, 1.0f
 };
 
-static GLubyte gFontIndices[] =
+static uint8_t gFontIndices[] =
 {
 	0, 1, 2,
 	2, 3, 0
@@ -80,7 +80,7 @@ SDL_bool initFont(void)
 }
 
 // returns a texture to draw for the string.
-GLuint loadString(Renderer *renderer, const char *string)
+uint32_t loadString(Renderer *renderer, const char *string)
 {	
 	if (string == NULL)
 		return 0;
@@ -127,7 +127,7 @@ GLuint loadString(Renderer *renderer, const char *string)
 	if (SDL_BlitSurface(fontSurface, NULL, textSurface, NULL) == -1)
 		zgPrint("blitting failed");
 	
-	GLuint texture = textureFromPixelData(renderer, textSurface->pixels, textSurface->w, textSurface->h);
+	uint32_t texture = textureFromPixelData(renderer, textSurface->pixels, textSurface->w, textSurface->h);
 	
 	// Cleanup
 	SDL_FreeSurface(fontSurface);
@@ -162,7 +162,7 @@ static int lookUpGlyphIndex(const char *string)
 }
 
 // partially copied from zgPrint(...)
-void drawStringf(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, GLfloat width, GLfloat height, const char *format, ...)
+void drawStringf(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, float width, float height, const char *format, ...)
 {
 	va_list ap;
 	char buffer[256];
@@ -268,7 +268,7 @@ int cacheString(Renderer *renderer, const char *string)
 	return index;
 }
 
-void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, GLfloat width, GLfloat height, const char *string)
+void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, float width, float height, const char *string)
 {	
 	if (string == NULL)
 	{
@@ -281,33 +281,8 @@ void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, GLfl
 		return;
 	}
 	
-	glColor4fv(&color.red);
-	
-	glDisable(GL_DEPTH_TEST);
-	
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, gGlyphs[index].texture);
-	
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	
-	glVertexPointer(2, GL_FLOAT, 0, gFontVertices);
-	glTexCoordPointer(2, GL_FLOAT, 0, gFontTextureCoordinates);
-	
 	mat4_t scaleMatrix = m4_scaling((vec3_t){width, height, 0.0f});
 	mat4_t transformMatrix = m4_mul(modelViewMatrix, scaleMatrix);
 	
-	glLoadMatrixf(&transformMatrix.m00);
-	glDrawElements(GL_TRIANGLES, sizeof(gFontIndices) / sizeof(*gFontIndices), GL_UNSIGNED_BYTE, gFontIndices);
-	
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	
-	glDisable(GL_BLEND);
-	
-	glDisable(GL_TEXTURE_2D);
-	glEnable(GL_DEPTH_TEST);
+	drawTextureWithVerticesFromIndices(renderer, transformMatrix, gGlyphs[index].texture, RENDERER_TRIANGLE_MODE, gFontVertices, 2, gFontTextureCoordinates, RENDERER_FLOAT_TYPE, gFontIndices, RENDERER_INT8_TYPE, sizeof(gFontIndices) / sizeof(*gFontIndices), color, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
 }

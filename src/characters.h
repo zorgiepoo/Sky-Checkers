@@ -58,13 +58,13 @@ extern int gNumberOfNetHumans;
 typedef struct _Character
 {
 	/* x, y, z translate values for character */
-	GLfloat x, y, z;
+	float x, y, z;
 	
 	/* Rotation axes of character */
-	GLfloat zRot;
+	float zRot;
 	
 	/* Colors of character faces */
-	GLfloat red, green, blue;
+	float red, green, blue;
 	
 	/* Direction character is going in */
 	int direction;

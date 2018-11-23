@@ -32,7 +32,6 @@
 #define MAC_OS_X
 
 #include "SDL2/SDL.h"
-#include "SDL2/SDL_opengl.h"
 #include "SDL2_ttf/SDL_ttf.h"
 #include "SDL2_image/SDL_image.h"
 #include "SDL2_mixer/SDL_mixer.h"
@@ -57,7 +56,6 @@
 
 #include "SDL.h"
 #include "SDL_syswm.h"
-#include "SDL_opengl.h"
 #include "SDL_ttf.h"
 #include "SDL_image.h"
 #include "SDL_mixer.h"
@@ -72,7 +70,6 @@
 #ifdef linux
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
 #include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_image.h>

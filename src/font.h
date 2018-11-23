@@ -25,7 +25,7 @@
 
 SDL_bool initFont(void);
 
-void drawStringf(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, GLfloat width, GLfloat height, const char *format, ...);
-void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, GLfloat width, GLfloat height, const char *string);
+void drawStringf(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, float width, float height, const char *format, ...);
+void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, float width, float height, const char *string);
 
 int cacheString(Renderer *renderer, const char *string);

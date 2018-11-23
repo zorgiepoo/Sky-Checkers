@@ -1,6 +1,12 @@
 #include "renderer.h"
 #include "utilities.h"
 
+#ifdef WINDOWS
+#include "SDL_opengl.h"
+#else
+#include <SDL2/SDL_opengl.h>
+#endif
+
 void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
 {
 	// Choose OpenGL 2.1 for now which almost anything should support
@@ -94,6 +100,11 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 	
 	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_DEPTH_TEST);
+}
+
+void clearColorAndDepthBuffers(Renderer *renderer)
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void swapBuffers(Renderer *renderer)
@@ -199,4 +210,149 @@ void loadTexture(Renderer *renderer, const char *filePath, uint32_t *tex)
 	surfaceToTexture(renderer, texImage, tex);
 	
 	SDL_FreeSurface(texImage);
+}
+
+static GLenum glTypeFromIndicesType(uint8_t type)
+{
+	switch (type)
+	{
+		case RENDERER_INT8_TYPE:
+			return GL_UNSIGNED_BYTE;
+		case RENDERER_INT16_TYPE:
+			return GL_UNSIGNED_SHORT;
+	}
+	return 0;
+}
+
+static GLenum glTypeFromCoordinatesType(uint8_t type)
+{
+	switch (type)
+	{
+		case RENDERER_INT16_TYPE:
+			return GL_SHORT;
+		case RENDERER_FLOAT_TYPE:
+			return GL_FLOAT;
+	}
+	return 0;
+}
+
+static GLenum glModeFromMode(uint8_t mode)
+{
+	switch (mode)
+	{
+		case RENDERER_TRIANGLE_MODE:
+			return GL_TRIANGLES;
+		case RENDERER_TRIANGLE_STRIP_MODE:
+			return GL_TRIANGLE_STRIP;
+	}
+	return 0;
+}
+
+static void beginDrawingVertices(mat4_t modelViewMatrix, const float *vertices, uint8_t vertexSize, color4_t color, uint8_t options)
+{
+	glLoadMatrixf(&modelViewMatrix.m00);
+	
+	SDL_bool disableDepthTest = (options & RENDERER_OPTION_DISABLE_DEPTH_TEST) != 0;
+	if (disableDepthTest)
+	{
+		glDisable(GL_DEPTH_TEST);
+	}
+	
+	SDL_bool blendingAlpha = (options & RENDERER_OPTION_BLENDING_ALPHA) != 0;
+	SDL_bool blendingOneMinusAlpha = (options & RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA) != 0;
+	SDL_bool blending = (blendingAlpha || blendingOneMinusAlpha);
+	if (blending)
+	{
+		glEnable(GL_BLEND);
+		
+		if (blendingAlpha)
+		{
+			glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA);
+		}
+		else /* if (blendingOneMinusAlpha) */
+		{
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		}
+	}
+	
+	glColor4fv(&color.red);
+	
+	glEnableClientState(GL_VERTEX_ARRAY);
+	
+	glVertexPointer(vertexSize, GL_FLOAT, 0, vertices);
+}
+
+static void endDrawingVertices(uint8_t options)
+{
+	glDisableClientState(GL_VERTEX_ARRAY);
+	
+	SDL_bool blendingAlpha = (options & RENDERER_OPTION_BLENDING_ALPHA) != 0;
+	SDL_bool blendingOneMinusAlpha = (options & RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA) != 0;
+	SDL_bool blending = (blendingAlpha || blendingOneMinusAlpha);
+	if (blending)
+	{
+		glDisable(GL_BLEND);
+	}
+	
+	SDL_bool disableDepthTest = (options & RENDERER_OPTION_DISABLE_DEPTH_TEST) != 0;
+	if (disableDepthTest)
+	{
+		glEnable(GL_DEPTH_TEST);
+	}
+}
+
+void drawVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, uint8_t mode, const float *vertices, uint8_t vertexSize, const void *indices, uint8_t indicesType, uint32_t indicesCount, color4_t color, uint8_t options)
+{
+	beginDrawingVertices(modelViewMatrix, vertices, vertexSize, color, options);
+	
+	glDrawElements(glModeFromMode(mode), indicesCount, glTypeFromIndicesType(indicesType), indices);
+	
+	endDrawingVertices(options);
+}
+
+void drawVertices(Renderer *renderer, mat4_t modelViewMatrix, uint8_t mode, const float *vertices, uint8_t vertexSize, uint32_t vertexCount, color4_t color, uint8_t options)
+{
+	beginDrawingVertices(modelViewMatrix, vertices, vertexSize, color, options);
+	
+	glDrawArrays(glModeFromMode(mode), 0, vertexCount);
+	
+	endDrawingVertices(options);
+}
+
+static void beginDrawingTexture(mat4_t modelViewMatrix, uint32_t texture, const void *textureCoordinates, uint8_t textureCoordinatesType, const float *vertices, uint8_t vertexSize, color4_t color, uint8_t options)
+{
+	glEnable(GL_TEXTURE_2D);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	
+	glBindTexture(GL_TEXTURE_2D, texture);
+	
+	beginDrawingVertices(modelViewMatrix, vertices, vertexSize, color, options);
+	
+	glTexCoordPointer(2, glTypeFromCoordinatesType(textureCoordinatesType), 0, textureCoordinates);
+}
+
+static void endDrawingTexture(uint8_t options)
+{
+	endDrawingVertices(options);
+	
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisable(GL_TEXTURE_2D);
+}
+
+void drawTextureWithVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, uint32_t texture, uint8_t mode, const float *vertices, uint8_t vertexSize, const void *textureCoordinates, uint8_t textureCoordinatesType, const void *indices, uint8_t indicesType, uint32_t indicesCount, color4_t color, uint8_t options)
+{
+	beginDrawingTexture(modelViewMatrix, texture, textureCoordinates, textureCoordinatesType, vertices, vertexSize, color, options);
+	
+	glDrawElements(glModeFromMode(mode), indicesCount, glTypeFromIndicesType(indicesType), indices);
+	
+	endDrawingTexture(options);
+}
+
+void drawTextureWithVertices(Renderer *renderer, mat4_t modelViewMatrix, uint32_t texture, uint8_t mode, const float *vertices, uint8_t vertexSize, const void *textureCoordinates, uint8_t textureCoordinatesType, uint32_t vertexCount, color4_t color, uint8_t options)
+{
+	beginDrawingTexture(modelViewMatrix, texture, textureCoordinates, textureCoordinatesType, vertices, vertexSize, color, options);
+	
+	glDrawArrays(glModeFromMode(mode), 0, vertexCount);
+	
+	endDrawingTexture(options);
 }

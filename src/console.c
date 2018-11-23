@@ -53,8 +53,8 @@ static const unsigned int MIN_CONSOLE_STRING_LENGTH = 6;
 static char gConsoleString[100];
 static unsigned int gConsoleStringIndex;
 
-static GLfloat getConsoleValue(void);
-static GLfloat setConsoleValue(SDL_bool *errorFlag);
+static float getConsoleValue(void);
+static float setConsoleValue(SDL_bool *errorFlag);
 
 void initConsole(void)
 {
@@ -73,15 +73,9 @@ void initConsole(void)
 
 void drawConsole(Renderer *renderer)
 {
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
 	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 9.0f, -25.0f});
-	glLoadMatrixf(&modelViewMatrix.m00);
 	
-	glColor4f(0.0f, 0.0f, 0.0f, 0.6f);
-	
-	GLfloat vertices[] =
+	float vertices[] =
 	{
 		10.0f, 1.0f, 1.0f,
 		10.0f, -1.0f, 1.0f,
@@ -89,20 +83,13 @@ void drawConsole(Renderer *renderer)
 		-10.0f, 1.0f, 1.0f,
 	};
 	
-	GLubyte indices[] =
+	uint8_t indices[] =
 	{
 		0, 1, 2,
 		2, 3, 0
 	};
 	
-	glEnableClientState(GL_VERTEX_ARRAY);
-	
-	glVertexPointer(3, GL_FLOAT, 0, vertices);
-	glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(*indices), GL_UNSIGNED_BYTE, indices);
-	
-	glDisableClientState(GL_VERTEX_ARRAY);
-	
-	glDisable(GL_BLEND);
+	drawVerticesFromIndices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertices, 3, indices, RENDERER_INT8_TYPE, sizeof(indices) / sizeof(*indices), (color4_t){0.0f, 0.0f, 0.0f, 0.6f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
 }
 
 void writeConsoleText(Uint8 text)
@@ -156,7 +143,7 @@ void executeConsoleCommand(void)
 	else
 	{
 		SDL_bool errorFlag;
-		GLfloat value = setConsoleValue(&errorFlag);
+		float value = setConsoleValue(&errorFlag);
 		if (!errorFlag)
 		{
 			zgPrint("(scc) set: %f", value);
@@ -168,12 +155,12 @@ void executeConsoleCommand(void)
 	}
 }
 
-static GLfloat getConsoleValue(void)
+static float getConsoleValue(void)
 {
 	// syntax:
 	// scc~: get(arg) object.property
 	
-	GLfloat value = 0.0;
+	float value = 0.0;
 	char result[128];
 	int resultLen;
 	int i;
@@ -213,11 +200,11 @@ static GLfloat getConsoleValue(void)
 		else if (strcmp(partialConsoleString, "tile.blue") == 0)
 			value = gTiles[arg_val].blue;
 		else if (strcmp(partialConsoleString, "tile.recovery_timer") == 0)
-			value = (GLfloat)gTiles[arg_val].recovery_timer;
+			value = (float)gTiles[arg_val].recovery_timer;
 		else if (strcmp(partialConsoleString, "tile.state") == 0)
-			value = (GLfloat)gTiles[arg_val].state;
+			value = (float)gTiles[arg_val].state;
 		else if (strcmp(partialConsoleString, "tile.is_dead") == 0)
-			value = (GLfloat)gTiles[arg_val].isDead;
+			value = (float)gTiles[arg_val].isDead;
 	}
 	
 	// get calls with no arguements
@@ -232,13 +219,13 @@ static GLfloat getConsoleValue(void)
 	else if (strcmp(gConsoleString, "scc~: get redRover.zrot") == 0)
 		value = gRedRover.zRot;
 	else if (strcmp(gConsoleString, "scc~: get redRover.direction") == 0)
-		value = (GLfloat)gRedRover.direction;
+		value = (float)gRedRover.direction;
 	else if (strcmp(gConsoleString, "scc~: get redRover.state") == 0)
-		value = (GLfloat)gRedRover.state;
+		value = (float)gRedRover.state;
 	else if (strcmp(gConsoleString, "scc~: get redRover.recovery_timer") == 0)
-		value = (GLfloat)gRedRover.recovery_timer;
+		value = (float)gRedRover.recovery_timer;
 	else if (strcmp(gConsoleString, "scc~: get redRover.animation_timer") == 0)
-		value = (GLfloat)gRedRover.animation_timer;
+		value = (float)gRedRover.animation_timer;
 	else if (strcmp(gConsoleString, "scc~: get redRover.weapon.x") == 0)
 		value = gRedRover.weap->x;
 	else if (strcmp(gConsoleString, "scc~: get redRover.weapon.y") == 0)
@@ -246,11 +233,11 @@ static GLfloat getConsoleValue(void)
 	else if (strcmp(gConsoleString, "scc~: get redRover.weapon.z") == 0)
 		value = gRedRover.weap->z;
 	else if (strcmp(gConsoleString, "scc~: get redRover.weapon.direction") == 0)
-		value = (GLfloat)gRedRover.weap->direction;
+		value = (float)gRedRover.weap->direction;
 	else if (strcmp(gConsoleString, "scc~: get redRover.weapon.drawing_state") == 0)
-		value = (GLfloat)gRedRover.weap->drawingState;
+		value = (float)gRedRover.weap->drawingState;
 	else if (strcmp(gConsoleString, "scc~: get redRover.weapon.animation_state") == 0)
-		value = (GLfloat)gRedRover.weap->animationState;
+		value = (float)gRedRover.weap->animationState;
 	else if (strcmp(gConsoleString, "scc~: get redRover.weapon.red") == 0)
 		value = gRedRover.weap->red;
 	else if (strcmp(gConsoleString, "scc~: get redRover.weapon.green") == 0)
@@ -258,7 +245,7 @@ static GLfloat getConsoleValue(void)
 	else if (strcmp(gConsoleString, "scc~: get redRover.weapon.blue") == 0)
 		value = gRedRover.weap->blue;
 	else if (strcmp(gConsoleString, "scc~: get redRover.time_alive") == 0)
-		value = (GLfloat)gRedRover.time_alive;
+		value = (float)gRedRover.time_alive;
 	
 	// greenTree variables.
 	if (strcmp(gConsoleString, "scc~: get greenTree.x") == 0)
@@ -270,13 +257,13 @@ static GLfloat getConsoleValue(void)
 	else if (strcmp(gConsoleString, "scc~: get greenTree.zrot") == 0)
 		value = gGreenTree.zRot;
 	else if (strcmp(gConsoleString, "scc~: get greenTree.direction") == 0)
-		value = (GLfloat)gGreenTree.direction;
+		value = (float)gGreenTree.direction;
 	else if (strcmp(gConsoleString, "scc~: get greenTree.state") == 0)
-		value = (GLfloat)gGreenTree.state;
+		value = (float)gGreenTree.state;
 	else if (strcmp(gConsoleString, "scc~: get greenTree.recovery_timer") == 0)
-		value = (GLfloat)gGreenTree.recovery_timer;
+		value = (float)gGreenTree.recovery_timer;
 	else if (strcmp(gConsoleString, "scc~: get greenTree.animation_timer") == 0)
-		value = (GLfloat)gGreenTree.animation_timer;
+		value = (float)gGreenTree.animation_timer;
 	else if (strcmp(gConsoleString, "scc~: get greenTree.weapon.x") == 0)
 		value = gGreenTree.weap->x;
 	else if (strcmp(gConsoleString, "scc~: get greenTree.weapon.y") == 0)
@@ -284,11 +271,11 @@ static GLfloat getConsoleValue(void)
 	else if (strcmp(gConsoleString, "scc~: get greenTree.weapon.z") == 0)
 		value = gGreenTree.weap->z;
 	else if (strcmp(gConsoleString, "scc~: get greenTree.weapon.direction") == 0)
-		value = (GLfloat)gGreenTree.weap->direction;
+		value = (float)gGreenTree.weap->direction;
 	else if (strcmp(gConsoleString, "scc~: get greenTree.weapon.drawing_state") == 0)
-		value = (GLfloat)gGreenTree.weap->drawingState;
+		value = (float)gGreenTree.weap->drawingState;
 	else if (strcmp(gConsoleString, "scc~: get greenTree.weapon.animation_state") == 0)
-		value = (GLfloat)gGreenTree.weap->animationState;
+		value = (float)gGreenTree.weap->animationState;
 	else if (strcmp(gConsoleString, "scc~: get greenTree.weapon.red") == 0)
 		value = gGreenTree.weap->red;
 	else if (strcmp(gConsoleString, "scc~: get greenTree.weapon.green") == 0)
@@ -296,7 +283,7 @@ static GLfloat getConsoleValue(void)
 	else if (strcmp(gConsoleString, "scc~: get greenTree.weapon.blue") == 0)
 		value = gGreenTree.weap->blue;
 	else if (strcmp(gConsoleString, "scc~: get greenTree.time_alive") == 0)
-		value = (GLfloat)gGreenTree.time_alive;
+		value = (float)gGreenTree.time_alive;
 	
 	// pinkBubbleGum variables.
 	if (strcmp(gConsoleString, "scc~: get pinkBubbleGum.x") == 0)
@@ -308,13 +295,13 @@ static GLfloat getConsoleValue(void)
 	else if (strcmp(gConsoleString, "scc~: get pinkBubbleGum.zrot") == 0)
 		value = gPinkBubbleGum.zRot;
 	else if (strcmp(gConsoleString, "scc~: get pinkBubbleGum.direction") == 0)
-		value = (GLfloat)gPinkBubbleGum.direction;
+		value = (float)gPinkBubbleGum.direction;
 	else if (strcmp(gConsoleString, "scc~: get pinkBubbleGum.state") == 0)
-		value = (GLfloat)gPinkBubbleGum.state;
+		value = (float)gPinkBubbleGum.state;
 	else if (strcmp(gConsoleString, "scc~: get pinkBubbleGum.recovery_timer") == 0)
-		value = (GLfloat)gPinkBubbleGum.recovery_timer;
+		value = (float)gPinkBubbleGum.recovery_timer;
 	else if (strcmp(gConsoleString, "scc~: get pinkBubbleGum.animation_timer") == 0)
-		value = (GLfloat)gPinkBubbleGum.animation_timer;
+		value = (float)gPinkBubbleGum.animation_timer;
 	else if (strcmp(gConsoleString, "scc~: get pinkBubbleGum.weapon.x") == 0)
 		value = gPinkBubbleGum.weap->x;
 	else if (strcmp(gConsoleString, "scc~: get pinkBubbleGum.weapon.y") == 0)
@@ -322,11 +309,11 @@ static GLfloat getConsoleValue(void)
 	else if (strcmp(gConsoleString, "scc~: get pinkBubbleGum.weapon.z") == 0)
 		value = gPinkBubbleGum.weap->z;
 	else if (strcmp(gConsoleString, "scc~: get pinkBubbleGum.weapon.direction") == 0)
-		value = (GLfloat)gPinkBubbleGum.weap->direction;
+		value = (float)gPinkBubbleGum.weap->direction;
 	else if (strcmp(gConsoleString, "scc~: get pinkBubbleGum.weapon.drawing_state") == 0)
-		value = (GLfloat)gPinkBubbleGum.weap->drawingState;
+		value = (float)gPinkBubbleGum.weap->drawingState;
 	else if (strcmp(gConsoleString, "scc~: get pinkBubbleGum.weapon.animation_state") == 0)
-		value = (GLfloat)gPinkBubbleGum.weap->animationState;
+		value = (float)gPinkBubbleGum.weap->animationState;
 	else if (strcmp(gConsoleString, "scc~: get pinkBubbleGum.weapon.red") == 0)
 		value = gPinkBubbleGum.weap->red;
 	else if (strcmp(gConsoleString, "scc~: get pinkBubbleGum.weapon.green") == 0)
@@ -334,7 +321,7 @@ static GLfloat getConsoleValue(void)
 	else if (strcmp(gConsoleString, "scc~: get pinkBubbleGum.weapon.blue") == 0)
 		value = gPinkBubbleGum.weap->blue;
 	else if (strcmp(gConsoleString, "scc~: get pinkBubbleGum.time_alive") == 0)
-		value = (GLfloat)gPinkBubbleGum.time_alive;
+		value = (float)gPinkBubbleGum.time_alive;
 	
 	// blueLightning variables.
 	if (strcmp(gConsoleString, "scc~: get blueLightning.x") == 0)
@@ -346,13 +333,13 @@ static GLfloat getConsoleValue(void)
 	else if (strcmp(gConsoleString, "scc~: get blueLightning.zrot") == 0)
 		value = gBlueLightning.zRot;
 	else if (strcmp(gConsoleString, "scc~: get blueLightning.direction") == 0)
-		value = (GLfloat)gBlueLightning.direction;
+		value = (float)gBlueLightning.direction;
 	else if (strcmp(gConsoleString, "scc~: get blueLightning.state") == 0)
-		value = (GLfloat)gBlueLightning.state;
+		value = (float)gBlueLightning.state;
 	else if (strcmp(gConsoleString, "scc~: get blueLightning.recovery_timer") == 0)
-		value = (GLfloat)gBlueLightning.recovery_timer;
+		value = (float)gBlueLightning.recovery_timer;
 	else if (strcmp(gConsoleString, "scc~: get blueLightning.animation_timer") == 0)
-		value = (GLfloat)gBlueLightning.animation_timer;
+		value = (float)gBlueLightning.animation_timer;
 	else if (strcmp(gConsoleString, "scc~: get blueLightning.weapon.x") == 0)
 		value = gBlueLightning.weap->x;
 	else if (strcmp(gConsoleString, "scc~: get blueLightning.weapon.y") == 0)
@@ -360,11 +347,11 @@ static GLfloat getConsoleValue(void)
 	else if (strcmp(gConsoleString, "scc~: get blueLightning.weapon.z") == 0)
 		value = gBlueLightning.weap->z;
 	else if (strcmp(gConsoleString, "scc~: get blueLightning.weapon.direction") == 0)
-		value = (GLfloat)gBlueLightning.weap->direction;
+		value = (float)gBlueLightning.weap->direction;
 	else if (strcmp(gConsoleString, "scc~: get blueLightning.weapon.drawing_state") == 0)
-		value = (GLfloat)gBlueLightning.weap->drawingState;
+		value = (float)gBlueLightning.weap->drawingState;
 	else if (strcmp(gConsoleString, "scc~: get blueLightning.weapon.animation_state") == 0)
-		value = (GLfloat)gBlueLightning.weap->animationState;
+		value = (float)gBlueLightning.weap->animationState;
 	else if (strcmp(gConsoleString, "scc~: get blueLightning.weapon.red") == 0)
 		value = gBlueLightning.weap->red;
 	else if (strcmp(gConsoleString, "scc~: get blueLightning.weapon.green") == 0)
@@ -372,10 +359,10 @@ static GLfloat getConsoleValue(void)
 	else if (strcmp(gConsoleString, "scc~: get blueLightning.weapon.blue") == 0)
 		value = gBlueLightning.weap->blue;
 	else if (strcmp(gConsoleString, "scc~: get blueLightning.time_alive") == 0)
-		value = (GLfloat)gBlueLightning.time_alive;
+		value = (float)gBlueLightning.time_alive;
 	
 	else if (strcmp(gConsoleString, "scc~: get ai_mode") == 0)
-		value = (GLfloat)gAIMode;
+		value = (float)gAIMode;
 	
 	// write text for precision up to 1 digit past the decimal point.
 	// note that we return the real value with all of its digits.
@@ -394,7 +381,7 @@ static GLfloat getConsoleValue(void)
 	return value;
 }
 
-static GLfloat setConsoleValue(SDL_bool *errorFlag)
+static float setConsoleValue(SDL_bool *errorFlag)
 {
 	*errorFlag = SDL_FALSE;
 	
@@ -402,7 +389,7 @@ static GLfloat setConsoleValue(SDL_bool *errorFlag)
 	// scc~: object(arg).property value
 	
 	char input[128];
-	GLfloat value = 0;
+	float value = 0;
 	unsigned int i;
 	unsigned int len = 0;
 	SDL_bool valueExists = SDL_FALSE;
@@ -432,7 +419,7 @@ static GLfloat setConsoleValue(SDL_bool *errorFlag)
 		char *num = &gConsoleString[len + 1];
 		
 		// value is the value the user wants to set for the variable name.
-		value = (GLfloat)atof(num);
+		value = (float)atof(num);
 		
 		if (value == 0.0 && num[0] != '0')
 		{

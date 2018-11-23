@@ -237,8 +237,8 @@ int clientNetworkThread(void *context)
 					gNetworkConnection->isConnected = SDL_TRUE;
 					
 					int slotID = 0;
-					GLfloat x = 0;
-					GLfloat y = 0;
+					float x = 0;
+					float y = 0;
 					int direction = NO_DIRECTION;
 					
 					sscanf(buffer, "sr%i %f %f %i %i", &slotID, &x, &y, &direction, &gNetworkConnection->characterLives);
@@ -357,9 +357,9 @@ int clientNetworkThread(void *context)
 			{
 				int characterID = 0;
 				int direction = 0;
-				GLfloat x = 0.0;
-				GLfloat y = 0.0;
-				GLfloat z = 0.0;
+				float x = 0.0;
+				float y = 0.0;
+				float z = 0.0;
 				
 				sscanf(buffer + 2, "%i %f %f %f %i", &characterID, &x, &y, &z, &direction);
 				
@@ -402,8 +402,8 @@ int clientNetworkThread(void *context)
 				// spawn character
 				Character *character = NULL;
 				int characterID = 0;
-				GLfloat x = 0.0;
-				GLfloat y = 0.0;
+				float x = 0.0;
+				float y = 0.0;
 				
 				sscanf(buffer + 2, "%i %f %f", &characterID, &x, &y);
 				

@@ -32,9 +32,9 @@ static void linkColumn(int index);
 // starts at index '1' for all of our calculations, 1 to 64
 Tile gTiles[65];
 
-static GLuint gSkyTex;
-static GLuint gTileOneTex;
-static GLuint gTileTwoTex;
+static uint32_t gSkyTex;
+static uint32_t gTileOneTex;
+static uint32_t gTileTwoTex;
 
 void initTiles(void)
 {
@@ -78,7 +78,7 @@ void loadTiles(void)
  * Tests to see if the given x and y coordinates are available for a tile.
  * Returns SDL_FALSE if the tile is not free to use, otherwise returns SDL_TRUE
  */
-SDL_bool availableTile(GLfloat x, GLfloat y)
+SDL_bool availableTile(float x, float y)
 {
 	int tile_loc = getTileIndexLocation((int)x, (int)y);
 	
@@ -147,11 +147,11 @@ static void loadTileColors(void)
 static void loadTileLocations(void)
 {	
 	int startingTileIndex = 1;
-	GLfloat y_loc = 12.5;
+	float y_loc = 12.5;
 	
 	do
 	{
-		GLfloat x_loc = -7.0;
+		float x_loc = -7.0;
 		Tile *currentTile = &gTiles[startingTileIndex];
 		
 		do
@@ -232,17 +232,10 @@ void loadSceneryTextures(Renderer *renderer)
 }
 
 void drawSky(Renderer *renderer)
-{	
-	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA);
-	
+{
 	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 0.0f, -25.0f});
-	glLoadMatrixf(&modelViewMatrix.m00);
 	
-	glColor4f(1.0f, 1.0f, 1.0f, 0.9f);
-	
-	GLfloat skyVertices[] =
+	float skyVertices[] =
 	{
 		-16.0f, 16.0f, -13.0f,
 		16.0f, 16.0f, -13.0f,
@@ -250,7 +243,7 @@ void drawSky(Renderer *renderer)
 		-16.0f, -16.0f, -13.0f,
 	};
 	
-	GLfloat skyTextureCoordinates[] =
+	float skyTextureCoordinates[] =
 	{
 		0.0f, 0.0f,
 		1.0f, 0.0f,
@@ -258,41 +251,28 @@ void drawSky(Renderer *renderer)
 		0.0f, 1.0f,
 	};
 	
-	GLubyte indices[] =
+	uint8_t indices[] =
 	{
 		0, 1, 2,
 		2, 3, 0
 	};
 	
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	
-	glBindTexture(GL_TEXTURE_2D, gSkyTex);
-	glVertexPointer(3, GL_FLOAT, 0, skyVertices);
-	glTexCoordPointer(2, GL_FLOAT, 0, skyTextureCoordinates);
-	
-	glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(*indices), GL_UNSIGNED_BYTE, indices);
-	
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	
-	glDisable(GL_TEXTURE_2D);
-	glDisable(GL_BLEND);
+	drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, gSkyTex, RENDERER_TRIANGLE_MODE, skyVertices, 3, skyTextureCoordinates, RENDERER_FLOAT_TYPE, indices, RENDERER_INT8_TYPE, sizeof(indices) / sizeof(*indices), (color4_t){1.0f, 1.0f, 1.0f, 0.9f}, RENDERER_OPTION_BLENDING_ALPHA);
 }
 
 void drawTiles(Renderer *renderer)
 {
-	glEnable(GL_TEXTURE_2D);
-	
 	SDL_bool drawTileOneFirst = SDL_FALSE;
 	
 	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * (M_PI / 180.0f));
 	
 	for (int i = 1; i <= 64; i++)
 	{
+		//glEnable(GL_TEXTURE_2D);
+		
 		mat4_t modelTranslationMatrix = m4_translation((vec3_t){gTiles[i].x , gTiles[i].y, gTiles[i].z});
 		mat4_t modelViewMatrix = m4_mul(worldRotationMatrix, modelTranslationMatrix);
-		glLoadMatrixf(&modelViewMatrix.m00);
+		//glLoadMatrixf(&modelViewMatrix.m00);
 		
 		// If it's at an odd row number, set drawTileOneFirst to TRUE, otherwise set it to FALSE.
 		if ((i >= 1 && i <= 8) || (i >= 17 && i <= 24) || (i >= 33 && i <= 40) || (i >= 49 && i <= 56))
@@ -304,23 +284,18 @@ void drawTiles(Renderer *renderer)
 			drawTileOneFirst = SDL_FALSE;
 		}
 		
-		glColor3f(gTiles[i].red, gTiles[i].green, gTiles[i].blue);
-		
 		// Figure out which texture to bind to
+		uint32_t texture;
 		if ((drawTileOneFirst && i % 2 == 0) || (!drawTileOneFirst && i % 2 == 1))
 		{
-			glBindTexture(GL_TEXTURE_2D, gTileOneTex);
+			texture = gTileOneTex;
 		}
 		else
 		{
-			glBindTexture(GL_TEXTURE_2D, gTileTwoTex);
+			texture = gTileTwoTex;
 		}
 		
-		// Draw the tile
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		
-		GLfloat vertices[] =
+		float vertices[] =
 		{
 			// Bottom
 			-1.0f, -1.0f, 1.0f,
@@ -347,9 +322,7 @@ void drawTiles(Renderer *renderer)
 			1.0, 1.0, 1.0,
 		};
 		
-		glVertexPointer(3, GL_FLOAT, 0, vertices);
-		
-		GLshort textureCoordinates[] =
+		int16_t textureCoordinates[] =
 		{
 			// Bottom
 			0, 1,
@@ -376,9 +349,7 @@ void drawTiles(Renderer *renderer)
 			1, 0,
 		};
 		
-		glTexCoordPointer(2, GL_SHORT, 0, textureCoordinates);
-		
-		GLubyte indices[] =
+		uint8_t indices[] =
 		{
 			// Bottom
 			0, 1, 2,
@@ -397,11 +368,6 @@ void drawTiles(Renderer *renderer)
 			14, 15, 12
 		};
 		
-		glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(*indices), GL_UNSIGNED_BYTE, indices);
-		
-		glDisableClientState(GL_VERTEX_ARRAY);
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, texture, RENDERER_TRIANGLE_MODE, vertices, 3, textureCoordinates, RENDERER_INT16_TYPE, indices, RENDERER_INT8_TYPE, sizeof(indices) / sizeof(*indices), (color4_t){gTiles[i].red, gTiles[i].green, gTiles[i].blue, 1.0f}, RENDERER_OPTION_NONE);
 	}
-	
-	glDisable(GL_TEXTURE_2D);
 }

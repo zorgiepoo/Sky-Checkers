@@ -24,8 +24,8 @@
 
 typedef struct
 {
-	GLfloat x, y, z;
-	GLfloat red, green, blue;
+	float x, y, z;
+	float red, green, blue;
 	
 	SDL_bool drawingState;
 	SDL_bool animationState;

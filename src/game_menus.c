@@ -64,12 +64,7 @@ static unsigned getJoyStickTrigger(Sint16 *value, Uint8 *axis, int *joy_id);
 
 static void drawUpAndDownArrowTriangles(Renderer *renderer, mat4_t modelViewMatrix)
 {
-	glColor3f(0.0f, 0.0f, 0.4f);
-	glLoadMatrixf(&modelViewMatrix.m00);
-	
-	glEnableClientState(GL_VERTEX_ARRAY);
-	
-	GLfloat vertices[] =
+	float vertices[] =
 	{
 		0.0f, 0.6f, 0.0f,
 		-0.2f, 0.2f, 0.0f,
@@ -80,10 +75,7 @@ static void drawUpAndDownArrowTriangles(Renderer *renderer, mat4_t modelViewMatr
 		0.2f, -0.2f, 0.0f,
 	};
 	
-	glVertexPointer(3, GL_FLOAT, 0, vertices);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	
-	glDisableClientState(GL_VERTEX_ARRAY);
+	drawVertices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertices, 3, 6, (color4_t){0.0f, 0.0f, 0.4f, 1.0f}, RENDERER_OPTION_NONE);
 }
 
 /* A bunch of menu drawing and action functions! */
