@@ -268,11 +268,8 @@ void drawTiles(Renderer *renderer)
 	
 	for (int i = 1; i <= 64; i++)
 	{
-		//glEnable(GL_TEXTURE_2D);
-		
 		mat4_t modelTranslationMatrix = m4_translation((vec3_t){gTiles[i].x , gTiles[i].y, gTiles[i].z});
 		mat4_t modelViewMatrix = m4_mul(worldRotationMatrix, modelTranslationMatrix);
-		//glLoadMatrixf(&modelViewMatrix.m00);
 		
 		// If it's at an odd row number, set drawTileOneFirst to TRUE, otherwise set it to FALSE.
 		if ((i >= 1 && i <= 8) || (i >= 17 && i <= 24) || (i >= 33 && i <= 40) || (i >= 49 && i <= 56))
