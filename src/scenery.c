@@ -233,65 +233,71 @@ void loadSceneryTextures(Renderer *renderer)
 
 void drawSky(Renderer *renderer)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 0.0f, -25.0f});
+	static uint32_t vertexBufferObject;
+	static uint32_t textureCoordinatesBufferObject;
+	static uint32_t indicesBufferObject;
 	
-	float skyVertices[] =
-	{
-		-16.0f, 16.0f, -13.0f,
-		16.0f, 16.0f, -13.0f,
-		16.0f, -16.0f, -13.0f,
-		-16.0f, -16.0f, -13.0f,
-	};
-	
-	float skyTextureCoordinates[] =
-	{
-		0.0f, 0.0f,
-		1.0f, 0.0f,
-		1.0f, 1.0f,
-		0.0f, 1.0f,
-	};
-	
-	uint8_t indices[] =
+	const static uint8_t indices[] =
 	{
 		0, 1, 2,
 		2, 3, 0
 	};
 	
-	drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, gSkyTex, RENDERER_TRIANGLE_MODE, skyVertices, 3, skyTextureCoordinates, RENDERER_FLOAT_TYPE, indices, RENDERER_INT8_TYPE, sizeof(indices) / sizeof(*indices), (color4_t){1.0f, 1.0f, 1.0f, 0.9f}, RENDERER_OPTION_BLENDING_ALPHA);
+	if (vertexBufferObject == 0)
+	{
+		float vertices[] =
+		{
+			-16.0f, 16.0f, -13.0f,
+			16.0f, 16.0f, -13.0f,
+			16.0f, -16.0f, -13.0f,
+			-16.0f, -16.0f, -13.0f,
+		};
+		
+		float textureCoordinates[] =
+		{
+			0.0f, 0.0f,
+			1.0f, 0.0f,
+			1.0f, 1.0f,
+			0.0f, 1.0f,
+		};
+		
+		vertexBufferObject = createVertexBufferObject(vertices, sizeof(vertices));
+		textureCoordinatesBufferObject = createVertexBufferObject(textureCoordinates, sizeof(textureCoordinates));
+		indicesBufferObject = createVertexBufferObject(indices, sizeof(indices));
+	}
+	
+	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 0.0f, -25.0f});
+	
+	drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, gSkyTex, RENDERER_TRIANGLE_MODE, vertexBufferObject, 3, textureCoordinatesBufferObject, RENDERER_FLOAT_TYPE, indicesBufferObject, RENDERER_INT8_TYPE, sizeof(indices) / sizeof(*indices), (color4_t){1.0f, 1.0f, 1.0f, 0.9f}, RENDERER_OPTION_BLENDING_ALPHA);
 }
 
 void drawTiles(Renderer *renderer)
 {
-	SDL_bool drawTileOneFirst = SDL_FALSE;
-	
-	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((float)M_PI / 180.0f));
-	
-	for (int i = 1; i <= 64; i++)
+	static const uint8_t indices[] =
 	{
-		mat4_t modelTranslationMatrix = m4_translation((vec3_t){gTiles[i].x , gTiles[i].y, gTiles[i].z});
-		mat4_t modelViewMatrix = m4_mul(worldRotationMatrix, modelTranslationMatrix);
+		// Bottom
+		0, 1, 2,
+		2, 3, 0,
 		
-		// If it's at an odd row number, set drawTileOneFirst to TRUE, otherwise set it to FALSE.
-		if ((i >= 1 && i <= 8) || (i >= 17 && i <= 24) || (i >= 33 && i <= 40) || (i >= 49 && i <= 56))
-		{
-			drawTileOneFirst = SDL_TRUE;
-		}
-		else
-		{
-			drawTileOneFirst = SDL_FALSE;
-		}
+		// Left
+		4, 5, 6,
+		6, 7, 4,
 		
-		// Figure out which texture to bind to
-		uint32_t texture;
-		if ((drawTileOneFirst && i % 2 == 0) || (!drawTileOneFirst && i % 2 == 1))
-		{
-			texture = gTileOneTex;
-		}
-		else
-		{
-			texture = gTileTwoTex;
-		}
+		// Right
+		8, 9, 10,
+		10, 11, 8,
 		
+		// Front
+		12, 13, 14,
+		14, 15, 12
+	};
+	
+	static uint32_t vertexBufferObject;
+	static uint32_t textureCoordinatesBufferObject;
+	static uint32_t indicesBufferObject;
+	
+	if (vertexBufferObject == 0)
+	{
 		float vertices[] =
 		{
 			// Bottom
@@ -346,25 +352,41 @@ void drawTiles(Renderer *renderer)
 			1, 0,
 		};
 		
-		uint8_t indices[] =
-		{
-			// Bottom
-			0, 1, 2,
-			2, 3, 0,
-			
-			// Left
-			4, 5, 6,
-			6, 7, 4,
-			
-			// Right
-			8, 9, 10,
-			10, 11, 8,
-			
-			// Front
-			12, 13, 14,
-			14, 15, 12
-		};
+		vertexBufferObject = createVertexBufferObject(vertices, sizeof(vertices));
+		textureCoordinatesBufferObject = createVertexBufferObject(textureCoordinates, sizeof(textureCoordinates));
+		indicesBufferObject = createVertexBufferObject(indices, sizeof(indices));
+	}
+	
+	SDL_bool drawTileOneFirst = SDL_FALSE;
+	
+	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((float)M_PI / 180.0f));
+	
+	for (int i = 1; i <= 64; i++)
+	{
+		mat4_t modelTranslationMatrix = m4_translation((vec3_t){gTiles[i].x , gTiles[i].y, gTiles[i].z});
+		mat4_t modelViewMatrix = m4_mul(worldRotationMatrix, modelTranslationMatrix);
 		
-		drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, texture, RENDERER_TRIANGLE_MODE, vertices, 3, textureCoordinates, RENDERER_INT16_TYPE, indices, RENDERER_INT8_TYPE, sizeof(indices) / sizeof(*indices), (color4_t){gTiles[i].red, gTiles[i].green, gTiles[i].blue, 1.0f}, RENDERER_OPTION_NONE);
+		// If it's at an odd row number, set drawTileOneFirst to TRUE, otherwise set it to FALSE.
+		if ((i >= 1 && i <= 8) || (i >= 17 && i <= 24) || (i >= 33 && i <= 40) || (i >= 49 && i <= 56))
+		{
+			drawTileOneFirst = SDL_TRUE;
+		}
+		else
+		{
+			drawTileOneFirst = SDL_FALSE;
+		}
+		
+		// Figure out which texture to bind to
+		uint32_t texture;
+		if ((drawTileOneFirst && i % 2 == 0) || (!drawTileOneFirst && i % 2 == 1))
+		{
+			texture = gTileOneTex;
+		}
+		else
+		{
+			texture = gTileTwoTex;
+		}
+		
+		drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, texture, RENDERER_TRIANGLE_MODE, vertexBufferObject, 3, textureCoordinatesBufferObject, RENDERER_INT16_TYPE, indicesBufferObject, RENDERER_INT8_TYPE, sizeof(indices) / sizeof(*indices), (color4_t){gTiles[i].red, gTiles[i].green, gTiles[i].blue, 1.0f}, RENDERER_OPTION_NONE);
 	}
 }

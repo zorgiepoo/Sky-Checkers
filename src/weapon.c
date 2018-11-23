@@ -21,112 +21,6 @@
 #include "characters.h"
 #include "math_3d.h"
 
-static float gWeaponVertices[] =
-{
-	// Cube part
-	
-	// right face
-	-1.0, -1.0, 1.0,
-	-1.0, 1.0, 1.0,
-	1.0, 1.0, 1.0,
-	1.0, -1.0, 1.0,
-	
-	// left face
-	-1.0, -1.0, -1.0,
-	-1.0, 1.0, -1.0,
-	1.0, 1.0, -1.0,
-	1.0, -1.0, -1.0,
-	
-	// front face
-	1.0, 1.0, 1.0,
-	1.0, -1.0, 1.0,
-	1.0, -1.0, -1.0,
-	1.0, 1.0, -1.0,
-	
-	// back face
-	-1.0, -1.0, 1.0,
-	-1.0, 1.0, 1.0,
-	-1.0, 1.0, -1.0,
-	-1.0, -1.0, -1.0,
-	
-	// top face
-	-1.0, 1.0, 1.0,
-	-1.0, 1.0, -1.0,
-	1.0, 1.0, -1.0,
-	1.0, 1.0, 1.0,
-	
-	// bottom face
-	-1.0, -1.0, 1.0,
-	-1.0, -1.0, -1.0,
-	1.0, -1.0, -1.0,
-	1.0, -1.0, 1.0,
-	
-	// Prism part
-	
-	// right side
-	1.0, 1.0, 1.0,
-	1.0, -1.0, 1.0,
-	3.0, 0.0, 0.0,
-	
-	// left side
-	1.0, 1.0, -1.0,
-	1.0, -1.0, -1.0,
-	3.0, 0.0, 0.0,
-	
-	// top side
-	1.0, 1.0, 1.0,
-	1.0, 1.0, -1.0,
-	3.0, 0.0, 0.0,
-	
-	// bottom side
-	1.0, -1.0, 1.0,
-	1.0, -1.0, -1.0,
-	3.0, 0.0, 0.0
-};
-
-static uint8_t gWeaponIndices[] =
-{
-	// Cube part
-	
-	// right face
-	0, 1, 2,
-	2, 3, 0,
-	
-	// left face
-	4, 5, 6,
-	6, 7, 4,
-	
-	// front face
-	8, 9, 10,
-	10, 11, 8,
-	
-	// back face
-	12, 13, 14,
-	14, 15, 12,
-	
-	// top face
-	16, 17, 18,
-	18, 19, 16,
-	
-	// bottom face
-	20, 21, 22,
-	22, 23, 20,
-	
-	// Prism part
-	
-	// right side
-	24, 25, 26,
-	
-	// left side
-	27, 28, 29,
-	
-	// top side
-	30, 31, 32,
-	
-	// bottom side
-	33, 34, 35
-};
-
 void initWeapon(Weapon *weap)
 {	
 	weap->x = 0.0;
@@ -142,6 +36,121 @@ void drawWeapon(Renderer *renderer, Weapon *weap)
 {
 	if (!weap->drawingState)
 		return;
+	
+	const static float vertices[] =
+	{
+		// Cube part
+		
+		// right face
+		-1.0, -1.0, 1.0,
+		-1.0, 1.0, 1.0,
+		1.0, 1.0, 1.0,
+		1.0, -1.0, 1.0,
+		
+		// left face
+		-1.0, -1.0, -1.0,
+		-1.0, 1.0, -1.0,
+		1.0, 1.0, -1.0,
+		1.0, -1.0, -1.0,
+		
+		// front face
+		1.0, 1.0, 1.0,
+		1.0, -1.0, 1.0,
+		1.0, -1.0, -1.0,
+		1.0, 1.0, -1.0,
+		
+		// back face
+		-1.0, -1.0, 1.0,
+		-1.0, 1.0, 1.0,
+		-1.0, 1.0, -1.0,
+		-1.0, -1.0, -1.0,
+		
+		// top face
+		-1.0, 1.0, 1.0,
+		-1.0, 1.0, -1.0,
+		1.0, 1.0, -1.0,
+		1.0, 1.0, 1.0,
+		
+		// bottom face
+		-1.0, -1.0, 1.0,
+		-1.0, -1.0, -1.0,
+		1.0, -1.0, -1.0,
+		1.0, -1.0, 1.0,
+		
+		// Prism part
+		
+		// right side
+		1.0, 1.0, 1.0,
+		1.0, -1.0, 1.0,
+		3.0, 0.0, 0.0,
+		
+		// left side
+		1.0, 1.0, -1.0,
+		1.0, -1.0, -1.0,
+		3.0, 0.0, 0.0,
+		
+		// top side
+		1.0, 1.0, 1.0,
+		1.0, 1.0, -1.0,
+		3.0, 0.0, 0.0,
+		
+		// bottom side
+		1.0, -1.0, 1.0,
+		1.0, -1.0, -1.0,
+		3.0, 0.0, 0.0
+	};
+	
+	const static uint8_t indices[] =
+	{
+		// Cube part
+		
+		// right face
+		0, 1, 2,
+		2, 3, 0,
+		
+		// left face
+		4, 5, 6,
+		6, 7, 4,
+		
+		// front face
+		8, 9, 10,
+		10, 11, 8,
+		
+		// back face
+		12, 13, 14,
+		14, 15, 12,
+		
+		// top face
+		16, 17, 18,
+		18, 19, 16,
+		
+		// bottom face
+		20, 21, 22,
+		22, 23, 20,
+		
+		// Prism part
+		
+		// right side
+		24, 25, 26,
+		
+		// left side
+		27, 28, 29,
+		
+		// top side
+		30, 31, 32,
+		
+		// bottom side
+		33, 34, 35
+	};
+	
+	static uint32_t vertexBufferObject;
+	static uint32_t indicesBufferObject;
+	
+	if (vertexBufferObject == 0)
+	{
+		vertexBufferObject = createVertexBufferObject(vertices, sizeof(vertices));
+		indicesBufferObject = createVertexBufferObject(indices, sizeof(indices));
+	}
 	
 	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((float)M_PI / 180.0f));
 	mat4_t worldTranslationMatrix = m4_translation((vec3_t){-7.0f, 12.5f, -23.0f});
@@ -167,5 +176,5 @@ void drawWeapon(Renderer *renderer, Weapon *weap)
 	mat4_t weaponRotationMatrix = m4_rotation_z(weaponRotationAngle);
 	mat4_t modelViewMatrix = m4_mul(weaponMatrix, weaponRotationMatrix);
 	
-	drawVerticesFromIndices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, gWeaponVertices, 3, gWeaponIndices, RENDERER_INT8_TYPE, sizeof(gWeaponIndices) / sizeof(*gWeaponIndices), (color4_t){weap->red, weap->green, weap->blue, 0.2f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
+	drawVerticesFromIndices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertexBufferObject, 3, indicesBufferObject, RENDERER_INT8_TYPE, sizeof(indices) / sizeof(*indices), (color4_t){weap->red, weap->green, weap->blue, 0.2f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
 }

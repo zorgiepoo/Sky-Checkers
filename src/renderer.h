@@ -65,10 +65,12 @@ void swapBuffers(Renderer *renderer);
 void loadTexture(Renderer *renderer, const char *filePath, uint32_t *tex);
 uint32_t textureFromPixelData(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
 
-void drawVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, uint8_t mode, const float *vertices, uint8_t vertexSize, const void *indices, uint8_t indicesType, uint32_t indicesCount, color4_t color, uint8_t options);
+uint32_t createVertexBufferObject(const void *data, uint32_t size);
 
-void drawVertices(Renderer *renderer, mat4_t modelViewMatrix, uint8_t mode, const float *vertices, uint8_t vertexSize, uint32_t vertexCount, color4_t color, uint8_t options);
+void drawVertices(Renderer *renderer, mat4_t modelViewMatrix, uint8_t mode, uint32_t vertexBufferObject, uint8_t vertexSize, uint32_t vertexCount, color4_t color, uint8_t options);
 
-void drawTextureWithVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, uint32_t texture, uint8_t mode, const float *vertices, uint8_t vertexSize, const void *textureCoordinates, uint8_t textureCoordinatesType, const void *indices, uint8_t indicesType, uint32_t indicesCount, color4_t color, uint8_t options);
+void drawVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, uint8_t mode, uint32_t vertexBufferObject, uint8_t vertexSize, uint32_t indicesBufferObject, uint8_t indicesType, uint32_t indicesCount, color4_t color, uint8_t options);
 
-void drawTextureWithVertices(Renderer *renderer, mat4_t modelViewMatrix, uint32_t texture, uint8_t mode, const float *vertices, uint8_t vertexSize, const void *textureCoordinates, uint8_t textureCoordinatesType, uint32_t vertexCount, color4_t color, uint8_t options);
+void drawTextureWithVertices(Renderer *renderer, mat4_t modelViewMatrix, uint32_t texture, uint8_t mode, uint32_t vertexBufferObject, uint8_t vertexSize, uint32_t textureCoordinatesBufferObject, uint8_t textureCoordinatesType, uint32_t vertexCount, color4_t color, uint8_t options);
+
+void drawTextureWithVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, uint32_t texture, uint8_t mode, uint32_t vertexBufferObject, uint8_t vertexSize, uint32_t textureCoordinatesBufferObject, uint8_t textureCoordinatesType, uint32_t indicesBufferObject, uint8_t indicesType, uint32_t indicesCount, color4_t color, uint8_t options);

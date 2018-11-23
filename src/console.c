@@ -73,9 +73,7 @@ void initConsole(void)
 
 void drawConsole(Renderer *renderer)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 9.0f, -25.0f});
-	
-	float vertices[] =
+	const static float vertices[] =
 	{
 		10.0f, 1.0f, 1.0f,
 		10.0f, -1.0f, 1.0f,
@@ -83,13 +81,24 @@ void drawConsole(Renderer *renderer)
 		-10.0f, 1.0f, 1.0f,
 	};
 	
-	uint8_t indices[] =
+	const static uint8_t indices[] =
 	{
 		0, 1, 2,
 		2, 3, 0
 	};
 	
-	drawVerticesFromIndices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertices, 3, indices, RENDERER_INT8_TYPE, sizeof(indices) / sizeof(*indices), (color4_t){0.0f, 0.0f, 0.0f, 0.6f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
+	static uint32_t vertexBufferObject;
+	static uint32_t indicesBufferObject;
+	
+	if (vertexBufferObject == 0)
+	{
+		vertexBufferObject = createVertexBufferObject(vertices, sizeof(vertices));
+		indicesBufferObject = createVertexBufferObject(indices, sizeof(indices));
+	}
+	
+	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 9.0f, -25.0f});
+	
+	drawVerticesFromIndices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertexBufferObject, 3, indicesBufferObject, RENDERER_INT8_TYPE, sizeof(indices) / sizeof(*indices), (color4_t){0.0f, 0.0f, 0.0f, 0.6f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
 }
 
 void writeConsoleText(Uint8 text)

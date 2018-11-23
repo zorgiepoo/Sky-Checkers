@@ -7,6 +7,14 @@
 #include <SDL2/SDL_opengl.h>
 #endif
 
+// Note: eventually I should just include <OpenGL/gl3.h> on macOS
+// On other platforms I will have to use something like GLEW
+#ifdef MAC_OS_X
+extern void glGenBuffers(GLsizei n, GLuint *buffers);
+extern void glBindBuffer(GLenum target, GLuint buffer);
+extern void glBufferData(GLenum target, GLsizeiptr size, const GLvoid * data, GLenum usage);
+#endif
+
 void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
 {
 	// Choose OpenGL 2.1 for now which almost anything should support
@@ -219,6 +227,20 @@ void loadTexture(Renderer *renderer, const char *filePath, uint32_t *tex)
 	SDL_FreeSurface(texImage);
 }
 
+uint32_t createVertexBufferObject(const void *data, uint32_t size)
+{
+	GLuint buffer = 0;
+	glGenBuffers(1, &buffer);
+	
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	
+	glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+	
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	
+	return buffer;
+}
+
 static GLenum glTypeFromIndicesType(uint8_t type)
 {
 	switch (type)
@@ -255,7 +277,7 @@ static GLenum glModeFromMode(uint8_t mode)
 	return 0;
 }
 
-static void beginDrawingVertices(mat4_t modelViewMatrix, const float *vertices, uint8_t vertexSize, color4_t color, uint8_t options)
+static void beginDrawingVertices(mat4_t modelViewMatrix, uint32_t vertexBufferObject, uint8_t vertexSize, color4_t color, uint8_t options)
 {
 	glLoadMatrixf(&modelViewMatrix.m00);
 	
@@ -286,11 +308,13 @@ static void beginDrawingVertices(mat4_t modelViewMatrix, const float *vertices, 
 	
 	glEnableClientState(GL_VERTEX_ARRAY);
 	
-	glVertexPointer(vertexSize, GL_FLOAT, 0, vertices);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
+	glVertexPointer(vertexSize, GL_FLOAT, 0, NULL);
 }
 
 static void endDrawingVertices(uint8_t options)
 {
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glDisableClientState(GL_VERTEX_ARRAY);
 	
 	SDL_bool blendingAlpha = (options & RENDERER_OPTION_BLENDING_ALPHA) != 0;
@@ -308,34 +332,39 @@ static void endDrawingVertices(uint8_t options)
 	}
 }
 
-void drawVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, uint8_t mode, const float *vertices, uint8_t vertexSize, const void *indices, uint8_t indicesType, uint32_t indicesCount, color4_t color, uint8_t options)
+void drawVertices(Renderer *renderer, mat4_t modelViewMatrix, uint8_t mode, uint32_t vertexBufferObject, uint8_t vertexSize, uint32_t vertexCount, color4_t color, uint8_t options)
 {
-	beginDrawingVertices(modelViewMatrix, vertices, vertexSize, color, options);
-	
-	glDrawElements(glModeFromMode(mode), indicesCount, glTypeFromIndicesType(indicesType), indices);
-	
-	endDrawingVertices(options);
-}
-
-void drawVertices(Renderer *renderer, mat4_t modelViewMatrix, uint8_t mode, const float *vertices, uint8_t vertexSize, uint32_t vertexCount, color4_t color, uint8_t options)
-{
-	beginDrawingVertices(modelViewMatrix, vertices, vertexSize, color, options);
+	beginDrawingVertices(modelViewMatrix, vertexBufferObject, vertexSize, color, options);
 	
 	glDrawArrays(glModeFromMode(mode), 0, vertexCount);
 	
 	endDrawingVertices(options);
 }
 
-static void beginDrawingTexture(mat4_t modelViewMatrix, uint32_t texture, const void *textureCoordinates, uint8_t textureCoordinatesType, const float *vertices, uint8_t vertexSize, color4_t color, uint8_t options)
+void drawVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, uint8_t mode, uint32_t vertexBufferObject, uint8_t vertexSize, uint32_t indicesBufferObject, uint8_t indicesType, uint32_t indicesCount, color4_t color, uint8_t options)
+{
+	beginDrawingVertices(modelViewMatrix, vertexBufferObject, vertexSize, color, options);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesBufferObject);
+
+	glDrawElements(glModeFromMode(mode), indicesCount, glTypeFromIndicesType(indicesType), NULL);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	
+	endDrawingVertices(options);
+}
+
+static void beginDrawingTexture(mat4_t modelViewMatrix, uint32_t texture, uint32_t textureCoordinatesBufferObject, uint8_t textureCoordinatesType, uint32_t vertexBufferObject, uint8_t vertexSize, color4_t color, uint8_t options)
 {
 	glEnable(GL_TEXTURE_2D);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	
 	glBindTexture(GL_TEXTURE_2D, texture);
 	
-	beginDrawingVertices(modelViewMatrix, vertices, vertexSize, color, options);
+	beginDrawingVertices(modelViewMatrix, vertexBufferObject, vertexSize, color, options);
 	
-	glTexCoordPointer(2, glTypeFromCoordinatesType(textureCoordinatesType), 0, textureCoordinates);
+	glBindBuffer(GL_ARRAY_BUFFER, textureCoordinatesBufferObject);
+	glTexCoordPointer(2, glTypeFromCoordinatesType(textureCoordinatesType), 0, NULL);
 }
 
 static void endDrawingTexture(uint8_t options)
@@ -346,20 +375,24 @@ static void endDrawingTexture(uint8_t options)
 	glDisable(GL_TEXTURE_2D);
 }
 
-void drawTextureWithVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, uint32_t texture, uint8_t mode, const float *vertices, uint8_t vertexSize, const void *textureCoordinates, uint8_t textureCoordinatesType, const void *indices, uint8_t indicesType, uint32_t indicesCount, color4_t color, uint8_t options)
+void drawTextureWithVertices(Renderer *renderer, mat4_t modelViewMatrix, uint32_t texture, uint8_t mode, uint32_t vertexBufferObject, uint8_t vertexSize, uint32_t textureCoordinatesBufferObject, uint8_t textureCoordinatesType, uint32_t vertexCount, color4_t color, uint8_t options)
 {
-	beginDrawingTexture(modelViewMatrix, texture, textureCoordinates, textureCoordinatesType, vertices, vertexSize, color, options);
+	beginDrawingTexture(modelViewMatrix, texture, textureCoordinatesBufferObject, textureCoordinatesType, vertexBufferObject, vertexSize, color, options);
 	
-	glDrawElements(glModeFromMode(mode), indicesCount, glTypeFromIndicesType(indicesType), indices);
+	glDrawArrays(glModeFromMode(mode), 0, vertexCount);
 	
 	endDrawingTexture(options);
 }
 
-void drawTextureWithVertices(Renderer *renderer, mat4_t modelViewMatrix, uint32_t texture, uint8_t mode, const float *vertices, uint8_t vertexSize, const void *textureCoordinates, uint8_t textureCoordinatesType, uint32_t vertexCount, color4_t color, uint8_t options)
+void drawTextureWithVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, uint32_t texture, uint8_t mode, uint32_t vertexBufferObject, uint8_t vertexSize, uint32_t textureCoordinatesBufferObject, uint8_t textureCoordinatesType, uint32_t indicesBufferObject, uint8_t indicesType, uint32_t indicesCount, color4_t color, uint8_t options)
 {
-	beginDrawingTexture(modelViewMatrix, texture, textureCoordinates, textureCoordinatesType, vertices, vertexSize, color, options);
+	beginDrawingTexture(modelViewMatrix, texture, textureCoordinatesBufferObject, textureCoordinatesType, vertexBufferObject, vertexSize, color, options);
 	
-	glDrawArrays(glModeFromMode(mode), 0, vertexCount);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesBufferObject);
+	
+	glDrawElements(glModeFromMode(mode), indicesCount, glTypeFromIndicesType(indicesType), NULL);
+	
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	
 	endDrawingTexture(options);
 }

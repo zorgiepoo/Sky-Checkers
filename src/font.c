@@ -29,28 +29,6 @@ typedef struct
 	char *text;
 } Glyph;
 
-static float gFontVertices[] =
-{
-	-1.0f, -1.0f,
-	-1.0f, 1.0f,
-	1.0f, 1.0f,
-	1.0f, -1.0f
-};
-
-static float gFontTextureCoordinates[] =
-{
-	0.0f, 1.0f,
-	0.0f, 0.0f,
-	1.0f, 0.0f,
-	1.0f, 1.0f
-};
-
-static uint8_t gFontIndices[] =
-{
-	0, 1, 2,
-	2, 3, 0
-};
-
 // records how many glyphs we've loaded with a counter
 static int gGlyphsCounter =	0;
 // gMaxGlyphs may be incremented by 256 if it needs to resize itself
@@ -281,8 +259,41 @@ void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, floa
 		return;
 	}
 	
+	static uint8_t indices[] =
+	{
+		0, 1, 2,
+		2, 3, 0
+	};
+	
+	static uint32_t vertexBufferObject;
+	static uint32_t textureCoordinatesBufferObject;
+	static uint32_t indicesBufferObject;
+	
+	if (vertexBufferObject == 0)
+	{
+		float vertices[] =
+		{
+			-1.0f, -1.0f,
+			-1.0f, 1.0f,
+			1.0f, 1.0f,
+			1.0f, -1.0f
+		};
+		
+		float textureCoordinates[] =
+		{
+			0.0f, 1.0f,
+			0.0f, 0.0f,
+			1.0f, 0.0f,
+			1.0f, 1.0f
+		};
+		
+		vertexBufferObject = createVertexBufferObject(vertices, sizeof(vertices));
+		textureCoordinatesBufferObject = createVertexBufferObject(textureCoordinates, sizeof(textureCoordinates));
+		indicesBufferObject = createVertexBufferObject(indices, sizeof(indices));
+	}
+	
 	mat4_t scaleMatrix = m4_scaling((vec3_t){width, height, 0.0f});
 	mat4_t transformMatrix = m4_mul(modelViewMatrix, scaleMatrix);
 	
-	drawTextureWithVerticesFromIndices(renderer, transformMatrix, gGlyphs[index].texture, RENDERER_TRIANGLE_MODE, gFontVertices, 2, gFontTextureCoordinates, RENDERER_FLOAT_TYPE, gFontIndices, RENDERER_INT8_TYPE, sizeof(gFontIndices) / sizeof(*gFontIndices), color, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
+	drawTextureWithVerticesFromIndices(renderer, transformMatrix, gGlyphs[index].texture, RENDERER_TRIANGLE_MODE, vertexBufferObject, 2, textureCoordinatesBufferObject, RENDERER_FLOAT_TYPE, indicesBufferObject, RENDERER_INT8_TYPE, sizeof(indices) / sizeof(*indices), color, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
 }

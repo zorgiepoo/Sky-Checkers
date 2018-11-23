@@ -61,12 +61,12 @@ Character gBlueLightning;
 
 static uint32_t gCharacterTex;
 
-static float *gCharacterVertices;
-static float *gCharacterTextureCoordinates;
-static uint16_t *gCharacterIndices;
+static uint32_t gCharacterVertexBufferObject;
+static uint32_t gCharacterTextureCoordinatesBufferObject;
+static uint32_t gCharacterIndicesBufferObject;
 
-static float *gIconVertices;
-static float *gIconTextureCoordinates;
+static uint32_t gIconVertexBufferObject;
+static uint32_t gIconTextureCoordinatesBufferObject;
 
 static void randomizeCharacterDirection(Character *character);
 
@@ -334,16 +334,45 @@ static void buildCircle(float *vertices, float *textureCoordinates, float radius
 
 void buildCharacterModels(void)
 {
-	gCharacterVertices = malloc(sizeof(*gCharacterVertices) * 2883);
-	gCharacterTextureCoordinates = malloc(sizeof(*gCharacterTextureCoordinates) * 1922);
-	gCharacterIndices = malloc(sizeof(*gCharacterIndices) * 5220);
+	// Build character model
+	float *characterVertices;
+	size_t characterVerticesSize = sizeof(*characterVertices) * 2883;
+	characterVertices = malloc(characterVerticesSize);
 	
-	buildSphere(gCharacterVertices, gCharacterTextureCoordinates, gCharacterIndices, 30, 30, 0.6f);
+	float *characterTextureCoordinates;
+	size_t characterTextureCoordinatesSize = sizeof(*characterTextureCoordinates) * 1922;
+	characterTextureCoordinates = malloc(characterTextureCoordinatesSize);
 	
-	gIconVertices = malloc(sizeof(*gIconVertices) * 1204);
-	gIconTextureCoordinates = malloc(sizeof(*gIconTextureCoordinates) * 1204);
+	uint16_t *characterIndices;
+	size_t characterIndicesSize = sizeof(*characterIndices) * 5220;
+	characterIndices = malloc(characterIndicesSize);
 	
-	buildCircle(gIconVertices, gIconTextureCoordinates, 0.4f, 400);
+	buildSphere(characterVertices, characterTextureCoordinates, characterIndices, 30, 30, 0.6f);
+	
+	gCharacterVertexBufferObject = createVertexBufferObject(characterVertices, characterVerticesSize);
+	gCharacterTextureCoordinatesBufferObject = createVertexBufferObject(characterTextureCoordinates, characterTextureCoordinatesSize);
+	gCharacterIndicesBufferObject = createVertexBufferObject(characterIndices, characterIndicesSize);
+	
+	free(characterVertices);
+	free(characterTextureCoordinates);
+	free(characterIndices);
+	
+	// Build character icon model
+	float *iconVertices;
+	size_t iconVerticesSize = sizeof(*iconVertices) * 1204;
+	iconVertices = malloc(iconVerticesSize);
+	
+	float *iconTextureCoordinates;
+	size_t textureCoordinatesSize = sizeof(*iconTextureCoordinates) * 1204;
+	iconTextureCoordinates = malloc(textureCoordinatesSize);
+	
+	buildCircle(iconVertices, iconTextureCoordinates, 0.4f, 400);
+	
+	gIconVertexBufferObject = createVertexBufferObject(iconVertices, iconVerticesSize);
+	gIconTextureCoordinatesBufferObject = createVertexBufferObject(iconTextureCoordinates, textureCoordinatesSize);
+	
+	free(iconVertices);
+	free(iconTextureCoordinates);
 }
 
 void drawCharacter(Renderer *renderer, Character *character)
@@ -359,7 +388,7 @@ void drawCharacter(Renderer *renderer, Character *character)
 	
 	mat4_t modelViewMatrix = m4_mul(m4_mul(m4_mul(worldRotationMatrix, worldTranslationMatrix), modelTranslationMatrix), modelRotationMatrix);
 	
-	drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, gCharacterTex, RENDERER_TRIANGLE_MODE, gCharacterVertices, 3, gCharacterTextureCoordinates, RENDERER_FLOAT_TYPE, gCharacterIndices, RENDERER_INT16_TYPE, 5220, (color4_t){character->red, character->green, character->blue, 1.0f}, RENDERER_OPTION_NONE);
+	drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, gCharacterTex, RENDERER_TRIANGLE_MODE, gCharacterVertexBufferObject, 3, gCharacterTextureCoordinatesBufferObject, RENDERER_FLOAT_TYPE, gCharacterIndicesBufferObject, RENDERER_INT16_TYPE, 5220, (color4_t){character->red, character->green, character->blue, 1.0f}, RENDERER_OPTION_NONE);
 }
 
 void drawCharacterIcon(Renderer *renderer, mat4_t modelViewMatrix, Character *character)
@@ -367,7 +396,7 @@ void drawCharacterIcon(Renderer *renderer, mat4_t modelViewMatrix, Character *ch
 	mat4_t rotationMatrix = m4_rotation_x((float)M_PI);
 	mat4_t rotatedIconModelViewMatrix = m4_mul(modelViewMatrix, rotationMatrix);
 	
-	drawTextureWithVertices(renderer, rotatedIconModelViewMatrix, gCharacterTex, RENDERER_TRIANGLE_STRIP_MODE, gIconVertices, 2, gIconTextureCoordinates, RENDERER_FLOAT_TYPE, 1204 / 2, (color4_t){character->red, character->green, character->blue, 0.7f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
+	drawTextureWithVertices(renderer, rotatedIconModelViewMatrix, gCharacterTex, RENDERER_TRIANGLE_STRIP_MODE, gIconVertexBufferObject, 2, gIconTextureCoordinatesBufferObject, RENDERER_FLOAT_TYPE, 1204 / 2, (color4_t){character->red, character->green, character->blue, 0.7f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
 }
 
 static void translateAndDrawCharacterIcon(Renderer *renderer, Character *character, float x, float y, float z)

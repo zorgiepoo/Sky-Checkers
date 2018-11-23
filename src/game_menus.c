@@ -64,18 +64,24 @@ static unsigned getJoyStickTrigger(Sint16 *value, Uint8 *axis, int *joy_id);
 
 static void drawUpAndDownArrowTriangles(Renderer *renderer, mat4_t modelViewMatrix)
 {
-	float vertices[] =
+	static uint32_t vertexBufferObject;
+	if (vertexBufferObject == 0)
 	{
-		0.0f, 0.6f, 0.0f,
-		-0.2f, 0.2f, 0.0f,
-		0.2f, 0.2f, 0.0f,
+		float vertices[] =
+		{
+			0.0f, 0.6f, 0.0f,
+			-0.2f, 0.2f, 0.0f,
+			0.2f, 0.2f, 0.0f,
+			
+			0.0f, -0.6f, 0.0f,
+			-0.2f, -0.2f, 0.0f,
+			0.2f, -0.2f, 0.0f,
+		};
 		
-		0.0f, -0.6f, 0.0f,
-		-0.2f, -0.2f, 0.0f,
-		0.2f, -0.2f, 0.0f,
-	};
+		vertexBufferObject = createVertexBufferObject(vertices, sizeof(vertices));
+	}
 	
-	drawVertices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertices, 3, 6, (color4_t){0.0f, 0.0f, 0.4f, 1.0f}, RENDERER_OPTION_NONE);
+	drawVertices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertexBufferObject, 3, 6, (color4_t){0.0f, 0.0f, 0.4f, 1.0f}, RENDERER_OPTION_NONE);
 }
 
 /* A bunch of menu drawing and action functions! */
