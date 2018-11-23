@@ -38,7 +38,8 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 #endif
 	renderer->window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags | SDL_WINDOW_OPENGL);
 	
-	if (renderer->window == NULL)
+	SDL_GLContext glContext;
+	if (renderer->window == NULL || (glContext = SDL_GL_CreateContext(renderer->window)) == NULL)
 	{
 		if (!fsaa)
 		{
@@ -47,24 +48,30 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 		}
 		else
 		{
+			// Try creating SDL window and opengl context again except without anti-aliasing this time
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 			
-			renderer->window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags);
+			if (renderer->window != NULL)
+			{
+				SDL_DestroyWindow(renderer->window);
+			}
+			
+			renderer->window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags | SDL_WINDOW_OPENGL);
 			
 			if (renderer->window == NULL)
 			{
-				zgPrint("Couldn't create SDL window with fsaa off with resolution %ix%i: %e", windowWidth, windowHeight);
-				exit(6);
+				zgPrint("Couldn't create SDL window second time with resolution %ix%i: %e", windowWidth, windowHeight);
+				exit(5);
+			}
+			
+			glContext = SDL_GL_CreateContext(renderer->window);
+			if (glContext == NULL)
+			{
+				zgPrint("Couldn't create GL context after creating window second time with resolution %ix%i: %e", windowWidth, windowHeight);
+				exit(5);
 			}
 		}
-	}
-	
-	SDL_GLContext glContext = SDL_GL_CreateContext(renderer->window);
-	if (glContext == NULL)
-	{
-		zgPrint("Couldn't create OpenGL context: %e");
-		exit(5);
 	}
 	
 	if (SDL_GL_MakeCurrent(renderer->window, glContext) != 0)
