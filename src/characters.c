@@ -352,7 +352,7 @@ void drawCharacter(Renderer *renderer, Character *character)
 	if (character->z <= -170.0)
 		return;
 	
-	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * (M_PI / 180.0f));
+	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((float)M_PI / 180.0f));
 	mat4_t worldTranslationMatrix = m4_translation((vec3_t){-7.0f, 12.5f, -25.0f});
 	mat4_t modelTranslationMatrix = m4_translation((vec3_t){character->x, character->y, character->z});
 	mat4_t modelRotationMatrix = m4_rotation_z(character->zRot);
@@ -364,7 +364,7 @@ void drawCharacter(Renderer *renderer, Character *character)
 
 void drawCharacterIcon(Renderer *renderer, mat4_t modelViewMatrix, Character *character)
 {
-	mat4_t rotationMatrix = m4_rotation_x(M_PI);
+	mat4_t rotationMatrix = m4_rotation_x((float)M_PI);
 	mat4_t rotatedIconModelViewMatrix = m4_mul(modelViewMatrix, rotationMatrix);
 	
 	drawTextureWithVertices(renderer, rotatedIconModelViewMatrix, gCharacterTex, RENDERER_TRIANGLE_STRIP_MODE, gIconVertices, 2, gIconTextureCoordinates, RENDERER_FLOAT_TYPE, 1204 / 2, (color4_t){character->red, character->green, character->blue, 0.7f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
@@ -533,19 +533,19 @@ static void randomizeCharacterDirection(Character *character)
 	
 	if (character->direction == RIGHT)
 	{
-		character->zRot = M_PI;
+		character->zRot = (float)M_PI;
 	}
 	else if (character->direction == LEFT)
 	{
-		character->zRot = 0.0;
+		character->zRot = 0.0f;
 	}
 	else if (character->direction == DOWN)
 	{
-		character->zRot = 100.0 * (M_PI / 180.0f);
+		character->zRot = 100.0f * ((float)M_PI / 180.0f);
 	}
 	else if (character->direction == UP)
 	{
-		character->zRot = 3.0f * M_PI / 2.0f;
+		character->zRot = 3.0f * (float)M_PI / 2.0f;
 	}
 }
 
@@ -591,7 +591,7 @@ void moveCharacter(Character *character, int direction)
 			sendCharacterMovement(character);
 		}
 		
-		character->zRot = M_PI;
+		character->zRot = (float)M_PI;
 	}
 	else if (direction == LEFT)
 	{
@@ -602,7 +602,7 @@ void moveCharacter(Character *character, int direction)
 			sendCharacterMovement(character);
 		}
 		
-		character->zRot = 0.0;
+		character->zRot = 0.0f;
 	}
 	else if (direction == DOWN)
 	{
@@ -613,7 +613,7 @@ void moveCharacter(Character *character, int direction)
 			sendCharacterMovement(character);
 		}
 		
-		character->zRot = 100.0 * (M_PI / 180.0f);
+		character->zRot = 100.0f * ((float)M_PI / 180.0f);
 	}
 	else if (direction == UP)
 	{
@@ -624,7 +624,7 @@ void moveCharacter(Character *character, int direction)
 			sendCharacterMovement(character);
 		}
 		
-		character->zRot = 3.0f * M_PI / 2.0f;
+		character->zRot = 3.0f * (float)M_PI / 2.0f;
 	}
 }
 
@@ -632,19 +632,19 @@ void turnCharacter(Character *character, int direction)
 {
 	if (direction == RIGHT)
 	{
-		character->zRot = M_PI;
+		character->zRot = (float)M_PI;
 	}
 	else if (direction == LEFT)
 	{
-		character->zRot = 0.0;
+		character->zRot = 0.0f;
 	}
 	else if (direction == DOWN)
 	{
-		character->zRot = 100.0 * (M_PI / 180.0f);
+		character->zRot = 100.0f * ((float)M_PI / 180.0f);
 	}
 	else if (direction == UP)
 	{
-		character->zRot = 3.0f * M_PI / 2.0f;
+		character->zRot = 3.0f * (float)M_PI / 2.0f;
 	}
 	
 	character->direction = direction;

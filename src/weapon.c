@@ -143,7 +143,7 @@ void drawWeapon(Renderer *renderer, Weapon *weap)
 	if (!weap->drawingState)
 		return;
 	
-	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * (M_PI / 180.0f));
+	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((float)M_PI / 180.0f));
 	mat4_t worldTranslationMatrix = m4_translation((vec3_t){-7.0f, 12.5f, -23.0f});
 	mat4_t modelTranslationMatrix = m4_translation((vec3_t){weap->x, weap->y, weap->z});
 	
@@ -153,15 +153,15 @@ void drawWeapon(Renderer *renderer, Weapon *weap)
 	int direction = weap->direction;
 	if (direction == LEFT)
 	{
-		weaponRotationAngle = M_PI;
+		weaponRotationAngle = (float)M_PI;
 	}
 	else if (direction == UP)
 	{
-		weaponRotationAngle = M_PI / 2.0f;
+		weaponRotationAngle = (float)M_PI / 2.0f;
 	}
 	else if (direction == DOWN)
 	{
-		weaponRotationAngle = 3.0f * M_PI / 2.0;
+		weaponRotationAngle = 3.0f * (float)M_PI / 2.0;
 	}
 	
 	mat4_t weaponRotationMatrix = m4_rotation_z(weaponRotationAngle);

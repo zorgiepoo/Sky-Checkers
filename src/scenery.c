@@ -264,7 +264,7 @@ void drawTiles(Renderer *renderer)
 {
 	SDL_bool drawTileOneFirst = SDL_FALSE;
 	
-	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * (M_PI / 180.0f));
+	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((float)M_PI / 180.0f));
 	
 	for (int i = 1; i <= 64; i++)
 	{

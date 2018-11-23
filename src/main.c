@@ -760,7 +760,7 @@ static void drawScene(Renderer *renderer)
 			isChildBeingDrawn(&gJoyStickConfig[3][1]) /* blueLightningConfigJoyStick */)
 		{
 			mat4_t translationMatrix = m4_translation((vec3_t){-1.0f, 50.0f, -280.0f});
-			mat4_t rotationMatrix = m4_rotation_x(M_PI / 4.0f);
+			mat4_t rotationMatrix = m4_rotation_x((float)M_PI / 4.0f);
 			mat4_t instructionsModelViewMatrix = m4_mul(translationMatrix, rotationMatrix);
 			
 			color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 0.6f};
@@ -778,7 +778,7 @@ static void drawScene(Renderer *renderer)
 				 isChildBeingDrawn(&gCharacterConfigureKeys[3][1]) /* blueLightning */)
 		{
 			mat4_t translationMatrix = m4_translation((vec3_t){-1.0f, 50.0f, -280.0f});
-			mat4_t rotationMatrix = m4_rotation_x(M_PI / 4.0f);
+			mat4_t rotationMatrix = m4_rotation_x((float)M_PI / 4.0f);
 			mat4_t instructionsModelViewMatrix = m4_mul(translationMatrix, rotationMatrix);
 			
 			color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 0.6f};
