@@ -1289,7 +1289,7 @@ int main(int argc, char *argv[])
 	readDefaults();
 
 	// Create renderer
-	uint32_t videoFlags = SDL_WINDOW_OPENGL;
+	uint32_t videoFlags = 0;
 #ifndef _DEBUG
 	videoFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 #endif

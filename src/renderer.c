@@ -36,7 +36,7 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 #else
 	const char *windowTitle = "";
 #endif
-	renderer->window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags);
+	renderer->window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags | SDL_WINDOW_OPENGL);
 	
 	if (renderer->window == NULL)
 	{
