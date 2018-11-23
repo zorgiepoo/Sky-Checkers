@@ -4,6 +4,7 @@ mac/SkyCheckers.xcodeproj/project.xcworkspace/xcuserdata
 skycheckers
 win/Debug
 win/Release
+win/dinput.pdb
 *.sdf
 *.suo
 *.vcxproj.user
