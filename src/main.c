@@ -1289,7 +1289,7 @@ int main(int argc, char *argv[])
 	if (baseDirectory != NULL && chdir(baseDirectory) != 0)
 	{
 		zgPrint("Failed to change current working directory to %s", baseDirectory);
-		zgPrint("This could be fatal..");
+		return -4;
 	}
 #endif
 
