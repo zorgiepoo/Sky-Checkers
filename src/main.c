@@ -1308,7 +1308,7 @@ int main(int argc, char *argv[])
 	readDefaults();
 
 	// Create renderer
-	uint32_t videoFlags = 0;
+	uint32_t videoFlags = SDL_WINDOW_ALLOW_HIGHDPI;
 #ifndef _DEBUG
 	videoFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 #endif
