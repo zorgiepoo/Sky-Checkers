@@ -1,9 +1,12 @@
-#version 330
+#if __VERSION__ < 130
+#define in attribute
+#define out varying
+#endif
 
-layout (location = 0) in vec4 position;
-layout (location = 1) in vec2 textureCoordIn;
+in vec4 position;
+in vec2 textureCoordIn;
 
-out lowp vec2 texVarying;
+out vec2 texVarying;
 
 uniform mat4 modelViewProjectionMatrix;
 

@@ -1,11 +1,15 @@
-#version 330
+#if __VERSION__ < 130
+#define in varying
+#define texture texture2D
+#define fragColor gl_FragColor
+#else
+out vec4 fragColor;
+#endif
 
-in lowp vec2 texVarying;
+in vec2 texVarying;
 
 uniform vec4 color;
 uniform sampler2D textureSample;
-
-layout (location = 0) out vec4 fragColor;
 
 void main()
 {

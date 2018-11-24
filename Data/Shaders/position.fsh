@@ -1,8 +1,10 @@
-#version 330
+#if __VERSION__ < 130
+#define fragColor gl_FragColor
+#else
+out vec4 fragColor;
+#endif
 
 uniform vec4 color;
-
-layout (location = 0) out vec4 fragColor;
 
 void main()
 {

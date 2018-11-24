@@ -19,7 +19,7 @@
 #define VERTEX_ATTRIBUTE 0
 #define TEXTURE_ATTRIBUTE 1
 
-static SDL_bool compileShader(GLuint *shader, GLenum type, const char *filepath)
+static SDL_bool compileShader(GLuint *shader, uint16_t glslVersion, GLenum type, const char *filepath)
 {
 	GLint status;
 	
@@ -40,7 +40,10 @@ static SDL_bool compileShader(GLuint *shader, GLenum type, const char *filepath)
 	fclose(sourceFile);
 	
 	*shader = glCreateShader(type);
-	glShaderSource(*shader, 1, (const char **)&source, &fileSize);
+	
+	GLchar versionLine[256] = {0};
+	snprintf(versionLine, sizeof(versionLine) - 1, "#version %u\n", glslVersion);
+	glShaderSource(*shader, 2, (const GLchar *[]){versionLine, source}, (GLint []){strlen(versionLine), fileSize});
 	
 	glCompileShader(*shader);
 	
@@ -94,18 +97,18 @@ static SDL_bool linkProgram(GLuint prog)
 	return SDL_TRUE;
 }
 
-static void compileAndLinkShader(Shader *shader, const char *vertexShaderPath, const char *fragmentShaderPath, SDL_bool textured)
+static void compileAndLinkShader(Shader *shader, uint16_t glslVersion, const char *vertexShaderPath, const char *fragmentShaderPath, SDL_bool textured)
 {
 	// Create a pair of shaders
 	GLuint vertexShader = 0;
-	if (!compileShader(&vertexShader, GL_VERTEX_SHADER, vertexShaderPath))
+	if (!compileShader(&vertexShader, glslVersion, GL_VERTEX_SHADER, vertexShaderPath))
 	{
 		zgPrint("Error: Failed to compile vertex shader: %s..\n", vertexShaderPath);
 		exit(2);
 	}
 	
 	GLuint fragmentShader = 0;
-	if (!compileShader(&fragmentShader, GL_FRAGMENT_SHADER, fragmentShaderPath))
+	if (!compileShader(&fragmentShader, glslVersion, GL_FRAGMENT_SHADER, fragmentShaderPath))
 	{
 		zgPrint("Error: Failed to compile fragment shader: %s..\n", fragmentShaderPath);
 		exit(2);
@@ -125,6 +128,15 @@ static void compileAndLinkShader(Shader *shader, const char *vertexShaderPath, c
 	if (textured)
 	{
 		glBindAttribLocation(shaderProgram, TEXTURE_ATTRIBUTE, "textureCoordIn");
+	}
+	
+	if (glslVersion < 130)
+	{
+		glBindFragDataLocation(shaderProgram, 0, "gl_FragColor");
+	}
+	else
+	{
+		glBindFragDataLocation(shaderProgram, 0, "fragColor");
 	}
 	
 	if (!linkProgram(shaderProgram))
@@ -169,12 +181,29 @@ static void compileAndLinkShader(Shader *shader, const char *vertexShaderPath, c
 	glDeleteShader(fragmentShader);
 }
 
-void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
+static SDL_bool createOpenGLContext(SDL_Window **window, SDL_GLContext *glContext, uint16_t glslVersion, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool fsaa)
 {
-	// Target OpenGL 3.3 which any GPU from around 2007 or so should support
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+	switch (glslVersion)
+	{
+		case 410:
+			SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+			break;
+		case 330:
+			SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+			break;
+		case 120:
+			SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+			break;
+		default:
+			zgPrint("Invalid glsl version passed..");
+			exit(1);
+	}
 	
 	// Anti aliasing
 	if (fsaa)
@@ -183,30 +212,18 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 2);
 	}
 	
-	// VSYNC
-	SDL_GL_SetSwapInterval(vsync);
-	
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	
-#ifndef _DEBUG
-	SDL_ShowCursor(SDL_DISABLE);
-#endif
-	
 #ifndef MAC_OS_X
 	const char *windowTitle = "SkyCheckers";
 #else
 	const char *windowTitle = "";
 #endif
-	renderer->window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags | SDL_WINDOW_OPENGL);
+	*window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags | SDL_WINDOW_OPENGL);
 	
-	SDL_GLContext glContext;
-	if (renderer->window == NULL || (glContext = SDL_GL_CreateContext(renderer->window)) == NULL)
+	if (*window == NULL || (*glContext = SDL_GL_CreateContext(*window)) == NULL)
 	{
 		if (!fsaa)
 		{
-			zgPrint("Couldn't create SDL window with resolution %ix%i: %e", windowWidth, windowHeight);
-			exit(4);
+			return SDL_FALSE;
 		}
 		else
 		{
@@ -214,24 +231,49 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 			
-			if (renderer->window != NULL)
+			if (*window != NULL)
 			{
-				SDL_DestroyWindow(renderer->window);
+				SDL_DestroyWindow(*window);
 			}
 			
-			renderer->window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags | SDL_WINDOW_OPENGL);
+			*window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags | SDL_WINDOW_OPENGL);
 			
-			if (renderer->window == NULL)
+			if (*window == NULL)
 			{
-				zgPrint("Couldn't create SDL window second time with resolution %ix%i: %e", windowWidth, windowHeight);
-				exit(5);
+				return SDL_FALSE;
 			}
 			
-			glContext = SDL_GL_CreateContext(renderer->window);
-			if (glContext == NULL)
+			*glContext = SDL_GL_CreateContext(*window);
+			if (*glContext == NULL)
 			{
-				zgPrint("Couldn't create GL context after creating window second time with resolution %ix%i: %e", windowWidth, windowHeight);
-				exit(5);
+				return SDL_FALSE;
+			}
+		}
+	}
+	return SDL_TRUE;
+}
+
+void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
+{
+	// VSYNC
+	SDL_GL_SetSwapInterval(vsync);
+	
+	// Buffer sizes
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	
+	uint16_t glslVersion = 410;
+	SDL_GLContext glContext = NULL;
+	if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, windowWidth, windowHeight, videoFlags, fsaa))
+	{
+		glslVersion = 330;
+		if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, windowWidth, windowHeight, videoFlags, fsaa))
+		{
+			glslVersion = 120;
+			if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, windowWidth, windowHeight, videoFlags, fsaa))
+			{
+				zgPrint("Failed to create OpenGL context with even glsl version %i", glslVersion);
+				exit(1);
 			}
 		}
 	}
@@ -250,6 +292,10 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 		zgPrint("Failed to initialize GLEW: %s", glewGetErrorString(glewError));
 		exit(6);
 	}
+#endif
+	
+#ifndef _DEBUG
+	SDL_ShowCursor(SDL_DISABLE);
 #endif
 	
 	int value;
@@ -275,9 +321,9 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_DEPTH_TEST);
 	
-	compileAndLinkShader(&renderer->positionShader, "Data/Shaders/position.vsh", "Data/Shaders/position.fsh", SDL_FALSE);
+	compileAndLinkShader(&renderer->positionShader, glslVersion, "Data/Shaders/position.vsh", "Data/Shaders/position.fsh", SDL_FALSE);
 	
-	compileAndLinkShader(&renderer->positionTextureShader, "Data/Shaders/texture-position.vsh", "Data/Shaders/texture-position.fsh", SDL_TRUE);
+	compileAndLinkShader(&renderer->positionTextureShader, glslVersion, "Data/Shaders/texture-position.vsh", "Data/Shaders/texture-position.fsh", SDL_TRUE);
 }
 
 void clearColorAndDepthBuffers(Renderer *renderer)

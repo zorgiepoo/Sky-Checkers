@@ -1,6 +1,8 @@
-#version 330
+#if __VERSION__ < 130
+#define in attribute
+#endif
 
-layout (location = 0) in vec4 position;
+in vec4 position;
 
 uniform mat4 modelViewProjectionMatrix;
 
