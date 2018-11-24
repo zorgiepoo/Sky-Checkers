@@ -23,23 +23,10 @@ static SDL_bool compileShader(GLuint *shader, GLenum type, const char *filepath)
 {
 	GLint status;
 	
-	const char *baseDirectory = SDL_GetBasePath();
-	size_t baseDirectoryLength = strlen(baseDirectory);
-	char pathBuffer[4096 + 1] = {0};
-	
-	if (baseDirectoryLength > 4096)
-	{
-		zgPrint("Shader can't compile because base directory is too big");
-		return SDL_FALSE;
-	}
-	
-	strcpy(pathBuffer, baseDirectory);
-	strncpy(pathBuffer + baseDirectoryLength, filepath, 4096 - baseDirectoryLength);
-	
-	FILE *sourceFile = fopen(pathBuffer, "r");
+	FILE *sourceFile = fopen(filepath, "r");
 	if (sourceFile == NULL)
 	{
-		zgPrint("Shader doesn't exist at: %s", pathBuffer);
+		zgPrint("Shader doesn't exist at: %s", filepath);
 		return SDL_FALSE;
 	}
 	

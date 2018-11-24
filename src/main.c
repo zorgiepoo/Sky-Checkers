@@ -1282,6 +1282,14 @@ int main(int argc, char *argv[])
         zgPrint("Couldn't initialize SDL: %e");
 		return -1;
 	}
+	
+	// The current working directory should point to our base path, particularly on macOS
+	const char *baseDirectory = SDL_GetBasePath();
+	if (baseDirectory != NULL && chdir(baseDirectory) != 0)
+	{
+		zgPrint("Failed to change current working directory to %s", baseDirectory);
+		zgPrint("This could be fatal..");
+	}
 
 	initJoySticks();
 
