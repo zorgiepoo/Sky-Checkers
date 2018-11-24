@@ -3,10 +3,12 @@
 
 // On platforms besides macOS I will need to use something like GLEW
 #ifdef WINDOWS
+#include <GL/glew.h>
 #include "SDL_opengl.h"
 #endif
 
 #ifdef linux
+#include <GL/glew.h>
 #include <SDL2/SDL_opengl.h>
 #endif
 
@@ -252,6 +254,16 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 		zgPrint("Couldn't make OpenGL context current: %e");
 		exit(9);
 	}
+
+#ifndef MAC_OS_X
+	glewExperimental = GL_TRUE;
+	GLenum glewError = glewInit();
+	if (glewError != GLEW_OK)
+	{
+		zgPrint("Failed to initialize GLEW: %s", glewGetErrorString(glewError));
+		exit(6);
+	}
+#endif
 	
 	int value;
 	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &value);
