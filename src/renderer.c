@@ -1,7 +1,6 @@
 #include "renderer.h"
 #include "utilities.h"
 
-// On platforms besides macOS I will need to use something like GLEW
 #ifdef WINDOWS
 #include <GL/glew.h>
 #include "SDL_opengl.h"
