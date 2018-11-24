@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Mayur Pawashe
+ * Copyright 2018 Mayur Pawashe
  * https://zgcoder.net
  
  * This file is part of skycheckers.
