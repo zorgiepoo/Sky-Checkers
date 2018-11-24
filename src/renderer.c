@@ -266,14 +266,8 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 	// Set the projection
 	glViewport(0, 0, renderer->screenWidth, renderer->screenHeight);
 	
-	//glMatrixMode(GL_PROJECTION);
-	
 	// The aspect ratio is not quite correct, which is a mistake I made a long time ago that is too troubling to fix properly
 	renderer->projectionMatrix = m4_perspective(45.0f, (float)(renderer->screenWidth / renderer->screenHeight), 10.0f, 300.0f);
-	
-	//glLoadMatrixf(&renderer->projectionMatrix.m00);
-	
-	//glMatrixMode(GL_MODELVIEW);
 	
 	// OpenGL Initialization
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
