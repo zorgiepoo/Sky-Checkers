@@ -37,118 +37,118 @@ void drawWeapon(Renderer *renderer, Weapon *weap)
 	if (!weap->drawingState)
 		return;
 	
-	const static float vertices[] =
-	{
-		// Cube part
-		
-		// right face
-		-1.0, -1.0, 1.0,
-		-1.0, 1.0, 1.0,
-		1.0, 1.0, 1.0,
-		1.0, -1.0, 1.0,
-		
-		// left face
-		-1.0, -1.0, -1.0,
-		-1.0, 1.0, -1.0,
-		1.0, 1.0, -1.0,
-		1.0, -1.0, -1.0,
-		
-		// front face
-		1.0, 1.0, 1.0,
-		1.0, -1.0, 1.0,
-		1.0, -1.0, -1.0,
-		1.0, 1.0, -1.0,
-		
-		// back face
-		-1.0, -1.0, 1.0,
-		-1.0, 1.0, 1.0,
-		-1.0, 1.0, -1.0,
-		-1.0, -1.0, -1.0,
-		
-		// top face
-		-1.0, 1.0, 1.0,
-		-1.0, 1.0, -1.0,
-		1.0, 1.0, -1.0,
-		1.0, 1.0, 1.0,
-		
-		// bottom face
-		-1.0, -1.0, 1.0,
-		-1.0, -1.0, -1.0,
-		1.0, -1.0, -1.0,
-		1.0, -1.0, 1.0,
-		
-		// Prism part
-		
-		// right side
-		1.0, 1.0, 1.0,
-		1.0, -1.0, 1.0,
-		3.0, 0.0, 0.0,
-		
-		// left side
-		1.0, 1.0, -1.0,
-		1.0, -1.0, -1.0,
-		3.0, 0.0, 0.0,
-		
-		// top side
-		1.0, 1.0, 1.0,
-		1.0, 1.0, -1.0,
-		3.0, 0.0, 0.0,
-		
-		// bottom side
-		1.0, -1.0, 1.0,
-		1.0, -1.0, -1.0,
-		3.0, 0.0, 0.0
-	};
-	
-	const static uint8_t indices[] =
-	{
-		// Cube part
-		
-		// right face
-		0, 1, 2,
-		2, 3, 0,
-		
-		// left face
-		4, 5, 6,
-		6, 7, 4,
-		
-		// front face
-		8, 9, 10,
-		10, 11, 8,
-		
-		// back face
-		12, 13, 14,
-		14, 15, 12,
-		
-		// top face
-		16, 17, 18,
-		18, 19, 16,
-		
-		// bottom face
-		20, 21, 22,
-		22, 23, 20,
-		
-		// Prism part
-		
-		// right side
-		24, 25, 26,
-		
-		// left side
-		27, 28, 29,
-		
-		// top side
-		30, 31, 32,
-		
-		// bottom side
-		33, 34, 35
-	};
-	
-	static uint32_t vertexBufferObject;
+	static uint32_t vertexArrayObject;
 	static uint32_t indicesBufferObject;
 	
-	if (vertexBufferObject == 0)
+	if (vertexArrayObject == 0)
 	{
-		vertexBufferObject = createVertexBufferObject(vertices, sizeof(vertices));
+		const float vertices[] =
+		{
+			// Cube part
+			
+			// right face
+			-1.0, -1.0, 1.0,
+			-1.0, 1.0, 1.0,
+			1.0, 1.0, 1.0,
+			1.0, -1.0, 1.0,
+			
+			// left face
+			-1.0, -1.0, -1.0,
+			-1.0, 1.0, -1.0,
+			1.0, 1.0, -1.0,
+			1.0, -1.0, -1.0,
+			
+			// front face
+			1.0, 1.0, 1.0,
+			1.0, -1.0, 1.0,
+			1.0, -1.0, -1.0,
+			1.0, 1.0, -1.0,
+			
+			// back face
+			-1.0, -1.0, 1.0,
+			-1.0, 1.0, 1.0,
+			-1.0, 1.0, -1.0,
+			-1.0, -1.0, -1.0,
+			
+			// top face
+			-1.0, 1.0, 1.0,
+			-1.0, 1.0, -1.0,
+			1.0, 1.0, -1.0,
+			1.0, 1.0, 1.0,
+			
+			// bottom face
+			-1.0, -1.0, 1.0,
+			-1.0, -1.0, -1.0,
+			1.0, -1.0, -1.0,
+			1.0, -1.0, 1.0,
+			
+			// Prism part
+			
+			// right side
+			1.0, 1.0, 1.0,
+			1.0, -1.0, 1.0,
+			3.0, 0.0, 0.0,
+			
+			// left side
+			1.0, 1.0, -1.0,
+			1.0, -1.0, -1.0,
+			3.0, 0.0, 0.0,
+			
+			// top side
+			1.0, 1.0, 1.0,
+			1.0, 1.0, -1.0,
+			3.0, 0.0, 0.0,
+			
+			// bottom side
+			1.0, -1.0, 1.0,
+			1.0, -1.0, -1.0,
+			3.0, 0.0, 0.0
+		};
+		
+		const uint8_t indices[] =
+		{
+			// Cube part
+			
+			// right face
+			0, 1, 2,
+			2, 3, 0,
+			
+			// left face
+			4, 5, 6,
+			6, 7, 4,
+			
+			// front face
+			8, 9, 10,
+			10, 11, 8,
+			
+			// back face
+			12, 13, 14,
+			14, 15, 12,
+			
+			// top face
+			16, 17, 18,
+			18, 19, 16,
+			
+			// bottom face
+			20, 21, 22,
+			22, 23, 20,
+			
+			// Prism part
+			
+			// right side
+			24, 25, 26,
+			
+			// left side
+			27, 28, 29,
+			
+			// top side
+			30, 31, 32,
+			
+			// bottom side
+			33, 34, 35
+		};
+		
+		vertexArrayObject = createVertexArrayObject(vertices, sizeof(vertices), 3);
 		indicesBufferObject = createVertexBufferObject(indices, sizeof(indices));
 	}
 	
@@ -176,5 +176,5 @@ void drawWeapon(Renderer *renderer, Weapon *weap)
 	mat4_t weaponRotationMatrix = m4_rotation_z(weaponRotationAngle);
 	mat4_t modelViewMatrix = m4_mul(weaponMatrix, weaponRotationMatrix);
 	
-	drawVerticesFromIndices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertexBufferObject, 3, indicesBufferObject, RENDERER_INT8_TYPE, sizeof(indices) / sizeof(*indices), (color4_t){weap->red, weap->green, weap->blue, 0.2f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
+	drawVerticesFromIndices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertexArrayObject, indicesBufferObject, RENDERER_INT8_TYPE, 48, (color4_t){weap->red, weap->green, weap->blue, 0.2f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
 }

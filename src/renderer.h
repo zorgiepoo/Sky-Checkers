@@ -36,6 +36,14 @@
 
 typedef struct
 {
+	int32_t program;
+	int32_t modelViewProjectionMatrixUniformLocation;
+	int32_t colorUniformLocation;
+	int32_t textureUniformLocation;
+} Shader;
+
+typedef struct
+{
 	SDL_Window *window;
 	mat4_t projectionMatrix;
 	
@@ -47,6 +55,9 @@ typedef struct
 	
 	SDL_bool vsync;
 	SDL_bool fsaa;
+	
+	Shader positionTextureShader;
+	Shader positionShader;
 } Renderer;
 
 typedef struct
@@ -67,10 +78,14 @@ uint32_t textureFromPixelData(Renderer *renderer, const void *pixels, int32_t wi
 
 uint32_t createVertexBufferObject(const void *data, uint32_t size);
 
-void drawVertices(Renderer *renderer, mat4_t modelViewMatrix, uint8_t mode, uint32_t vertexBufferObject, uint8_t vertexSize, uint32_t vertexCount, color4_t color, uint8_t options);
+uint32_t createVertexArrayObject(const void *vertices, uint32_t verticesSize, uint8_t vertexComponents);
 
-void drawVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, uint8_t mode, uint32_t vertexBufferObject, uint8_t vertexSize, uint32_t indicesBufferObject, uint8_t indicesType, uint32_t indicesCount, color4_t color, uint8_t options);
+uint32_t createVertexAndTextureCoordinateArrayObject(const void *verticesAndTextureCoordinates, uint32_t verticesSize, uint8_t vertexComponents, uint32_t textureCoordinatesSize, uint8_t textureCoordinateType);
 
-void drawTextureWithVertices(Renderer *renderer, mat4_t modelViewMatrix, uint32_t texture, uint8_t mode, uint32_t vertexBufferObject, uint8_t vertexSize, uint32_t textureCoordinatesBufferObject, uint8_t textureCoordinatesType, uint32_t vertexCount, color4_t color, uint8_t options);
+void drawVertices(Renderer *renderer, mat4_t modelViewMatrix, uint8_t mode, uint32_t vertexArrayObject, uint32_t vertexCount, color4_t color, uint8_t options);
 
-void drawTextureWithVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, uint32_t texture, uint8_t mode, uint32_t vertexBufferObject, uint8_t vertexSize, uint32_t textureCoordinatesBufferObject, uint8_t textureCoordinatesType, uint32_t indicesBufferObject, uint8_t indicesType, uint32_t indicesCount, color4_t color, uint8_t options);
+void drawVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, uint8_t mode, uint32_t vertexArrayObject, uint32_t indicesBufferObject, uint8_t indicesType, uint32_t indicesCount, color4_t color, uint8_t options);
+
+void drawTextureWithVertices(Renderer *renderer, mat4_t modelViewMatrix, uint32_t texture, uint8_t mode, uint32_t vertexAndTextureArrayObject, uint32_t vertexCount, color4_t color, uint8_t options);
+
+void drawTextureWithVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, uint32_t texture, uint8_t mode, uint32_t vertexAndTextureArrayObject, uint32_t indicesBufferObject, uint8_t indicesType, uint32_t indicesCount, color4_t color, uint8_t options);

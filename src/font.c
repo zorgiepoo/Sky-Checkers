@@ -247,7 +247,7 @@ int cacheString(Renderer *renderer, const char *string)
 }
 
 void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, float width, float height, const char *string)
-{	
+{
 	if (string == NULL)
 	{
 		return;
@@ -259,41 +259,38 @@ void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, floa
 		return;
 	}
 	
-	static uint8_t indices[] =
-	{
-		0, 1, 2,
-		2, 3, 0
-	};
-	
-	static uint32_t vertexBufferObject;
-	static uint32_t textureCoordinatesBufferObject;
+	static uint32_t vertexAndTextureBufferObject;
 	static uint32_t indicesBufferObject;
 	
-	if (vertexBufferObject == 0)
+	if (vertexAndTextureBufferObject == 0)
 	{
-		float vertices[] =
+		const uint8_t indices[] =
 		{
+			0, 1, 2,
+			2, 3, 0
+		};
+		
+		const float verticesAndTextureCoordinates[] =
+		{
+			// vertices
 			-1.0f, -1.0f,
 			-1.0f, 1.0f,
 			1.0f, 1.0f,
-			1.0f, -1.0f
-		};
-		
-		float textureCoordinates[] =
-		{
+			1.0f, -1.0f,
+			
+			// texture coordinates
 			0.0f, 1.0f,
 			0.0f, 0.0f,
 			1.0f, 0.0f,
 			1.0f, 1.0f
 		};
 		
-		vertexBufferObject = createVertexBufferObject(vertices, sizeof(vertices));
-		textureCoordinatesBufferObject = createVertexBufferObject(textureCoordinates, sizeof(textureCoordinates));
+		vertexAndTextureBufferObject = createVertexAndTextureCoordinateArrayObject(verticesAndTextureCoordinates, 8 * sizeof(*verticesAndTextureCoordinates), 2, 8 * sizeof(*verticesAndTextureCoordinates), RENDERER_FLOAT_TYPE);
 		indicesBufferObject = createVertexBufferObject(indices, sizeof(indices));
 	}
 	
 	mat4_t scaleMatrix = m4_scaling((vec3_t){width, height, 0.0f});
 	mat4_t transformMatrix = m4_mul(modelViewMatrix, scaleMatrix);
 	
-	drawTextureWithVerticesFromIndices(renderer, transformMatrix, gGlyphs[index].texture, RENDERER_TRIANGLE_MODE, vertexBufferObject, 2, textureCoordinatesBufferObject, RENDERER_FLOAT_TYPE, indicesBufferObject, RENDERER_INT8_TYPE, sizeof(indices) / sizeof(*indices), color, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
+	drawTextureWithVerticesFromIndices(renderer, transformMatrix, gGlyphs[index].texture, RENDERER_TRIANGLE_MODE, vertexAndTextureBufferObject, indicesBufferObject, RENDERER_INT8_TYPE, 6, color, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
 }
