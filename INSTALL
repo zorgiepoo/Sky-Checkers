@@ -24,6 +24,7 @@ yum install SDL2-devel.x86_64
 yum install SDL2_mixer-devel.x86_64
 yum install SDL2_ttf-devel.x86_64
 yum install SDL2_image-devel.x86_64
+yum install glew-devel.x86_64
 
 For macOS and Windows, these dependencies are bundled in the source code already.
 
