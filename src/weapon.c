@@ -37,10 +37,11 @@ void drawWeapon(Renderer *renderer, Weapon *weap)
 	if (!weap->drawingState)
 		return;
 	
-	static uint32_t vertexArrayObject;
-	static uint32_t indicesBufferObject;
+	static BufferArrayObject vertexArrayObject;
+	static BufferObject indicesBufferObject;
+	static SDL_bool initializedBuffers;
 	
-	if (vertexArrayObject == 0)
+	if (!initializedBuffers)
 	{
 		const float vertices[] =
 		{
@@ -149,7 +150,9 @@ void drawWeapon(Renderer *renderer, Weapon *weap)
 		};
 		
 		vertexArrayObject = createVertexArrayObject(vertices, sizeof(vertices), 3);
-		indicesBufferObject = createVertexBufferObject(indices, sizeof(indices));
+		indicesBufferObject = createBufferObject(indices, sizeof(indices));
+		
+		initializedBuffers = SDL_TRUE;
 	}
 	
 	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((float)M_PI / 180.0f));

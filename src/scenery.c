@@ -32,9 +32,9 @@ static void linkColumn(int index);
 // starts at index '1' for all of our calculations, 1 to 64
 Tile gTiles[65];
 
-static uint32_t gSkyTex;
-static uint32_t gTileOneTex;
-static uint32_t gTileTwoTex;
+static TextureObject gSkyTex;
+static TextureObject gTileOneTex;
+static TextureObject gTileTwoTex;
 
 void initTiles(void)
 {
@@ -226,17 +226,18 @@ static void linkColumn(int index)
 
 void loadSceneryTextures(Renderer *renderer)
 {
-	loadTexture(renderer, "Data/Textures/sky.bmp", &gSkyTex);
-	loadTexture(renderer, "Data/Textures/tiletex.bmp", &gTileOneTex);
-	loadTexture(renderer, "Data/Textures/tiletex2.bmp", &gTileTwoTex);
+	gSkyTex = loadTexture(renderer, "Data/Textures/sky.bmp");
+	gTileOneTex = loadTexture(renderer, "Data/Textures/tiletex.bmp");
+	gTileTwoTex = loadTexture(renderer, "Data/Textures/tiletex2.bmp");
 }
 
 void drawSky(Renderer *renderer)
 {
-	static uint32_t vertexAndTextureArrayObject;
-	static uint32_t indicesBufferObject;
+	static BufferArrayObject vertexAndTextureArrayObject;
+	static BufferObject indicesBufferObject;
+	static SDL_bool initializedBuffers;
 	
-	if (vertexAndTextureArrayObject == 0)
+	if (!initializedBuffers)
 	{
 		uint8_t indices[] =
 		{
@@ -260,7 +261,9 @@ void drawSky(Renderer *renderer)
 		};
 		
 		vertexAndTextureArrayObject = createVertexAndTextureCoordinateArrayObject(vertexAndTextureCoordinates, 12 * sizeof(*vertexAndTextureCoordinates), 3, 8 * sizeof(*vertexAndTextureCoordinates), RENDERER_FLOAT_TYPE);
-		indicesBufferObject = createVertexBufferObject(indices, sizeof(indices));
+		indicesBufferObject = createBufferObject(indices, sizeof(indices));
+		
+		initializedBuffers = SDL_TRUE;
 	}
 	
 	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 0.0f, -25.0f});
@@ -270,10 +273,11 @@ void drawSky(Renderer *renderer)
 
 void drawTiles(Renderer *renderer)
 {
-	static uint32_t vertexAndTextureCoordinateArrayObject;
-	static uint32_t indicesBufferObject;
+	static BufferArrayObject vertexAndTextureCoordinateArrayObject;
+	static BufferObject indicesBufferObject;
+	static SDL_bool initializedBuffers;
 	
-	if (vertexAndTextureCoordinateArrayObject == 0)
+	if (!initializedBuffers)
 	{
 		float vertices[] =
 		{
@@ -356,9 +360,11 @@ void drawTiles(Renderer *renderer)
 		
 		vertexAndTextureCoordinateArrayObject = createVertexAndTextureCoordinateArrayObject(vertexAndTextureCoordinatesData, sizeof(vertices), 3, sizeof(textureCoordinates), RENDERER_INT16_TYPE);
 		
-		indicesBufferObject = createVertexBufferObject(indices, sizeof(indices));
+		indicesBufferObject = createBufferObject(indices, sizeof(indices));
 		
 		free(vertexAndTextureCoordinatesData);
+		
+		initializedBuffers = SDL_TRUE;
 	}
 	
 	SDL_bool drawTileOneFirst = SDL_FALSE;
@@ -381,7 +387,7 @@ void drawTiles(Renderer *renderer)
 		}
 		
 		// Figure out which texture to bind to
-		uint32_t texture;
+		TextureObject texture;
 		if ((drawTileOneFirst && i % 2 == 0) || (!drawTileOneFirst && i % 2 == 1))
 		{
 			texture = gTileOneTex;

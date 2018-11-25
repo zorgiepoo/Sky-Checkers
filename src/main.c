@@ -77,10 +77,11 @@ static void writeDefaults(Renderer *renderer);
 
 static void drawBlackBox(Renderer *renderer)
 {
-	static uint32_t vertexArrayObject;
-	static uint32_t indicesBufferObject;
+	static BufferArrayObject vertexArrayObject;
+	static BufferObject indicesBufferObject;
+	static SDL_bool initializedBuffers;
 	
-	if (vertexArrayObject == 0)
+	if (!initializedBuffers)
 	{
 		const float vertices[] =
 		{
@@ -97,7 +98,9 @@ static void drawBlackBox(Renderer *renderer)
 		};
 		
 		vertexArrayObject = createVertexArrayObject(vertices, sizeof(vertices), 3);
-		indicesBufferObject = createVertexBufferObject(indices, sizeof(indices));
+		indicesBufferObject = createBufferObject(indices, sizeof(indices));
+		
+		initializedBuffers = SDL_TRUE;
 	}
 	
 	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 0.0f, -25.0f});

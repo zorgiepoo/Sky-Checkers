@@ -22,17 +22,26 @@
 #include "maincore.h"
 #include "math_3d.h"
 
-#define RENDERER_OPTION_NONE 0
-#define RENDERER_OPTION_DISABLE_DEPTH_TEST (1 << 0)
-#define RENDERER_OPTION_BLENDING_ALPHA (1 << 1)
-#define RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA (1 << 2)
+typedef enum
+{
+	RENDERER_OPTION_NONE = 0,
+	RENDERER_OPTION_DISABLE_DEPTH_TEST = (1 << 0),
+	RENDERER_OPTION_BLENDING_ALPHA = (1 << 1),
+	RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA = (1 << 2)
+} RendererOptions;
 
-#define RENDERER_INT8_TYPE 1
-#define RENDERER_INT16_TYPE 2
-#define RENDERER_FLOAT_TYPE 3
+typedef enum
+{
+	RENDERER_TRIANGLE_MODE = 1,
+	RENDERER_TRIANGLE_STRIP_MODE = 2
+} RendererMode;
 
-#define RENDERER_TRIANGLE_MODE 1
-#define RENDERER_TRIANGLE_STRIP_MODE 2
+typedef enum
+{
+	RENDERER_INT8_TYPE = 1,
+	RENDERER_INT16_TYPE = 2,
+	RENDERER_FLOAT_TYPE = 3
+} RendererType;
 
 typedef struct
 {
@@ -68,24 +77,39 @@ typedef struct
 	float alpha;
 } color4_t;
 
+typedef struct
+{
+	uint32_t glObject;
+} BufferArrayObject;
+
+typedef struct
+{
+	uint32_t glObject;
+} BufferObject;
+
+typedef struct
+{
+	uint32_t glObject;
+} TextureObject;
+
 void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa);
 
 void clearColorAndDepthBuffers(Renderer *renderer);
 void swapBuffers(Renderer *renderer);
 
-void loadTexture(Renderer *renderer, const char *filePath, uint32_t *tex);
-uint32_t textureFromPixelData(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
+TextureObject loadTexture(Renderer *renderer, const char *filePath);
+TextureObject textureFromPixelData(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
 
-uint32_t createVertexBufferObject(const void *data, uint32_t size);
+BufferObject createBufferObject(const void *data, uint32_t size);
 
-uint32_t createVertexArrayObject(const void *vertices, uint32_t verticesSize, uint8_t vertexComponents);
+BufferArrayObject createVertexArrayObject(const void *vertices, uint32_t verticesSize, uint8_t vertexComponents);
 
-uint32_t createVertexAndTextureCoordinateArrayObject(const void *verticesAndTextureCoordinates, uint32_t verticesSize, uint8_t vertexComponents, uint32_t textureCoordinatesSize, uint8_t textureCoordinateType);
+BufferArrayObject createVertexAndTextureCoordinateArrayObject(const void *verticesAndTextureCoordinates, uint32_t verticesSize, uint8_t vertexComponents, uint32_t textureCoordinatesSize, RendererType textureCoordinateType);
 
-void drawVertices(Renderer *renderer, mat4_t modelViewMatrix, uint8_t mode, uint32_t vertexArrayObject, uint32_t vertexCount, color4_t color, uint8_t options);
+void drawVertices(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options);
 
-void drawVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, uint8_t mode, uint32_t vertexArrayObject, uint32_t indicesBufferObject, uint8_t indicesType, uint32_t indicesCount, color4_t color, uint8_t options);
+void drawVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, BufferObject indicesBufferObject, RendererType indicesType, uint32_t indicesCount, color4_t color, RendererOptions options);
 
-void drawTextureWithVertices(Renderer *renderer, mat4_t modelViewMatrix, uint32_t texture, uint8_t mode, uint32_t vertexAndTextureArrayObject, uint32_t vertexCount, color4_t color, uint8_t options);
+void drawTextureWithVertices(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options);
 
-void drawTextureWithVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, uint32_t texture, uint8_t mode, uint32_t vertexAndTextureArrayObject, uint32_t indicesBufferObject, uint8_t indicesType, uint32_t indicesCount, color4_t color, uint8_t options);
+void drawTextureWithVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, RendererType indicesType, uint32_t indicesCount, color4_t color, RendererOptions options);

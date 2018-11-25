@@ -59,12 +59,12 @@ Character gGreenTree;
 Character gPinkBubbleGum;
 Character gBlueLightning;
 
-static uint32_t gCharacterTex;
+static TextureObject gCharacterTex;
 
-static uint32_t gCharacterVertexAndTextureCoordinateArrayObject;
-static uint32_t gCharacterIndicesBufferObject;
+static BufferArrayObject gCharacterVertexAndTextureCoordinateArrayObject;
+static BufferObject gCharacterIndicesBufferObject;
 
-static uint32_t gIconVertexAndTextureCoordinateArrayObject;
+static BufferArrayObject gIconVertexAndTextureCoordinateArrayObject;
 
 static void randomizeCharacterDirection(Character *character);
 
@@ -194,7 +194,7 @@ int offlineCharacterState(Character *character)
 
 void loadCharacterTextures(Renderer *renderer)
 {
-	loadTexture(renderer, "Data/Textures/face.bmp", &gCharacterTex);
+	gCharacterTex = loadTexture(renderer, "Data/Textures/face.bmp");
 }
 
 // http://www.songho.ca/opengl/gl_sphere.html
@@ -347,7 +347,7 @@ void buildCharacterModels(void)
 	
 	gCharacterVertexAndTextureCoordinateArrayObject = createVertexAndTextureCoordinateArrayObject(characterVerticesAndTextureCoordinates, characterVerticesSize, 3, characterTextureCoordinatesSize, RENDERER_FLOAT_TYPE);
 	
-	gCharacterIndicesBufferObject = createVertexBufferObject(characterIndices, characterIndicesSize);
+	gCharacterIndicesBufferObject = createBufferObject(characterIndices, characterIndicesSize);
 	
 	free(characterVerticesAndTextureCoordinates);
 	free(characterIndices);

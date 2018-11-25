@@ -356,7 +356,7 @@ void swapBuffers(Renderer *renderer)
 	SDL_GL_SwapWindow(renderer->window);
 }
 
-uint32_t textureFromPixelData(Renderer *renderer, const void *pixels, int32_t width, int32_t height)
+TextureObject textureFromPixelData(Renderer *renderer, const void *pixels, int32_t width, int32_t height)
 {
 	GLuint tex = 0;
 	
@@ -373,7 +373,7 @@ uint32_t textureFromPixelData(Renderer *renderer, const void *pixels, int32_t wi
 				 GL_UNSIGNED_BYTE,
 				 pixels);
 	
-	return tex;
+	return (TextureObject){.glObject = tex};
 }
 
 // This function is derived from same place as surfaceToGLTexture() code is
@@ -392,7 +392,7 @@ static int power_of_two(int input)
 // The code from this function is taken from https://www.opengl.org/discussion_boards/showthread.php/163677-SDL_image-Opengl
 // which is derived from SDL 1.2 source code which is licensed under LGPL:
 // https://github.com/klange/SDL/blob/master/test/testgl.c
-static void surfaceToTexture(Renderer *renderer, SDL_Surface *surface, GLuint *tex)
+static TextureObject surfaceToTexture(Renderer *renderer, SDL_Surface *surface)
 {
 	int w, h;
 	SDL_Surface *image;
@@ -418,9 +418,10 @@ static void surfaceToTexture(Renderer *renderer, SDL_Surface *surface, GLuint *t
 								 0x000000FF
 #endif
 								 );
-	if ( image == NULL )
+	if (image == NULL)
 	{
-		return;
+		zgPrint("Failed to create SDL RGB surface..");
+		SDL_Quit();
 	}
 	
 	// Set alpha property to max
@@ -434,16 +435,16 @@ static void surfaceToTexture(Renderer *renderer, SDL_Surface *surface, GLuint *t
 	SDL_BlitSurface(surface, &area, image, &area);
 	
 	/* Create an OpenGL texture for the image */
-	*tex = textureFromPixelData(renderer, image->pixels, w, h);
+	TextureObject texture = textureFromPixelData(renderer, image->pixels, w, h);
 	
 	SDL_FreeSurface(image); /* No longer needed */
+	
+	return texture;
 }
 
-void loadTexture(Renderer *renderer, const char *filePath, uint32_t *tex)
+TextureObject loadTexture(Renderer *renderer, const char *filePath)
 {
-	SDL_Surface *texImage;
-	
-	texImage = IMG_Load(filePath);
+	SDL_Surface *texImage = IMG_Load(filePath);
 	
 	if (texImage == NULL)
 	{
@@ -451,15 +452,19 @@ void loadTexture(Renderer *renderer, const char *filePath, uint32_t *tex)
 		SDL_Quit();
 	}
 	
-	surfaceToTexture(renderer, texImage, tex);
+	TextureObject texture = surfaceToTexture(renderer, texImage);
 	
 	SDL_FreeSurface(texImage);
+	
+	return texture;
 }
 
-static GLenum glTypeFromIndicesType(uint8_t type)
+static GLenum glTypeFromIndicesType(RendererType type)
 {
 	switch (type)
 	{
+		case RENDERER_FLOAT_TYPE:
+			return 0;
 		case RENDERER_INT8_TYPE:
 			return GL_UNSIGNED_BYTE;
 		case RENDERER_INT16_TYPE:
@@ -468,10 +473,12 @@ static GLenum glTypeFromIndicesType(uint8_t type)
 	return 0;
 }
 
-static GLenum glTypeFromCoordinatesType(uint8_t type)
+static GLenum glTypeFromCoordinatesType(RendererType type)
 {
 	switch (type)
 	{
+		case RENDERER_INT8_TYPE:
+			return 0;
 		case RENDERER_INT16_TYPE:
 			return GL_SHORT;
 		case RENDERER_FLOAT_TYPE:
@@ -480,7 +487,7 @@ static GLenum glTypeFromCoordinatesType(uint8_t type)
 	return 0;
 }
 
-static GLenum glModeFromMode(uint8_t mode)
+static GLenum glModeFromMode(RendererMode mode)
 {
 	switch (mode)
 	{
@@ -492,7 +499,7 @@ static GLenum glModeFromMode(uint8_t mode)
 	return 0;
 }
 
-uint32_t createVertexBufferObject(const void *data, uint32_t size)
+BufferObject createBufferObject(const void *data, uint32_t size)
 {
 	GLuint buffer = 0;
 	glGenBuffers(1, &buffer);
@@ -503,10 +510,10 @@ uint32_t createVertexBufferObject(const void *data, uint32_t size)
 	
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	
-	return buffer;
+	return (BufferObject){.glObject = buffer};
 }
 
-uint32_t createVertexArrayObject(const void *vertices, uint32_t verticesSize, uint8_t vertexComponents)
+BufferArrayObject createVertexArrayObject(const void *vertices, uint32_t verticesSize, uint8_t vertexComponents)
 {
 	GLuint vertexArray = 0;
 	glGenVertexArrays(1, &vertexArray);
@@ -524,10 +531,10 @@ uint32_t createVertexArrayObject(const void *vertices, uint32_t verticesSize, ui
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	
-	return vertexArray;
+	return (BufferArrayObject){.glObject = vertexArray};
 }
 
-uint32_t createVertexAndTextureCoordinateArrayObject(const void *verticesAndTextureCoordinates, uint32_t verticesSize, uint8_t vertexComponents, uint32_t textureCoordinatesSize, uint8_t textureCoordinateType)
+BufferArrayObject createVertexAndTextureCoordinateArrayObject(const void *verticesAndTextureCoordinates, uint32_t verticesSize, uint8_t vertexComponents, uint32_t textureCoordinatesSize, RendererType textureCoordinateType)
 {
 	GLuint vertexArray = 0;
 	glGenVertexArrays(1, &vertexArray);
@@ -547,10 +554,10 @@ uint32_t createVertexAndTextureCoordinateArrayObject(const void *verticesAndText
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	
-	return vertexArray;
+	return (BufferArrayObject){.glObject = vertexArray};
 }
 
-static void beginDrawingVertices(Shader *shader, mat4_t modelViewMatrix, mat4_t projectionMatrix, uint32_t vertexArrayObject, color4_t color, uint8_t options)
+static void beginDrawingVertices(Shader *shader, mat4_t modelViewMatrix, mat4_t projectionMatrix, BufferArrayObject vertexArrayObject, color4_t color, RendererOptions options)
 {
 	SDL_bool disableDepthTest = (options & RENDERER_OPTION_DISABLE_DEPTH_TEST) != 0;
 	if (disableDepthTest)
@@ -575,7 +582,7 @@ static void beginDrawingVertices(Shader *shader, mat4_t modelViewMatrix, mat4_t 
 		}
 	}
 	
-	glBindVertexArray(vertexArrayObject);
+	glBindVertexArray(vertexArrayObject.glObject);
 	
 	glUseProgram(shader->program);
 	
@@ -584,7 +591,7 @@ static void beginDrawingVertices(Shader *shader, mat4_t modelViewMatrix, mat4_t 
 	glUniform4f(shader->colorUniformLocation, color.red, color.green, color.blue, color.alpha);
 }
 
-static void endDrawingVerticesAndTextures(uint8_t options)
+static void endDrawingVerticesAndTextures(RendererOptions options)
 {
 	glBindVertexArray(0);
 	
@@ -603,7 +610,7 @@ static void endDrawingVerticesAndTextures(uint8_t options)
 	}
 }
 
-void drawVertices(Renderer *renderer, mat4_t modelViewMatrix, uint8_t mode, uint32_t vertexArrayObject, uint32_t vertexCount, color4_t color, uint8_t options)
+void drawVertices(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options)
 {
 	beginDrawingVertices(&renderer->positionShader, modelViewMatrix, renderer->projectionMatrix, vertexArrayObject, color, options);
 	
@@ -612,11 +619,11 @@ void drawVertices(Renderer *renderer, mat4_t modelViewMatrix, uint8_t mode, uint
 	endDrawingVerticesAndTextures(options);
 }
 
-void drawVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, uint8_t mode, uint32_t vertexArrayObject, uint32_t indicesBufferObject, uint8_t indicesType, uint32_t indicesCount, color4_t color, uint8_t options)
+void drawVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, BufferObject indicesBufferObject, RendererType indicesType, uint32_t indicesCount, color4_t color, RendererOptions options)
 {
 	beginDrawingVertices(&renderer->positionShader, modelViewMatrix, renderer->projectionMatrix, vertexArrayObject, color, options);
 	
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesBufferObject);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesBufferObject.glObject);
 	
 	glDrawElements(glModeFromMode(mode), indicesCount, glTypeFromIndicesType(indicesType), NULL);
 	
@@ -625,16 +632,16 @@ void drawVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, uint8_t
 	endDrawingVerticesAndTextures(options);
 }
 
-static void beginDrawingTexture(Shader *shader, mat4_t modelViewMatrix, mat4_t projectionMatrix, uint32_t texture, uint32_t vertexAndTextureArrayObject, color4_t color, uint8_t options)
+static void beginDrawingTexture(Shader *shader, mat4_t modelViewMatrix, mat4_t projectionMatrix, TextureObject texture, BufferArrayObject vertexAndTextureArrayObject, color4_t color, RendererOptions options)
 {
 	beginDrawingVertices(shader, modelViewMatrix, projectionMatrix, vertexAndTextureArrayObject, color, options);
 	
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	glBindTexture(GL_TEXTURE_2D, texture.glObject);
 	glUniform1i(shader->textureUniformLocation, 0);
 }
 
-void drawTextureWithVertices(Renderer *renderer, mat4_t modelViewMatrix, uint32_t texture, uint8_t mode, uint32_t vertexAndTextureArrayObject, uint32_t vertexCount, color4_t color, uint8_t options)
+void drawTextureWithVertices(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options)
 {
 	beginDrawingTexture(&renderer->positionTextureShader, modelViewMatrix, renderer->projectionMatrix, texture, vertexAndTextureArrayObject, color, options);
 	
@@ -643,11 +650,11 @@ void drawTextureWithVertices(Renderer *renderer, mat4_t modelViewMatrix, uint32_
 	endDrawingVerticesAndTextures(options);
 }
 
-void drawTextureWithVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, uint32_t texture, uint8_t mode, uint32_t vertexAndTextureArrayObject, uint32_t indicesBufferObject, uint8_t indicesType, uint32_t indicesCount, color4_t color, uint8_t options)
+void drawTextureWithVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, RendererType indicesType, uint32_t indicesCount, color4_t color, RendererOptions options)
 {
 	beginDrawingTexture(&renderer->positionTextureShader, modelViewMatrix, renderer->projectionMatrix, texture, vertexAndTextureArrayObject, color, options);
 	
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesBufferObject);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesBufferObject.glObject);
 	
 	glDrawElements(glModeFromMode(mode), indicesCount, glTypeFromIndicesType(indicesType), NULL);
 	

@@ -64,8 +64,9 @@ static unsigned getJoyStickTrigger(Sint16 *value, Uint8 *axis, int *joy_id);
 
 static void drawUpAndDownArrowTriangles(Renderer *renderer, mat4_t modelViewMatrix)
 {
-	static uint32_t vertexArrayObject;
-	if (vertexArrayObject == 0)
+	static BufferArrayObject vertexArrayObject;
+	static SDL_bool initializedBuffer;
+	if (!initializedBuffer)
 	{
 		float vertices[] =
 		{
@@ -79,6 +80,7 @@ static void drawUpAndDownArrowTriangles(Renderer *renderer, mat4_t modelViewMatr
 		};
 		
 		vertexArrayObject = createVertexArrayObject(vertices, sizeof(vertices), 3);
+		initializedBuffer = SDL_TRUE;
 	}
 	
 	drawVertices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertexArrayObject, 18, (color4_t){0.0f, 0.0f, 0.4f, 1.0f}, RENDERER_OPTION_NONE);

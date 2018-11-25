@@ -20,12 +20,12 @@
 #include "font.h"
 #include "utilities.h"
 
-uint32_t loadString(Renderer *renderer, const char *string);
+TextureObject loadString(Renderer *renderer, const char *string);
 
 /* Glyph structure */
 typedef struct
 {
-	uint32_t texture;
+	TextureObject texture;
 	char *text;
 } Glyph;
 
@@ -58,11 +58,8 @@ SDL_bool initFont(void)
 }
 
 // returns a texture to draw for the string.
-uint32_t loadString(Renderer *renderer, const char *string)
-{	
-	if (string == NULL)
-		return 0;
-	
+TextureObject loadString(Renderer *renderer, const char *string)
+{
 	// This font is "goodfish.ttf" and is intentionally obfuscated in source by author's request
 	// A license to embed the font was acquired (for me, Mayur, only) from http://typodermicfonts.com/goodfish/
 	static const char *FONT_PATH = "Data/Fonts/typelib.dat";
@@ -105,7 +102,7 @@ uint32_t loadString(Renderer *renderer, const char *string)
 	if (SDL_BlitSurface(fontSurface, NULL, textSurface, NULL) == -1)
 		zgPrint("blitting failed");
 	
-	uint32_t texture = textureFromPixelData(renderer, textSurface->pixels, textSurface->w, textSurface->h);
+	TextureObject texture = textureFromPixelData(renderer, textSurface->pixels, textSurface->w, textSurface->h);
 	
 	// Cleanup
 	SDL_FreeSurface(fontSurface);
@@ -259,10 +256,11 @@ void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, floa
 		return;
 	}
 	
-	static uint32_t vertexAndTextureBufferObject;
-	static uint32_t indicesBufferObject;
+	static BufferArrayObject vertexAndTextureBufferObject;
+	static BufferObject indicesBufferObject;
+	static SDL_bool initializedBuffers;
 	
-	if (vertexAndTextureBufferObject == 0)
+	if (!initializedBuffers)
 	{
 		const uint8_t indices[] =
 		{
@@ -286,7 +284,9 @@ void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, floa
 		};
 		
 		vertexAndTextureBufferObject = createVertexAndTextureCoordinateArrayObject(verticesAndTextureCoordinates, 8 * sizeof(*verticesAndTextureCoordinates), 2, 8 * sizeof(*verticesAndTextureCoordinates), RENDERER_FLOAT_TYPE);
-		indicesBufferObject = createVertexBufferObject(indices, sizeof(indices));
+		indicesBufferObject = createBufferObject(indices, sizeof(indices));
+		
+		initializedBuffers = SDL_TRUE;
 	}
 	
 	mat4_t scaleMatrix = m4_scaling((vec3_t){width, height, 0.0f});
