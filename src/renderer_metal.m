@@ -78,6 +78,7 @@ void createRenderer_metal(Renderer *renderer, int32_t windowWidth, int32_t windo
 		 0.0f, 0.0f, 0.0f, 1.0f
 	);
 	
+	// The aspect ratio is not quite correct, which is a mistake I made a long time ago that is too troubling to fix properly
 	renderer->projectionMatrix = m4_mul(metalProjectionAdjustMatrix, m4_perspective(45.0f, (float)(renderer->screenWidth / renderer->screenHeight), 10.0f, 300.0f));
 	
 	SDL_GetWindowSize(renderer->window, &renderer->windowWidth, &renderer->windowHeight);
