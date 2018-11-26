@@ -23,12 +23,12 @@
 
 using namespace metal;
 
-vertex float4 positionVertexShader(uint vertexID [[ vertex_id ]], constant float3 *vertices [[ buffer(0) ]], constant matrix_float4x4 &modelViewProjection [[ buffer(1) ]])
+vertex float4 positionVertexShader(ushort vertexID [[ vertex_id ]], constant float3 *vertices [[ buffer(METAL_BUFFER_VERTICES_INDEX) ]], constant matrix_float4x4 &modelViewProjection [[ buffer(METAL_BUFFER_MODELVIEW_PROJECTION_INDEX) ]])
 {
 	return modelViewProjection * float4(vertices[vertexID], 1.0f);
 }
 
-fragment float4 positionFragmentShader(constant float4 &color [[ buffer(2) ]])
+fragment float4 positionFragmentShader(constant float4 &color [[ buffer(METAL_BUFFER_COLOR_INDEX) ]])
 {
 	return color;
 }

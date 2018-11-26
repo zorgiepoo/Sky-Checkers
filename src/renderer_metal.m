@@ -24,6 +24,8 @@
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
 
+#define DEPTH_STENCIL_PIXEL_FORMAT MTLPixelFormatDepth16Unorm
+
 void createRenderer_metal(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
 {
 	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "metal");
@@ -112,8 +114,7 @@ void createRenderer_metal(Renderer *renderer, int32_t windowWidth, int32_t windo
 	pipelineStateDescriptor.colorAttachments[0].pixelFormat = metalLayer.pixelFormat;
 	pipelineStateDescriptor.colorAttachments[0].blendingEnabled = YES;
 	pipelineStateDescriptor.colorAttachments[0].sourceAlphaBlendFactor = MTLBlendFactorSourceAlpha;
-	// I think this is necessary; I should verify this later
-	//pipelineStateDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
+	pipelineStateDescriptor.depthAttachmentPixelFormat = DEPTH_STENCIL_PIXEL_FORMAT;
 	//pipelineStateDescriptor.sampleCount = ...;
 	
 	NSError *pipelineError = nil;
@@ -126,18 +127,59 @@ void createRenderer_metal(Renderer *renderer, int32_t windowWidth, int32_t windo
 	}
 	
 	MTLDepthStencilDescriptor *depthStencilDescriptor = [MTLDepthStencilDescriptor new];
-	depthStencilDescriptor.depthCompareFunction = MTLCompareFunctionEqual;
+	depthStencilDescriptor.depthCompareFunction = MTLCompareFunctionLessEqual;
 	depthStencilDescriptor.depthWriteEnabled = YES;
 	
-	id <MTLDepthStencilState> depthStencilState = [device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
+	id<MTLDepthStencilState> depthStencilState = [device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
 	if (depthStencilState == nil)
 	{
 		zgPrint("Depth stencil state failed to be created");
 		SDL_Quit();
 	}
 	
+	MTLTextureDescriptor *depthTextureDescriptor = [[MTLTextureDescriptor alloc] init];
+	depthTextureDescriptor.pixelFormat = DEPTH_STENCIL_PIXEL_FORMAT;
+	depthTextureDescriptor.width = (NSUInteger)renderer->screenWidth;
+	depthTextureDescriptor.height = (NSUInteger)renderer->screenHeight;
+	depthTextureDescriptor.resourceOptions = MTLResourceStorageModePrivate;
+	depthTextureDescriptor.usage = MTLTextureUsageRenderTarget;
+	
+	id<MTLTexture> depthTexture = [device newTextureWithDescriptor:depthTextureDescriptor];
+	
+	renderer->metalDepthTexture = (void *)CFBridgingRetain(depthTexture);
 	renderer->metalBlendingSrcAlphaTexturePositionPipelineState = (void *)CFBridgingRetain(pipelineState);
 	renderer->metalDepthTestEnabledPipelineState = (void *)CFBridgingRetain(depthStencilState);
+	
+//	id<MTLFunction> positionVertexShader = [defaultLibrary newFunctionWithName:@"positionVertexShader"];
+//	if (positionVertexShader == nil)
+//	{
+//		zgPrint("Failed to find position vertex shader");
+//		SDL_Quit();
+//	}
+//
+//	id<MTLFunction> positionFragmentShader = [defaultLibrary newFunctionWithName:@"positionFragmentShader"];
+//	if (positionFragmentShader == nil)
+//	{
+//		zgPrint("Failed to find position fragment shader");
+//		SDL_Quit();
+//	}
+//
+//	MTLRenderPipelineDescriptor *pipelineStateDescriptor2 = [MTLRenderPipelineDescriptor new];
+//	pipelineStateDescriptor2.vertexFunction = positionVertexShader;
+//	pipelineStateDescriptor2.fragmentFunction = positionFragmentShader;
+//	pipelineStateDescriptor2.colorAttachments[0].pixelFormat = metalLayer.pixelFormat;
+//	pipelineStateDescriptor2.depthAttachmentPixelFormat = DEPTH_STENCIL_PIXEL_FORMAT;
+//
+//	NSError *pipelineError2 = nil;
+//	id<MTLRenderPipelineState> pipelineState2 = [device newRenderPipelineStateWithDescriptor:pipelineStateDescriptor2 error:&pipelineError2];
+//
+//	if (pipelineState2 == nil)
+//	{
+//		NSLog(@"Pipeline state error: %@", pipelineError2);
+//		SDL_Quit();
+//	}
+//
+//	renderer->metalPositionPipelineState = (void *)CFBridgingRetain(pipelineState2);
 	
 	id<MTLCommandQueue> queue = [device newCommandQueue];
 	
@@ -168,11 +210,14 @@ void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *))
 			passDescriptor.depthAttachment.clearDepth = 1.0;
 			passDescriptor.depthAttachment.loadAction = MTLLoadActionClear;
 			passDescriptor.depthAttachment.storeAction = MTLStoreActionDontCare;
-			//passDescriptor.depthAttachment.texture = drawable.texture;
+			
+			id<MTLTexture> depthTexture = (__bridge id<MTLTexture>)(renderer->metalDepthTexture);
+			passDescriptor.depthAttachment.texture = depthTexture;
 			
 			id<MTLCommandBuffer> commandBuffer = [queue commandBuffer];
 			id<MTLRenderCommandEncoder> renderCommandEncoder = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
 			
+			[renderCommandEncoder setViewport:(MTLViewport){0.0, 0.0, (double)renderer->screenWidth, (double)renderer->screenHeight, -1.0, 1.0 }];
 			renderer->metalCurrentRenderCommandEncoder = (__bridge void *)(renderCommandEncoder);
 			
 			drawFunc(renderer);
@@ -248,16 +293,6 @@ BufferArrayObject createVertexAndTextureCoordinateArrayObject_metal(Renderer *re
 	return (BufferArrayObject){.metalObject = (void *)CFBridgingRetain(buffer), .verticesSize = verticesSize};
 }
 
-void drawVertices_metal(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options)
-{
-	
-}
-
-void drawVerticesFromIndices_metal(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options)
-{
-	
-}
-
 static MTLPrimitiveType metalTypeFromRendererMode(RendererMode mode)
 {
 	switch (mode)
@@ -270,8 +305,57 @@ static MTLPrimitiveType metalTypeFromRendererMode(RendererMode mode)
 	return 0;
 }
 
-void drawTextureWithVertices_metal(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options)
+void drawVertices_metal(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options)
 {
+//	id<MTLRenderPipelineState> pipelineState = (__bridge id<MTLRenderPipelineState>)(renderer->metalPositionPipelineState);
+//	id <MTLDepthStencilState> depthStencilState = (__bridge id<MTLDepthStencilState>)(renderer->metalDepthTestEnabledPipelineState);
+//
+//	id<MTLRenderCommandEncoder> renderCommandEncoder = (__bridge id<MTLRenderCommandEncoder>)(renderer->metalCurrentRenderCommandEncoder);
+//
+//	[renderCommandEncoder setFrontFacingWinding:MTLWindingCounterClockwise];
+//	[renderCommandEncoder setRenderPipelineState:pipelineState];
+//	[renderCommandEncoder setDepthStencilState:depthStencilState];
+//
+//	id<MTLBuffer> vertexBuffer = (__bridge id<MTLBuffer>)(vertexArrayObject.metalObject);
+//	[renderCommandEncoder setVertexBuffer:vertexBuffer offset:0 atIndex:METAL_BUFFER_VERTICES_INDEX];
+//
+//	mat4_t modelViewProjectionMatrix = m4_mul(renderer->projectionMatrix, modelViewMatrix);
+//	[renderCommandEncoder setVertexBytes:modelViewProjectionMatrix.m length:sizeof(modelViewProjectionMatrix.m) atIndex:METAL_BUFFER_MODELVIEW_PROJECTION_INDEX];
+//
+//	[renderCommandEncoder setFragmentBytes:&color.red length:sizeof(color) atIndex:METAL_BUFFER_COLOR_INDEX];
+//
+//	[renderCommandEncoder drawPrimitives:metalTypeFromRendererMode(mode) vertexStart:0 vertexCount:vertexCount];
+}
+
+void drawVerticesFromIndices_metal(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options)
+{
+}
+
+void drawTextureWithVertices_metal(Renderer *renderer, mat4_t modelViewMatrix, TextureObject textureObject, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options)
+{
+//	id<MTLRenderPipelineState> pipelineState = (__bridge id<MTLRenderPipelineState>)(renderer->metalBlendingSrcAlphaTexturePositionPipelineState);
+//	id <MTLDepthStencilState> depthStencilState = (__bridge id<MTLDepthStencilState>)(renderer->metalDepthTestEnabledPipelineState);
+//
+//	id<MTLRenderCommandEncoder> renderCommandEncoder = (__bridge id<MTLRenderCommandEncoder>)(renderer->metalCurrentRenderCommandEncoder);
+//
+//	[renderCommandEncoder setFrontFacingWinding:MTLWindingCounterClockwise];
+//	[renderCommandEncoder setRenderPipelineState:pipelineState];
+//	[renderCommandEncoder setDepthStencilState:depthStencilState];
+//
+//	id<MTLBuffer> vertexBuffer = (__bridge id<MTLBuffer>)(vertexAndTextureArrayObject.metalObject);
+//	[renderCommandEncoder setVertexBuffer:vertexBuffer offset:0 atIndex:METAL_BUFFER_VERTICES_INDEX];
+//
+//	mat4_t modelViewProjectionMatrix = m4_mul(renderer->projectionMatrix, modelViewMatrix);
+//	[renderCommandEncoder setVertexBytes:modelViewProjectionMatrix.m length:sizeof(modelViewProjectionMatrix.m) atIndex:METAL_BUFFER_MODELVIEW_PROJECTION_INDEX];
+//
+//	[renderCommandEncoder setFragmentBytes:&color.red length:sizeof(color) atIndex:METAL_BUFFER_COLOR_INDEX];
+//
+//	[renderCommandEncoder setVertexBuffer:vertexBuffer offset:vertexAndTextureArrayObject.verticesSize atIndex:METAL_BUFFER_TEXTURE_COORDINATES_INDEX];
+//
+//	id<MTLTexture> texture = (__bridge id<MTLTexture>)(textureObject.metalObject);
+//	[renderCommandEncoder setFragmentTexture:texture atIndex:METAL_TEXTURE1_INDEX];
+//
+//	[renderCommandEncoder drawPrimitives:metalTypeFromRendererMode(mode) vertexStart:0 vertexCount:vertexCount];
 }
 
 void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, mat4_t modelViewMatrix, TextureObject textureObject, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options)
@@ -279,13 +363,13 @@ void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, mat4_t modelVi
 	if ((options & RENDERER_OPTION_BLENDING_ALPHA) != 0 && (options & RENDERER_OPTION_DISABLE_DEPTH_TEST) == 0)
 	{
 		id<MTLRenderPipelineState> pipelineState = (__bridge id<MTLRenderPipelineState>)(renderer->metalBlendingSrcAlphaTexturePositionPipelineState);
-		//id <MTLDepthStencilState> depthStencilState = (__bridge id<MTLDepthStencilState>)(renderer->metalDepthTestEnabledPipelineState);
+		id <MTLDepthStencilState> depthStencilState = (__bridge id<MTLDepthStencilState>)(renderer->metalDepthTestEnabledPipelineState);
 		
 		id<MTLRenderCommandEncoder> renderCommandEncoder = (__bridge id<MTLRenderCommandEncoder>)(renderer->metalCurrentRenderCommandEncoder);
 		
 		[renderCommandEncoder setFrontFacingWinding:MTLWindingCounterClockwise];
 		[renderCommandEncoder setRenderPipelineState:pipelineState];
-		//[renderCommandEncoder setDepthStencilState:depthStencilState];
+		[renderCommandEncoder setDepthStencilState:depthStencilState];
 		
 		id<MTLBuffer> vertexBuffer = (__bridge id<MTLBuffer>)(vertexAndTextureArrayObject.metalObject);
 		[renderCommandEncoder setVertexBuffer:vertexBuffer offset:0 atIndex:METAL_BUFFER_VERTICES_INDEX];

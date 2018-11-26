@@ -113,6 +113,8 @@ typedef struct _Renderer
 			void *metalCurrentRenderCommandEncoder;
 			void *metalBlendingSrcAlphaTexturePositionPipelineState;
 			void *metalDepthTestEnabledPipelineState;
+			void *metalPositionPipelineState;
+			void *metalDepthTexture;
 		};
 	};
 	
