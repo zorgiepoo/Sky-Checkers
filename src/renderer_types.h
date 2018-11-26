@@ -59,7 +59,7 @@ typedef struct
 		struct
 		{
 			void *metalObject;
-			uint32_t verticesSize;
+			uint32_t metalVerticesSize;
 		};
 		uint32_t glObject;
 	};

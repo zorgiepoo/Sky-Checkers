@@ -325,13 +325,13 @@ BufferObject createBufferObject_metal(Renderer *renderer, const void *data, uint
 BufferArrayObject createVertexArrayObject_metal(Renderer *renderer, const void *vertices, uint32_t verticesSize)
 {
 	id<MTLBuffer> buffer = createBuffer(renderer, vertices, verticesSize);
-	return (BufferArrayObject){.metalObject = (void *)CFBridgingRetain(buffer), .verticesSize = verticesSize};
+	return (BufferArrayObject){.metalObject = (void *)CFBridgingRetain(buffer), .metalVerticesSize = verticesSize};
 }
 
 BufferArrayObject createVertexAndTextureCoordinateArrayObject_metal(Renderer *renderer, const void *verticesAndTextureCoordinates, uint32_t verticesSize, uint32_t textureCoordinatesSize)
 {
 	id<MTLBuffer> buffer = createBuffer(renderer, verticesAndTextureCoordinates, verticesSize + textureCoordinatesSize);
-	return (BufferArrayObject){.metalObject = (void *)CFBridgingRetain(buffer), .verticesSize = verticesSize};
+	return (BufferArrayObject){.metalObject = (void *)CFBridgingRetain(buffer), .metalVerticesSize = verticesSize};
 }
 
 static MTLPrimitiveType metalTypeFromRendererMode(RendererMode mode)
@@ -420,7 +420,7 @@ void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, mat4_t modelVi
 		
 		[renderCommandEncoder setFragmentBytes:&color.red length:sizeof(color) atIndex:METAL_BUFFER_COLOR_INDEX];
 		
-		[renderCommandEncoder setVertexBuffer:vertexBuffer offset:vertexAndTextureArrayObject.verticesSize atIndex:METAL_BUFFER_TEXTURE_COORDINATES_INDEX];
+		[renderCommandEncoder setVertexBuffer:vertexBuffer offset:vertexAndTextureArrayObject.metalVerticesSize atIndex:METAL_BUFFER_TEXTURE_COORDINATES_INDEX];
 		
 		id<MTLTexture> texture = (__bridge id<MTLTexture>)(textureObject.metalObject);
 		[renderCommandEncoder setFragmentTexture:texture atIndex:METAL_TEXTURE1_INDEX];
