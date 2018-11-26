@@ -25,6 +25,7 @@
 #import <QuartzCore/CAMetalLayer.h>
 
 #define DEPTH_STENCIL_PIXEL_FORMAT MTLPixelFormatDepth16Unorm
+#define MSAA_SAMPLE_COUNT 4
 
 void createRenderer_metal(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
 {
@@ -64,8 +65,6 @@ void createRenderer_metal(Renderer *renderer, int32_t windowWidth, int32_t windo
 		renderer->vsync = vsync;
 	}
 	
-	renderer->fsaa = fsaa;
-	
 	CGSize drawableSize = metalLayer.drawableSize;
 	renderer->screenWidth = (int32_t)drawableSize.width;
 	renderer->screenHeight = (int32_t)drawableSize.height;
@@ -81,11 +80,30 @@ void createRenderer_metal(Renderer *renderer, int32_t windowWidth, int32_t windo
 	
 	renderer->projectionMatrix = m4_mul(metalProjectionAdjustMatrix, m4_perspective(45.0f, (float)(renderer->screenWidth / renderer->screenHeight), 10.0f, 300.0f));
 	
-	//renderer->projectionMatrix = m4_perspective(45.0f, (float)(renderer->screenWidth / renderer->screenHeight), 10.0f, 300.0f);
-	
 	SDL_GetWindowSize(renderer->window, &renderer->windowWidth, &renderer->windowHeight);
 	
 	id<MTLDevice> device = metalLayer.device;
+	
+	renderer->fsaa = (fsaa && [device supportsTextureSampleCount:MSAA_SAMPLE_COUNT]);
+	
+	if (renderer->fsaa)
+	{
+		MTLTextureDescriptor *multisampleTextureDescriptor = [MTLTextureDescriptor new];
+		multisampleTextureDescriptor.pixelFormat = metalLayer.pixelFormat;
+		multisampleTextureDescriptor.width = (NSUInteger)renderer->screenWidth;
+		multisampleTextureDescriptor.height = (NSUInteger)renderer->screenHeight;
+		multisampleTextureDescriptor.resourceOptions = MTLResourceStorageModePrivate;
+		multisampleTextureDescriptor.usage = MTLTextureUsageRenderTarget;
+		multisampleTextureDescriptor.sampleCount = MSAA_SAMPLE_COUNT;
+		multisampleTextureDescriptor.textureType = MTLTextureType2DMultisample;
+		
+		id<MTLTexture> multisampleTexture = [device newTextureWithDescriptor:multisampleTextureDescriptor];
+		renderer->metalMultisampleTexture = (void *)CFBridgingRetain(multisampleTexture);
+	}
+	else
+	{
+		renderer->metalMultisampleTexture = NULL;
+	}
 	
 	id<MTLLibrary> defaultLibrary = [device newDefaultLibrary];
 	if (defaultLibrary == nil)
@@ -115,7 +133,10 @@ void createRenderer_metal(Renderer *renderer, int32_t windowWidth, int32_t windo
 	pipelineStateDescriptor.colorAttachments[0].blendingEnabled = YES;
 	pipelineStateDescriptor.colorAttachments[0].sourceAlphaBlendFactor = MTLBlendFactorSourceAlpha;
 	pipelineStateDescriptor.depthAttachmentPixelFormat = DEPTH_STENCIL_PIXEL_FORMAT;
-	//pipelineStateDescriptor.sampleCount = ...;
+	if (renderer->fsaa)
+	{
+		pipelineStateDescriptor.sampleCount = MSAA_SAMPLE_COUNT;
+	}
 	
 	NSError *pipelineError = nil;
 	id<MTLRenderPipelineState> pipelineState = [device newRenderPipelineStateWithDescriptor:pipelineStateDescriptor error:&pipelineError];
@@ -137,12 +158,17 @@ void createRenderer_metal(Renderer *renderer, int32_t windowWidth, int32_t windo
 		SDL_Quit();
 	}
 	
-	MTLTextureDescriptor *depthTextureDescriptor = [[MTLTextureDescriptor alloc] init];
+	MTLTextureDescriptor *depthTextureDescriptor = [MTLTextureDescriptor new];
 	depthTextureDescriptor.pixelFormat = DEPTH_STENCIL_PIXEL_FORMAT;
 	depthTextureDescriptor.width = (NSUInteger)renderer->screenWidth;
 	depthTextureDescriptor.height = (NSUInteger)renderer->screenHeight;
 	depthTextureDescriptor.resourceOptions = MTLResourceStorageModePrivate;
 	depthTextureDescriptor.usage = MTLTextureUsageRenderTarget;
+	if (renderer->fsaa)
+	{
+		depthTextureDescriptor.sampleCount = MSAA_SAMPLE_COUNT;
+		depthTextureDescriptor.textureType = MTLTextureType2DMultisample;
+	}
 	
 	id<MTLTexture> depthTexture = [device newTextureWithDescriptor:depthTextureDescriptor];
 	
@@ -202,10 +228,25 @@ void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *))
 			MTLClearColor clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 1.0);
 			
 			MTLRenderPassDescriptor *passDescriptor = [MTLRenderPassDescriptor renderPassDescriptor];
-			passDescriptor.colorAttachments[0].clearColor = clearColor;
-			passDescriptor.colorAttachments[0].loadAction  = MTLLoadActionClear;
-			passDescriptor.colorAttachments[0].storeAction = MTLStoreActionStore;
-			passDescriptor.colorAttachments[0].texture = drawable.texture;
+			
+			MTLRenderPassColorAttachmentDescriptor *primaryColorAttachment = passDescriptor.colorAttachments[0];
+			
+			primaryColorAttachment.clearColor = clearColor;
+			primaryColorAttachment.loadAction  = MTLLoadActionClear;
+			
+			if (renderer->fsaa)
+			{
+				primaryColorAttachment.storeAction = MTLStoreActionMultisampleResolve;
+				
+				id<MTLTexture> multisampleTexture = (__bridge id<MTLTexture>)(renderer->metalMultisampleTexture);
+				primaryColorAttachment.texture = multisampleTexture;
+				primaryColorAttachment.resolveTexture = drawable.texture;
+			}
+			else
+			{
+				primaryColorAttachment.storeAction = MTLStoreActionStore;
+				primaryColorAttachment.texture = drawable.texture;
+			}
 			
 			passDescriptor.depthAttachment.clearDepth = 1.0;
 			passDescriptor.depthAttachment.loadAction = MTLLoadActionClear;

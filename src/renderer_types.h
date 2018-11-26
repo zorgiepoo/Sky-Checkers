@@ -111,10 +111,11 @@ typedef struct _Renderer
 			void *metalLayer;
 			void *metalCommandQueue;
 			void *metalCurrentRenderCommandEncoder;
-			void *metalBlendingSrcAlphaTexturePositionPipelineState;
-			void *metalDepthTestEnabledPipelineState;
-			void *metalPositionPipelineState;
 			void *metalDepthTexture;
+			void *metalMultisampleTexture;
+			void *metalDepthTestEnabledPipelineState;
+			void *metalBlendingSrcAlphaTexturePositionPipelineState;
+			void *metalPositionPipelineState;
 		};
 	};
 	
