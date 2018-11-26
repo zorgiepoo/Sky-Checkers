@@ -19,6 +19,7 @@
 
 #import "renderer_metal.h"
 #include "utilities.h"
+#include "metal_indices.h"
 
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
@@ -287,17 +288,17 @@ void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, mat4_t modelVi
 		//[renderCommandEncoder setDepthStencilState:depthStencilState];
 		
 		id<MTLBuffer> vertexBuffer = (__bridge id<MTLBuffer>)(vertexAndTextureArrayObject.metalObject);
-		[renderCommandEncoder setVertexBuffer:vertexBuffer offset:0 atIndex:0];
+		[renderCommandEncoder setVertexBuffer:vertexBuffer offset:0 atIndex:METAL_BUFFER_VERTICES_INDEX];
 		
 		mat4_t modelViewProjectionMatrix = m4_mul(renderer->projectionMatrix, modelViewMatrix);
-		[renderCommandEncoder setVertexBytes:modelViewProjectionMatrix.m length:sizeof(modelViewProjectionMatrix.m) atIndex:1];
+		[renderCommandEncoder setVertexBytes:modelViewProjectionMatrix.m length:sizeof(modelViewProjectionMatrix.m) atIndex:METAL_BUFFER_MODELVIEW_PROJECTION_INDEX];
 		
-		[renderCommandEncoder setVertexBuffer:vertexBuffer offset:vertexAndTextureArrayObject.verticesSize atIndex:2];
+		[renderCommandEncoder setFragmentBytes:&color.red length:sizeof(color) atIndex:METAL_BUFFER_COLOR_INDEX];
 		
-		[renderCommandEncoder setFragmentBytes:&color.red length:sizeof(color) atIndex:3];
+		[renderCommandEncoder setVertexBuffer:vertexBuffer offset:vertexAndTextureArrayObject.verticesSize atIndex:METAL_BUFFER_TEXTURE_COORDINATES_INDEX];
 		
 		id<MTLTexture> texture = (__bridge id<MTLTexture>)(textureObject.metalObject);
-		[renderCommandEncoder setFragmentTexture:texture atIndex:0];
+		[renderCommandEncoder setFragmentTexture:texture atIndex:METAL_TEXTURE1_INDEX];
 		
 		id<MTLBuffer> indicesBuffer = (__bridge id<MTLBuffer>)(indicesBufferObject.metalObject);
 		[renderCommandEncoder drawIndexedPrimitives:metalTypeFromRendererMode(mode) indexCount:indicesCount indexType:MTLIndexTypeUInt16 indexBuffer:indicesBuffer indexBufferOffset:0];

@@ -75,6 +75,7 @@
 		721A007221AA7CBE0099D093 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		721A007421AA7D350099D093 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		721A007621AB11CC0099D093 /* shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; name = shaders.metal; path = ../src/shaders.metal; sourceTree = "<group>"; };
+		721A007821AB96C60099D093 /* metal_indices.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = metal_indices.h; path = ../src/metal_indices.h; sourceTree = "<group>"; };
 		721B0021204A47C1005AF984 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = Frameworks/SDL2.framework; sourceTree = "<group>"; };
 		721B0023204A47FB005AF984 /* SDL2_image.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_image.framework; path = Frameworks/SDL2_image.framework; sourceTree = "<group>"; };
 		721B0025204A482D005AF984 /* SDL2_ttf.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_ttf.framework; path = Frameworks/SDL2_ttf.framework; sourceTree = "<group>"; };
@@ -216,6 +217,7 @@
 				72A14F2F21A71C6700606E14 /* renderer.c */,
 				721A006C21AA763B0099D093 /* renderer_gl.h */,
 				721A006D21AA763B0099D093 /* renderer_gl.c */,
+				721A007821AB96C60099D093 /* metal_indices.h */,
 				721A006F21AA7B420099D093 /* renderer_metal.h */,
 				721A007021AA7B420099D093 /* renderer_metal.m */,
 				721A007621AB11CC0099D093 /* shaders.metal */,

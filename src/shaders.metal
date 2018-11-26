@@ -19,6 +19,7 @@
 
 #include <metal_stdlib>
 #include <simd/simd.h>
+#include "metal_indices.h"
 
 using namespace metal;
 
@@ -38,7 +39,7 @@ typedef struct
 	float2 textureCoordinate;
 } TextureRasterizerData;
 
-vertex TextureRasterizerData texturePositionVertexShader(uint vertexID [[ vertex_id ]], device float3 *vertices [[ buffer(0) ]], constant matrix_float4x4 &modelViewProjection [[ buffer(1) ]], device float2 *textureCoordinates [[ buffer(2) ]])
+vertex TextureRasterizerData texturePositionVertexShader(ushort vertexID [[ vertex_id ]], device float3 *vertices [[ buffer(METAL_BUFFER_VERTICES_INDEX) ]], constant matrix_float4x4 &modelViewProjection [[ buffer(METAL_BUFFER_MODELVIEW_PROJECTION_INDEX) ]], device float2 *textureCoordinates [[ buffer(METAL_BUFFER_TEXTURE_COORDINATES_INDEX) ]])
 {
 	TextureRasterizerData output;
 	
@@ -48,7 +49,7 @@ vertex TextureRasterizerData texturePositionVertexShader(uint vertexID [[ vertex
 	return output;
 }
 
-fragment float4 texturePositionFragmentShader(TextureRasterizerData input [[stage_in]], texture2d<half> texture [[ texture(0) ]], constant float4 &color [[ buffer(3) ]])
+fragment float4 texturePositionFragmentShader(TextureRasterizerData input [[stage_in]], texture2d<half> texture [[ texture(METAL_TEXTURE1_INDEX) ]], constant float4 &color [[ buffer(METAL_BUFFER_COLOR_INDEX) ]])
 {
 	constexpr sampler textureSampler(mag_filter::linear, min_filter::linear);
 	
