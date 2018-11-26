@@ -29,30 +29,10 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 	// Metal
 #ifdef MAC_OS_X
 	createRenderer_metal(renderer, windowWidth, windowHeight, videoFlags, vsync, fsaa);
-
-	renderer->renderFramePtr = renderFrame_metal;
-	renderer->textureFromPixelDataPtr = textureFromPixelData_metal;
-	renderer->createBufferObjectPtr = createBufferObject_metal;
-	renderer->createVertexArrayObjectPtr = createVertexArrayObject_metal;
-	renderer->createVertexAndTextureCoordinateArrayObjectPtr = createVertexAndTextureCoordinateArrayObject_metal;
-	renderer->drawVerticesPtr = drawVertices_metal;
-	renderer->drawVerticesFromIndicesPtr = drawVerticesFromIndices_metal;
-	renderer->drawTextureWithVerticesPtr = drawTextureWithVertices_metal;
-	renderer->drawTextureWithVerticesFromIndicesPtr = drawTextureWithVerticesFromIndices_metal;
 #endif
 
 	// OpenGL
-//	createRenderer_gl(renderer, windowWidth, windowHeight, videoFlags, vsync, fsaa);
-//
-//	renderer->renderFramePtr = renderFrame_gl;
-//	renderer->textureFromPixelDataPtr = textureFromPixelData_gl;
-//	renderer->createBufferObjectPtr = createBufferObject_gl;
-//	renderer->createVertexArrayObjectPtr = createVertexArrayObject_gl;
-//	renderer->createVertexAndTextureCoordinateArrayObjectPtr = createVertexAndTextureCoordinateArrayObject_gl;
-//	renderer->drawVerticesPtr = drawVertices_gl;
-//	renderer->drawVerticesFromIndicesPtr = drawVerticesFromIndices_gl;
-//	renderer->drawTextureWithVerticesPtr = drawTextureWithVertices_gl;
-//	renderer->drawTextureWithVerticesFromIndicesPtr = drawTextureWithVerticesFromIndices_gl;
+	//createRenderer_gl(renderer, windowWidth, windowHeight, videoFlags, vsync, fsaa);
 	
 #ifndef _DEBUG
 	SDL_ShowCursor(SDL_DISABLE);

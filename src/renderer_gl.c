@@ -7,6 +7,7 @@
 
 #include "renderer_gl.h"
 
+#include "math_3d.h"
 #include "utilities.h"
 
 #ifdef WINDOWS
@@ -25,6 +26,24 @@
 
 #define VERTEX_ATTRIBUTE 0
 #define TEXTURE_ATTRIBUTE 1
+
+void renderFrame_gl(Renderer *renderer, void (*drawFunc)(Renderer *));
+
+TextureObject textureFromPixelData_gl(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
+
+BufferObject createBufferObject_gl(Renderer *renderer, const void *data, uint32_t size);
+
+BufferArrayObject createVertexArrayObject_gl(Renderer *renderer, const void *vertices, uint32_t verticesSize);
+
+BufferArrayObject createVertexAndTextureCoordinateArrayObject_gl(Renderer *renderer, const void *verticesAndTextureCoordinates, uint32_t verticesSize, uint32_t textureCoordinatesSize);
+
+void drawVertices_gl(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options);
+
+void drawVerticesFromIndices_gl(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
+
+void drawTextureWithVertices_gl(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options);
+
+void drawTextureWithVerticesFromIndices_gl(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
 
 static SDL_bool compileShader(GLuint *shader, uint16_t glslVersion, GLenum type, const char *filepath)
 {
@@ -329,6 +348,16 @@ void createRenderer_gl(Renderer *renderer, int32_t windowWidth, int32_t windowHe
 	compileAndLinkShader(&renderer->glPositionShader, glslVersion, "Data/Shaders/position.vsh", "Data/Shaders/position.fsh", SDL_FALSE);
 	
 	compileAndLinkShader(&renderer->glPositionTextureShader, glslVersion, "Data/Shaders/texture-position.vsh", "Data/Shaders/texture-position.fsh", SDL_TRUE);
+	
+	renderer->renderFramePtr = renderFrame_gl;
+	renderer->textureFromPixelDataPtr = textureFromPixelData_gl;
+	renderer->createBufferObjectPtr = createBufferObject_gl;
+	renderer->createVertexArrayObjectPtr = createVertexArrayObject_gl;
+	renderer->createVertexAndTextureCoordinateArrayObjectPtr = createVertexAndTextureCoordinateArrayObject_gl;
+	renderer->drawVerticesPtr = drawVertices_gl;
+	renderer->drawVerticesFromIndicesPtr = drawVerticesFromIndices_gl;
+	renderer->drawTextureWithVerticesPtr = drawTextureWithVertices_gl;
+	renderer->drawTextureWithVerticesFromIndicesPtr = drawTextureWithVerticesFromIndices_gl;
 }
 
 void renderFrame_gl(Renderer *renderer, void (*drawFunc)(Renderer *))

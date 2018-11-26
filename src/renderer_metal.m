@@ -18,14 +18,34 @@
  */
 
 #import "renderer_metal.h"
-#include "utilities.h"
+
 #include "metal_indices.h"
+#include "math_3d.h"
+#include "utilities.h"
 
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
 
 #define DEPTH_STENCIL_PIXEL_FORMAT MTLPixelFormatDepth16Unorm
 #define MSAA_SAMPLE_COUNT 4
+
+void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *));
+
+TextureObject textureFromPixelData_metal(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
+
+BufferObject createBufferObject_metal(Renderer *renderer, const void *data, uint32_t size);
+
+BufferArrayObject createVertexArrayObject_metal(Renderer *renderer, const void *vertices, uint32_t verticesSize);
+
+BufferArrayObject createVertexAndTextureCoordinateArrayObject_metal(Renderer *renderer, const void *verticesAndTextureCoordinates, uint32_t verticesSize, uint32_t textureCoordinatesSize);
+
+void drawVertices_metal(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options);
+
+void drawVerticesFromIndices_metal(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
+
+void drawTextureWithVertices_metal(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options);
+
+void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
 
 void createRenderer_metal(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
 {
@@ -213,6 +233,16 @@ void createRenderer_metal(Renderer *renderer, int32_t windowWidth, int32_t windo
 	renderer->metalLayer = (void *)CFBridgingRetain(metalLayer);
 	renderer->metalCommandQueue = (void *)CFBridgingRetain(queue);
 	renderer->metalCurrentRenderCommandEncoder = NULL;
+	
+	renderer->renderFramePtr = renderFrame_metal;
+	renderer->textureFromPixelDataPtr = textureFromPixelData_metal;
+	renderer->createBufferObjectPtr = createBufferObject_metal;
+	renderer->createVertexArrayObjectPtr = createVertexArrayObject_metal;
+	renderer->createVertexAndTextureCoordinateArrayObjectPtr = createVertexAndTextureCoordinateArrayObject_metal;
+	renderer->drawVerticesPtr = drawVertices_metal;
+	renderer->drawVerticesFromIndicesPtr = drawVerticesFromIndices_metal;
+	renderer->drawTextureWithVerticesPtr = drawTextureWithVertices_metal;
+	renderer->drawTextureWithVerticesFromIndicesPtr = drawTextureWithVerticesFromIndices_metal;
 }
 
 void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *))
