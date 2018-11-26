@@ -262,7 +262,7 @@ void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, floa
 	
 	if (!initializedBuffers)
 	{
-		const uint8_t indices[] =
+		const uint16_t indices[] =
 		{
 			0, 1, 2,
 			2, 3, 0
@@ -271,10 +271,10 @@ void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, floa
 		const float verticesAndTextureCoordinates[] =
 		{
 			// vertices
-			-1.0f, -1.0f,
-			-1.0f, 1.0f,
-			1.0f, 1.0f,
-			1.0f, -1.0f,
+			-1.0f, -1.0f, 0.0f,
+			-1.0f, 1.0f, 0.0f,
+			1.0f, 1.0f, 0.0f,
+			1.0f, -1.0f, 0.0f,
 			
 			// texture coordinates
 			0.0f, 1.0f,
@@ -283,8 +283,9 @@ void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, floa
 			1.0f, 1.0f
 		};
 		
-		vertexAndTextureBufferObject = createVertexAndTextureCoordinateArrayObject(verticesAndTextureCoordinates, 8 * sizeof(*verticesAndTextureCoordinates), 2, 8 * sizeof(*verticesAndTextureCoordinates), RENDERER_FLOAT_TYPE);
-		indicesBufferObject = createBufferObject(indices, sizeof(indices));
+		vertexAndTextureBufferObject = createVertexAndTextureCoordinateArrayObject(renderer, verticesAndTextureCoordinates, 12 * sizeof(*verticesAndTextureCoordinates), 8 * sizeof(*verticesAndTextureCoordinates));
+		
+		indicesBufferObject = createBufferObject(renderer, indices, sizeof(indices));
 		
 		initializedBuffers = SDL_TRUE;
 	}
@@ -292,5 +293,5 @@ void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, floa
 	mat4_t scaleMatrix = m4_scaling((vec3_t){width, height, 0.0f});
 	mat4_t transformMatrix = m4_mul(modelViewMatrix, scaleMatrix);
 	
-	drawTextureWithVerticesFromIndices(renderer, transformMatrix, gGlyphs[index].texture, RENDERER_TRIANGLE_MODE, vertexAndTextureBufferObject, indicesBufferObject, RENDERER_INT8_TYPE, 6, color, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
+	drawTextureWithVerticesFromIndices(renderer, transformMatrix, gGlyphs[index].texture, RENDERER_TRIANGLE_MODE, vertexAndTextureBufferObject, indicesBufferObject, 6, color, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
 }

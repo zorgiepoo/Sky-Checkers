@@ -285,6 +285,8 @@ static void buildCircle(float *vertices, float *textureCoordinates, float radius
 	vertexIndex++;
 	vertices[vertexIndex] = 0.0f;
 	vertexIndex++;
+	vertices[vertexIndex] = 0.0f;
+	vertexIndex++;
 	
 	textureCoordinates[textureCoordinateIndex] = 0.5f;
 	textureCoordinateIndex++;
@@ -299,6 +301,8 @@ static void buildCircle(float *vertices, float *textureCoordinates, float radius
 		vertices[vertexIndex] = x;
 		vertexIndex++;
 		vertices[vertexIndex] = y;
+		vertexIndex++;
+		vertices[vertexIndex] = 0.0f;
 		vertexIndex++;
 		
 		float textureX = (x / radius + 1.0f) * 0.5f;
@@ -315,6 +319,8 @@ static void buildCircle(float *vertices, float *textureCoordinates, float radius
 			vertexIndex++;
 			vertices[vertexIndex] = 0.0f;
 			vertexIndex++;
+			vertices[vertexIndex] = 0.0f;
+			vertexIndex++;
 			
 			textureCoordinates[textureCoordinateIndex] = 0.5f;
 			textureCoordinateIndex++;
@@ -326,11 +332,9 @@ static void buildCircle(float *vertices, float *textureCoordinates, float radius
 		x = cosTheta * x - sinTheta * y;
 		y = sinTheta * lastX + cosTheta * y;
 	}
-	
-	//printf("icon info: %d, %d\n", vertexIndex, textureCoordinateIndex);
 }
 
-void buildCharacterModels(void)
+void buildCharacterModels(Renderer *renderer)
 {
 	// Build character model
 	float *characterVerticesAndTextureCoordinates;
@@ -345,23 +349,23 @@ void buildCharacterModels(void)
 	
 	buildSphere(characterVerticesAndTextureCoordinates, characterVerticesAndTextureCoordinates + characterVerticesSize / sizeof(*characterVerticesAndTextureCoordinates), characterIndices, 30, 30, 0.6f);
 	
-	gCharacterVertexAndTextureCoordinateArrayObject = createVertexAndTextureCoordinateArrayObject(characterVerticesAndTextureCoordinates, characterVerticesSize, 3, characterTextureCoordinatesSize, RENDERER_FLOAT_TYPE);
+	gCharacterVertexAndTextureCoordinateArrayObject = createVertexAndTextureCoordinateArrayObject(renderer, characterVerticesAndTextureCoordinates, characterVerticesSize, characterTextureCoordinatesSize);
 	
-	gCharacterIndicesBufferObject = createBufferObject(characterIndices, characterIndicesSize);
+	gCharacterIndicesBufferObject = createBufferObject(renderer, characterIndices, characterIndicesSize);
 	
 	free(characterVerticesAndTextureCoordinates);
 	free(characterIndices);
 	
 	// Build character icon model
 	float *iconVerticesAndTextureCoordinates;
-	size_t iconVerticesSize = sizeof(*iconVerticesAndTextureCoordinates) * 1204;
+	size_t iconVerticesSize = sizeof(*iconVerticesAndTextureCoordinates) * 1806;
 	size_t iconTextureCoordinatesSize = sizeof(*iconVerticesAndTextureCoordinates) * 1204;
 	
 	iconVerticesAndTextureCoordinates = malloc(iconVerticesSize + iconTextureCoordinatesSize);
 	
 	buildCircle(iconVerticesAndTextureCoordinates, iconVerticesAndTextureCoordinates + iconVerticesSize / sizeof(*iconVerticesAndTextureCoordinates), 0.4f, 400);
 	
-	gIconVertexAndTextureCoordinateArrayObject = createVertexAndTextureCoordinateArrayObject(iconVerticesAndTextureCoordinates, iconVerticesSize, 2, iconTextureCoordinatesSize, RENDERER_FLOAT_TYPE);
+	gIconVertexAndTextureCoordinateArrayObject = createVertexAndTextureCoordinateArrayObject(renderer, iconVerticesAndTextureCoordinates, iconVerticesSize, iconTextureCoordinatesSize);
 	
 	free(iconVerticesAndTextureCoordinates);
 }
@@ -379,7 +383,7 @@ void drawCharacter(Renderer *renderer, Character *character)
 	
 	mat4_t modelViewMatrix = m4_mul(m4_mul(m4_mul(worldRotationMatrix, worldTranslationMatrix), modelTranslationMatrix), modelRotationMatrix);
 	
-	drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, gCharacterTex, RENDERER_TRIANGLE_MODE, gCharacterVertexAndTextureCoordinateArrayObject, gCharacterIndicesBufferObject, RENDERER_INT16_TYPE, 5220, (color4_t){character->red, character->green, character->blue, 1.0f}, RENDERER_OPTION_NONE);
+	drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, gCharacterTex, RENDERER_TRIANGLE_MODE, gCharacterVertexAndTextureCoordinateArrayObject, gCharacterIndicesBufferObject, 5220, (color4_t){character->red, character->green, character->blue, 1.0f}, RENDERER_OPTION_NONE);
 }
 
 void drawCharacterIcon(Renderer *renderer, mat4_t modelViewMatrix, Character *character)

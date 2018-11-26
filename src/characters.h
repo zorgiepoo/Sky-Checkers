@@ -135,7 +135,7 @@ int offlineCharacterState(Character *character);
 
 void loadCharacterTextures(Renderer *renderer);
 
-void buildCharacterModels(void);
+void buildCharacterModels(Renderer *renderer);
 
 void drawCharacterIcon(Renderer *renderer, mat4_t modelViewMatrix, Character *character);
 void drawCharacterIcons(Renderer *renderer);

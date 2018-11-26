@@ -87,21 +87,21 @@ void drawConsole(Renderer *renderer)
 			-10.0f, 1.0f, 1.0f,
 		};
 		
-		const uint8_t indices[] =
+		const uint16_t indices[] =
 		{
 			0, 1, 2,
 			2, 3, 0
 		};
 		
-		vertexArrayObject = createVertexArrayObject(vertices, sizeof(vertices), 3);
-		indicesBufferObject = createBufferObject(indices, sizeof(indices));
+		vertexArrayObject = createVertexArrayObject(renderer, vertices, sizeof(vertices));
+		indicesBufferObject = createBufferObject(renderer, indices, sizeof(indices));
 		
 		initializedBuffers = SDL_TRUE;
 	}
 	
 	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 9.0f, -25.0f});
 	
-	drawVerticesFromIndices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertexArrayObject, indicesBufferObject, RENDERER_INT8_TYPE, 6, (color4_t){0.0f, 0.0f, 0.0f, 0.6f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
+	drawVerticesFromIndices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertexArrayObject, indicesBufferObject, 6, (color4_t){0.0f, 0.0f, 0.0f, 0.6f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
 }
 
 void writeConsoleText(Uint8 text)

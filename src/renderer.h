@@ -21,95 +21,24 @@
 
 #include "maincore.h"
 #include "math_3d.h"
-
-typedef enum
-{
-	RENDERER_OPTION_NONE = 0,
-	RENDERER_OPTION_DISABLE_DEPTH_TEST = (1 << 0),
-	RENDERER_OPTION_BLENDING_ALPHA = (1 << 1),
-	RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA = (1 << 2)
-} RendererOptions;
-
-typedef enum
-{
-	RENDERER_TRIANGLE_MODE = 1,
-	RENDERER_TRIANGLE_STRIP_MODE = 2
-} RendererMode;
-
-typedef enum
-{
-	RENDERER_INT8_TYPE = 1,
-	RENDERER_INT16_TYPE = 2,
-	RENDERER_FLOAT_TYPE = 3
-} RendererType;
-
-typedef struct
-{
-	int32_t program;
-	int32_t modelViewProjectionMatrixUniformLocation;
-	int32_t colorUniformLocation;
-	int32_t textureUniformLocation;
-} Shader;
-
-typedef struct
-{
-	SDL_Window *window;
-	mat4_t projectionMatrix;
-	
-	int32_t screenWidth;
-	int32_t screenHeight;
-	
-	int32_t windowWidth;
-	int32_t windowHeight;
-	
-	SDL_bool vsync;
-	SDL_bool fsaa;
-	
-	Shader positionTextureShader;
-	Shader positionShader;
-} Renderer;
-
-typedef struct
-{
-	float red;
-	float green;
-	float blue;
-	float alpha;
-} color4_t;
-
-typedef struct
-{
-	uint32_t glObject;
-} BufferArrayObject;
-
-typedef struct
-{
-	uint32_t glObject;
-} BufferObject;
-
-typedef struct
-{
-	uint32_t glObject;
-} TextureObject;
+#include "renderer_types.h"
 
 void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa);
 
-void clearColorAndDepthBuffers(Renderer *renderer);
-void swapBuffers(Renderer *renderer);
+void renderFrame(Renderer *renderer, void (*drawFunc)(Renderer *));
 
-TextureObject loadTexture(Renderer *renderer, const char *filePath);
 TextureObject textureFromPixelData(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
 
-BufferObject createBufferObject(const void *data, uint32_t size);
+BufferObject createBufferObject(Renderer *renderer, const void *data, uint32_t size);
 
-BufferArrayObject createVertexArrayObject(const void *vertices, uint32_t verticesSize, uint8_t vertexComponents);
+BufferArrayObject createVertexArrayObject(Renderer *renderer, const void *vertices, uint32_t verticesSize);
 
-BufferArrayObject createVertexAndTextureCoordinateArrayObject(const void *verticesAndTextureCoordinates, uint32_t verticesSize, uint8_t vertexComponents, uint32_t textureCoordinatesSize, RendererType textureCoordinateType);
+BufferArrayObject createVertexAndTextureCoordinateArrayObject(Renderer *renderer, const void *verticesAndTextureCoordinates, uint32_t verticesSize, uint32_t textureCoordinatesSize);
 
 void drawVertices(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options);
 
-void drawVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, BufferObject indicesBufferObject, RendererType indicesType, uint32_t indicesCount, color4_t color, RendererOptions options);
+void drawVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
 
 void drawTextureWithVertices(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options);
 
-void drawTextureWithVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, RendererType indicesType, uint32_t indicesCount, color4_t color, RendererOptions options);
+void drawTextureWithVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);

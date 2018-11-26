@@ -106,7 +106,7 @@ void drawWeapon(Renderer *renderer, Weapon *weap)
 			3.0, 0.0, 0.0
 		};
 		
-		const uint8_t indices[] =
+		const uint16_t indices[] =
 		{
 			// Cube part
 			
@@ -149,8 +149,8 @@ void drawWeapon(Renderer *renderer, Weapon *weap)
 			33, 34, 35
 		};
 		
-		vertexArrayObject = createVertexArrayObject(vertices, sizeof(vertices), 3);
-		indicesBufferObject = createBufferObject(indices, sizeof(indices));
+		vertexArrayObject = createVertexArrayObject(renderer, vertices, sizeof(vertices));
+		indicesBufferObject = createBufferObject(renderer, indices, sizeof(indices));
 		
 		initializedBuffers = SDL_TRUE;
 	}
@@ -179,5 +179,5 @@ void drawWeapon(Renderer *renderer, Weapon *weap)
 	mat4_t weaponRotationMatrix = m4_rotation_z(weaponRotationAngle);
 	mat4_t modelViewMatrix = m4_mul(weaponMatrix, weaponRotationMatrix);
 	
-	drawVerticesFromIndices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertexArrayObject, indicesBufferObject, RENDERER_INT8_TYPE, 48, (color4_t){weap->red, weap->green, weap->blue, 0.2f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
+	drawVerticesFromIndices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertexArrayObject, indicesBufferObject, 48, (color4_t){weap->red, weap->green, weap->blue, 0.2f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
 }

@@ -19,7 +19,6 @@
 
 #include "utilities.h"
 #include <stdarg.h>
-#include "renderer.h"
 
 /*
  * Using the Mersenne Twister Random number generator
@@ -81,6 +80,89 @@ unsigned long mt_random() {
 	 r ^= (r << 15) & 0xEFC60000;
 	 r ^= (r >> 18);
 	 */
+}
+
+// This function is derived from same place as surfaceToGLTexture() code is
+static int power_of_two(int input)
+{
+	int value = 1;
+	
+	while ( value < input )
+	{
+		value <<= 1;
+	}
+	
+	return value;
+}
+
+// The code from this function is taken from https://www.opengl.org/discussion_boards/showthread.php/163677-SDL_image-Opengl
+// which is derived from SDL 1.2 source code which is licensed under LGPL:
+// https://github.com/klange/SDL/blob/master/test/testgl.c
+static TextureObject surfaceToTexture(Renderer *renderer, SDL_Surface *surface)
+{
+	int w, h;
+	SDL_Surface *image;
+	SDL_Rect area;
+	
+	/* Use the surface width and height expanded to powers of 2 */
+	w = power_of_two(surface->w);
+	h = power_of_two(surface->h);
+	
+	image = SDL_CreateRGBSurface(
+								 SDL_SWSURFACE,
+								 w, h,
+								 32,
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN /* OpenGL RGBA masks */
+								 0x000000FF,
+								 0x0000FF00,
+								 0x00FF0000,
+								 0xFF000000
+#else
+								 0xFF000000,
+								 0x00FF0000,
+								 0x0000FF00,
+								 0x000000FF
+#endif
+								 );
+	if (image == NULL)
+	{
+		zgPrint("Failed to create SDL RGB surface..");
+		SDL_Quit();
+	}
+	
+	// Set alpha property to max
+	SDL_SetSurfaceAlphaMod(surface, 255);
+	
+	/* Copy the surface into the GL texture image */
+	area.x = 0;
+	area.y = 0;
+	area.w = surface->w;
+	area.h = surface->h;
+	SDL_BlitSurface(surface, &area, image, &area);
+	
+	/* Create an OpenGL texture for the image */
+	TextureObject texture = textureFromPixelData(renderer, image->pixels, w, h);
+	
+	SDL_FreeSurface(image); /* No longer needed */
+	
+	return texture;
+}
+
+TextureObject loadTexture(Renderer *renderer, const char *filePath)
+{
+	SDL_Surface *texImage = IMG_Load(filePath);
+	
+	if (texImage == NULL)
+	{
+		printf("Couldn't load texture: %s\n", filePath);
+		SDL_Quit();
+	}
+	
+	TextureObject texture = surfaceToTexture(renderer, texImage);
+	
+	SDL_FreeSurface(texImage);
+	
+	return texture;
 }
 
 /*

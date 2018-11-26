@@ -239,7 +239,7 @@ void drawSky(Renderer *renderer)
 	
 	if (!initializedBuffers)
 	{
-		uint8_t indices[] =
+		uint16_t indices[] =
 		{
 			0, 1, 2,
 			2, 3, 0
@@ -260,15 +260,15 @@ void drawSky(Renderer *renderer)
 			0.0f, 1.0f
 		};
 		
-		vertexAndTextureArrayObject = createVertexAndTextureCoordinateArrayObject(vertexAndTextureCoordinates, 12 * sizeof(*vertexAndTextureCoordinates), 3, 8 * sizeof(*vertexAndTextureCoordinates), RENDERER_FLOAT_TYPE);
-		indicesBufferObject = createBufferObject(indices, sizeof(indices));
+		vertexAndTextureArrayObject = createVertexAndTextureCoordinateArrayObject(renderer, vertexAndTextureCoordinates, 12 * sizeof(*vertexAndTextureCoordinates), 8 * sizeof(*vertexAndTextureCoordinates));
+		indicesBufferObject = createBufferObject(renderer, indices, sizeof(indices));
 		
 		initializedBuffers = SDL_TRUE;
 	}
 	
 	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 0.0f, -25.0f});
 	
-	drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, gSkyTex, RENDERER_TRIANGLE_MODE, vertexAndTextureArrayObject, indicesBufferObject, RENDERER_INT8_TYPE, 6, (color4_t){1.0f, 1.0f, 1.0f, 0.9f}, RENDERER_OPTION_BLENDING_ALPHA);
+	drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, gSkyTex, RENDERER_TRIANGLE_MODE, vertexAndTextureArrayObject, indicesBufferObject, 6, (color4_t){1.0f, 1.0f, 1.0f, 0.9f}, RENDERER_OPTION_BLENDING_ALPHA);
 }
 
 void drawTiles(Renderer *renderer)
@@ -279,61 +279,61 @@ void drawTiles(Renderer *renderer)
 	
 	if (!initializedBuffers)
 	{
-		float vertices[] =
+		float verticesAndTextureCoordinates[] =
 		{
+			// Vertices
+			
 			// Bottom
 			-1.0f, -1.0f, 1.0f,
 			-1.0f, -1.0f, -1.0f,
 			1.0f, -1.0f, -1.0f,
 			1.0f, -1.0f, 1.0f,
-
+			
 			// Left
 			-1.0f, 1.0f, 1.0f,
 			-1.0f, 1.0f, -1.0f,
 			-1.0f, -1.0f, -1.0f,
 			-1.0f, -1.0f, 1.0f,
-
+			
 			// Right
 			1.0f, 1.0f, 1.0f,
 			1.0f, 1.0f, -1.0,
 			1.0f, -1.0f, -1.0,
 			1.0f, -1.0f, 1.0f,
-
+			
 			// Front
 			-1.0f, 1.0f, 1.0f,
 			-1.0f, -1.0f, 1.0f,
 			1.0f, -1.0f, 1.0f,
 			1.0f, 1.0f, 1.0f,
-		};
-
-		int16_t textureCoordinates[] =
-		{
+			
+			// Texture coordinates
 			// Bottom
-			0, 1,
-			0, 0,
-			1, 0,
-			1, 1,
-
+			0.0f, 1.0f,
+			0.0f, 0.0f,
+			1.0f, 0.0f,
+			1.0f, 1.0f,
+			
 			// Left
-			1, 0,
-			0, 0,
-			0, 1,
-			1, 1,
-
+			1.0f, 0.0f,
+			0.0f, 0.0f,
+			0.0f, 1.0f,
+			1.0f, 1.0f,
+			
 			// Right
-			0, 0,
-			1, 0,
-			1, 1,
-			0, 1,
-
+			0.0f, 0.0f,
+			1.0f, 0.0f,
+			1.0f, 1.0f,
+			0.0f, 1.0f,
+			
 			// Front
-			0, 0,
-			0, 1,
-			1, 1,
-			1, 0,
+			0.0f, 0.0f,
+			0.0f, 1.0f,
+			1.0f, 1.0f,
+			1.0f, 0.0f,
 		};
 		
-		const uint8_t indices[] =
+		const uint16_t indices[] =
 		{
 			// Bottom
 			0, 1, 2,
@@ -352,17 +352,9 @@ void drawTiles(Renderer *renderer)
 			14, 15, 12
 		};
 		
-		void *vertexAndTextureCoordinatesData = malloc(sizeof(vertices) + sizeof(textureCoordinates));
+		vertexAndTextureCoordinateArrayObject = createVertexAndTextureCoordinateArrayObject(renderer, verticesAndTextureCoordinates, sizeof(*verticesAndTextureCoordinates) * 48, sizeof(*verticesAndTextureCoordinates) * 32);
 		
-		memcpy(vertexAndTextureCoordinatesData, vertices, sizeof(vertices));
-		
-		memcpy((uint8_t *)vertexAndTextureCoordinatesData + sizeof(vertices), textureCoordinates, sizeof(textureCoordinates));
-		
-		vertexAndTextureCoordinateArrayObject = createVertexAndTextureCoordinateArrayObject(vertexAndTextureCoordinatesData, sizeof(vertices), 3, sizeof(textureCoordinates), RENDERER_INT16_TYPE);
-		
-		indicesBufferObject = createBufferObject(indices, sizeof(indices));
-		
-		free(vertexAndTextureCoordinatesData);
+		indicesBufferObject = createBufferObject(renderer, indices, sizeof(indices));
 		
 		initializedBuffers = SDL_TRUE;
 	}
@@ -397,6 +389,6 @@ void drawTiles(Renderer *renderer)
 			texture = gTileTwoTex;
 		}
 		
-		drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, texture, RENDERER_TRIANGLE_MODE, vertexAndTextureCoordinateArrayObject, indicesBufferObject, RENDERER_INT8_TYPE, 24, (color4_t){gTiles[i].red, gTiles[i].green, gTiles[i].blue, 1.0f}, RENDERER_OPTION_NONE);
+		drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, texture, RENDERER_TRIANGLE_MODE, vertexAndTextureCoordinateArrayObject, indicesBufferObject, 24, (color4_t){gTiles[i].red, gTiles[i].green, gTiles[i].blue, 1.0f}, RENDERER_OPTION_NONE);
 	}
 }

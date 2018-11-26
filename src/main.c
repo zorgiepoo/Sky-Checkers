@@ -91,21 +91,21 @@ static void drawBlackBox(Renderer *renderer)
 			-17.3f, -17.3f, -13.0f
 		};
 		
-		const uint8_t indices[] =
+		const uint16_t indices[] =
 		{
 			0, 1, 2,
 			2, 3, 0
 		};
 		
-		vertexArrayObject = createVertexArrayObject(vertices, sizeof(vertices), 3);
-		indicesBufferObject = createBufferObject(indices, sizeof(indices));
+		vertexArrayObject = createVertexArrayObject(renderer, vertices, sizeof(vertices));
+		indicesBufferObject = createBufferObject(renderer, indices, sizeof(indices));
 		
 		initializedBuffers = SDL_TRUE;
 	}
 	
 	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 0.0f, -25.0f});
 	
-	drawVerticesFromIndices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertexArrayObject, indicesBufferObject, RENDERER_INT8_TYPE, 6, (color4_t){0.0f, 0.0f, 0.0f, 0.7f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
+	drawVerticesFromIndices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertexArrayObject, indicesBufferObject, 6, (color4_t){0.0f, 0.0f, 0.0f, 0.7f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
 }
 
 static void initScene(Renderer *renderer)
@@ -117,7 +117,7 @@ static void initScene(Renderer *renderer)
 	initCharacters();
 
 	loadCharacterTextures(renderer);
-	buildCharacterModels();
+	buildCharacterModels(renderer);
 
 	// defaults couldn't be read
 	if (!gValidDefaults)
@@ -625,8 +625,6 @@ static void drawScoresForCharacter(Renderer *renderer, Character *character, col
 
 static void drawScene(Renderer *renderer)
 {
-	clearColorAndDepthBuffers(renderer);
-
 	if (gGameState)
 	{
 		drawWeapon(renderer, gRedRover.weap);
@@ -1200,9 +1198,8 @@ static void eventLoop(Renderer *renderer)
 		{
 			eventInput(&event, renderer->window, &done);
 		}
-
-		drawScene(renderer);
-		swapBuffers(renderer);
+		
+		renderFrame(renderer, drawScene);
 		
 		SDL_bool hasAppFocus = (SDL_GetWindowFlags(renderer->window) & SDL_WINDOW_INPUT_FOCUS) != 0;
 		// Restrict game to 30 fps when the fps flag is enabled as well as when we don't have app focus

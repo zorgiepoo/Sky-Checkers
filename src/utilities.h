@@ -20,8 +20,11 @@
 #pragma once
 
 #include "maincore.h"
+#include "renderer.h"
 
 void mt_init();
 unsigned long mt_random();
+
+TextureObject loadTexture(Renderer *renderer, const char *filePath);
 
 void zgPrint(const char *format, ...);

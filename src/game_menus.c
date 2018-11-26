@@ -79,7 +79,7 @@ static void drawUpAndDownArrowTriangles(Renderer *renderer, mat4_t modelViewMatr
 			0.2f, -0.2f, 0.0f,
 		};
 		
-		vertexArrayObject = createVertexArrayObject(vertices, sizeof(vertices), 3);
+		vertexArrayObject = createVertexArrayObject(renderer, vertices, sizeof(vertices));
 		initializedBuffer = SDL_TRUE;
 	}
 	

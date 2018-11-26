@@ -8,6 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		002F3C0109D093BD00EBEB88 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002F3C0009D093BD00EBEB88 /* OpenGL.framework */; };
+		721A006E21AA763B0099D093 /* renderer_gl.c in Sources */ = {isa = PBXBuildFile; fileRef = 721A006D21AA763B0099D093 /* renderer_gl.c */; };
+		721A007121AA7B420099D093 /* renderer_metal.m in Sources */ = {isa = PBXBuildFile; fileRef = 721A007021AA7B420099D093 /* renderer_metal.m */; };
+		721A007321AA7CBE0099D093 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721A007221AA7CBE0099D093 /* Metal.framework */; };
+		721A007521AA7D350099D093 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721A007421AA7D350099D093 /* QuartzCore.framework */; };
+		721A007721AB11CD0099D093 /* shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 721A007621AB11CC0099D093 /* shaders.metal */; };
 		721B0022204A47C1005AF984 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721B0021204A47C1005AF984 /* SDL2.framework */; };
 		721B0024204A47FB005AF984 /* SDL2_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721B0023204A47FB005AF984 /* SDL2_image.framework */; };
 		721B0026204A482D005AF984 /* SDL2_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721B0025204A482D005AF984 /* SDL2_ttf.framework */; };
@@ -62,6 +67,14 @@
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		721A006B21AA74E90099D093 /* renderer_types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = renderer_types.h; path = ../src/renderer_types.h; sourceTree = "<group>"; };
+		721A006C21AA763B0099D093 /* renderer_gl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = renderer_gl.h; path = ../src/renderer_gl.h; sourceTree = "<group>"; };
+		721A006D21AA763B0099D093 /* renderer_gl.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = renderer_gl.c; path = ../src/renderer_gl.c; sourceTree = "<group>"; };
+		721A006F21AA7B420099D093 /* renderer_metal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = renderer_metal.h; path = ../src/renderer_metal.h; sourceTree = "<group>"; };
+		721A007021AA7B420099D093 /* renderer_metal.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = renderer_metal.m; path = ../src/renderer_metal.m; sourceTree = "<group>"; };
+		721A007221AA7CBE0099D093 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		721A007421AA7D350099D093 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		721A007621AB11CC0099D093 /* shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; name = shaders.metal; path = ../src/shaders.metal; sourceTree = "<group>"; };
 		721B0021204A47C1005AF984 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = Frameworks/SDL2.framework; sourceTree = "<group>"; };
 		721B0023204A47FB005AF984 /* SDL2_image.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_image.framework; path = Frameworks/SDL2_image.framework; sourceTree = "<group>"; };
 		721B0025204A482D005AF984 /* SDL2_ttf.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_ttf.framework; path = Frameworks/SDL2_ttf.framework; sourceTree = "<group>"; };
@@ -112,6 +125,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				721A007521AA7D350099D093 /* QuartzCore.framework in Frameworks */,
+				721A007321AA7CBE0099D093 /* Metal.framework in Frameworks */,
 				002F3C0109D093BD00EBEB88 /* OpenGL.framework in Frameworks */,
 				77CCC2B30BA4D374007F9F3A /* Cocoa.framework in Frameworks */,
 				721B0022204A47C1005AF984 /* SDL2.framework in Frameworks */,
@@ -196,8 +211,14 @@
 				772B6A840D15CBA000A216BD /* network.c */,
 				77DC8A500B2FA1DD0080334C /* console.h */,
 				77DC8A510B2FA1DD0080334C /* console.c */,
+				721A006B21AA74E90099D093 /* renderer_types.h */,
 				72A14F3021A71C6800606E14 /* renderer.h */,
 				72A14F2F21A71C6700606E14 /* renderer.c */,
+				721A006C21AA763B0099D093 /* renderer_gl.h */,
+				721A006D21AA763B0099D093 /* renderer_gl.c */,
+				721A006F21AA7B420099D093 /* renderer_metal.h */,
+				721A007021AA7B420099D093 /* renderer_metal.m */,
+				721A007621AB11CC0099D093 /* shaders.metal */,
 				774A450C0B2BF1FC000C04D9 /* utilities.h */,
 				774A450D0B2BF1FC000C04D9 /* utilities.c */,
 				776592620BA35B4300167AF7 /* font.h */,
@@ -222,6 +243,8 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				721A007421AA7D350099D093 /* QuartzCore.framework */,
+				721A007221AA7CBE0099D093 /* Metal.framework */,
 				1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */,
 				1058C7A2FEA54F0111CA2CBB /* Other Frameworks */,
 			);
@@ -300,13 +323,16 @@
 				774686A20B750F7200F73E92 /* animation.c in Sources */,
 				7781DBC40B7E8E9B003BD7B6 /* weapon.c in Sources */,
 				776592650BA35B4300167AF7 /* font.c in Sources */,
+				721A006E21AA763B0099D093 /* renderer_gl.c in Sources */,
 				77CCC2AF0BA4D36B007F9F3A /* console.c in Sources */,
 				774F33D90BB48A9A00884B83 /* menu.c in Sources */,
+				721A007721AB11CD0099D093 /* shaders.metal in Sources */,
 				77C7A4FC0CFD292600295420 /* game_menus.c in Sources */,
 				778FA7910D0656FA002A3C26 /* ai.c in Sources */,
 				772B6A850D15CBA000A216BD /* network.c in Sources */,
 				77CBEDEB10B3B3EB0006B1BE /* audio.c in Sources */,
 				72A14F3121A71C6900606E14 /* renderer.c in Sources */,
+				721A007121AA7B420099D093 /* renderer_metal.m in Sources */,
 				770FFA0810B8F465009FD46A /* osx.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -379,6 +405,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_ENABLE_OBJC_ARC = YES;
 				FRAMEWORK_SEARCH_PATHS = "$(FRAMEWORK_SEARCH_PATHS)";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
@@ -395,6 +422,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_ENABLE_OBJC_ARC = YES;
 				FRAMEWORK_SEARCH_PATHS = "$(FRAMEWORK_SEARCH_PATHS)";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
