@@ -23,7 +23,7 @@
 
 using namespace metal;
 
-vertex float4 positionVertexShader(ushort vertexID [[ vertex_id ]], constant float3 *vertices [[ buffer(METAL_BUFFER_VERTICES_INDEX) ]], constant matrix_float4x4 &modelViewProjection [[ buffer(METAL_BUFFER_MODELVIEW_PROJECTION_INDEX) ]])
+vertex float4 positionVertexShader(ushort vertexID [[ vertex_id ]], constant packed_float3 *vertices [[ buffer(METAL_BUFFER_VERTICES_INDEX) ]], constant matrix_float4x4 &modelViewProjection [[ buffer(METAL_BUFFER_MODELVIEW_PROJECTION_INDEX) ]])
 {
 	return modelViewProjection * float4(vertices[vertexID], 1.0f);
 }
@@ -39,7 +39,7 @@ typedef struct
 	float2 textureCoordinate;
 } TextureRasterizerData;
 
-vertex TextureRasterizerData texturePositionVertexShader(ushort vertexID [[ vertex_id ]], device float3 *vertices [[ buffer(METAL_BUFFER_VERTICES_INDEX) ]], constant matrix_float4x4 &modelViewProjection [[ buffer(METAL_BUFFER_MODELVIEW_PROJECTION_INDEX) ]], device float2 *textureCoordinates [[ buffer(METAL_BUFFER_TEXTURE_COORDINATES_INDEX) ]])
+vertex TextureRasterizerData texturePositionVertexShader(ushort vertexID [[ vertex_id ]], device packed_float3 *vertices [[ buffer(METAL_BUFFER_VERTICES_INDEX) ]], constant matrix_float4x4 &modelViewProjection [[ buffer(METAL_BUFFER_MODELVIEW_PROJECTION_INDEX) ]], device packed_float2 *textureCoordinates [[ buffer(METAL_BUFFER_TEXTURE_COORDINATES_INDEX) ]])
 {
 	TextureRasterizerData output;
 	

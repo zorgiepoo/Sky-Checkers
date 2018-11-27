@@ -49,200 +49,172 @@ void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, mat4_t modelVi
 
 void createRenderer_metal(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
 {
-	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "metal");
-	
-#ifndef MAC_OS_X
-	const char *windowTitle = "SkyCheckers";
-#else
-	const char *windowTitle = "";
-#endif
-	renderer->window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags);
-	
-	if (renderer->window == NULL)
+	@autoreleasepool
 	{
-		zgPrint("Failed to create Metal renderer window! %e");
-		SDL_Quit();
-	}
-	
-	SDL_RendererFlags sdlRenderFlags = vsync ? SDL_RENDERER_PRESENTVSYNC : 0;
-	SDL_Renderer *sdlRenderer = SDL_CreateRenderer(renderer->window, -1, sdlRenderFlags);
-	if (sdlRenderer == NULL)
-	{
-		zgPrint("Failed to create SDL renderer for Metal! %e");
-		SDL_Quit();
-	}
-	
-	CAMetalLayer *metalLayer = (__bridge CAMetalLayer *)(SDL_RenderGetMetalLayer(sdlRenderer));
-	
-	SDL_DestroyRenderer(sdlRenderer);
-	
-	if (@available(macOS 10.13, *))
-	{
-		renderer->vsync = metalLayer.displaySyncEnabled;
-	}
-	else
-	{
-		renderer->vsync = vsync;
-	}
-	
-	CGSize drawableSize = metalLayer.drawableSize;
-	renderer->screenWidth = (int32_t)drawableSize.width;
-	renderer->screenHeight = (int32_t)drawableSize.height;
-	
-	// https://metashapes.com/blog/opengl-metal-projection-matrix-problem/
-	mat4_t metalProjectionAdjustMatrix =
-	mat4(
-		 1.0f, 0.0f, 0.0f, 0.0f,
-		 0.0f, 1.0f, 0.0f, 0.0f,
-		 0.0f, 0.0f, 0.5f, 0.5f,
-		 0.0f, 0.0f, 0.0f, 1.0f
-	);
-	
-	// The aspect ratio is not quite correct, which is a mistake I made a long time ago that is too troubling to fix properly
-	renderer->projectionMatrix = m4_mul(metalProjectionAdjustMatrix, m4_perspective(45.0f, (float)(renderer->screenWidth / renderer->screenHeight), 10.0f, 300.0f));
-	
-	SDL_GetWindowSize(renderer->window, &renderer->windowWidth, &renderer->windowHeight);
-	
-	id<MTLDevice> device = metalLayer.device;
-	
-	renderer->fsaa = (fsaa && [device supportsTextureSampleCount:MSAA_SAMPLE_COUNT]);
-	
-	if (renderer->fsaa)
-	{
-		MTLTextureDescriptor *multisampleTextureDescriptor = [MTLTextureDescriptor new];
-		multisampleTextureDescriptor.pixelFormat = metalLayer.pixelFormat;
-		multisampleTextureDescriptor.width = (NSUInteger)renderer->screenWidth;
-		multisampleTextureDescriptor.height = (NSUInteger)renderer->screenHeight;
-		multisampleTextureDescriptor.resourceOptions = MTLResourceStorageModePrivate;
-		multisampleTextureDescriptor.usage = MTLTextureUsageRenderTarget;
-		multisampleTextureDescriptor.sampleCount = MSAA_SAMPLE_COUNT;
-		multisampleTextureDescriptor.textureType = MTLTextureType2DMultisample;
+		SDL_SetHint(SDL_HINT_RENDER_DRIVER, "metal");
 		
-		id<MTLTexture> multisampleTexture = [device newTextureWithDescriptor:multisampleTextureDescriptor];
-		renderer->metalMultisampleTexture = (void *)CFBridgingRetain(multisampleTexture);
+#ifndef MAC_OS_X
+		const char *windowTitle = "SkyCheckers";
+#else
+		const char *windowTitle = "";
+#endif
+		renderer->window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags);
+		
+		if (renderer->window == NULL)
+		{
+			zgPrint("Failed to create Metal renderer window! %e");
+			SDL_Quit();
+		}
+		
+		SDL_RendererFlags sdlRenderFlags = vsync ? SDL_RENDERER_PRESENTVSYNC : 0;
+		SDL_Renderer *sdlRenderer = SDL_CreateRenderer(renderer->window, -1, sdlRenderFlags);
+		if (sdlRenderer == NULL)
+		{
+			zgPrint("Failed to create SDL renderer for Metal! %e");
+			SDL_Quit();
+		}
+		
+		CAMetalLayer *metalLayer = (__bridge CAMetalLayer *)(SDL_RenderGetMetalLayer(sdlRenderer));
+		
+		SDL_DestroyRenderer(sdlRenderer);
+		
+		if (@available(macOS 10.13, *))
+		{
+			renderer->vsync = metalLayer.displaySyncEnabled;
+		}
+		else
+		{
+			renderer->vsync = vsync;
+		}
+		
+		CGSize drawableSize = metalLayer.drawableSize;
+		renderer->screenWidth = (int32_t)drawableSize.width;
+		renderer->screenHeight = (int32_t)drawableSize.height;
+		
+		// https://metashapes.com/blog/opengl-metal-projection-matrix-problem/
+		mat4_t metalProjectionAdjustMatrix =
+		mat4(
+			 1.0f, 0.0f, 0.0f, 0.0f,
+			 0.0f, 1.0f, 0.0f, 0.0f,
+			 0.0f, 0.0f, 0.5f, 0.5f,
+			 0.0f, 0.0f, 0.0f, 1.0f
+			 );
+		
+		// The aspect ratio is not quite correct, which is a mistake I made a long time ago that is too troubling to fix properly
+		renderer->projectionMatrix = m4_mul(metalProjectionAdjustMatrix, m4_perspective(45.0f, (float)(renderer->screenWidth / renderer->screenHeight), 10.0f, 300.0f));
+		
+		SDL_GetWindowSize(renderer->window, &renderer->windowWidth, &renderer->windowHeight);
+		
+		id<MTLDevice> device = metalLayer.device;
+		
+		renderer->fsaa = (fsaa && [device supportsTextureSampleCount:MSAA_SAMPLE_COUNT]);
+		
+		if (renderer->fsaa)
+		{
+			MTLTextureDescriptor *multisampleTextureDescriptor = [MTLTextureDescriptor new];
+			multisampleTextureDescriptor.pixelFormat = metalLayer.pixelFormat;
+			multisampleTextureDescriptor.width = (NSUInteger)renderer->screenWidth;
+			multisampleTextureDescriptor.height = (NSUInteger)renderer->screenHeight;
+			multisampleTextureDescriptor.resourceOptions = MTLResourceStorageModePrivate;
+			multisampleTextureDescriptor.usage = MTLTextureUsageRenderTarget;
+			multisampleTextureDescriptor.sampleCount = MSAA_SAMPLE_COUNT;
+			multisampleTextureDescriptor.textureType = MTLTextureType2DMultisample;
+			
+			id<MTLTexture> multisampleTexture = [device newTextureWithDescriptor:multisampleTextureDescriptor];
+			renderer->metalMultisampleTexture = (void *)CFBridgingRetain(multisampleTexture);
+		}
+		else
+		{
+			renderer->metalMultisampleTexture = NULL;
+		}
+		
+		id<MTLLibrary> defaultLibrary = [device newDefaultLibrary];
+		if (defaultLibrary == nil)
+		{
+			zgPrint("Failed to find default metal library");
+			SDL_Quit();
+		}
+		
+		id<MTLFunction> texturePositionVertexShader = [defaultLibrary newFunctionWithName:@"texturePositionVertexShader"];
+		if (texturePositionVertexShader == nil)
+		{
+			zgPrint("Failed to find texture position vertex shader");
+			SDL_Quit();
+		}
+		
+		id<MTLFunction> texturePositionFragmentShader = [defaultLibrary newFunctionWithName:@"texturePositionFragmentShader"];
+		if (texturePositionFragmentShader == nil)
+		{
+			zgPrint("Failed to find texture position fragment shader");
+			SDL_Quit();
+		}
+		
+		MTLRenderPipelineDescriptor *pipelineStateDescriptor = [MTLRenderPipelineDescriptor new];
+		pipelineStateDescriptor.vertexFunction = texturePositionVertexShader;
+		pipelineStateDescriptor.fragmentFunction = texturePositionFragmentShader;
+		pipelineStateDescriptor.colorAttachments[0].pixelFormat = metalLayer.pixelFormat;
+		pipelineStateDescriptor.colorAttachments[0].blendingEnabled = YES;
+		pipelineStateDescriptor.colorAttachments[0].sourceAlphaBlendFactor = MTLBlendFactorSourceAlpha;
+		pipelineStateDescriptor.depthAttachmentPixelFormat = DEPTH_STENCIL_PIXEL_FORMAT;
+		if (renderer->fsaa)
+		{
+			pipelineStateDescriptor.sampleCount = MSAA_SAMPLE_COUNT;
+		}
+		
+		NSError *pipelineError = nil;
+		id<MTLRenderPipelineState> pipelineState = [device newRenderPipelineStateWithDescriptor:pipelineStateDescriptor error:&pipelineError];
+		
+		if (pipelineState == nil)
+		{
+			NSLog(@"Pipeline state error: %@", pipelineError);
+			SDL_Quit();
+		}
+		
+		MTLDepthStencilDescriptor *depthStencilDescriptor = [MTLDepthStencilDescriptor new];
+		depthStencilDescriptor.depthCompareFunction = MTLCompareFunctionLessEqual;
+		depthStencilDescriptor.depthWriteEnabled = YES;
+		
+		id<MTLDepthStencilState> depthStencilState = [device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
+		if (depthStencilState == nil)
+		{
+			zgPrint("Depth stencil state failed to be created");
+			SDL_Quit();
+		}
+		
+		MTLTextureDescriptor *depthTextureDescriptor = [MTLTextureDescriptor new];
+		depthTextureDescriptor.pixelFormat = DEPTH_STENCIL_PIXEL_FORMAT;
+		depthTextureDescriptor.width = (NSUInteger)renderer->screenWidth;
+		depthTextureDescriptor.height = (NSUInteger)renderer->screenHeight;
+		depthTextureDescriptor.resourceOptions = MTLResourceStorageModePrivate;
+		depthTextureDescriptor.usage = MTLTextureUsageRenderTarget;
+		if (renderer->fsaa)
+		{
+			depthTextureDescriptor.sampleCount = MSAA_SAMPLE_COUNT;
+			depthTextureDescriptor.textureType = MTLTextureType2DMultisample;
+		}
+		
+		id<MTLTexture> depthTexture = [device newTextureWithDescriptor:depthTextureDescriptor];
+		
+		renderer->metalDepthTexture = (void *)CFBridgingRetain(depthTexture);
+		renderer->metalBlendingSrcAlphaTexturePositionPipelineState = (void *)CFBridgingRetain(pipelineState);
+		renderer->metalDepthTestEnabledPipelineState = (void *)CFBridgingRetain(depthStencilState);
+		
+		id<MTLCommandQueue> queue = [device newCommandQueue];
+		
+		renderer->metalLayer = (void *)CFBridgingRetain(metalLayer);
+		renderer->metalCommandQueue = (void *)CFBridgingRetain(queue);
+		renderer->metalCurrentRenderCommandEncoder = NULL;
+		
+		renderer->renderFramePtr = renderFrame_metal;
+		renderer->textureFromPixelDataPtr = textureFromPixelData_metal;
+		renderer->createBufferObjectPtr = createBufferObject_metal;
+		renderer->createVertexArrayObjectPtr = createVertexArrayObject_metal;
+		renderer->createVertexAndTextureCoordinateArrayObjectPtr = createVertexAndTextureCoordinateArrayObject_metal;
+		renderer->drawVerticesPtr = drawVertices_metal;
+		renderer->drawVerticesFromIndicesPtr = drawVerticesFromIndices_metal;
+		renderer->drawTextureWithVerticesPtr = drawTextureWithVertices_metal;
+		renderer->drawTextureWithVerticesFromIndicesPtr = drawTextureWithVerticesFromIndices_metal;
 	}
-	else
-	{
-		renderer->metalMultisampleTexture = NULL;
-	}
-	
-	id<MTLLibrary> defaultLibrary = [device newDefaultLibrary];
-	if (defaultLibrary == nil)
-	{
-		zgPrint("Failed to find default metal library");
-		SDL_Quit();
-	}
-	
-	id<MTLFunction> texturePositionVertexShader = [defaultLibrary newFunctionWithName:@"texturePositionVertexShader"];
-	if (texturePositionVertexShader == nil)
-	{
-		zgPrint("Failed to find texture position vertex shader");
-		SDL_Quit();
-	}
-	
-	id<MTLFunction> texturePositionFragmentShader = [defaultLibrary newFunctionWithName:@"texturePositionFragmentShader"];
-	if (texturePositionFragmentShader == nil)
-	{
-		zgPrint("Failed to find texture position fragment shader");
-		SDL_Quit();
-	}
-	
-	MTLRenderPipelineDescriptor *pipelineStateDescriptor = [MTLRenderPipelineDescriptor new];
-	pipelineStateDescriptor.vertexFunction = texturePositionVertexShader;
-	pipelineStateDescriptor.fragmentFunction = texturePositionFragmentShader;
-	pipelineStateDescriptor.colorAttachments[0].pixelFormat = metalLayer.pixelFormat;
-	pipelineStateDescriptor.colorAttachments[0].blendingEnabled = YES;
-	pipelineStateDescriptor.colorAttachments[0].sourceAlphaBlendFactor = MTLBlendFactorSourceAlpha;
-	pipelineStateDescriptor.depthAttachmentPixelFormat = DEPTH_STENCIL_PIXEL_FORMAT;
-	if (renderer->fsaa)
-	{
-		pipelineStateDescriptor.sampleCount = MSAA_SAMPLE_COUNT;
-	}
-	
-	NSError *pipelineError = nil;
-	id<MTLRenderPipelineState> pipelineState = [device newRenderPipelineStateWithDescriptor:pipelineStateDescriptor error:&pipelineError];
-	
-	if (pipelineState == nil)
-	{
-		NSLog(@"Pipeline state error: %@", pipelineError);
-		SDL_Quit();
-	}
-	
-	MTLDepthStencilDescriptor *depthStencilDescriptor = [MTLDepthStencilDescriptor new];
-	depthStencilDescriptor.depthCompareFunction = MTLCompareFunctionLessEqual;
-	depthStencilDescriptor.depthWriteEnabled = YES;
-	
-	id<MTLDepthStencilState> depthStencilState = [device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
-	if (depthStencilState == nil)
-	{
-		zgPrint("Depth stencil state failed to be created");
-		SDL_Quit();
-	}
-	
-	MTLTextureDescriptor *depthTextureDescriptor = [MTLTextureDescriptor new];
-	depthTextureDescriptor.pixelFormat = DEPTH_STENCIL_PIXEL_FORMAT;
-	depthTextureDescriptor.width = (NSUInteger)renderer->screenWidth;
-	depthTextureDescriptor.height = (NSUInteger)renderer->screenHeight;
-	depthTextureDescriptor.resourceOptions = MTLResourceStorageModePrivate;
-	depthTextureDescriptor.usage = MTLTextureUsageRenderTarget;
-	if (renderer->fsaa)
-	{
-		depthTextureDescriptor.sampleCount = MSAA_SAMPLE_COUNT;
-		depthTextureDescriptor.textureType = MTLTextureType2DMultisample;
-	}
-	
-	id<MTLTexture> depthTexture = [device newTextureWithDescriptor:depthTextureDescriptor];
-	
-	renderer->metalDepthTexture = (void *)CFBridgingRetain(depthTexture);
-	renderer->metalBlendingSrcAlphaTexturePositionPipelineState = (void *)CFBridgingRetain(pipelineState);
-	renderer->metalDepthTestEnabledPipelineState = (void *)CFBridgingRetain(depthStencilState);
-	
-//	id<MTLFunction> positionVertexShader = [defaultLibrary newFunctionWithName:@"positionVertexShader"];
-//	if (positionVertexShader == nil)
-//	{
-//		zgPrint("Failed to find position vertex shader");
-//		SDL_Quit();
-//	}
-//
-//	id<MTLFunction> positionFragmentShader = [defaultLibrary newFunctionWithName:@"positionFragmentShader"];
-//	if (positionFragmentShader == nil)
-//	{
-//		zgPrint("Failed to find position fragment shader");
-//		SDL_Quit();
-//	}
-//
-//	MTLRenderPipelineDescriptor *pipelineStateDescriptor2 = [MTLRenderPipelineDescriptor new];
-//	pipelineStateDescriptor2.vertexFunction = positionVertexShader;
-//	pipelineStateDescriptor2.fragmentFunction = positionFragmentShader;
-//	pipelineStateDescriptor2.colorAttachments[0].pixelFormat = metalLayer.pixelFormat;
-//	pipelineStateDescriptor2.depthAttachmentPixelFormat = DEPTH_STENCIL_PIXEL_FORMAT;
-//
-//	NSError *pipelineError2 = nil;
-//	id<MTLRenderPipelineState> pipelineState2 = [device newRenderPipelineStateWithDescriptor:pipelineStateDescriptor2 error:&pipelineError2];
-//
-//	if (pipelineState2 == nil)
-//	{
-//		NSLog(@"Pipeline state error: %@", pipelineError2);
-//		SDL_Quit();
-//	}
-//
-//	renderer->metalPositionPipelineState = (void *)CFBridgingRetain(pipelineState2);
-	
-	id<MTLCommandQueue> queue = [device newCommandQueue];
-	
-	renderer->metalLayer = (void *)CFBridgingRetain(metalLayer);
-	renderer->metalCommandQueue = (void *)CFBridgingRetain(queue);
-	renderer->metalCurrentRenderCommandEncoder = NULL;
-	
-	renderer->renderFramePtr = renderFrame_metal;
-	renderer->textureFromPixelDataPtr = textureFromPixelData_metal;
-	renderer->createBufferObjectPtr = createBufferObject_metal;
-	renderer->createVertexArrayObjectPtr = createVertexArrayObject_metal;
-	renderer->createVertexAndTextureCoordinateArrayObjectPtr = createVertexAndTextureCoordinateArrayObject_metal;
-	renderer->drawVerticesPtr = drawVertices_metal;
-	renderer->drawVerticesFromIndicesPtr = drawVerticesFromIndices_metal;
-	renderer->drawTextureWithVerticesPtr = drawTextureWithVertices_metal;
-	renderer->drawTextureWithVerticesFromIndicesPtr = drawTextureWithVerticesFromIndices_metal;
 }
 
 void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *))
@@ -379,24 +351,6 @@ static MTLPrimitiveType metalTypeFromRendererMode(RendererMode mode)
 
 void drawVertices_metal(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options)
 {
-//	id<MTLRenderPipelineState> pipelineState = (__bridge id<MTLRenderPipelineState>)(renderer->metalPositionPipelineState);
-//	id <MTLDepthStencilState> depthStencilState = (__bridge id<MTLDepthStencilState>)(renderer->metalDepthTestEnabledPipelineState);
-//
-//	id<MTLRenderCommandEncoder> renderCommandEncoder = (__bridge id<MTLRenderCommandEncoder>)(renderer->metalCurrentRenderCommandEncoder);
-//
-//	[renderCommandEncoder setFrontFacingWinding:MTLWindingCounterClockwise];
-//	[renderCommandEncoder setRenderPipelineState:pipelineState];
-//	[renderCommandEncoder setDepthStencilState:depthStencilState];
-//
-//	id<MTLBuffer> vertexBuffer = (__bridge id<MTLBuffer>)(vertexArrayObject.metalObject);
-//	[renderCommandEncoder setVertexBuffer:vertexBuffer offset:0 atIndex:METAL_BUFFER_VERTICES_INDEX];
-//
-//	mat4_t modelViewProjectionMatrix = m4_mul(renderer->projectionMatrix, modelViewMatrix);
-//	[renderCommandEncoder setVertexBytes:modelViewProjectionMatrix.m length:sizeof(modelViewProjectionMatrix.m) atIndex:METAL_BUFFER_MODELVIEW_PROJECTION_INDEX];
-//
-//	[renderCommandEncoder setFragmentBytes:&color.red length:sizeof(color) atIndex:METAL_BUFFER_COLOR_INDEX];
-//
-//	[renderCommandEncoder drawPrimitives:metalTypeFromRendererMode(mode) vertexStart:0 vertexCount:vertexCount];
 }
 
 void drawVerticesFromIndices_metal(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options)
@@ -405,29 +359,6 @@ void drawVerticesFromIndices_metal(Renderer *renderer, mat4_t modelViewMatrix, R
 
 void drawTextureWithVertices_metal(Renderer *renderer, mat4_t modelViewMatrix, TextureObject textureObject, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options)
 {
-//	id<MTLRenderPipelineState> pipelineState = (__bridge id<MTLRenderPipelineState>)(renderer->metalBlendingSrcAlphaTexturePositionPipelineState);
-//	id <MTLDepthStencilState> depthStencilState = (__bridge id<MTLDepthStencilState>)(renderer->metalDepthTestEnabledPipelineState);
-//
-//	id<MTLRenderCommandEncoder> renderCommandEncoder = (__bridge id<MTLRenderCommandEncoder>)(renderer->metalCurrentRenderCommandEncoder);
-//
-//	[renderCommandEncoder setFrontFacingWinding:MTLWindingCounterClockwise];
-//	[renderCommandEncoder setRenderPipelineState:pipelineState];
-//	[renderCommandEncoder setDepthStencilState:depthStencilState];
-//
-//	id<MTLBuffer> vertexBuffer = (__bridge id<MTLBuffer>)(vertexAndTextureArrayObject.metalObject);
-//	[renderCommandEncoder setVertexBuffer:vertexBuffer offset:0 atIndex:METAL_BUFFER_VERTICES_INDEX];
-//
-//	mat4_t modelViewProjectionMatrix = m4_mul(renderer->projectionMatrix, modelViewMatrix);
-//	[renderCommandEncoder setVertexBytes:modelViewProjectionMatrix.m length:sizeof(modelViewProjectionMatrix.m) atIndex:METAL_BUFFER_MODELVIEW_PROJECTION_INDEX];
-//
-//	[renderCommandEncoder setFragmentBytes:&color.red length:sizeof(color) atIndex:METAL_BUFFER_COLOR_INDEX];
-//
-//	[renderCommandEncoder setVertexBuffer:vertexBuffer offset:vertexAndTextureArrayObject.verticesSize atIndex:METAL_BUFFER_TEXTURE_COORDINATES_INDEX];
-//
-//	id<MTLTexture> texture = (__bridge id<MTLTexture>)(textureObject.metalObject);
-//	[renderCommandEncoder setFragmentTexture:texture atIndex:METAL_TEXTURE1_INDEX];
-//
-//	[renderCommandEncoder drawPrimitives:metalTypeFromRendererMode(mode) vertexStart:0 vertexCount:vertexCount];
 }
 
 void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, mat4_t modelViewMatrix, TextureObject textureObject, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options)
@@ -439,7 +370,6 @@ void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, mat4_t modelVi
 		
 		id<MTLRenderCommandEncoder> renderCommandEncoder = (__bridge id<MTLRenderCommandEncoder>)(renderer->metalCurrentRenderCommandEncoder);
 		
-		[renderCommandEncoder setFrontFacingWinding:MTLWindingCounterClockwise];
 		[renderCommandEncoder setRenderPipelineState:pipelineState];
 		[renderCommandEncoder setDepthStencilState:depthStencilState];
 		
