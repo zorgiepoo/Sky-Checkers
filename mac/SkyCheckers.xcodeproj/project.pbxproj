@@ -415,6 +415,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
+				SDKROOT = macosx;
 				ZERO_LINK = NO;
 			};
 			name = Debug;
@@ -432,6 +433,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
+				SDKROOT = macosx;
 				SECTORDER_FLAGS = "";
 			};
 			name = Release;
