@@ -412,33 +412,33 @@ static void drawCharacterLive(Renderer *renderer, mat4_t modelViewMatrix, color4
 {
 	if (character->lives != 0)
 	{
-		drawStringf(renderer, modelViewMatrix, color, 0.5, 0.5, "%i", character->lives);
+		drawStringf(renderer, modelViewMatrix, color, 0.5f / 1.52f, 0.5f / 1.52f, "%i", character->lives);
 	}
 	
-	mat4_t playerDescriptionMatrix = m4_mul(modelViewMatrix, m4_translation((vec3_t){2.0f, 0.0f, 0.0f}));
+	mat4_t playerDescriptionMatrix = m4_mul(modelViewMatrix, m4_translation((vec3_t){2.0f / 1.52f, 0.0f, 0.0f}));
 	
 	if (gNetworkConnection)
 	{
 		if (character->netName)
 		{
-			drawString(renderer, playerDescriptionMatrix, color, 1.0, 0.5, character->netName);
+			drawString(renderer, playerDescriptionMatrix, color, 1.0f / 1.52f, 0.5f / 1.52f, character->netName);
 		}
 		// this is a clever way to see if this character is going to be an AI or a networked player
 		else if ((gNetworkConnection->type == NETWORK_SERVER_TYPE && character->netState == NETWORK_PLAYING_STATE) ||
 				 (gNetworkConnection->type == NETWORK_CLIENT_TYPE && gPinkBubbleGum.netState == NETWORK_PLAYING_STATE))
 		{
-			drawString(renderer, playerDescriptionMatrix, color, 1.0, 0.5, "[AI]");
+			drawString(renderer, playerDescriptionMatrix, color, 1.0f / 1.52f, 0.5f / 1.52f, "[AI]");
 		}
 	}
 	else
 	{
 		if (character->state == CHARACTER_AI_STATE)
 		{
-			drawString(renderer, playerDescriptionMatrix, color, 1.0, 0.5, "[AI]");
+			drawString(renderer, playerDescriptionMatrix, color, 1.0f / 1.52f, 0.5f / 1.52f, "[AI]");
 		}
 		else
 		{
-			drawString(renderer, playerDescriptionMatrix, color, 1.0, 0.5, playerNumberString);
+			drawString(renderer, playerDescriptionMatrix, color, 1.0f / 1.52f, 0.5f / 1.52f, playerNumberString);
 		}
 	}
 }
@@ -446,16 +446,16 @@ static void drawCharacterLive(Renderer *renderer, mat4_t modelViewMatrix, color4
 void drawCharacterLives(Renderer *renderer)
 {	
 	// PinkBubbleGum
-	drawCharacterLive(renderer, m4_translation((vec3_t){-12.3f, -14.4f, -38.0f}), (color4_t){1.0f, 0.6f, 0.6f, 1.0f}, &gPinkBubbleGum, "[P1]");
+	drawCharacterLive(renderer, m4_translation((vec3_t){-12.3f / 1.52f, -14.4f / 1.52f, -38.0f / 1.52f}), (color4_t){1.0f, 0.6f, 0.6f, 1.0f}, &gPinkBubbleGum, "[P1]");
 	
 	// RedRover
-	drawCharacterLive(renderer, m4_translation((vec3_t){-4.2f, -14.4f, -38.0f}), (color4_t){0.9f, 0.0f, 0.0f, 1.0f}, &gRedRover, "[P2]");
+	drawCharacterLive(renderer, m4_translation((vec3_t){-4.2f / 1.52f, -14.4f / 1.52f, -38.0f / 1.52f}), (color4_t){0.9f, 0.0f, 0.0f, 1.0f}, &gRedRover, "[P2]");
 	
 	// GreenTree
-	drawCharacterLive(renderer, m4_translation((vec3_t){3.9f, -14.4f, -38.0f}), (color4_t){0.0f, 1.0f, 0.0f, 1.0f}, &gGreenTree, "[P3]");
+	drawCharacterLive(renderer, m4_translation((vec3_t){3.9f / 1.52f, -14.4f / 1.52f, -38.0f / 1.52f}), (color4_t){0.0f, 1.0f, 0.0f, 1.0f}, &gGreenTree, "[P3]");
 	
 	// BlueLightning
-	drawCharacterLive(renderer, m4_translation((vec3_t){12.0f, -14.4f, -38.0f}), (color4_t){0.0f, 0.0f, 1.0f, 1.0f}, &gBlueLightning, "[P4]");
+	drawCharacterLive(renderer, m4_translation((vec3_t){12.0f / 1.52f, -14.4f / 1.52f, -38.0f / 1.52f}), (color4_t){0.0f, 0.0f, 1.0f, 1.0f}, &gBlueLightning, "[P4]");
 }
 
 /*

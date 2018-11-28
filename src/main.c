@@ -603,66 +603,98 @@ void drawFramesPerSecond(Renderer *renderer)
 	}
 }
 
-static void drawScoresForCharacter(Renderer *renderer, Character *character, color4_t color, float x, float y, float z)
+// We separate drawing icons vs scores on scoreboard because icons are opaque objects that should be rendered before any transparent ones
+typedef enum
+{
+	SCOREBOARD_RENDER_ICONS,
+	SCOREBOARD_RENDER_SCORES
+} ScoreboardRenderType;
+
+static void drawScoreboardForCharacter(Renderer *renderer, Character *character, ScoreboardRenderType renderType, float x, float y, float z)
 {
 	mat4_t iconModelViewMatrix = m4_translation((vec3_t){x, y, z});
-	drawCharacterIcon(renderer, iconModelViewMatrix, character);
 	
-	color4_t characterColor = (color4_t){character->red, character->green, character->blue, 0.7f};
-	
-	mat4_t winsLabelModelViewMatrix = m4_mul(iconModelViewMatrix, m4_translation((vec3_t){0.0f, -2.0f, 0.0f}));
-	drawString(renderer, winsLabelModelViewMatrix, characterColor, 0.5f, 0.5f, "Wins:");
-	
-	mat4_t winsModelViewMatrix = m4_mul(winsLabelModelViewMatrix, m4_translation((vec3_t){1.0f, 0.0f, 0.0f}));
-	drawStringf(renderer, winsModelViewMatrix, characterColor, 0.5f, 0.5f, "%i", character->wins);
-	
-	mat4_t killsLabelModelViewMatrix = m4_mul(winsModelViewMatrix, m4_translation((vec3_t){-1.0f, -2.0f, 0.0f}));
-	drawString(renderer, killsLabelModelViewMatrix, characterColor, 0.5f, 0.5f, "Kills:");
-	
-	mat4_t killsModelViewMatrix = m4_mul(killsLabelModelViewMatrix, m4_translation((vec3_t){1.0f, 0.0f, 0.0f}));
-	drawStringf(renderer, killsModelViewMatrix, characterColor, 0.5f, 0.5f, "%i", character->kills);
+	if (renderType == SCOREBOARD_RENDER_ICONS)
+	{
+		drawCharacterIcon(renderer, iconModelViewMatrix, character);
+	}
+	else
+	{
+		color4_t characterColor = (color4_t){character->red, character->green, character->blue, 0.7f};
+		
+		mat4_t winsLabelModelViewMatrix = m4_mul(iconModelViewMatrix, m4_translation((vec3_t){0.0f / 1.25f, -2.0f / 1.25f, 0.0f / 1.25f}));
+		drawString(renderer, winsLabelModelViewMatrix, characterColor, 0.5f / 1.25f, 0.5f / 1.25f, "Wins:");
+		
+		mat4_t winsModelViewMatrix = m4_mul(winsLabelModelViewMatrix, m4_translation((vec3_t){1.0f / 1.25f, 0.0f / 1.25f, 0.0f / 1.25f}));
+		drawStringf(renderer, winsModelViewMatrix, characterColor, 0.5f / 1.25f, 0.5f / 1.25f, "%i", character->wins);
+		
+		mat4_t killsLabelModelViewMatrix = m4_mul(winsModelViewMatrix, m4_translation((vec3_t){-1.0f / 1.25f, -2.0f / 1.25f, 0.0f / 1.25f}));
+		drawString(renderer, killsLabelModelViewMatrix, characterColor, 0.5f / 1.25f, 0.5f / 1.25f, "Kills:");
+		
+		mat4_t killsModelViewMatrix = m4_mul(killsLabelModelViewMatrix, m4_translation((vec3_t){1.0f / 1.25f, 0.0f / 1.25f, 0.0f / 1.25f}));
+		drawStringf(renderer, killsModelViewMatrix, characterColor, 0.5f / 1.25f, 0.5f / 1.25f, "%i", character->kills);
+	}
+}
+
+static void drawScoreboardForCharacters(Renderer *renderer, ScoreboardRenderType renderType)
+{
+	drawScoreboardForCharacter(renderer, &gPinkBubbleGum, renderType, -6.0 / 1.25f, 7.0 / 1.25f, -25.0 / 1.25f);
+	drawScoreboardForCharacter(renderer, &gRedRover, renderType, -2.0f / 1.25f, 7.0f / 1.25f, -25.0f / 1.25f);
+	drawScoreboardForCharacter(renderer, &gGreenTree, renderType, 2.0f / 1.25f, 7.0f / 1.25f, -25.0f / 1.25f);
+	drawScoreboardForCharacter(renderer, &gBlueLightning, renderType, 6.0f / 1.25f, 7.0f / 1.25f, -25.0f / 1.25f);
 }
 
 static void drawScene(Renderer *renderer)
 {
 	if (gGameState)
 	{
-		// Weapons renders at -24.0f to -25.0f after a world rotation
+		// Render opaque objects first
+		
+		if (gGameWinner != NO_CHARACTER)
+		{
+			// Character icons on scoreboard at z = -20.0f
+			drawScoreboardForCharacters(renderer, SCOREBOARD_RENDER_ICONS);
+		}
+		
+		// Weapons renders at z = -24.0f to -25.0f after a world rotation
 		drawWeapon(renderer, gRedRover.weap);
 		drawWeapon(renderer, gGreenTree.weap);
 		drawWeapon(renderer, gPinkBubbleGum.weap);
 		drawWeapon(renderer, gBlueLightning.weap);
 
-		// Characters renders at -25.3 to -24.7 after a world rotation when not fallen
+		// Characters renders at z = -25.3 to -24.7 after a world rotation when not fallen
 		// When falling, will reach to around -195
 		drawCharacter(renderer, &gRedRover);
 		drawCharacter(renderer, &gGreenTree);
 		drawCharacter(renderer, &gPinkBubbleGum);
 		drawCharacter(renderer, &gBlueLightning);
 
-		// Tiles renders at -25.0f to -26.0f after a world rotation when not fallen
+		// Tiles renders at z = -25.0f to -26.0f after a world rotation when not fallen
 		drawTiles(renderer);
 		
-		// Character icons at -25.0f
+		// Character icons at the bottom of the screen at z = -25.0f
 		drawCharacterIcons(renderer);
 		
-		// Character lives at -38.0f
-		drawCharacterLives(renderer);
+		// Render transparent objects from zFar to zNear
 		
-		// Sky renders at -38.0f
+		// Sky renders at z = -38.0f
 		drawSky(renderer);
+		
+		// Character lives at z = -25.0f
+		drawCharacterLives(renderer);
 		
 		if (gDrawFPS)
 		{
-			// FPS renders at -25.0f
+			// FPS renders at z = -25.0f
 			drawFramesPerSecond(renderer);
 		}
 		
+		// Render game instruction text at -25.0f
 		if (!gGameHasStarted)
 		{
-			color4_t textColor = (color4_t){0.0, 0.0, 1.0, 0.5};
+			color4_t textColor = (color4_t){0.0f, 0.0f, 1.0f, 1.0f};
 			
-			mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 80.0, -280.0});
+			mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0 / 11.2f, 80.0 / 11.2f, -280.0 / 11.2f});
 			
 			if (gPinkBubbleGum.netState == NETWORK_PENDING_STATE || gRedRover.netState == NETWORK_PENDING_STATE || gGreenTree.netState == NETWORK_PENDING_STATE || gBlueLightning.netState == NETWORK_PENDING_STATE)
 			{
@@ -671,22 +703,22 @@ static void drawScene(Renderer *renderer)
 					// be sure to take account the plural form of player(s)
 					if (gNetworkConnection->numberOfPlayersToWaitFor > 1)
 					{
-						drawStringf(renderer, modelViewMatrix, textColor, 50.0, 10.0, "Waiting for %i players to connect...", gNetworkConnection->numberOfPlayersToWaitFor);
+						drawStringf(renderer, modelViewMatrix, textColor, 50.0f / 11.2f, 10.0 / 11.2f, "Waiting for %i players to connect...", gNetworkConnection->numberOfPlayersToWaitFor);
 					}
 					else if (gNetworkConnection->numberOfPlayersToWaitFor == 0)
 					{
-						drawString(renderer, modelViewMatrix, textColor, 50.0, 10.0, "Waiting for players to connect...");
+						drawString(renderer, modelViewMatrix, textColor, 50.0 / 11.2f, 10.0 / 11.2f, "Waiting for players to connect...");
 					}
 					else
 					{
-						drawString(renderer, modelViewMatrix, textColor, 50.0, 10.0, "Waiting for 1 player to connect...");
+						drawString(renderer, modelViewMatrix, textColor, 50.0 / 11.2f, 10.0 / 11.2f, "Waiting for 1 player to connect...");
 					}
 				}
 			}
 			
 			else if (gGameStartNumber > 0)
 			{
-				drawStringf(renderer, modelViewMatrix, textColor, 40.0, 10.0, "Game begins in %i", gGameStartNumber);
+				drawStringf(renderer, modelViewMatrix, textColor, 40.0 / 11.2f, 10.0 / 11.2f, "Game begins in %i", gGameStartNumber);
 			}
 			
 			else if (gGameStartNumber == 0)
@@ -697,77 +729,80 @@ static void drawScene(Renderer *renderer)
 		
 		if (gConsoleActivated)
 		{
-			// Console at -25.0f
+			// Console at z = -25.0f
 			drawConsole(renderer);
-			
-			// Console text at -25.0f
-			drawConsoleText(renderer);
 		}
 		
+		// Winning/Losing text at z = -25.0f
 		if (gGameWinner != NO_CHARACTER)
 		{
-			mat4_t winLoseModelViewMatrix = m4_translation((vec3_t){70.0f, 100.0f, -280.0f});
-			color4_t textColor = (color4_t){1.0f, 1.0f, 1.0f, 0.8f};
+			if (gConsoleActivated)
+			{
+				// Console text at z = -24.0f
+				drawConsoleText(renderer);
+			}
+			
+			// Renders at z = -22.0f
+			drawBlackBox(renderer);
+			
+			// Renders winning/losing text at z = -20.0f
+			mat4_t winLoseModelViewMatrix = m4_translation((vec3_t){70.0f / 14.0f, 100.0f / 14.0f, -280.0f / 14.0f});
+			color4_t textColor = (color4_t){0.66f, 0.66f, 0.66f, 0.8f};
 			
 			if (gNetworkConnection)
 			{
 				if (gGameWinner == IDOfCharacter(gNetworkConnection->input->character))
 				{
-					drawString(renderer, winLoseModelViewMatrix, textColor, 20.0, 10.0, "You win!");
+					drawString(renderer, winLoseModelViewMatrix, textColor, 20.0f / 14.0f, 10.0f / 14.0f, "You win!");
 				}
 				else
 				{
-					drawString(renderer, winLoseModelViewMatrix, textColor, 20.0, 10.0, "You lose!");
+					drawString(renderer, winLoseModelViewMatrix, textColor, 20.0f / 14.0f, 10.0f / 14.0f, "You lose!");
 				}
 			}
 			else
 			{
 				if (gGameWinner == RED_ROVER)
 				{
-					drawString(renderer, winLoseModelViewMatrix, textColor, 40.0, 10.0, "Red Rover wins!");
+					drawString(renderer, winLoseModelViewMatrix, textColor, 40.0f / 14.0f, 10.0f / 14.0f, "Red Rover wins!");
 				}
 				else if (gGameWinner == GREEN_TREE)
 				{
-					drawString(renderer, winLoseModelViewMatrix, textColor, 40.0, 10.0, "Green Tree wins!");
+					drawString(renderer, winLoseModelViewMatrix, textColor, 40.0f / 14.0f, 10.0f / 14.0f, "Green Tree wins!");
 				}
 				else if (gGameWinner == PINK_BUBBLE_GUM)
 				{
-					drawString(renderer, winLoseModelViewMatrix, textColor, 40.0, 10.0, "Pink Bubblegum wins!");
+					drawString(renderer, winLoseModelViewMatrix, textColor, 40.0f / 14.0f, 10.0f / 14.0f, "Pink Bubblegum wins!");
 				}
 				else if (gGameWinner == BLUE_LIGHTNING)
 				{
-					drawString(renderer, winLoseModelViewMatrix, textColor, 40.0, 10.0, "Blue Lightning wins!");
+					drawString(renderer, winLoseModelViewMatrix, textColor, 40.0f / 14.0f, 10.0f / 14.0f, "Blue Lightning wins!");
 				}
 			}
 			
-			/* Stats */
+			// Character scores on scoreboard at z = -20.0f
+			drawScoreboardForCharacters(renderer, SCOREBOARD_RENDER_SCORES);
 			
-			// Renders around -22.0f
-			drawBlackBox(renderer);
-			
-			/* Display stats */
-			
-			// Character scores at -25.0f
-			drawScoresForCharacter(renderer, &gPinkBubbleGum, textColor, -6.0, 7.0, -25.0);
-			drawScoresForCharacter(renderer, &gRedRover, textColor, -2.0f, 7.0f, -25.0f);
-			drawScoresForCharacter(renderer, &gGreenTree, textColor, 2.0f, 7.0f, -25.0f);
-			drawScoresForCharacter(renderer, &gBlueLightning, textColor, 6.0f, 7.0f, -25.0f);
-			
+			// Play again text at z = -20.0f
 			if (!gNetworkConnection || gNetworkConnection->type != NETWORK_CLIENT_TYPE)
 			{
 				// Draw a "Press ENTER to play again" notice
-				mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, -7.0f, -25.0f});
+				mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f / 1.25f, -7.0f / 1.25f, -25.0f / 1.25f});
 				
-				drawString(renderer, modelViewMatrix, (color4_t){0.0f, 0.0f, 0.4f, 0.4f}, 5.0f, 1.0f, "Fire to play again or Escape to quit");
+				drawString(renderer, modelViewMatrix, (color4_t){0.0f, 0.0f, 0.4f, 0.6f}, 5.0f, 1.0f, "Fire to play again or Escape to quit");
+			}
+		}
+		else
+		{
+			if (gConsoleActivated)
+			{
+				// Console text at z =  -24.0f
+				drawConsoleText(renderer);
 			}
 		}
 	}
 	else /* if (!gGameState) */
 	{
-		//		// Title renders at -100.0f
-		//		mat4_t gameTitleModelViewMatrix = m4_translation((vec3_t){-1.0f, 27.0f, -100.0f});
-		//		drawString(renderer, gameTitleModelViewMatrix, (color4_t){0.3f, 0.2f, 1.0f, 1.0f}, 20.0, 5.0, "Sky Checkers");
-		
 		// The game title and menu's should be up front the most
 		// The black box should be behind the title and menu's
 		// The sky should be behind the black box
@@ -782,7 +817,7 @@ static void drawScene(Renderer *renderer)
 		mat4_t gameTitleModelViewMatrix = m4_translation((vec3_t){-0.2f, 5.4f, -20.0f});
 		drawString(renderer, gameTitleModelViewMatrix, (color4_t){0.3f, 0.2f, 1.0f, 0.4f}, 4.0f, 0.8f, "Sky Checkers");
 		
-		// Most menu's render at z = -280.0f.. but we should change that to -20.0f
+		// Menus render at z = -20.0f
 		drawMenus(renderer);
 
 		if (isChildBeingDrawn(&gJoyStickConfig[0][1]) /* pinkBubbleGumConfigRightJoyStick */	||
@@ -790,17 +825,15 @@ static void drawScene(Renderer *renderer)
 			isChildBeingDrawn(&gJoyStickConfig[2][1]) /* greenTreeRightgJoyStickConfig */		||
 			isChildBeingDrawn(&gJoyStickConfig[3][1]) /* blueLightningConfigJoyStick */)
 		{
-			mat4_t translationMatrix = m4_translation((vec3_t){-1.0f, 50.0f, -280.0f});
-			mat4_t rotationMatrix = m4_rotation_x((float)M_PI / 4.0f);
-			mat4_t instructionsModelViewMatrix = m4_mul(translationMatrix, rotationMatrix);
+			mat4_t translationMatrix = m4_translation((vec3_t){-1.0f / 14.0f, 50.0f / 14.0f, -280.0f / 14.0f});
 			
-			color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 0.6f};
+			color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 1.0f};
 
-			drawString(renderer, instructionsModelViewMatrix, textColor, 100.0, 5.0, "Click enter to modify a mapping value and input in a button on your joystick. Click Escape to exit out.");
+			drawString(renderer, translationMatrix, textColor, 100.0 / 14.0f, 5.0 / 14.0f, "Click enter to modify a mapping value and input in a button on your joystick. Click Escape to exit out.");
 			
-			mat4_t noticeModelViewMatrix = m4_mul(instructionsModelViewMatrix, m4_translation((vec3_t){0.0f, -20.0f, 0.0f}));
+			mat4_t noticeModelViewMatrix = m4_mul(translationMatrix, m4_translation((vec3_t){0.0f / 14.0f, -20.0f / 14.0f, 0.0f / 14.0f}));
 
-			drawString(renderer, noticeModelViewMatrix, textColor, 50.0, 5.0, "(Joysticks only function in-game)");
+			drawString(renderer, noticeModelViewMatrix, textColor, 50.0 / 16.0f, 5.0 / 16.0f, "(Joysticks only function in-game)");
 		}
 
 		else if (isChildBeingDrawn(&gCharacterConfigureKeys[0][1]) /* pinkBubbleGum */	||
@@ -808,13 +841,11 @@ static void drawScene(Renderer *renderer)
 				 isChildBeingDrawn(&gCharacterConfigureKeys[2][1]) /* greenTree */		||
 				 isChildBeingDrawn(&gCharacterConfigureKeys[3][1]) /* blueLightning */)
 		{
-			mat4_t translationMatrix = m4_translation((vec3_t){-1.0f, 50.0f, -280.0f});
-			mat4_t rotationMatrix = m4_rotation_x((float)M_PI / 4.0f);
-			mat4_t instructionsModelViewMatrix = m4_mul(translationMatrix, rotationMatrix);
+			mat4_t translationMatrix = m4_translation((vec3_t){-1.0f / 14.0f, 50.0f / 14.0f, -280.0f / 14.0f});
 			
-			color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 0.6f};
+			color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 1.0f};
 
-			drawString(renderer, instructionsModelViewMatrix, textColor, 100.0, 5.0, "Click enter to modify a mapping value and input in a key. Click Escape to exit out.");
+			drawString(renderer, translationMatrix, textColor, 100.0 / 14.0f, 5.0 / 14.0f, "Click enter to modify a mapping value and input in a key. Click Escape to exit out.");
 		}
 	}
 }
