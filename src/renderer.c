@@ -32,13 +32,19 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 	const char *windowTitle = "";
 #endif
 	
-	// Metal
+	SDL_bool createdRenderer = SDL_FALSE;
+	
 #ifdef MAC_OS_X
-	createRenderer_metal(renderer, windowTitle, windowWidth, windowHeight, videoFlags, vsync, fsaa);
+	// Metal
+	createdRenderer = createRenderer_metal(renderer, windowTitle, windowWidth, windowHeight, videoFlags, vsync, fsaa);
 #endif
 
 	// OpenGL
-	//createRenderer_gl(renderer, windowTitle, windowWidth, windowHeight, videoFlags, vsync, fsaa);
+	if (!createdRenderer)
+	{
+		createRenderer_gl(renderer, windowTitle, windowWidth, windowHeight, videoFlags, vsync, fsaa);
+		createdRenderer = SDL_TRUE;
+	}
 	
 #ifndef _DEBUG
 	SDL_ShowCursor(SDL_DISABLE);

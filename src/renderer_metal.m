@@ -123,7 +123,7 @@ static void createAndStorePipelineState(void **pipelineStates, id<MTLDevice> dev
 	pipelineStates[pipelineIndex(shaderPairIndex, pipelineOptionIndex)] = (void *)CFBridgingRetain(pipelineState);
 }
 
-void createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
+SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
 {
 	@autoreleasepool
 	{
@@ -133,19 +133,22 @@ void createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t w
 		
 		if (renderer->window == NULL)
 		{
-			zgPrint("Failed to create Metal renderer window! %e");
-			SDL_Quit();
+			return SDL_FALSE;
 		}
 		
 		SDL_RendererFlags sdlRenderFlags = vsync ? SDL_RENDERER_PRESENTVSYNC : 0;
 		SDL_Renderer *sdlRenderer = SDL_CreateRenderer(renderer->window, -1, sdlRenderFlags);
 		if (sdlRenderer == NULL)
 		{
-			zgPrint("Failed to create SDL renderer for Metal! %e");
-			SDL_Quit();
+			return SDL_FALSE;
 		}
 		
 		CAMetalLayer *metalLayer = (__bridge CAMetalLayer *)(SDL_RenderGetMetalLayer(sdlRenderer));
+		if (metalLayer == nil)
+		{
+			SDL_DestroyRenderer(sdlRenderer);
+			return SDL_FALSE;
+		}
 		
 		SDL_DestroyRenderer(sdlRenderer);
 		
@@ -286,6 +289,8 @@ void createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t w
 		renderer->drawTextureWithVerticesPtr = drawTextureWithVertices_metal;
 		renderer->drawTextureWithVerticesFromIndicesPtr = drawTextureWithVerticesFromIndices_metal;
 	}
+	
+	return SDL_TRUE;
 }
 
 void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *))
