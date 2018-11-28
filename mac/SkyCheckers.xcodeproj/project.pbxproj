@@ -3,15 +3,15 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 42;
+	objectVersion = 45;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		002F3C0109D093BD00EBEB88 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002F3C0009D093BD00EBEB88 /* OpenGL.framework */; };
 		721A006E21AA763B0099D093 /* renderer_gl.c in Sources */ = {isa = PBXBuildFile; fileRef = 721A006D21AA763B0099D093 /* renderer_gl.c */; };
 		721A007121AA7B420099D093 /* renderer_metal.m in Sources */ = {isa = PBXBuildFile; fileRef = 721A007021AA7B420099D093 /* renderer_metal.m */; };
-		721A007321AA7CBE0099D093 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721A007221AA7CBE0099D093 /* Metal.framework */; };
-		721A007521AA7D350099D093 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721A007421AA7D350099D093 /* QuartzCore.framework */; };
+		721A007321AA7CBE0099D093 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721A007221AA7CBE0099D093 /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		721A007521AA7D350099D093 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721A007421AA7D350099D093 /* QuartzCore.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		721A007721AB11CD0099D093 /* shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 721A007621AB11CC0099D093 /* shaders.metal */; };
 		721B0022204A47C1005AF984 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721B0021204A47C1005AF984 /* SDL2.framework */; };
 		721B0024204A47FB005AF984 /* SDL2_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721B0023204A47FB005AF984 /* SDL2_image.framework */; };
