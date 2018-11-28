@@ -391,7 +391,7 @@ void drawCharacterIcon(Renderer *renderer, mat4_t modelViewMatrix, Character *ch
 	mat4_t rotationMatrix = m4_rotation_x((float)M_PI);
 	mat4_t rotatedIconModelViewMatrix = m4_mul(modelViewMatrix, rotationMatrix);
 	
-	drawTextureWithVertices(renderer, rotatedIconModelViewMatrix, gCharacterTex, RENDERER_TRIANGLE_STRIP_MODE, gIconVertexAndTextureCoordinateArrayObject, 1204 / 2, (color4_t){character->red, character->green, character->blue, 0.7f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
+	drawTextureWithVertices(renderer, rotatedIconModelViewMatrix, gCharacterTex, RENDERER_TRIANGLE_STRIP_MODE, gIconVertexAndTextureCoordinateArrayObject, 1204 / 2, (color4_t){character->red, character->green, character->blue, 1.0f}, RENDERER_OPTION_NONE);
 }
 
 static void translateAndDrawCharacterIcon(Renderer *renderer, Character *character, float x, float y, float z)

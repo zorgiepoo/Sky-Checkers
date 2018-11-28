@@ -179,5 +179,6 @@ void drawWeapon(Renderer *renderer, Weapon *weap)
 	mat4_t weaponRotationMatrix = m4_rotation_z(weaponRotationAngle);
 	mat4_t modelViewMatrix = m4_mul(weaponMatrix, weaponRotationMatrix);
 	
-	drawVerticesFromIndices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertexArrayObject, indicesBufferObject, 48, (color4_t){weap->red, weap->green, weap->blue, 0.2f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
+	float colorFactor = 0.2f;
+	drawVerticesFromIndices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertexArrayObject, indicesBufferObject, 48, (color4_t){weap->red * colorFactor, weap->green * colorFactor, weap->blue * colorFactor, 1.0f}, RENDERER_OPTION_NONE);
 }

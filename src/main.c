@@ -85,10 +85,10 @@ static void drawBlackBox(Renderer *renderer)
 	{
 		const float vertices[] =
 		{
-			-17.3f, 17.3f, -13.0f,
-			17.3f, 17.3f, -13.0f,
-			17.3f, -17.3f, -13.0f,
-			-17.3f, -17.3f, -13.0f
+			-9.5f, 9.5f, 0.0f,
+			9.5f, 9.5f, 0.0f,
+			9.5f, -9.5f, 0.0f,
+			-9.5f, -9.5f, 0.0f
 		};
 		
 		const uint16_t indices[] =
@@ -103,7 +103,7 @@ static void drawBlackBox(Renderer *renderer)
 		initializedBuffers = SDL_TRUE;
 	}
 	
-	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 0.0f, -25.0f});
+	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 0.0f, -22.0f});
 	
 	drawVerticesFromIndices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertexArrayObject, indicesBufferObject, 6, (color4_t){0.0f, 0.0f, 0.0f, 0.7f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
 }
@@ -627,29 +627,43 @@ static void drawScene(Renderer *renderer)
 {
 	if (gGameState)
 	{
+		// Weapons renders at -24.0f to -25.0f after a world rotation
 		drawWeapon(renderer, gRedRover.weap);
 		drawWeapon(renderer, gGreenTree.weap);
 		drawWeapon(renderer, gPinkBubbleGum.weap);
 		drawWeapon(renderer, gBlueLightning.weap);
 
+		// Characters renders at -25.3 to -24.7 after a world rotation when not fallen
+		// When falling, will reach to around -195
 		drawCharacter(renderer, &gRedRover);
 		drawCharacter(renderer, &gGreenTree);
 		drawCharacter(renderer, &gPinkBubbleGum);
 		drawCharacter(renderer, &gBlueLightning);
 
+		// Tiles renders at -25.0f to -26.0f after a world rotation when not fallen
 		drawTiles(renderer);
-
+		
+		// Character icons at -25.0f
+		drawCharacterIcons(renderer);
+		
+		// Character lives at -38.0f
+		drawCharacterLives(renderer);
+		
+		// Sky renders at -38.0f
+		drawSky(renderer);
+		
 		if (gDrawFPS)
 		{
+			// FPS renders at -25.0f
 			drawFramesPerSecond(renderer);
 		}
-
+		
 		if (!gGameHasStarted)
 		{
 			color4_t textColor = (color4_t){0.0, 0.0, 1.0, 0.5};
 			
 			mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0, 80.0, -280.0});
-
+			
 			if (gPinkBubbleGum.netState == NETWORK_PENDING_STATE || gRedRover.netState == NETWORK_PENDING_STATE || gGreenTree.netState == NETWORK_PENDING_STATE || gBlueLightning.netState == NETWORK_PENDING_STATE)
 			{
 				if (gNetworkConnection)
@@ -669,39 +683,32 @@ static void drawScene(Renderer *renderer)
 					}
 				}
 			}
-
+			
 			else if (gGameStartNumber > 0)
 			{
 				drawStringf(renderer, modelViewMatrix, textColor, 40.0, 10.0, "Game begins in %i", gGameStartNumber);
 			}
-
+			
 			else if (gGameStartNumber == 0)
 			{
 				gGameHasStarted = SDL_TRUE;
 			}
 		}
-	}
-
-	// For this blending to work properly, we have to draw the sky *right* here.
-	drawSky(renderer);
-
-	if (gGameState)
-	{
-		drawCharacterIcons(renderer);
-
-		drawCharacterLives(renderer);
-
+		
 		if (gConsoleActivated)
 		{
+			// Console at -25.0f
 			drawConsole(renderer);
+			
+			// Console text at -25.0f
 			drawConsoleText(renderer);
 		}
-
+		
 		if (gGameWinner != NO_CHARACTER)
 		{
 			mat4_t winLoseModelViewMatrix = m4_translation((vec3_t){70.0f, 100.0f, -280.0f});
 			color4_t textColor = (color4_t){1.0f, 1.0f, 1.0f, 0.8f};
-
+			
 			if (gNetworkConnection)
 			{
 				if (gGameWinner == IDOfCharacter(gNetworkConnection->input->character))
@@ -732,36 +739,50 @@ static void drawScene(Renderer *renderer)
 					drawString(renderer, winLoseModelViewMatrix, textColor, 40.0, 10.0, "Blue Lightning wins!");
 				}
 			}
-
+			
 			/* Stats */
 			
+			// Renders around -22.0f
 			drawBlackBox(renderer);
-
+			
 			/* Display stats */
 			
+			// Character scores at -25.0f
 			drawScoresForCharacter(renderer, &gPinkBubbleGum, textColor, -6.0, 7.0, -25.0);
 			drawScoresForCharacter(renderer, &gRedRover, textColor, -2.0f, 7.0f, -25.0f);
 			drawScoresForCharacter(renderer, &gGreenTree, textColor, 2.0f, 7.0f, -25.0f);
 			drawScoresForCharacter(renderer, &gBlueLightning, textColor, 6.0f, 7.0f, -25.0f);
-
+			
 			if (!gNetworkConnection || gNetworkConnection->type != NETWORK_CLIENT_TYPE)
 			{
 				// Draw a "Press ENTER to play again" notice
 				mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, -7.0f, -25.0f});
-
+				
 				drawString(renderer, modelViewMatrix, (color4_t){0.0f, 0.0f, 0.4f, 0.4f}, 5.0f, 1.0f, "Fire to play again or Escape to quit");
 			}
 		}
 	}
-
-	if (!gGameState)
+	else /* if (!gGameState) */
 	{
+		//		// Title renders at -100.0f
+		//		mat4_t gameTitleModelViewMatrix = m4_translation((vec3_t){-1.0f, 27.0f, -100.0f});
+		//		drawString(renderer, gameTitleModelViewMatrix, (color4_t){0.3f, 0.2f, 1.0f, 1.0f}, 20.0, 5.0, "Sky Checkers");
+		
+		// The game title and menu's should be up front the most
+		// The black box should be behind the title and menu's
+		// The sky should be behind the black box
+		
+		// Sky renders at -38.0f
+		drawSky(renderer);
+		
+		// Black box renders at -22.0f
 		drawBlackBox(renderer);
 		
-		mat4_t gameTitleModelViewMatrix = m4_translation((vec3_t){-1.0f, 27.0f, -100.0f});
+		// Title renders at -20.0f
+		mat4_t gameTitleModelViewMatrix = m4_translation((vec3_t){-0.2f, 5.4f, -20.0f});
+		drawString(renderer, gameTitleModelViewMatrix, (color4_t){0.3f, 0.2f, 1.0f, 0.4f}, 4.0f, 0.8f, "Sky Checkers");
 		
-		drawString(renderer, gameTitleModelViewMatrix, (color4_t){0.3f, 0.2f, 1.0f, 0.35f}, 20.0, 5.0, "Sky Checkers");
-
+		// Most menu's render at z = -280.0f.. but we should change that to -20.0f
 		drawMenus(renderer);
 
 		if (isChildBeingDrawn(&gJoyStickConfig[0][1]) /* pinkBubbleGumConfigRightJoyStick */	||

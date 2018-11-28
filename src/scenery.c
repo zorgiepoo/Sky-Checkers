@@ -248,10 +248,10 @@ void drawSky(Renderer *renderer)
 		float vertexAndTextureCoordinates[] =
 		{
 			// vertices
-			-16.0f, 16.0f, -13.0f,
-			16.0f, 16.0f, -13.0f,
-			16.0f, -16.0f, -13.0f,
-			-16.0f, -16.0f, -13.0f,
+			-16.0f, 16.0f, 0.0f,
+			16.0f, 16.0f, 0.0f,
+			16.0f, -16.0f, 0.0f,
+			-16.0f, -16.0f, 0.0f,
 			
 			// texture coordinates
 			0.0f, 0.0f,
@@ -266,7 +266,7 @@ void drawSky(Renderer *renderer)
 		initializedBuffers = SDL_TRUE;
 	}
 	
-	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 0.0f, -25.0f});
+	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 0.0f, -38.0f});
 	
 	drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, gSkyTex, RENDERER_TRIANGLE_MODE, vertexAndTextureArrayObject, indicesBufferObject, 6, (color4_t){1.0f, 1.0f, 1.0f, 0.9f}, RENDERER_OPTION_BLENDING_ALPHA);
 }
