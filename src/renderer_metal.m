@@ -123,17 +123,12 @@ static void createAndStorePipelineState(void **pipelineStates, id<MTLDevice> dev
 	pipelineStates[pipelineIndex(shaderPairIndex, pipelineOptionIndex)] = (void *)CFBridgingRetain(pipelineState);
 }
 
-void createRenderer_metal(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
+void createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
 {
 	@autoreleasepool
 	{
 		SDL_SetHint(SDL_HINT_RENDER_DRIVER, "metal");
 		
-#ifndef MAC_OS_X
-		const char *windowTitle = "SkyCheckers";
-#else
-		const char *windowTitle = "";
-#endif
 		renderer->window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags);
 		
 		if (renderer->window == NULL)

@@ -26,13 +26,19 @@
 
 void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
 {
+#ifndef MAC_OS_X
+	const char *windowTitle = "SkyCheckers";
+#else
+	const char *windowTitle = "";
+#endif
+	
 	// Metal
 #ifdef MAC_OS_X
-	createRenderer_metal(renderer, windowWidth, windowHeight, videoFlags, vsync, fsaa);
+	createRenderer_metal(renderer, windowTitle, windowWidth, windowHeight, videoFlags, vsync, fsaa);
 #endif
 
 	// OpenGL
-	//createRenderer_gl(renderer, windowWidth, windowHeight, videoFlags, vsync, fsaa);
+	//createRenderer_gl(renderer, windowTitle, windowWidth, windowHeight, videoFlags, vsync, fsaa);
 	
 #ifndef _DEBUG
 	SDL_ShowCursor(SDL_DISABLE);

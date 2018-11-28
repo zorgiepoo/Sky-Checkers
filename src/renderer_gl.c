@@ -207,7 +207,7 @@ static void compileAndLinkShader(Shader_gl *shader, uint16_t glslVersion, const 
 	glDeleteShader(fragmentShader);
 }
 
-static SDL_bool createOpenGLContext(SDL_Window **window, SDL_GLContext *glContext, uint16_t glslVersion, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool fsaa)
+static SDL_bool createOpenGLContext(SDL_Window **window, SDL_GLContext *glContext, uint16_t glslVersion, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool fsaa)
 {
 	switch (glslVersion)
 	{
@@ -238,11 +238,6 @@ static SDL_bool createOpenGLContext(SDL_Window **window, SDL_GLContext *glContex
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 2);
 	}
 	
-#ifndef MAC_OS_X
-	const char *windowTitle = "SkyCheckers";
-#else
-	const char *windowTitle = "";
-#endif
 	*window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags | SDL_WINDOW_OPENGL);
 	
 	if (*window == NULL || (*glContext = SDL_GL_CreateContext(*window)) == NULL)
@@ -281,7 +276,7 @@ static SDL_bool createOpenGLContext(SDL_Window **window, SDL_GLContext *glContex
 	return SDL_TRUE;
 }
 
-void createRenderer_gl(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
+void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
 {
 	// VSYNC
 	SDL_GL_SetSwapInterval(vsync);
@@ -292,13 +287,13 @@ void createRenderer_gl(Renderer *renderer, int32_t windowWidth, int32_t windowHe
 	
 	uint16_t glslVersion = 410;
 	SDL_GLContext glContext = NULL;
-	if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, windowWidth, windowHeight, videoFlags, fsaa))
+	if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, windowTitle, windowWidth, windowHeight, videoFlags, fsaa))
 	{
 		glslVersion = 330;
-		if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, windowWidth, windowHeight, videoFlags, fsaa))
+		if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, windowTitle, windowWidth, windowHeight, videoFlags, fsaa))
 		{
 			glslVersion = 120;
-			if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, windowWidth, windowHeight, videoFlags, fsaa))
+			if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, windowTitle, windowWidth, windowHeight, videoFlags, fsaa))
 			{
 				zgPrint("Failed to create OpenGL context with even glsl version %i", glslVersion);
 				exit(1);
