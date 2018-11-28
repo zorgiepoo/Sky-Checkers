@@ -22,6 +22,9 @@
 
 #ifdef MAC_OS_X
 #include "renderer_metal.h"
+#include "utilities.h"
+
+static const SDL_bool FORCE_OPENGL = SDL_FALSE;
 #endif
 
 void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
@@ -35,8 +38,21 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 	SDL_bool createdRenderer = SDL_FALSE;
 	
 #ifdef MAC_OS_X
-	// Metal
-	createdRenderer = createRenderer_metal(renderer, windowTitle, windowWidth, windowHeight, videoFlags, vsync, fsaa);
+	if (!FORCE_OPENGL)
+	{
+		// Metal
+		createdRenderer = createRenderer_metal(renderer, windowTitle, windowWidth, windowHeight, videoFlags, vsync, fsaa);
+#ifdef _DEBUG
+		if (!createdRenderer)
+		{
+			zgPrint("ERROR: Failed creating Metal renderer!! Falling back to OpenGL.");
+		}
+#endif
+	}
+	else
+	{
+		zgPrint("NOTICE: Forcing OpenGL usage!!");
+	}
 #endif
 
 	// OpenGL
