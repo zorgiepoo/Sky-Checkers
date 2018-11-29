@@ -22,6 +22,8 @@
 #include "maincore.h"
 #include "renderer.h"
 
+#define TILE_ALIVE_Z -25.0f
+
 typedef struct _tile
 {
 	float x;

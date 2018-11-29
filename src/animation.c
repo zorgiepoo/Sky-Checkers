@@ -499,7 +499,7 @@ static void recoverDestroyedTiles(void)
 			gTiles[tileIndex].red = gTiles[tileIndex].d_red;
 			gTiles[tileIndex].green = gTiles[tileIndex].d_green;
 			gTiles[tileIndex].blue = gTiles[tileIndex].d_blue;
-			gTiles[tileIndex].z = -25.0;
+			gTiles[tileIndex].z = TILE_ALIVE_Z;
 			gTiles[tileIndex].state = SDL_TRUE;
 			gTiles[tileIndex].recovery_timer = 0;
 		}
@@ -556,7 +556,7 @@ void decideWhetherToMakeAPlayerAWinner(Character *player)
 		else if (numPlayersAlive == 1)
 		{
 			// check if the winner is really about to die, in that case, we'll need to see who is the highest up to determine the winner
-			SDL_bool winnerIsReadyForDeath = (gTiles[getTileIndexLocation((int)winnerCharacter->x, (int)winnerCharacter->y)].z != -25.0 && winnerCharacter->z >= -70.0 && winnerCharacter->lives == 1);
+			SDL_bool winnerIsReadyForDeath = (gTiles[getTileIndexLocation((int)winnerCharacter->x, (int)winnerCharacter->y)].z < TILE_ALIVE_Z && winnerCharacter->z >= -70.0 && winnerCharacter->lives == 1);
 			if (winnerIsReadyForDeath)
 			{
 				if (winnerCharacter != &gRedRover && gRedRover.z > winnerCharacter->z)
@@ -622,8 +622,8 @@ static void killCharacter(Input *characterInput)
 	
 	int location = getTileIndexLocation((int)player->x, (int)player->y);
 	
-	/* If the tile the character is on isn't at its correct location, then the tile must be falling down, so we make the character fall down as well too */
-	if (gTiles[location].z != -25.0 && player->z >= -70.0)
+	// Make the character fall down if the tile is falling down
+	if (gTiles[location].z < TILE_ALIVE_Z && player->z >= -70.0)
 	{
 		if (player->direction && !player->weap->animationState)
 		{

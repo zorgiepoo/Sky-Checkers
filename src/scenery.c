@@ -85,7 +85,7 @@ SDL_bool availableTile(float x, float y)
 	if (gTiles[tile_loc].state == SDL_FALSE)
 		return SDL_FALSE;
 	
-	if (gTiles[tile_loc].z != -25.0)
+	if (gTiles[tile_loc].z < TILE_ALIVE_Z)
 		return SDL_FALSE;
 	
 	if (gTiles[tile_loc].red != gTiles[tile_loc].d_red || gTiles[tile_loc].blue != gTiles[tile_loc].d_blue || gTiles[tile_loc].d_green != gTiles[tile_loc].d_green)
@@ -158,7 +158,7 @@ static void loadTileLocations(void)
 		{
 			currentTile->x = x_loc;
 			currentTile->y = y_loc;
-			currentTile->z = -25.0;
+			currentTile->z = TILE_ALIVE_Z;
 			
 			x_loc += 2.0;
 		}
