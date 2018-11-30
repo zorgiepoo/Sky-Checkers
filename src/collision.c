@@ -148,5 +148,5 @@ int getTileIndexLocation(int x, int y)
 	int tileX = (x + 1) / 2;
 	int tileY = (y + 1) / 2;
 	
-	return tileX + (tileY * 8) + 1;
+	return tileX + (tileY * 8);
 }

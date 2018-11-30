@@ -43,8 +43,7 @@ typedef struct _tile
 	int recovery_timer;
 } Tile;
 
-/* Tiles start from 1 instead of 0 */
-Tile gTiles[65];
+Tile gTiles[64];
 
 void initTiles(void);
 void loadTiles(void);

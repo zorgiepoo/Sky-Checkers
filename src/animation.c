@@ -470,7 +470,7 @@ static void collapseTiles(void)
 {
 	int tileIndex;
 	
-	for (tileIndex = 1; tileIndex <= 64; tileIndex++)
+	for (tileIndex = 0; tileIndex < 64; tileIndex++)
 	{
 		if (gTiles[tileIndex].z <= -26.0)
 		{
@@ -484,7 +484,7 @@ static void recoverDestroyedTiles(void)
 {
 	int tileIndex;
 	
-	for (tileIndex = 1; tileIndex <= 64; tileIndex++)
+	for (tileIndex = 0; tileIndex < 64; tileIndex++)
 	{
 		if (gTiles[tileIndex].recovery_timer > 0)
 		{
@@ -727,65 +727,65 @@ static void recoverCharacter(Character *player)
 /* Most outter tile layer */
 static void loadFirstTileAnimationLayer(void)
 {
-	gTilesLayer[1] = 57;
-	gTilesLayer[2] = 58;
-	gTilesLayer[3] = 59;
-	gTilesLayer[4] = 60;
-	gTilesLayer[5] = 61;
-	gTilesLayer[6] = 62;
-	gTilesLayer[7] = 63;
-	gTilesLayer[8] = 64;
+	gTilesLayer[1] = 56;
+	gTilesLayer[2] = 57;
+	gTilesLayer[3] = 58;
+	gTilesLayer[4] = 59;
+	gTilesLayer[5] = 60;
+	gTilesLayer[6] = 61;
+	gTilesLayer[7] = 62;
+	gTilesLayer[8] = 63;
 	
-	gTilesLayer[9] = 56;
-	gTilesLayer[10] = 48;
-	gTilesLayer[11] = 40;
-	gTilesLayer[12] = 32;
-	gTilesLayer[13] = 24;
-	gTilesLayer[14] = 16;
-	gTilesLayer[15] = 8;
+	gTilesLayer[9] = 55;
+	gTilesLayer[10] = 47;
+	gTilesLayer[11] = 39;
+	gTilesLayer[12] = 31;
+	gTilesLayer[13] = 23;
+	gTilesLayer[14] = 15;
+	gTilesLayer[15] = 7;
 	
-	gTilesLayer[16] = 7;
-	gTilesLayer[17] = 6;
-	gTilesLayer[18] = 5;
-	gTilesLayer[19] = 4;
-	gTilesLayer[20] = 3;
-	gTilesLayer[21] = 2;
-	gTilesLayer[22] = 1;
+	gTilesLayer[16] = 6;
+	gTilesLayer[17] = 5;
+	gTilesLayer[18] = 4;
+	gTilesLayer[19] = 3;
+	gTilesLayer[20] = 2;
+	gTilesLayer[21] = 1;
+	gTilesLayer[22] = 0;
 	
-	gTilesLayer[23] = 9;
-	gTilesLayer[24] = 17;
-	gTilesLayer[25] = 25;
-	gTilesLayer[26] = 33;
-	gTilesLayer[27] = 41;
-	gTilesLayer[28] = 49;
+	gTilesLayer[23] = 8;
+	gTilesLayer[24] = 16;
+	gTilesLayer[25] = 24;
+	gTilesLayer[26] = 32;
+	gTilesLayer[27] = 40;
+	gTilesLayer[28] = 48;
 }
 
 /* Second most outter tile layer */
 static void loadSecondTileAnimationLayer(void)
 {
-	gTilesLayer[1] = 50;
-	gTilesLayer[2] = 51;
-	gTilesLayer[3] = 52;
-	gTilesLayer[4] = 53;
-	gTilesLayer[5] = 54;
-	gTilesLayer[6] = 55;
+	gTilesLayer[1] = 49;
+	gTilesLayer[2] = 50;
+	gTilesLayer[3] = 51;
+	gTilesLayer[4] = 52;
+	gTilesLayer[5] = 53;
+	gTilesLayer[6] = 54;
 	
-	gTilesLayer[7] = 47;
-	gTilesLayer[8] = 39;
-	gTilesLayer[9] = 31;
-	gTilesLayer[10] = 23;
-	gTilesLayer[11] = 15;
+	gTilesLayer[7] = 46;
+	gTilesLayer[8] = 38;
+	gTilesLayer[9] = 30;
+	gTilesLayer[10] = 22;
+	gTilesLayer[11] = 14;
 	
-	gTilesLayer[12] = 14;
-	gTilesLayer[13] = 13;
-	gTilesLayer[14] = 12;
-	gTilesLayer[15] = 11;
-	gTilesLayer[16] = 10;
+	gTilesLayer[12] = 13;
+	gTilesLayer[13] = 12;
+	gTilesLayer[14] = 11;
+	gTilesLayer[15] = 10;
+	gTilesLayer[16] = 9;
 	
-	gTilesLayer[17] = 18;
-	gTilesLayer[18] = 26;
-	gTilesLayer[19] = 34;
-	gTilesLayer[20] = 42;
+	gTilesLayer[17] = 17;
+	gTilesLayer[18] = 25;
+	gTilesLayer[19] = 33;
+	gTilesLayer[20] = 41;
 }
 
 SDL_bool startAnimation(SDL_Window *window)

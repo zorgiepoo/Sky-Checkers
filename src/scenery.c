@@ -37,15 +37,16 @@ void initTiles(void)
 {
 	loadTiles();
 	
-	linkRow(1);
-	linkRow(9);
-	linkRow(17);
-	linkRow(25);
-	linkRow(33);
-	linkRow(41);
-	linkRow(49);
-	linkRow(57);
+	linkRow(0);
+	linkRow(8);
+	linkRow(16);
+	linkRow(24);
+	linkRow(32);
+	linkRow(40);
+	linkRow(48);
+	linkRow(56);
 	
+	linkColumn(0);
 	linkColumn(1);
 	linkColumn(2);
 	linkColumn(3);
@@ -53,14 +54,13 @@ void initTiles(void)
 	linkColumn(5);
 	linkColumn(6);
 	linkColumn(7);
-	linkColumn(8);
 }
 
 void loadTiles(void)
 {
 	int tileIndex;
 	
-	for (tileIndex = 1; tileIndex <= 64; tileIndex++)
+	for (tileIndex = 0; tileIndex < 64; tileIndex++)
 	{
 		gTiles[tileIndex].state = SDL_TRUE;
 		gTiles[tileIndex].recovery_timer = 0;
@@ -105,10 +105,9 @@ SDL_bool availableTile(float x, float y)
 
 static void loadTileColors(void)
 {
-	for (int i = 1; i <= 64; i++)
+	for (int i = 0; i < 64; i++)
 	{
-		int zeroIndex = i - 1;
-		if ((((zeroIndex / 8) % 2) ^ (zeroIndex % 2)) != 0)
+		if ((((i / 8) % 2) ^ (i % 2)) != 0)
 		{
 			gTiles[i].red = 0.8f;
 			gTiles[i].green = 0.8f;
@@ -131,7 +130,7 @@ static void loadTileColors(void)
 
 static void loadTileLocations(void)
 {	
-	int startingTileIndex = 1;
+	int startingTileIndex = 0;
 	float y_loc = 12.5;
 	
 	do
@@ -152,7 +151,7 @@ static void loadTileLocations(void)
 		y_loc += 2.0;
 		startingTileIndex += 8;
 	}
-	while (startingTileIndex <= 57);
+	while (startingTileIndex < 57);
 }
 
 static void linkRow(int index)
@@ -346,13 +345,12 @@ void drawTiles(Renderer *renderer)
 	
 	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((float)M_PI / 180.0f));
 	
-	for (int i = 1; i <= 64; i++)
+	for (int i = 0; i < 64; i++)
 	{
 		mat4_t modelTranslationMatrix = m4_translation((vec3_t){gTiles[i].x , gTiles[i].y, gTiles[i].z});
 		mat4_t modelViewMatrix = m4_mul(worldRotationMatrix, modelTranslationMatrix);
 		
-		int zeroIndex = i - 1;
-		TextureObject texture = (((zeroIndex / 8) % 2) ^ (zeroIndex % 2)) != 0 ? gTileOneTex : gTileTwoTex;
+		TextureObject texture = (((i / 8) % 2) ^ (i % 2)) != 0 ? gTileOneTex : gTileTwoTex;
 		
 		drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, texture, RENDERER_TRIANGLE_MODE, vertexAndTextureCoordinateArrayObject, indicesBufferObject, 24, (color4_t){gTiles[i].red, gTiles[i].green, gTiles[i].blue, 1.0f}, RENDERER_OPTION_NONE);
 	}
