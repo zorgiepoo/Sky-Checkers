@@ -105,22 +105,10 @@ SDL_bool availableTile(float x, float y)
 
 static void loadTileColors(void)
 {
-	int i;
-	SDL_bool drawFirst;
-	
-	for (i = 1; i <= 64; i++)
+	for (int i = 1; i <= 64; i++)
 	{
-		
-		if ((i >= 1 && i <= 8) || (i >= 17 && i <= 24) || (i >= 33 && i <= 40) || (i >= 49 && i <= 56))
-		{
-			drawFirst = SDL_TRUE;
-		}
-		else
-		{
-			drawFirst = SDL_FALSE;
-		}
-		
-		if ((drawFirst && i % 2 == 0) || (!drawFirst && i % 2 == 1))
+		int zeroIndex = i - 1;
+		if ((((zeroIndex / 8) % 2) ^ (zeroIndex % 2)) != 0)
 		{
 			gTiles[i].red = 0.8f;
 			gTiles[i].green = 0.8f;
@@ -364,7 +352,7 @@ void drawTiles(Renderer *renderer)
 		mat4_t modelViewMatrix = m4_mul(worldRotationMatrix, modelTranslationMatrix);
 		
 		int zeroIndex = i - 1;
-		TextureObject texture = (((zeroIndex / 8) % 2) ^ (zeroIndex % 2)) ? gTileOneTex : gTileTwoTex;
+		TextureObject texture = (((zeroIndex / 8) % 2) ^ (zeroIndex % 2)) != 0 ? gTileOneTex : gTileTwoTex;
 		
 		drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, texture, RENDERER_TRIANGLE_MODE, vertexAndTextureCoordinateArrayObject, indicesBufferObject, 24, (color4_t){gTiles[i].red, gTiles[i].green, gTiles[i].blue, 1.0f}, RENDERER_OPTION_NONE);
 	}
