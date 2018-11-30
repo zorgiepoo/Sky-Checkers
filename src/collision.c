@@ -133,92 +133,20 @@ SDL_bool characterIsOutOfBounds(int direction, Character *character)
 /* x, y arguements are the specified character's x and y values */
 int getTileIndexLocation(int x, int y)
 {
-	int index;
+	// Round x and y values to the tile they're on.
+	// Initially, each tile contains two numbers of values.
+	// Example: tile 2 can have a location of 1.x or 2.x
+	// For each x and y component..
+	// 0 -> 0
+	// 1 -> 1
+	// 2 -> 1
+	// 3 -> 2
+	// 4 -> 2
+	// 5 -> 3
+	// etc..
 	
-	/*
-	 * Round x and y values to the tile they're on.
-	 * Initially, each tile contains two numbers of values.
-	 * Example: tile 2 can have a location of 1.x or 2.x
-	 */
+	int tileX = (x + 1) / 2;
+	int tileY = (y + 1) / 2;
 	
-	switch (x)
-	{
-		case 0:
-			x = 1;
-			break;
-		case 1:
-		case 2:
-			x = 2;
-			break;
-		case 3:
-		case 4:
-			x = 3;
-			break;
-		case 5:
-		case 6:
-			x = 4;
-			break;
-		case 7:
-		case 8:
-			x = 5;
-			break;
-		case 9:
-		case 10:
-			x = 6;
-			break;
-		case 11:
-		case 12:
-			x = 7;
-			break;
-		case 13:
-		case 14:
-			x = 8;
-			break;
-	}
-	
-	switch (y)
-	{
-		case 0:
-			y = 1;
-			break;
-		case 1:
-		case 2:
-			y = 2;
-			break;
-		case 3:
-		case 4:
-			y = 3;
-			break;
-		case 5:
-		case 6:
-			y = 4;
-			break;
-		case 7:
-		case 8:
-			y = 5;
-			break;
-		case 9:
-		case 10:
-			y = 6;
-			break;
-		case 11:
-		case 12:
-			y = 7;
-			break;
-		case 13:
-		case 14:
-			y = 8;
-			break;
-	}
-	
-	// Get the array index of the tile that the character is on
-	index = x;
-	
-	// Find which row the index is on
-	if (y != 1)
-	{
-		index += 8 * (y - 1);
-	}
-	
-	return index;
+	return tileX + (tileY * 8) + 1;
 }
