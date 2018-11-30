@@ -117,22 +117,22 @@ static void directCharacterBasedOnCollisions(Character *character, int currentTi
 		int row = rowOfCharacter(character);
 		int column = columnOfCharacter(character);
 		
-		if (row == 1 || row == 2)
+		if (row == 0 || row == 1)
 		{
 			if (tile->up && !tile->up->isDead && tile->up->state)
 				character->direction = UP;
 		}
-		else if (row == 8 || row == 7)
+		else if (row == 7 || row == 6)
 		{
 			if (tile->down && !tile->down->isDead && tile->down->state)
 				character->direction = DOWN;
 		}
-		else if (column == 1 || column == 2)
+		else if (column == 0 || column == 1)
 		{
 			if (tile->right && !tile->right->isDead && tile->right->state)
 				character->direction = RIGHT;
 		}
-		else if (column == 8 || column == 7)
+		else if (column == 7 || column == 6)
 		{
 			if (tile->left && !tile->left->isDead && tile->left->state)
 				character->direction = LEFT;
@@ -202,58 +202,18 @@ static void shootWeaponProjectile(Character *character, int currentTime)
 	}
 }
 
-// Returns the row the character is on, otherwise, -1 on error
+// Returns the row index the character is on
 static int rowOfCharacter(Character *character)
-{	
-	int tileIndex;
-	int row = -1;
-	
-	tileIndex = getTileIndexLocation((int)character->x, (int)character->y);
-	
-	if (tileIndex < 9)
-		row = 1;
-	else if (tileIndex < 17)
-		row = 2;
-	else if (tileIndex < 25)
-		row = 3;
-	else if (tileIndex < 33)
-		row = 4;
-	else if (tileIndex < 41)
-		row = 5;
-	else if (tileIndex < 49)
-		row = 6;
-	else if (tileIndex < 57)
-		row = 7;
-	else
-		row = 8;
-	
-	return row;
+{
+	int tileIndex = getTileIndexLocation((int)character->x, (int)character->y);
+	return tileIndex / 8;
 }
 
-// Returns the column number of which the character is on, otherwise, -1 on error
+// Returns the column index the character is on
 static int columnOfCharacter(Character *character)
 {
-	int tileIndex;
-	int column;
-	
-	tileIndex = getTileIndexLocation((int)character->x, (int)character->y);
-	
-	for (column = 1; column <= 8; column++)
-	{
-		int rowIndex = column;
-		
-		while (rowIndex <= 64)
-		{
-			rowIndex += 8;
-			
-			if (rowIndex == tileIndex)
-			{
-				return column;
-			}
-		}
-	}
-	
-	return -1;
+	int tileIndex = getTileIndexLocation((int)character->x, (int)character->y);
+	return tileIndex % 8;
 }
 
 static void fireAIWeapon(Character *character)
