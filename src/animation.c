@@ -33,13 +33,12 @@ static const float TILE_FALLING_SPEED =			1.8f;
 // in seconds
 static const int STATS_WILL_APPEAR =			4;
 
-// We'll need 18 tiles at max (starting index is 1, not 0)
-static int gTilesLayer[29];
+static int gTilesLayer[28];
 
-static int gLayerColorIndex =					1;
-static int gLayerDeathIndex =					1;
-static int gLayerTwoColorIndex =				1;
-static int gLayerTwoDeathIndex =				1;
+static int gLayerColorIndex =					0;
+static int gLayerDeathIndex =					0;
+static int gLayerTwoColorIndex =				0;
+static int gLayerTwoDeathIndex =				0;
 
 static float gSecondTimer =						0.0f;
 static float gLastSecond =						0.0f;
@@ -346,7 +345,7 @@ static void animateWeapAndTiles(SDL_Window *window, Character *player)
 static void firstTileLayerAnimation(SDL_Window *window, int beginAnimating, int endAnimating)
 {
 	// Color the tiles gray
-	if (gLayerColorIndex != 0 && gFirstLayerAnimationTimer > beginAnimating)
+	if (gLayerColorIndex != -1 && gFirstLayerAnimationTimer > beginAnimating)
 	{
 		if (gTiles[gTilesLayer[gLayerColorIndex]].red == gTiles[gTilesLayer[gLayerColorIndex]].d_red		&&
 			gTiles[gTilesLayer[gLayerColorIndex]].green == gTiles[gTilesLayer[gLayerColorIndex]].d_green	&&
@@ -369,14 +368,14 @@ static void firstTileLayerAnimation(SDL_Window *window, int beginAnimating, int 
 		
 		gLayerColorIndex++;
 		
-		if (gLayerColorIndex == 29)
+		if (gLayerColorIndex == 28)
 		{
-			gLayerColorIndex = 0;
+			gLayerColorIndex = -1;
 		}
 	}
 	
 	// Make the tiles fall down
-	if (gLayerDeathIndex != 0 && gFirstLayerAnimationTimer > endAnimating)
+	if (gLayerDeathIndex != -1 && gFirstLayerAnimationTimer > endAnimating)
 	{
 		if (!gTiles[gTilesLayer[gLayerDeathIndex]].isDead)
 		{
@@ -391,9 +390,9 @@ static void firstTileLayerAnimation(SDL_Window *window, int beginAnimating, int 
 		
 		gLayerDeathIndex++;
 		
-		if (gLayerDeathIndex == 29)
+		if (gLayerDeathIndex == 28)
 		{
-			gLayerDeathIndex = 0;
+			gLayerDeathIndex = -1;
 			loadSecondTileAnimationLayer();
 			gFirstLayerAnimationTimer = -1;
 		}
@@ -410,7 +409,7 @@ static void firstTileLayerAnimation(SDL_Window *window, int beginAnimating, int 
 static void secondTileLayerAnimation(SDL_Window *window, int beginAnimating, int endAnimating)
 {
 	// Color the tiles gray
-	if (gLayerTwoColorIndex != 0 && gSecondLayerAnimationTimer > beginAnimating)
+	if (gLayerTwoColorIndex != -1 && gSecondLayerAnimationTimer > beginAnimating)
 	{
 		if (gTiles[gTilesLayer[gLayerTwoColorIndex]].red == gTiles[gTilesLayer[gLayerTwoColorIndex]].d_red		&&
 			gTiles[gTilesLayer[gLayerTwoColorIndex]].green == gTiles[gTilesLayer[gLayerTwoColorIndex]].d_green	&&
@@ -433,14 +432,14 @@ static void secondTileLayerAnimation(SDL_Window *window, int beginAnimating, int
 		
 		gLayerTwoColorIndex++;
 		
-		if (gLayerTwoColorIndex == 21)
+		if (gLayerTwoColorIndex == 20)
 		{
-			gLayerTwoColorIndex = 0;
+			gLayerTwoColorIndex = -1;
 		}
 	}
 	
 	// Make the tiles fall down
-	if (gLayerTwoDeathIndex != 0 && gSecondLayerAnimationTimer > endAnimating)
+	if (gLayerTwoDeathIndex != -1 && gSecondLayerAnimationTimer > endAnimating)
 	{
 		if (!gTiles[gTilesLayer[gLayerTwoDeathIndex]].isDead)
 		{
@@ -455,9 +454,9 @@ static void secondTileLayerAnimation(SDL_Window *window, int beginAnimating, int
 		
 		gLayerTwoDeathIndex++;
 		
-		if (gLayerTwoDeathIndex == 21)
+		if (gLayerTwoDeathIndex == 20)
 		{
-			gLayerTwoDeathIndex = 0;
+			gLayerTwoDeathIndex = -1;
 			gSecondLayerAnimationTimer = -1;
 		}
 	}
@@ -727,65 +726,65 @@ static void recoverCharacter(Character *player)
 /* Most outter tile layer */
 static void loadFirstTileAnimationLayer(void)
 {
-	gTilesLayer[1] = 56;
-	gTilesLayer[2] = 57;
-	gTilesLayer[3] = 58;
-	gTilesLayer[4] = 59;
-	gTilesLayer[5] = 60;
-	gTilesLayer[6] = 61;
-	gTilesLayer[7] = 62;
-	gTilesLayer[8] = 63;
+	gTilesLayer[0] = 56;
+	gTilesLayer[1] = 57;
+	gTilesLayer[2] = 58;
+	gTilesLayer[3] = 59;
+	gTilesLayer[4] = 60;
+	gTilesLayer[5] = 61;
+	gTilesLayer[6] = 62;
+	gTilesLayer[7] = 63;
 	
-	gTilesLayer[9] = 55;
-	gTilesLayer[10] = 47;
-	gTilesLayer[11] = 39;
-	gTilesLayer[12] = 31;
-	gTilesLayer[13] = 23;
-	gTilesLayer[14] = 15;
-	gTilesLayer[15] = 7;
+	gTilesLayer[8] = 55;
+	gTilesLayer[9] = 47;
+	gTilesLayer[10] = 39;
+	gTilesLayer[11] = 31;
+	gTilesLayer[12] = 23;
+	gTilesLayer[13] = 15;
+	gTilesLayer[14] = 7;
 	
-	gTilesLayer[16] = 6;
-	gTilesLayer[17] = 5;
-	gTilesLayer[18] = 4;
-	gTilesLayer[19] = 3;
-	gTilesLayer[20] = 2;
-	gTilesLayer[21] = 1;
-	gTilesLayer[22] = 0;
+	gTilesLayer[15] = 6;
+	gTilesLayer[16] = 5;
+	gTilesLayer[17] = 4;
+	gTilesLayer[18] = 3;
+	gTilesLayer[19] = 2;
+	gTilesLayer[20] = 1;
+	gTilesLayer[21] = 0;
 	
-	gTilesLayer[23] = 8;
-	gTilesLayer[24] = 16;
-	gTilesLayer[25] = 24;
-	gTilesLayer[26] = 32;
-	gTilesLayer[27] = 40;
-	gTilesLayer[28] = 48;
+	gTilesLayer[22] = 8;
+	gTilesLayer[23] = 16;
+	gTilesLayer[24] = 24;
+	gTilesLayer[25] = 32;
+	gTilesLayer[26] = 40;
+	gTilesLayer[27] = 48;
 }
 
 /* Second most outter tile layer */
 static void loadSecondTileAnimationLayer(void)
 {
-	gTilesLayer[1] = 49;
-	gTilesLayer[2] = 50;
-	gTilesLayer[3] = 51;
-	gTilesLayer[4] = 52;
-	gTilesLayer[5] = 53;
-	gTilesLayer[6] = 54;
+	gTilesLayer[0] = 49;
+	gTilesLayer[1] = 50;
+	gTilesLayer[2] = 51;
+	gTilesLayer[3] = 52;
+	gTilesLayer[4] = 53;
+	gTilesLayer[5] = 54;
 	
-	gTilesLayer[7] = 46;
-	gTilesLayer[8] = 38;
-	gTilesLayer[9] = 30;
-	gTilesLayer[10] = 22;
-	gTilesLayer[11] = 14;
+	gTilesLayer[6] = 46;
+	gTilesLayer[7] = 38;
+	gTilesLayer[8] = 30;
+	gTilesLayer[9] = 22;
+	gTilesLayer[10] = 14;
 	
-	gTilesLayer[12] = 13;
-	gTilesLayer[13] = 12;
-	gTilesLayer[14] = 11;
-	gTilesLayer[15] = 10;
-	gTilesLayer[16] = 9;
+	gTilesLayer[11] = 13;
+	gTilesLayer[12] = 12;
+	gTilesLayer[13] = 11;
+	gTilesLayer[14] = 10;
+	gTilesLayer[15] = 9;
 	
-	gTilesLayer[17] = 17;
-	gTilesLayer[18] = 25;
-	gTilesLayer[19] = 33;
-	gTilesLayer[20] = 41;
+	gTilesLayer[16] = 17;
+	gTilesLayer[17] = 25;
+	gTilesLayer[18] = 33;
+	gTilesLayer[19] = 41;
 }
 
 SDL_bool startAnimation(SDL_Window *window)
@@ -813,10 +812,10 @@ void endAnimation(void)
 	gSecondTimer = 0.0;
 	gLastSecond = 0.0;
 	
-	gLayerColorIndex = 1;
-	gLayerDeathIndex = 1;
-	gLayerTwoColorIndex = 1;
-	gLayerTwoDeathIndex = 1;
+	gLayerColorIndex = 0;
+	gLayerDeathIndex = 0;
+	gLayerTwoColorIndex = 0;
+	gLayerTwoDeathIndex = 0;
 	
 	gFirstLayerAnimationTimer = 0;
 	gSecondLayerAnimationTimer = 0;
