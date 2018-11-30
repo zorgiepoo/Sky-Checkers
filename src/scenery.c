@@ -29,9 +29,6 @@ static void loadTileColors(void);
 static void linkRow(int index);
 static void linkColumn(int index);
 
-// starts at index '1' for all of our calculations, 1 to 64
-Tile gTiles[65];
-
 static TextureObject gSkyTex;
 static TextureObject gTileOneTex;
 static TextureObject gTileTwoTex;
@@ -359,8 +356,6 @@ void drawTiles(Renderer *renderer)
 		initializedBuffers = SDL_TRUE;
 	}
 	
-	SDL_bool drawTileOneFirst = SDL_FALSE;
-	
 	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((float)M_PI / 180.0f));
 	
 	for (int i = 1; i <= 64; i++)
@@ -368,26 +363,8 @@ void drawTiles(Renderer *renderer)
 		mat4_t modelTranslationMatrix = m4_translation((vec3_t){gTiles[i].x , gTiles[i].y, gTiles[i].z});
 		mat4_t modelViewMatrix = m4_mul(worldRotationMatrix, modelTranslationMatrix);
 		
-		// If it's at an odd row number, set drawTileOneFirst to TRUE, otherwise set it to FALSE.
-		if ((i >= 1 && i <= 8) || (i >= 17 && i <= 24) || (i >= 33 && i <= 40) || (i >= 49 && i <= 56))
-		{
-			drawTileOneFirst = SDL_TRUE;
-		}
-		else
-		{
-			drawTileOneFirst = SDL_FALSE;
-		}
-		
-		// Figure out which texture to bind to
-		TextureObject texture;
-		if ((drawTileOneFirst && i % 2 == 0) || (!drawTileOneFirst && i % 2 == 1))
-		{
-			texture = gTileOneTex;
-		}
-		else
-		{
-			texture = gTileTwoTex;
-		}
+		int zeroIndex = i - 1;
+		TextureObject texture = (((zeroIndex / 8) % 2) ^ (zeroIndex % 2)) ? gTileOneTex : gTileTwoTex;
 		
 		drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, texture, RENDERER_TRIANGLE_MODE, vertexAndTextureCoordinateArrayObject, indicesBufferObject, 24, (color4_t){gTiles[i].red, gTiles[i].green, gTiles[i].blue, 1.0f}, RENDERER_OPTION_NONE);
 	}

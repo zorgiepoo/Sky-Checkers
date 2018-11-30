@@ -44,7 +44,7 @@ typedef struct _tile
 } Tile;
 
 /* Tiles start from 1 instead of 0 */
-extern Tile gTiles[65];
+Tile gTiles[65];
 
 void initTiles(void);
 void loadTiles(void);
