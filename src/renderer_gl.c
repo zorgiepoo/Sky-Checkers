@@ -399,6 +399,14 @@ void renderFrame_gl(Renderer *renderer, void (*drawFunc)(Renderer *))
 	drawFunc(renderer);
 	
 	SDL_GL_SwapWindow(renderer->window);
+	
+#ifdef _DEBUG
+	GLenum error;
+	while((error = glGetError()) != GL_NO_ERROR)
+	{
+		zgPrint("Found OpenGL Error: %d", error);
+	}
+#endif
 }
 
 TextureObject textureFromPixelData_gl(Renderer *renderer, const void *pixels, int32_t width, int32_t height)
