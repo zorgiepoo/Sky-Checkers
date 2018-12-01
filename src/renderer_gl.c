@@ -517,7 +517,7 @@ BufferArrayObject createVertexAndTextureCoordinateArrayObject_gl(Renderer *rende
 	return (BufferArrayObject){.glObject = vertexArray};
 }
 
-static void beginDrawingVertices(Shader_gl *shader, mat4_t modelViewMatrix, mat4_t projectionMatrix, BufferArrayObject vertexArrayObject, color4_t color, RendererOptions options)
+static void beginDrawingVertices(Shader_gl *shader, BufferArrayObject vertexArrayObject, RendererOptions options)
 {
 	SDL_bool disableDepthTest = (options & RENDERER_OPTION_DISABLE_DEPTH_TEST) != 0;
 	if (disableDepthTest)
@@ -545,7 +545,10 @@ static void beginDrawingVertices(Shader_gl *shader, mat4_t modelViewMatrix, mat4
 	glBindVertexArray(vertexArrayObject.glObject);
 	
 	glUseProgram(shader->program);
-	
+}
+
+static void setModelViewProjectionAndColorUniforms(Shader_gl *shader, mat4_t modelViewMatrix, mat4_t projectionMatrix, color4_t color)
+{
 	mat4_t modelViewProjectionMatrix = m4_mul(projectionMatrix, modelViewMatrix);
 	glUniformMatrix4fv(shader->modelViewProjectionMatrixUniformLocation, 1, GL_FALSE, &modelViewProjectionMatrix.m00);
 	glUniform4f(shader->colorUniformLocation, color.red, color.green, color.blue, color.alpha);
@@ -572,7 +575,9 @@ static void endDrawingVerticesAndTextures(RendererOptions options)
 
 void drawVertices_gl(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options)
 {
-	beginDrawingVertices(&renderer->glPositionShader, modelViewMatrix, renderer->projectionMatrix, vertexArrayObject, color, options);
+	beginDrawingVertices(&renderer->glPositionShader, vertexArrayObject, options);
+	
+	setModelViewProjectionAndColorUniforms(&renderer->glPositionShader, modelViewMatrix, renderer->projectionMatrix, color);
 	
 	glDrawArrays(glModeFromMode(mode), 0, vertexCount);
 	
@@ -581,7 +586,9 @@ void drawVertices_gl(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mo
 
 void drawVerticesFromIndices_gl(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options)
 {
-	beginDrawingVertices(&renderer->glPositionShader, modelViewMatrix, renderer->projectionMatrix, vertexArrayObject, color, options);
+	beginDrawingVertices(&renderer->glPositionShader, vertexArrayObject, options);
+	
+	setModelViewProjectionAndColorUniforms(&renderer->glPositionShader, modelViewMatrix, renderer->projectionMatrix, color);
 	
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesBufferObject.glObject);
 	
@@ -592,9 +599,9 @@ void drawVerticesFromIndices_gl(Renderer *renderer, mat4_t modelViewMatrix, Rend
 	endDrawingVerticesAndTextures(options);
 }
 
-static void beginDrawingTexture(Shader_gl *shader, mat4_t modelViewMatrix, mat4_t projectionMatrix, TextureObject texture, BufferArrayObject vertexAndTextureArrayObject, color4_t color, RendererOptions options)
+static void beginDrawingTexture(Shader_gl *shader, TextureObject texture, BufferArrayObject vertexAndTextureArrayObject, RendererOptions options)
 {
-	beginDrawingVertices(shader, modelViewMatrix, projectionMatrix, vertexAndTextureArrayObject, color, options);
+	beginDrawingVertices(shader, vertexAndTextureArrayObject, options);
 	
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture.glObject);
@@ -603,7 +610,9 @@ static void beginDrawingTexture(Shader_gl *shader, mat4_t modelViewMatrix, mat4_
 
 void drawTextureWithVertices_gl(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options)
 {
-	beginDrawingTexture(&renderer->glPositionTextureShader, modelViewMatrix, renderer->projectionMatrix, texture, vertexAndTextureArrayObject, color, options);
+	beginDrawingTexture(&renderer->glPositionTextureShader, texture, vertexAndTextureArrayObject, options);
+	
+	setModelViewProjectionAndColorUniforms(&renderer->glPositionTextureShader, modelViewMatrix, renderer->projectionMatrix, color);
 	
 	glDrawArrays(glModeFromMode(mode), 0, vertexCount);
 	
@@ -612,7 +621,9 @@ void drawTextureWithVertices_gl(Renderer *renderer, mat4_t modelViewMatrix, Text
 
 void drawTextureWithVerticesFromIndices_gl(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options)
 {
-	beginDrawingTexture(&renderer->glPositionTextureShader, modelViewMatrix, renderer->projectionMatrix, texture, vertexAndTextureArrayObject, color, options);
+	beginDrawingTexture(&renderer->glPositionTextureShader, texture, vertexAndTextureArrayObject, options);
+	
+	setModelViewProjectionAndColorUniforms(&renderer->glPositionTextureShader, modelViewMatrix, renderer->projectionMatrix, color);
 	
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesBufferObject.glObject);
 	
@@ -624,35 +635,9 @@ void drawTextureWithVerticesFromIndices_gl(Renderer *renderer, mat4_t modelViewM
 }
 
 void drawInstancedTexturesWithVerticesFromIndices_gl(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureArrayObject textureArray, color4_t *colors, uint32_t *textureArrayIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options)
-{
-	SDL_bool disableDepthTest = (options & RENDERER_OPTION_DISABLE_DEPTH_TEST) != 0;
-	if (disableDepthTest)
-	{
-		glDisable(GL_DEPTH_TEST);
-	}
-
-	SDL_bool blendingAlpha = (options & RENDERER_OPTION_BLENDING_ALPHA) != 0;
-	SDL_bool blendingOneMinusAlpha = (options & RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA) != 0;
-	SDL_bool blending = (blendingAlpha || blendingOneMinusAlpha);
-	if (blending)
-	{
-		glEnable(GL_BLEND);
-
-		if (blendingAlpha)
-		{
-			glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA);
-		}
-		else /* if (blendingOneMinusAlpha) */
-		{
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		}
-	}
-
-	glBindVertexArray(vertexAndTextureArrayObject.glObject);
-
+{	
 	Shader_gl *shader = &renderer->glTilesShader;
-
-	glUseProgram(shader->program);
+	beginDrawingVertices(shader, vertexAndTextureArrayObject, options);
 
 	glUniformMatrix4fv(shader->modelViewProjectionMatrixUniformLocation, instancesCount, GL_FALSE, &modelViewProjectionMatrices->m00);
 	glUniform4fv(shader->colorUniformLocation, instancesCount, &colors->red);
@@ -671,17 +656,5 @@ void drawInstancedTexturesWithVerticesFromIndices_gl(Renderer *renderer, mat4_t 
 
 	glDrawElementsInstanced(glModeFromMode(mode), indicesCount, GL_UNSIGNED_SHORT, NULL, instancesCount);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-	glBindVertexArray(0);
-
-	if (blending)
-	{
-		glDisable(GL_BLEND);
-	}
-
-	if (disableDepthTest)
-	{
-		glEnable(GL_DEPTH_TEST);
-	}
+	endDrawingVerticesAndTextures(options);
 }
