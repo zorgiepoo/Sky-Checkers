@@ -466,7 +466,7 @@ static MTLPrimitiveType metalTypeFromRendererMode(RendererMode mode)
 	return 0;
 }
 
-static void encodeVertexState(id<MTLRenderCommandEncoder> renderCommandEncoder, Renderer *renderer, ShaderFunctionPairIndex shaderFunctionPairIndex, id<MTLBuffer> vertexBuffer, mat4_t modelViewMatrix, color4_t color, RendererOptions options)
+static void encodeVertexState(id<MTLRenderCommandEncoder> renderCommandEncoder, Renderer *renderer, ShaderFunctionPairIndex shaderFunctionPairIndex, id<MTLBuffer> vertexBuffer, RendererOptions options)
 {
 	PipelineOptionIndex pipelineOptionIndex = rendererOptionsToPipelineOptionIndex(options);
 	
@@ -481,18 +481,20 @@ static void encodeVertexState(id<MTLRenderCommandEncoder> renderCommandEncoder, 
 	}
 	
 	[renderCommandEncoder setVertexBuffer:vertexBuffer offset:0 atIndex:METAL_BUFFER_VERTICES_INDEX];
-	
+}
+
+static void encodeModelViewMatrixAndColor(id<MTLRenderCommandEncoder> renderCommandEncoder, Renderer *renderer, mat4_t modelViewMatrix, color4_t color)
+{
 	mat4_t modelViewProjectionMatrix = m4_mul(renderer->projectionMatrix, modelViewMatrix);
 	[renderCommandEncoder setVertexBytes:modelViewProjectionMatrix.m length:sizeof(modelViewProjectionMatrix.m) atIndex:METAL_BUFFER_MODELVIEW_PROJECTION_INDEX];
 	
-	float colorBytes[] = {color.red, color.green, color.blue, color.alpha};
-	[renderCommandEncoder setFragmentBytes:colorBytes length:sizeof(colorBytes) atIndex:METAL_BUFFER_COLOR_INDEX];
+	[renderCommandEncoder setFragmentBytes:&color.red length:sizeof(color) atIndex:METAL_BUFFER_COLOR_INDEX];
 }
 
-static void encodeVertexAndTextureState(id<MTLRenderCommandEncoder> renderCommandEncoder, Renderer *renderer, TextureObject textureObject, BufferArrayObject vertexAndTextureArrayObject, mat4_t modelViewMatrix, color4_t color, RendererOptions options)
+static void encodeVertexAndTextureState(id<MTLRenderCommandEncoder> renderCommandEncoder, Renderer *renderer, TextureObject textureObject, BufferArrayObject vertexAndTextureArrayObject, RendererOptions options)
 {
 	id<MTLBuffer> vertexAndTextureBuffer = (__bridge id<MTLBuffer>)(vertexAndTextureArrayObject.metalObject);
-	encodeVertexState(renderCommandEncoder, renderer, SHADER_FUNCTION_POSITION_TEXTURE_PAIR_INDEX, vertexAndTextureBuffer, modelViewMatrix, color, options);
+	encodeVertexState(renderCommandEncoder, renderer, SHADER_FUNCTION_POSITION_TEXTURE_PAIR_INDEX, vertexAndTextureBuffer, options);
 	
 	[renderCommandEncoder setVertexBuffer:vertexAndTextureBuffer offset:vertexAndTextureArrayObject.metalVerticesSize atIndex:METAL_BUFFER_TEXTURE_COORDINATES_INDEX];
 	
@@ -506,7 +508,9 @@ void drawVertices_metal(Renderer *renderer, mat4_t modelViewMatrix, RendererMode
 	
 	id<MTLBuffer> vertexBuffer = (__bridge id<MTLBuffer>)(vertexArrayObject.metalObject);
 	
-	encodeVertexState(renderCommandEncoder, renderer, SHADER_FUNCTION_POSITION_PAIR_INDEX, vertexBuffer, modelViewMatrix, color, options);
+	encodeVertexState(renderCommandEncoder, renderer, SHADER_FUNCTION_POSITION_PAIR_INDEX, vertexBuffer, options);
+	
+	encodeModelViewMatrixAndColor(renderCommandEncoder, renderer, modelViewMatrix, color);
 	
 	[renderCommandEncoder drawPrimitives:metalTypeFromRendererMode(mode) vertexStart:0 vertexCount:vertexCount];
 }
@@ -517,7 +521,9 @@ void drawVerticesFromIndices_metal(Renderer *renderer, mat4_t modelViewMatrix, R
 	
 	id<MTLBuffer> vertexBuffer = (__bridge id<MTLBuffer>)(vertexArrayObject.metalObject);
 	
-	encodeVertexState(renderCommandEncoder, renderer, SHADER_FUNCTION_POSITION_PAIR_INDEX, vertexBuffer, modelViewMatrix, color, options);
+	encodeVertexState(renderCommandEncoder, renderer, SHADER_FUNCTION_POSITION_PAIR_INDEX, vertexBuffer, options);
+	
+	encodeModelViewMatrixAndColor(renderCommandEncoder, renderer, modelViewMatrix, color);
 	
 	id<MTLBuffer> indicesBuffer = (__bridge id<MTLBuffer>)(indicesBufferObject.metalObject);
 	[renderCommandEncoder drawIndexedPrimitives:metalTypeFromRendererMode(mode) indexCount:indicesCount indexType:MTLIndexTypeUInt16 indexBuffer:indicesBuffer indexBufferOffset:0];
@@ -527,7 +533,9 @@ void drawTextureWithVertices_metal(Renderer *renderer, mat4_t modelViewMatrix, T
 {
 	id<MTLRenderCommandEncoder> renderCommandEncoder = (__bridge id<MTLRenderCommandEncoder>)(renderer->metalCurrentRenderCommandEncoder);
 	
-	encodeVertexAndTextureState(renderCommandEncoder, renderer, textureObject, vertexAndTextureArrayObject, modelViewMatrix, color, options);
+	encodeVertexAndTextureState(renderCommandEncoder, renderer, textureObject, vertexAndTextureArrayObject, options);
+	
+	encodeModelViewMatrixAndColor(renderCommandEncoder, renderer, modelViewMatrix, color);
 	
 	[renderCommandEncoder drawPrimitives:metalTypeFromRendererMode(mode) vertexStart:0 vertexCount:vertexCount];
 }
@@ -536,7 +544,9 @@ void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, mat4_t modelVi
 {
 	id<MTLRenderCommandEncoder> renderCommandEncoder = (__bridge id<MTLRenderCommandEncoder>)(renderer->metalCurrentRenderCommandEncoder);
 	
-	encodeVertexAndTextureState(renderCommandEncoder, renderer, textureObject, vertexAndTextureArrayObject, modelViewMatrix, color, options);
+	encodeVertexAndTextureState(renderCommandEncoder, renderer, textureObject, vertexAndTextureArrayObject, options);
+	
+	encodeModelViewMatrixAndColor(renderCommandEncoder, renderer, modelViewMatrix, color);
 	
 	id<MTLBuffer> indicesBuffer = (__bridge id<MTLBuffer>)(indicesBufferObject.metalObject);
 	[renderCommandEncoder drawIndexedPrimitives:metalTypeFromRendererMode(mode) indexCount:indicesCount indexType:MTLIndexTypeUInt16 indexBuffer:indicesBuffer indexBufferOffset:0];
@@ -546,21 +556,8 @@ void drawInstancedTexturesWithVerticesFromIndices_metal(Renderer *renderer, mat4
 {
 	id<MTLRenderCommandEncoder> renderCommandEncoder = (__bridge id<MTLRenderCommandEncoder>)(renderer->metalCurrentRenderCommandEncoder);
 	
-	PipelineOptionIndex pipelineOptionIndex = rendererOptionsToPipelineOptionIndex(options);
-	
-	id<MTLRenderPipelineState> pipelineState = (__bridge id<MTLRenderPipelineState>)(renderer->metalPipelineStates[pipelineIndex(SHADER_FUNCTION_TILES_PAIR_INDEX, pipelineOptionIndex)]);
-	
-	[renderCommandEncoder setRenderPipelineState:pipelineState];
-	
-	if ((options & RENDERER_OPTION_DISABLE_DEPTH_TEST) == 0)
-	{
-		id <MTLDepthStencilState> depthStencilState = (__bridge id<MTLDepthStencilState>)(renderer->metalDepthTestStencilState);
-		[renderCommandEncoder setDepthStencilState:depthStencilState];
-	}
-	
 	id<MTLBuffer> vertexAndTextureBuffer = (__bridge id<MTLBuffer>)(vertexAndTextureArrayObject.metalObject);
-	
-	[renderCommandEncoder setVertexBuffer:vertexAndTextureBuffer offset:0 atIndex:METAL_BUFFER_VERTICES_INDEX];
+	encodeVertexState(renderCommandEncoder, renderer, SHADER_FUNCTION_TILES_PAIR_INDEX, vertexAndTextureBuffer, options);
 	
 	[renderCommandEncoder setVertexBuffer:vertexAndTextureBuffer offset:vertexAndTextureArrayObject.metalVerticesSize atIndex:METAL_BUFFER_TEXTURE_COORDINATES_INDEX];
 	
