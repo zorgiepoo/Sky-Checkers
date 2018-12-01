@@ -259,6 +259,8 @@ void drawTiles(Renderer *renderer)
 {
 	static BufferArrayObject vertexAndTextureCoordinateArrayObject;
 	static BufferObject indicesBufferObject;
+	static uint32_t textureIndices[64];
+	static SDL_bool supportsInstancing;
 	static SDL_bool initializedBuffers;
 	
 	if (!initializedBuffers)
@@ -340,18 +342,49 @@ void drawTiles(Renderer *renderer)
 		
 		indicesBufferObject = createBufferObject(renderer, indices, sizeof(indices));
 		
+		supportsInstancing = renderer->supportsInstancing;
+		
+		if (supportsInstancing)
+		{
+			for (int i = 0; i < 64; i++)
+			{
+				uint32_t textureIndex = (((i / 8) % 2) ^ (i % 2)) != 0 ? 0 : 1;
+				textureIndices[i] = textureIndex;
+			}
+		}
+		
 		initializedBuffers = SDL_TRUE;
 	}
 	
 	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((float)M_PI / 180.0f));
-	
-	for (int i = 0; i < 64; i++)
+	if (supportsInstancing)
 	{
-		mat4_t modelTranslationMatrix = m4_translation((vec3_t){gTiles[i].x , gTiles[i].y, gTiles[i].z});
-		mat4_t modelViewMatrix = m4_mul(worldRotationMatrix, modelTranslationMatrix);
+		mat4_t projectionMatrix = renderer->projectionMatrix;
 		
-		TextureObject texture = (((i / 8) % 2) ^ (i % 2)) != 0 ? gTileOneTex : gTileTwoTex;
+		mat4_t modelViewProjectionMatrices[64];
+		color4_t colors[64];
 		
-		drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, texture, RENDERER_TRIANGLE_MODE, vertexAndTextureCoordinateArrayObject, indicesBufferObject, 24, (color4_t){gTiles[i].red, gTiles[i].green, gTiles[i].blue, 1.0f}, RENDERER_OPTION_NONE);
+		for (int i = 0; i < 64; i++)
+		{
+			mat4_t modelTranslationMatrix = m4_translation((vec3_t){gTiles[i].x , gTiles[i].y, gTiles[i].z});
+			mat4_t modelViewProjectionMatrix = m4_mul(projectionMatrix, m4_mul(worldRotationMatrix, modelTranslationMatrix));
+			
+			modelViewProjectionMatrices[i] = modelViewProjectionMatrix;
+			colors[i] = (color4_t){gTiles[i].red, gTiles[i].green, gTiles[i].blue, 1.0f};
+		}
+		
+		drawInstancedAlternatingTexturesWithVerticesFromIndices(renderer, modelViewProjectionMatrices, gTileOneTex, gTileTwoTex, colors, textureIndices, RENDERER_TRIANGLE_MODE, vertexAndTextureCoordinateArrayObject, indicesBufferObject, 24, 64, RENDERER_OPTION_NONE);
+	}
+	else
+	{
+		for (int i = 0; i < 64; i++)
+		{
+			mat4_t modelTranslationMatrix = m4_translation((vec3_t){gTiles[i].x , gTiles[i].y, gTiles[i].z});
+			mat4_t modelViewMatrix = m4_mul(worldRotationMatrix, modelTranslationMatrix);
+			
+			TextureObject texture = (((i / 8) % 2) ^ (i % 2)) != 0 ? gTileOneTex : gTileTwoTex;
+			
+			drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, texture, RENDERER_TRIANGLE_MODE, vertexAndTextureCoordinateArrayObject, indicesBufferObject, 24, (color4_t){gTiles[i].red, gTiles[i].green, gTiles[i].blue, 1.0f}, RENDERER_OPTION_NONE);
+		}
 	}
 }

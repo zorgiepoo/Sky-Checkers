@@ -111,3 +111,8 @@ void drawTextureWithVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatr
 {
 	renderer->drawTextureWithVerticesFromIndicesPtr(renderer, modelViewMatrix, texture, mode, vertexAndTextureArrayObject, indicesBufferObject, indicesCount, color, options);
 }
+
+void drawInstancedAlternatingTexturesWithVerticesFromIndices(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureObject texture1, TextureObject texture2, color4_t *colors, uint32_t *textureIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options)
+{
+	renderer->drawInstancedAlternatingTexturesWithVerticesFromIndicesPtr(renderer, modelViewProjectionMatrices, texture1, texture2, colors, textureIndices, mode, vertexAndTextureArrayObject, indicesBufferObject, indicesCount, instancesCount, options);
+}

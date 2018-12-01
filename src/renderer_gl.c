@@ -57,6 +57,8 @@ void drawTextureWithVertices_gl(Renderer *renderer, mat4_t modelViewMatrix, Text
 
 void drawTextureWithVerticesFromIndices_gl(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
 
+void drawInstancedAlternatingTexturesWithVerticesFromIndices_gl(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureObject texture1, TextureObject texture2, color4_t *colors, uint32_t *textureIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options);
+
 static SDL_bool compileShader(GLuint *shader, uint16_t glslVersion, GLenum type, const char *filepath)
 {
 	GLint status;
@@ -135,7 +137,7 @@ static SDL_bool linkProgram(GLuint prog)
 	return SDL_TRUE;
 }
 
-static void compileAndLinkShader(Shader_gl *shader, uint16_t glslVersion, const char *vertexShaderPath, const char *fragmentShaderPath, SDL_bool textured)
+static void compileAndLinkShader(Shader_gl *shader, uint16_t glslVersion, const char *vertexShaderPath, const char *fragmentShaderPath, SDL_bool textured, const char *modelViewProjectionUniform, const char *colorUniform, const char *textureSampleUniform, const char *textureIndicesUniform)
 {
 	// Create a pair of shaders
 	GLuint vertexShader = 0;
@@ -183,31 +185,42 @@ static void compileAndLinkShader(Shader_gl *shader, uint16_t glslVersion, const 
 		exit(2);
 	}
 	
-	GLint modelViewProjectionMatrixUniformLocation = glGetUniformLocation(shaderProgram, "modelViewProjectionMatrix");
+	GLint modelViewProjectionMatrixUniformLocation = glGetUniformLocation(shaderProgram, modelViewProjectionUniform);
 	if (modelViewProjectionMatrixUniformLocation == -1)
 	{
-		zgPrint("Failed to find MVP uniform");
+		zgPrint("Failed to find %s uniform", modelViewProjectionUniform);
 		exit(1);
 	}
 	shader->modelViewProjectionMatrixUniformLocation = modelViewProjectionMatrixUniformLocation;
 	
-	GLint colorUniformLocation = glGetUniformLocation(shaderProgram, "color");
+	GLint colorUniformLocation = glGetUniformLocation(shaderProgram, colorUniform);
 	if (colorUniformLocation == -1)
 	{
-		zgPrint("Failed to find color uniform");
+		zgPrint("Failed to find %s uniform", colorUniform);
 		exit(1);
 	}
 	shader->colorUniformLocation = colorUniformLocation;
 	
 	if (textured)
 	{
-		GLint textureUniformLocation = glGetUniformLocation(shaderProgram, "textureSample");
+		GLint textureUniformLocation = glGetUniformLocation(shaderProgram, textureSampleUniform);
 		if (textureUniformLocation == -1)
 		{
-			zgPrint("Failed to find textureSample uniform");
+			zgPrint("Failed to find %s uniform", textureSampleUniform);
 			exit(1);
 		}
 		shader->textureUniformLocation = textureUniformLocation;
+	}
+	
+	if (textureIndicesUniform != NULL)
+	{
+		GLint textureIndicesUniformLocation = glGetUniformLocation(shaderProgram, textureIndicesUniform);
+		if (textureIndicesUniformLocation == -1)
+		{
+			zgPrint("Failed to find %s uniform", textureIndicesUniform);
+			exit(1);
+		}
+		shader->textureIndicesUniformLocation = textureIndicesUniformLocation;
 	}
 	
 	shader->program = shaderProgram;
@@ -297,6 +310,8 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	
+	renderer->supportsInstancing = SDL_TRUE;
+	
 	uint16_t glslVersion = 410;
 	SDL_GLContext glContext = NULL;
 	if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, windowTitle, windowWidth, windowHeight, videoFlags, fsaa))
@@ -309,6 +324,10 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 			{
 				zgPrint("Failed to create OpenGL context with even glsl version %i", glslVersion);
 				exit(1);
+			}
+			else
+			{
+				renderer->supportsInstancing = SDL_FALSE;
 			}
 		}
 	}
@@ -352,9 +371,14 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_DEPTH_TEST);
 	
-	compileAndLinkShader(&renderer->glPositionShader, glslVersion, "Data/Shaders/position.vsh", "Data/Shaders/position.fsh", SDL_FALSE);
+	compileAndLinkShader(&renderer->glPositionShader, glslVersion, "Data/Shaders/position.vsh", "Data/Shaders/position.fsh", SDL_FALSE, "modelViewProjectionMatrix", "color", NULL, NULL);
 	
-	compileAndLinkShader(&renderer->glPositionTextureShader, glslVersion, "Data/Shaders/texture-position.vsh", "Data/Shaders/texture-position.fsh", SDL_TRUE);
+	compileAndLinkShader(&renderer->glPositionTextureShader, glslVersion, "Data/Shaders/texture-position.vsh", "Data/Shaders/texture-position.fsh", SDL_TRUE, "modelViewProjectionMatrix", "color", "textureSample", NULL);
+	
+	if (renderer->supportsInstancing)
+	{
+		compileAndLinkShader(&renderer->glTilesShader, glslVersion, "Data/Shaders/tiles.vsh", "Data/Shaders/tiles.fsh", SDL_TRUE, "modelViewProjectionMatrices", "colors", "textureSamples", "textureIndices");
+	}
 	
 	renderer->renderFramePtr = renderFrame_gl;
 	renderer->textureFromPixelDataPtr = textureFromPixelData_gl;
@@ -365,6 +389,7 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	renderer->drawVerticesFromIndicesPtr = drawVerticesFromIndices_gl;
 	renderer->drawTextureWithVerticesPtr = drawTextureWithVertices_gl;
 	renderer->drawTextureWithVerticesFromIndicesPtr = drawTextureWithVerticesFromIndices_gl;
+	renderer->drawInstancedAlternatingTexturesWithVerticesFromIndicesPtr = drawInstancedAlternatingTexturesWithVerticesFromIndices_gl;
 }
 
 void renderFrame_gl(Renderer *renderer, void (*drawFunc)(Renderer *))
@@ -570,4 +595,67 @@ void drawTextureWithVerticesFromIndices_gl(Renderer *renderer, mat4_t modelViewM
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	
 	endDrawingVerticesAndTextures(options);
+}
+
+void drawInstancedAlternatingTexturesWithVerticesFromIndices_gl(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureObject texture1, TextureObject texture2, color4_t *colors, uint32_t *textureIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options)
+{
+	SDL_bool disableDepthTest = (options & RENDERER_OPTION_DISABLE_DEPTH_TEST) != 0;
+	if (disableDepthTest)
+	{
+		glDisable(GL_DEPTH_TEST);
+	}
+	
+	SDL_bool blendingAlpha = (options & RENDERER_OPTION_BLENDING_ALPHA) != 0;
+	SDL_bool blendingOneMinusAlpha = (options & RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA) != 0;
+	SDL_bool blending = (blendingAlpha || blendingOneMinusAlpha);
+	if (blending)
+	{
+		glEnable(GL_BLEND);
+		
+		if (blendingAlpha)
+		{
+			glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA);
+		}
+		else /* if (blendingOneMinusAlpha) */
+		{
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		}
+	}
+	
+	glBindVertexArray(vertexAndTextureArrayObject.glObject);
+	
+	Shader_gl *shader = &renderer->glTilesShader;
+	
+	glUseProgram(shader->program);
+	
+	glUniformMatrix4fv(shader->modelViewProjectionMatrixUniformLocation, instancesCount, GL_FALSE, &modelViewProjectionMatrices->m00);
+	glUniform4fv(shader->colorUniformLocation, instancesCount, &colors->red);
+	glUniform1uiv(shader->textureIndicesUniformLocation, instancesCount, textureIndices);
+	
+	glUniform1i(shader->textureUniformLocation, 0);
+	glUniform1i(shader->textureUniformLocation + 1, 1);
+	
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture1.glObject);
+	
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, texture2.glObject);
+	
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesBufferObject.glObject);
+	
+	glDrawElementsInstanced(glModeFromMode(mode), indicesCount, GL_UNSIGNED_SHORT, NULL, instancesCount);
+	
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	
+	glBindVertexArray(0);
+	
+	if (blending)
+	{
+		glDisable(GL_BLEND);
+	}
+	
+	if (disableDepthTest)
+	{
+		glEnable(GL_DEPTH_TEST);
+	}
 }

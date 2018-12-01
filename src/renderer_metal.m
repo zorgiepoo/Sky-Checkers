@@ -47,6 +47,8 @@ void drawTextureWithVertices_metal(Renderer *renderer, mat4_t modelViewMatrix, T
 
 void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
 
+void drawInstancedAlternatingTexturesWithVerticesFromIndices_metal(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureObject texture1, TextureObject texture2, color4_t *colors, uint32_t *textureIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options);
+
 typedef enum
 {
 	SHADER_FUNCTION_POSITION_PAIR_INDEX = 0,
@@ -160,6 +162,8 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		{
 			renderer->vsync = vsync;
 		}
+		
+		renderer->supportsInstancing = SDL_FALSE;
 		
 		CGSize drawableSize = metalLayer.drawableSize;
 		renderer->screenWidth = (int32_t)drawableSize.width;
@@ -290,6 +294,7 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		renderer->drawVerticesFromIndicesPtr = drawVerticesFromIndices_metal;
 		renderer->drawTextureWithVerticesPtr = drawTextureWithVertices_metal;
 		renderer->drawTextureWithVerticesFromIndicesPtr = drawTextureWithVerticesFromIndices_metal;
+		renderer->drawInstancedAlternatingTexturesWithVerticesFromIndicesPtr = drawInstancedAlternatingTexturesWithVerticesFromIndices_metal;
 	}
 	
 	return SDL_TRUE;
@@ -501,4 +506,9 @@ void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, mat4_t modelVi
 	
 	id<MTLBuffer> indicesBuffer = (__bridge id<MTLBuffer>)(indicesBufferObject.metalObject);
 	[renderCommandEncoder drawIndexedPrimitives:metalTypeFromRendererMode(mode) indexCount:indicesCount indexType:MTLIndexTypeUInt16 indexBuffer:indicesBuffer indexBufferOffset:0];
+}
+
+void drawInstancedAlternatingTexturesWithVerticesFromIndices_metal(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureObject texture1, TextureObject texture2, color4_t *colors, uint32_t *textureIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options)
+{
+	//...
 }

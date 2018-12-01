@@ -77,9 +77,12 @@ typedef struct
 typedef struct
 {
 	int32_t program;
+	
 	int32_t modelViewProjectionMatrixUniformLocation;
 	int32_t colorUniformLocation;
 	int32_t textureUniformLocation;
+	// For tile instancing
+	int32_t textureIndicesUniformLocation;
 } Shader_gl;
 
 typedef struct _Renderer
@@ -96,6 +99,8 @@ typedef struct _Renderer
 	SDL_bool vsync;
 	SDL_bool fsaa;
 	
+	SDL_bool supportsInstancing;
+	
 	union
 	{
 		// Private GL data
@@ -103,6 +108,7 @@ typedef struct _Renderer
 		{
 			Shader_gl glPositionTextureShader;
 			Shader_gl glPositionShader;
+			Shader_gl glTilesShader;
 		};
 		
 		// Private metal data
@@ -128,4 +134,5 @@ typedef struct _Renderer
 	void (*drawVerticesFromIndicesPtr)(struct _Renderer *, mat4_t, RendererMode, BufferArrayObject, BufferObject, uint32_t, color4_t, RendererOptions);
 	void (*drawTextureWithVerticesPtr)(struct _Renderer *, mat4_t, TextureObject, RendererMode, BufferArrayObject, uint32_t, color4_t, RendererOptions);
 	void (*drawTextureWithVerticesFromIndicesPtr)(struct _Renderer *, mat4_t, TextureObject, RendererMode, BufferArrayObject, BufferObject, uint32_t, color4_t, RendererOptions);
+	void (*drawInstancedAlternatingTexturesWithVerticesFromIndicesPtr)(struct _Renderer *, mat4_t *, TextureObject, TextureObject, color4_t *, uint32_t *, RendererMode, BufferArrayObject, BufferObject, uint32_t, uint32_t, RendererOptions);
 } Renderer;
