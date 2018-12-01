@@ -67,8 +67,11 @@ TextureObject loadString(Renderer *renderer, const char *string)
 	// load font..
 	TTF_Font *font = TTF_OpenFont(FONT_PATH, 144);
 	
-	if (!font)
+	if (font == NULL)
+	{
 		zgPrint("loading font error! %t");
+		SDL_Quit();
+	}
 	
 	SDL_Color color = {255, 255, 255, 0};
 	
@@ -76,37 +79,15 @@ TextureObject loadString(Renderer *renderer, const char *string)
 	SDL_Surface *fontSurface = TTF_RenderText_Blended(font, string, color);
 	
 	if (fontSurface == NULL)
+	{
 		zgPrint("font surface is null: %t");
+		SDL_Quit();
+	}
 	
-	Uint32 rmask, gmask, bmask, amask;
-	
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-	rmask = 0xff000000;
-	gmask = 0x00ff0000;
-	bmask = 0x0000ff00;
-	amask = 0x000000ff;
-#else
-	rmask = 0x000000ff;
-	gmask = 0x0000ff00;
-	bmask = 0x00ff0000;
-	amask = 0xff000000;
-#endif
-	
-	SDL_Surface *textSurface = SDL_CreateRGBSurface(SDL_SWSURFACE, fontSurface->w, fontSurface->h, 32, rmask, gmask, bmask, amask);
-	
-	if (textSurface == NULL)
-		zgPrint("SDL_CreateRGBSurface failed: %e");
-	
-	SDL_SetSurfaceAlphaMod(fontSurface, 255);
-	
-	if (SDL_BlitSurface(fontSurface, NULL, textSurface, NULL) == -1)
-		zgPrint("blitting failed");
-	
-	TextureObject texture = textureFromPixelData(renderer, textSurface->pixels, textSurface->w, textSurface->h);
+	TextureObject texture = surfaceToTexture(renderer, fontSurface);
 	
 	// Cleanup
 	SDL_FreeSurface(fontSurface);
-	SDL_FreeSurface(textSurface);
 	TTF_CloseFont(font);
 	
 	return texture;

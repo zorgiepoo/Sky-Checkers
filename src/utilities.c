@@ -82,29 +82,36 @@ unsigned long mt_random() {
 	 */
 }
 
-static TextureObject surfaceToTexture(Renderer *renderer, SDL_Surface *surface)
+static SDL_Surface *createSurfaceImage(int32_t width, int32_t height)
 {
 	SDL_Surface *image = SDL_CreateRGBSurface(
-								 SDL_SWSURFACE,
-								 surface->w, surface->h,
-								 32,
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN /* OpenGL RGBA masks */
-								 0x000000FF,
-								 0x0000FF00,
-								 0x00FF0000,
-								 0xFF000000
+											  SDL_SWSURFACE,
+											  width, height,
+											  32,
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN /* RGBA masks */
+											  0x000000FF,
+											  0x0000FF00,
+											  0x00FF0000,
+											  0xFF000000
 #else
-								 0xFF000000,
-								 0x00FF0000,
-								 0x0000FF00,
-								 0x000000FF
+											  0xFF000000,
+											  0x00FF0000,
+											  0x0000FF00,
+											  0x000000FF
 #endif
-								 );
+											  );
 	if (image == NULL)
 	{
 		zgPrint("Failed to create SDL RGB surface..");
 		SDL_Quit();
 	}
+	
+	return image;
+}
+
+TextureObject surfaceToTexture(Renderer *renderer, SDL_Surface *surface)
+{
+	SDL_Surface *image = createSurfaceImage(surface->w, surface->h);
 	
 	// Set alpha property to max
 	SDL_SetSurfaceAlphaMod(surface, 255);
@@ -129,27 +136,7 @@ static TextureArrayObject surfacesTo2DTextureArray(Renderer *renderer, SDL_Surfa
 		SDL_Quit();
 	}
 	
-	SDL_Surface *image = SDL_CreateRGBSurface(
-											  SDL_SWSURFACE,
-											  surface1->w, surface1->h * 2,
-											  32,
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN /* RGBA masks */
-											  0x000000FF,
-											  0x0000FF00,
-											  0x00FF0000,
-											  0xFF000000
-#else
-											  0xFF000000,
-											  0x00FF0000,
-											  0x0000FF00,
-											  0x000000FF
-#endif
-											  );
-	if (image == NULL)
-	{
-		zgPrint("Failed to create SDL RGB surface..");
-		SDL_Quit();
-	}
+	SDL_Surface *image = createSurfaceImage(surface1->w, surface1->h * 2);
 	
 	// Set alpha property to max
 	SDL_SetSurfaceAlphaMod(surface1, 255);
@@ -169,7 +156,7 @@ static TextureArrayObject surfacesTo2DTextureArray(Renderer *renderer, SDL_Surfa
 	return textureArray;
 }
 
-TextureObject loadTexture(Renderer *renderer, const char *filePath)
+static SDL_Surface *surfaceFromImage(const char *filePath)
 {
 	SDL_Surface *texImage = IMG_Load(filePath);
 	
@@ -178,6 +165,13 @@ TextureObject loadTexture(Renderer *renderer, const char *filePath)
 		zgPrint("Couldn't load texture: %s", filePath);
 		SDL_Quit();
 	}
+	
+	return texImage;
+}
+
+TextureObject loadTexture(Renderer *renderer, const char *filePath)
+{
+	SDL_Surface *texImage = surfaceFromImage(filePath);
 	
 	TextureObject texture = surfaceToTexture(renderer, texImage);
 	
@@ -188,19 +182,8 @@ TextureObject loadTexture(Renderer *renderer, const char *filePath)
 
 TextureArrayObject load2DTextureArray(Renderer *renderer, const char *texture1FilePath, const char *texture2FilePath)
 {
-	SDL_Surface *textureSurface1 = IMG_Load(texture1FilePath);
-	if (textureSurface1 == NULL)
-	{
-		zgPrint("Couldn't load texture: %s", texture1FilePath);
-		SDL_Quit();
-	}
-	
-	SDL_Surface *textureSurface2 = IMG_Load(texture2FilePath);
-	if (textureSurface2 == NULL)
-	{
-		zgPrint("Couldn't load texture: %s", texture2FilePath);
-		SDL_Quit();
-	}
+	SDL_Surface *textureSurface1 = surfaceFromImage(texture1FilePath);
+	SDL_Surface *textureSurface2 = surfaceFromImage(texture2FilePath);
 	
 	TextureArrayObject textureArray = surfacesTo2DTextureArray(renderer, textureSurface1, textureSurface2);
 	
