@@ -59,7 +59,7 @@ void drawTextureWithVertices_gl(Renderer *renderer, mat4_t modelViewMatrix, Text
 
 void drawTextureWithVerticesFromIndices_gl(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
 
-void drawInstancedTexturesWithVerticesFromIndices_gl(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureArrayObject textures, color4_t *colors, uint32_t *textureIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options);
+void drawInstancedTexturesWithVerticesFromIndices_gl(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureArrayObject textureArray, color4_t *colors, uint32_t *textureArrayIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options);
 
 static SDL_bool compileShader(GLuint *shader, uint16_t glslVersion, GLenum type, const char *filepath)
 {
@@ -623,7 +623,7 @@ void drawTextureWithVerticesFromIndices_gl(Renderer *renderer, mat4_t modelViewM
 	endDrawingVerticesAndTextures(options);
 }
 
-void drawInstancedTexturesWithVerticesFromIndices_gl(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureArrayObject textures, color4_t *colors, uint32_t *textureIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options)
+void drawInstancedTexturesWithVerticesFromIndices_gl(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureArrayObject textureArray, color4_t *colors, uint32_t *textureArrayIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options)
 {
 	SDL_bool disableDepthTest = (options & RENDERER_OPTION_DISABLE_DEPTH_TEST) != 0;
 	if (disableDepthTest)
@@ -656,16 +656,16 @@ void drawInstancedTexturesWithVerticesFromIndices_gl(Renderer *renderer, mat4_t 
 
 	glUniformMatrix4fv(shader->modelViewProjectionMatrixUniformLocation, instancesCount, GL_FALSE, &modelViewProjectionMatrices->m00);
 	glUniform4fv(shader->colorUniformLocation, instancesCount, &colors->red);
-	glUniform1uiv(shader->textureIndicesUniformLocation, instancesCount, textureIndices);
+	glUniform1uiv(shader->textureIndicesUniformLocation, instancesCount, textureArrayIndices);
 
 	glUniform1i(shader->textureUniformLocation, 0);
 	glUniform1i(shader->textureUniformLocation + 1, 1);
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, textures.glObject1);
+	glBindTexture(GL_TEXTURE_2D, textureArray.glObject1);
 
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, textures.glObject2);
+	glBindTexture(GL_TEXTURE_2D, textureArray.glObject2);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesBufferObject.glObject);
 

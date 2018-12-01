@@ -49,7 +49,7 @@ void drawTextureWithVertices_metal(Renderer *renderer, mat4_t modelViewMatrix, T
 
 void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
 
-void drawInstancedTexturesWithVerticesFromIndices_metal(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureArrayObject textures, color4_t *colors, uint32_t *textureIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options);
+void drawInstancedTexturesWithVerticesFromIndices_metal(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureArrayObject textureArray, color4_t *colors, uint32_t *textureArrayIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options);
 
 // If this changes, make sure to change MAX_PIPELINE_COUNT
 typedef enum
@@ -542,7 +542,7 @@ void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, mat4_t modelVi
 	[renderCommandEncoder drawIndexedPrimitives:metalTypeFromRendererMode(mode) indexCount:indicesCount indexType:MTLIndexTypeUInt16 indexBuffer:indicesBuffer indexBufferOffset:0];
 }
 
-void drawInstancedTexturesWithVerticesFromIndices_metal(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureArrayObject textures, color4_t *colors, uint32_t *textureIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options)
+void drawInstancedTexturesWithVerticesFromIndices_metal(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureArrayObject textureArray, color4_t *colors, uint32_t *textureArrayIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options)
 {
 	id<MTLRenderCommandEncoder> renderCommandEncoder = (__bridge id<MTLRenderCommandEncoder>)(renderer->metalCurrentRenderCommandEncoder);
 	
@@ -564,14 +564,14 @@ void drawInstancedTexturesWithVerticesFromIndices_metal(Renderer *renderer, mat4
 	
 	[renderCommandEncoder setVertexBuffer:vertexAndTextureBuffer offset:vertexAndTextureArrayObject.metalVerticesSize atIndex:METAL_BUFFER_TEXTURE_COORDINATES_INDEX];
 	
-	id<MTLTexture> texture = (__bridge id<MTLTexture>)(textures.metalObject);
+	id<MTLTexture> texture = (__bridge id<MTLTexture>)(textureArray.metalObject);
 	[renderCommandEncoder setFragmentTexture:texture atIndex:METAL_TEXTURE1_INDEX];
 	
 	[renderCommandEncoder setVertexBytes:modelViewProjectionMatrices length:sizeof(*modelViewProjectionMatrices) * instancesCount atIndex:METAL_BUFFER_MODELVIEW_PROJECTION_INDEX];
 	
 	[renderCommandEncoder setFragmentBytes:colors length:sizeof(*colors) * instancesCount atIndex:METAL_BUFFER_COLOR_INDEX];
 	
-	[renderCommandEncoder setFragmentBytes:textureIndices length:sizeof(*textureIndices) * instancesCount atIndex:METAL_BUFFER_TEXTURE_INDICES_INDEX];
+	[renderCommandEncoder setFragmentBytes:textureArrayIndices length:sizeof(*textureArrayIndices) * instancesCount atIndex:METAL_BUFFER_TEXTURE_INDICES_INDEX];
 	
 	id<MTLBuffer> indicesBuffer = (__bridge id<MTLBuffer>)(indicesBufferObject.metalObject);
 	[renderCommandEncoder drawIndexedPrimitives:metalTypeFromRendererMode(mode) indexCount:indicesCount indexType:MTLIndexTypeUInt16 indexBuffer:indicesBuffer indexBufferOffset:0 instanceCount:instancesCount];
