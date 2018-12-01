@@ -440,11 +440,16 @@ TextureObject textureFromPixelData_gl(Renderer *renderer, const void *pixels, in
 
 TextureArrayObject textureArrayFromPixelData_gl(Renderer *renderer, const void *pixels, int32_t width, int32_t height)
 {
-	int32_t singleHeight = height / 2;
-	GLuint texture1 = glTextureFromPixelData(renderer, pixels, width, singleHeight);
-	GLuint texture2 = glTextureFromPixelData(renderer, (void *)((uint8_t *)pixels + width * 4 * singleHeight), width, singleHeight);
+	GLuint texture = 0;
 	
-	return (TextureArrayObject){.glObject1 = texture1, .glObject2 = texture2};
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	
+	glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, width, height / 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+	
+	return (TextureArrayObject){.glObject = texture};
 }
 
 static GLenum glModeFromMode(RendererMode mode)
@@ -635,7 +640,7 @@ void drawTextureWithVerticesFromIndices_gl(Renderer *renderer, mat4_t modelViewM
 }
 
 void drawInstancedTexturesWithVerticesFromIndices_gl(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureArrayObject textureArray, color4_t *colors, uint32_t *textureArrayIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options)
-{	
+{
 	Shader_gl *shader = &renderer->glTilesShader;
 	beginDrawingVertices(shader, vertexAndTextureArrayObject, options);
 
@@ -644,13 +649,9 @@ void drawInstancedTexturesWithVerticesFromIndices_gl(Renderer *renderer, mat4_t 
 	glUniform1uiv(shader->textureIndicesUniformLocation, instancesCount, textureArrayIndices);
 
 	glUniform1i(shader->textureUniformLocation, 0);
-	glUniform1i(shader->textureUniformLocation + 1, 1);
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, textureArray.glObject1);
-
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, textureArray.glObject2);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, textureArray.glObject);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesBufferObject.glObject);
 

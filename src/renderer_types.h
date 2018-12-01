@@ -79,11 +79,7 @@ typedef struct
 	union
 	{
 		void *metalObject;
-		struct
-		{
-			uint32_t glObject1;
-			uint32_t glObject2;
-		};
+		uint32_t glObject;
 	};
 } TextureArrayObject;
 
