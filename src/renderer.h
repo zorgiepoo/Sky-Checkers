@@ -28,7 +28,7 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 void renderFrame(Renderer *renderer, void (*drawFunc)(Renderer *));
 
 TextureObject textureFromPixelData(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
-TextureArrayObject texture2DFromPixelData(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
+TextureArrayObject textureArrayFromPixelData(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
 
 BufferObject createBufferObject(Renderer *renderer, const void *data, uint32_t size);
 

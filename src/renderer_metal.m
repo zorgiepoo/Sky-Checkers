@@ -33,7 +33,7 @@ void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *));
 
 TextureObject textureFromPixelData_metal(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
 
-TextureArrayObject texture2DFromPixelData_metal(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
+TextureArrayObject textureArrayFromPixelData_metal(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
 
 BufferObject createBufferObject_metal(Renderer *renderer, const void *data, uint32_t size);
 
@@ -294,7 +294,7 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		
 		renderer->renderFramePtr = renderFrame_metal;
 		renderer->textureFromPixelDataPtr = textureFromPixelData_metal;
-		renderer->texture2DFromPixelDataPtr = texture2DFromPixelData_metal;
+		renderer->textureArrayFromPixelDataPtr = textureArrayFromPixelData_metal;
 		renderer->createBufferObjectPtr = createBufferObject_metal;
 		renderer->createVertexArrayObjectPtr = createVertexArrayObject_metal;
 		renderer->createVertexAndTextureCoordinateArrayObjectPtr = createVertexAndTextureCoordinateArrayObject_metal;
@@ -391,7 +391,7 @@ TextureObject textureFromPixelData_metal(Renderer *renderer, const void *pixels,
 	return (TextureObject){.metalObject = (void *)CFBridgingRetain(texture)};
 }
 
-TextureArrayObject texture2DFromPixelData_metal(Renderer *renderer, const void *pixels, int32_t width, int32_t height)
+TextureArrayObject textureArrayFromPixelData_metal(Renderer *renderer, const void *pixels, int32_t width, int32_t height)
 {
 	CAMetalLayer *metalLayer = (__bridge CAMetalLayer *)(renderer->metalLayer);
 	id<MTLDevice> device = metalLayer.device;

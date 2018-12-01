@@ -77,9 +77,9 @@ TextureObject textureFromPixelData(Renderer *renderer, const void *pixels, int32
 	return renderer->textureFromPixelDataPtr(renderer, pixels, width, height);
 }
 
-TextureArrayObject texture2DFromPixelData(Renderer *renderer, const void *pixels, int32_t width, int32_t height)
+TextureArrayObject textureArrayFromPixelData(Renderer *renderer, const void *pixels, int32_t width, int32_t height)
 {
-	return renderer->texture2DFromPixelDataPtr(renderer, pixels, width, height);
+	return renderer->textureArrayFromPixelDataPtr(renderer, pixels, width, height);
 }
 
 BufferObject createBufferObject(Renderer *renderer, const void *data, uint32_t size)

@@ -149,7 +149,7 @@ static TextureArrayObject surfacesTo2DTextureArray(Renderer *renderer, SDL_Surfa
 	SDL_BlitSurface(surface2, NULL, image, &secondArea);
 	
 	// Create textures from image data
-	TextureArrayObject textureArray = texture2DFromPixelData(renderer, image->pixels, surface1->w, surface1->h * 2);
+	TextureArrayObject textureArray = textureArrayFromPixelData(renderer, image->pixels, surface1->w, surface1->h * 2);
 	
 	SDL_FreeSurface(image);
 	

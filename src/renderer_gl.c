@@ -43,7 +43,7 @@ void renderFrame_gl(Renderer *renderer, void (*drawFunc)(Renderer *));
 
 TextureObject textureFromPixelData_gl(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
 
-TextureArrayObject texture2DFromPixelData_gl(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
+TextureArrayObject textureArrayFromPixelData_gl(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
 
 BufferObject createBufferObject_gl(Renderer *renderer, const void *data, uint32_t size);
 
@@ -392,7 +392,7 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	renderer->drawTextureWithVerticesPtr = drawTextureWithVertices_gl;
 	renderer->drawTextureWithVerticesFromIndicesPtr = drawTextureWithVerticesFromIndices_gl;
 	renderer->drawInstancedTexturesWithVerticesFromIndicesPtr = drawInstancedTexturesWithVerticesFromIndices_gl;
-	renderer->texture2DFromPixelDataPtr = texture2DFromPixelData_gl;
+	renderer->textureArrayFromPixelDataPtr = textureArrayFromPixelData_gl;
 }
 
 void renderFrame_gl(Renderer *renderer, void (*drawFunc)(Renderer *))
@@ -438,7 +438,7 @@ TextureObject textureFromPixelData_gl(Renderer *renderer, const void *pixels, in
 	return (TextureObject){.glObject = texture};
 }
 
-TextureArrayObject texture2DFromPixelData_gl(Renderer *renderer, const void *pixels, int32_t width, int32_t height)
+TextureArrayObject textureArrayFromPixelData_gl(Renderer *renderer, const void *pixels, int32_t width, int32_t height)
 {
 	int32_t singleHeight = height / 2;
 	GLuint texture1 = glTextureFromPixelData(renderer, pixels, width, singleHeight);

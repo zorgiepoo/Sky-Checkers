@@ -142,7 +142,7 @@ typedef struct _Renderer
 	// Private function pointers
 	void (*renderFramePtr)(struct _Renderer *, void (*)(struct _Renderer *));
 	TextureObject (*textureFromPixelDataPtr)(struct _Renderer *, const void *, int32_t, int32_t);
-	TextureArrayObject (*texture2DFromPixelDataPtr)(struct _Renderer *, const void *, int32_t, int32_t);
+	TextureArrayObject (*textureArrayFromPixelDataPtr)(struct _Renderer *, const void *, int32_t, int32_t);
 	BufferObject (*createBufferObjectPtr)(struct _Renderer *, const void *data, uint32_t size);
 	BufferArrayObject (*createVertexArrayObjectPtr)(struct _Renderer *, const void *, uint32_t);
 	BufferArrayObject (*createVertexAndTextureCoordinateArrayObjectPtr)(struct _Renderer *, const void *, uint32_t, uint32_t);
