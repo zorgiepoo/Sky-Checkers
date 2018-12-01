@@ -28,6 +28,7 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 void renderFrame(Renderer *renderer, void (*drawFunc)(Renderer *));
 
 TextureObject textureFromPixelData(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
+TextureArrayObject texture2DFromPixelData(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
 
 BufferObject createBufferObject(Renderer *renderer, const void *data, uint32_t size);
 
@@ -43,4 +44,4 @@ void drawTextureWithVertices(Renderer *renderer, mat4_t modelViewMatrix, Texture
 
 void drawTextureWithVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
 
-void drawInstancedAlternatingTexturesWithVerticesFromIndices(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureObject texture1, TextureObject texture2, color4_t *colors, uint32_t *textureIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options);
+void drawInstancedTexturesWithVerticesFromIndices(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureArrayObject textures, color4_t *colors, uint32_t *textureIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options);

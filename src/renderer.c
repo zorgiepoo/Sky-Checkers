@@ -77,6 +77,11 @@ TextureObject textureFromPixelData(Renderer *renderer, const void *pixels, int32
 	return renderer->textureFromPixelDataPtr(renderer, pixels, width, height);
 }
 
+TextureArrayObject texture2DFromPixelData(Renderer *renderer, const void *pixels, int32_t width, int32_t height)
+{
+	return renderer->texture2DFromPixelDataPtr(renderer, pixels, width, height);
+}
+
 BufferObject createBufferObject(Renderer *renderer, const void *data, uint32_t size)
 {
 	return renderer->createBufferObjectPtr(renderer, data, size);
@@ -112,7 +117,7 @@ void drawTextureWithVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatr
 	renderer->drawTextureWithVerticesFromIndicesPtr(renderer, modelViewMatrix, texture, mode, vertexAndTextureArrayObject, indicesBufferObject, indicesCount, color, options);
 }
 
-void drawInstancedAlternatingTexturesWithVerticesFromIndices(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureObject texture1, TextureObject texture2, color4_t *colors, uint32_t *textureIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options)
+void drawInstancedTexturesWithVerticesFromIndices(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureArrayObject textures, color4_t *colors, uint32_t *textureIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options)
 {
-	renderer->drawInstancedAlternatingTexturesWithVerticesFromIndicesPtr(renderer, modelViewProjectionMatrices, texture1, texture2, colors, textureIndices, mode, vertexAndTextureArrayObject, indicesBufferObject, indicesCount, instancesCount, options);
+	renderer->drawInstancedTexturesWithVerticesFromIndicesPtr(renderer, modelViewProjectionMatrices, textures, colors, textureIndices, mode, vertexAndTextureArrayObject, indicesBufferObject, indicesCount, instancesCount, options);
 }

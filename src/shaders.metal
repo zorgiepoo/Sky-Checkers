@@ -57,3 +57,30 @@ fragment float4 texturePositionFragmentShader(TextureRasterizerData input [[stag
 	
 	return color * float4(colorSample);
 }
+
+typedef struct
+{
+	float4 position [[position]];
+	float2 textureCoordinate;
+	ushort instanceID;
+} TilesRasterizerData;
+
+vertex TilesRasterizerData tilesVertexShader(ushort vertexID [[ vertex_id ]], ushort instanceID [[instance_id]], device packed_float3 *vertices [[ buffer(METAL_BUFFER_VERTICES_INDEX) ]], device packed_float2 *textureCoordinates [[ buffer(METAL_BUFFER_TEXTURE_COORDINATES_INDEX) ]], constant matrix_float4x4 *modelViewProjections [[ buffer(METAL_BUFFER_MODELVIEW_PROJECTION_INDEX) ]])
+{
+	TilesRasterizerData output;
+	
+	output.position = modelViewProjections[instanceID] * float4(vertices[vertexID], 1.0f);
+	output.textureCoordinate = textureCoordinates[vertexID];
+	output.instanceID = instanceID;
+	
+	return output;
+}
+
+fragment float4 tilesFragmentShader(TilesRasterizerData input [[stage_in]], texture2d_array<half> textures [[ texture(METAL_TEXTURE1_INDEX) ]], constant uint *textureIndices [[ buffer(METAL_BUFFER_TEXTURE_INDICES_INDEX) ]], constant packed_float4 *colors [[ buffer(METAL_BUFFER_COLOR_INDEX) ]])
+{
+	constexpr sampler textureSampler(mag_filter::linear, min_filter::linear);
+
+	const half4 colorSample = textures.sample(textureSampler, input.textureCoordinate, textureIndices[input.instanceID]);
+
+	return colors[input.instanceID] * float4(colorSample);
+}

@@ -82,35 +82,11 @@ unsigned long mt_random() {
 	 */
 }
 
-// This function is derived from same place as surfaceToGLTexture() code is
-static int power_of_two(int input)
-{
-	int value = 1;
-	
-	while ( value < input )
-	{
-		value <<= 1;
-	}
-	
-	return value;
-}
-
-// The code from this function is taken from https://www.opengl.org/discussion_boards/showthread.php/163677-SDL_image-Opengl
-// which is derived from SDL 1.2 source code which is licensed under LGPL:
-// https://github.com/klange/SDL/blob/master/test/testgl.c
 static TextureObject surfaceToTexture(Renderer *renderer, SDL_Surface *surface)
 {
-	int w, h;
-	SDL_Surface *image;
-	SDL_Rect area;
-	
-	/* Use the surface width and height expanded to powers of 2 */
-	w = power_of_two(surface->w);
-	h = power_of_two(surface->h);
-	
-	image = SDL_CreateRGBSurface(
+	SDL_Surface *image = SDL_CreateRGBSurface(
 								 SDL_SWSURFACE,
-								 w, h,
+								 surface->w, surface->h,
 								 32,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN /* OpenGL RGBA masks */
 								 0x000000FF,
@@ -133,19 +109,64 @@ static TextureObject surfaceToTexture(Renderer *renderer, SDL_Surface *surface)
 	// Set alpha property to max
 	SDL_SetSurfaceAlphaMod(surface, 255);
 	
-	/* Copy the surface into the GL texture image */
-	area.x = 0;
-	area.y = 0;
-	area.w = surface->w;
-	area.h = surface->h;
-	SDL_BlitSurface(surface, &area, image, &area);
+	// Copy the surface into the texture image
+	SDL_Rect area = {.x = 0, .y = 0, .w = surface->w, .h = surface->h};
+	SDL_BlitSurface(surface, NULL, image, &area);
 	
-	/* Create an OpenGL texture for the image */
-	TextureObject texture = textureFromPixelData(renderer, image->pixels, w, h);
+	// Create texture from texture image data
+	TextureObject texture = textureFromPixelData(renderer, image->pixels, surface->w, surface->h);
 	
-	SDL_FreeSurface(image); /* No longer needed */
+	SDL_FreeSurface(image);
 	
 	return texture;
+}
+
+static TextureArrayObject surfacesTo2DTextureArray(Renderer *renderer, SDL_Surface *surface1, SDL_Surface *surface2)
+{
+	if (surface1->h != surface2->h || surface1->w != surface2->w)
+	{
+		zgPrint("Failed to create 2D texture because height for surfaces don't match!");
+		SDL_Quit();
+	}
+	
+	SDL_Surface *image = SDL_CreateRGBSurface(
+											  SDL_SWSURFACE,
+											  surface1->w, surface1->h * 2,
+											  32,
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN /* RGBA masks */
+											  0x000000FF,
+											  0x0000FF00,
+											  0x00FF0000,
+											  0xFF000000
+#else
+											  0xFF000000,
+											  0x00FF0000,
+											  0x0000FF00,
+											  0x000000FF
+#endif
+											  );
+	if (image == NULL)
+	{
+		zgPrint("Failed to create SDL RGB surface..");
+		SDL_Quit();
+	}
+	
+	// Set alpha property to max
+	SDL_SetSurfaceAlphaMod(surface1, 255);
+	SDL_SetSurfaceAlphaMod(surface2, 255);
+	
+	// Copy the surfaces into the texture image
+	SDL_Rect firstArea = {.x = 0, .y = 0, .w = surface1->w, .h = surface1->h};
+	SDL_BlitSurface(surface1, NULL, image, &firstArea);
+	SDL_Rect secondArea = {.x = 0, .y = surface1->h, .w = surface2->w, .h = surface2->h};
+	SDL_BlitSurface(surface2, NULL, image, &secondArea);
+	
+	// Create textures from image data
+	TextureArrayObject textureArray = texture2DFromPixelData(renderer, image->pixels, surface1->w, surface1->h * 2);
+	
+	SDL_FreeSurface(image);
+	
+	return textureArray;
 }
 
 TextureObject loadTexture(Renderer *renderer, const char *filePath)
@@ -154,7 +175,7 @@ TextureObject loadTexture(Renderer *renderer, const char *filePath)
 	
 	if (texImage == NULL)
 	{
-		printf("Couldn't load texture: %s\n", filePath);
+		zgPrint("Couldn't load texture: %s", filePath);
 		SDL_Quit();
 	}
 	
@@ -163,6 +184,30 @@ TextureObject loadTexture(Renderer *renderer, const char *filePath)
 	SDL_FreeSurface(texImage);
 	
 	return texture;
+}
+
+TextureArrayObject load2DTextureArray(Renderer *renderer, const char *texture1FilePath, const char *texture2FilePath)
+{
+	SDL_Surface *textureSurface1 = IMG_Load(texture1FilePath);
+	if (textureSurface1 == NULL)
+	{
+		zgPrint("Couldn't load texture: %s", texture1FilePath);
+		SDL_Quit();
+	}
+	
+	SDL_Surface *textureSurface2 = IMG_Load(texture2FilePath);
+	if (textureSurface2 == NULL)
+	{
+		zgPrint("Couldn't load texture: %s", texture2FilePath);
+		SDL_Quit();
+	}
+	
+	TextureArrayObject textureArray = surfacesTo2DTextureArray(renderer, textureSurface1, textureSurface2);
+	
+	SDL_FreeSurface(textureSurface1);
+	SDL_FreeSurface(textureSurface2);
+	
+	return textureArray;
 }
 
 /*

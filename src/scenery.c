@@ -30,8 +30,21 @@ static void linkRow(int index);
 static void linkColumn(int index);
 
 static TextureObject gSkyTex;
-static TextureObject gTileOneTex;
-static TextureObject gTileTwoTex;
+
+typedef struct
+{
+	union
+	{
+		struct
+		{
+			TextureObject tile1;
+			TextureObject tile2;
+		};
+		TextureArrayObject tiles;
+	};
+} TileTextures;
+
+static TileTextures gTileTextures;
 
 void initTiles(void)
 {
@@ -211,8 +224,16 @@ static void linkColumn(int index)
 void loadSceneryTextures(Renderer *renderer)
 {
 	gSkyTex = loadTexture(renderer, "Data/Textures/sky.bmp");
-	gTileOneTex = loadTexture(renderer, "Data/Textures/tiletex.bmp");
-	gTileTwoTex = loadTexture(renderer, "Data/Textures/tiletex2.bmp");
+	
+	if (renderer->supportsInstancing)
+	{
+		gTileTextures.tiles = load2DTextureArray(renderer, "Data/Textures/tiletex.bmp", "Data/Textures/tiletex2.bmp");
+	}
+	else
+	{
+		gTileTextures.tile1 = loadTexture(renderer, "Data/Textures/tiletex.bmp");
+		gTileTextures.tile2 = loadTexture(renderer, "Data/Textures/tiletex2.bmp");
+	}
 }
 
 void drawSky(Renderer *renderer)
@@ -373,7 +394,7 @@ void drawTiles(Renderer *renderer)
 			colors[i] = (color4_t){gTiles[i].red, gTiles[i].green, gTiles[i].blue, 1.0f};
 		}
 		
-		drawInstancedAlternatingTexturesWithVerticesFromIndices(renderer, modelViewProjectionMatrices, gTileOneTex, gTileTwoTex, colors, textureIndices, RENDERER_TRIANGLE_MODE, vertexAndTextureCoordinateArrayObject, indicesBufferObject, 24, 64, RENDERER_OPTION_NONE);
+		drawInstancedTexturesWithVerticesFromIndices(renderer, modelViewProjectionMatrices, gTileTextures.tiles, colors, textureIndices, RENDERER_TRIANGLE_MODE, vertexAndTextureCoordinateArrayObject, indicesBufferObject, 24, 64, RENDERER_OPTION_NONE);
 	}
 	else
 	{
@@ -382,7 +403,7 @@ void drawTiles(Renderer *renderer)
 			mat4_t modelTranslationMatrix = m4_translation((vec3_t){gTiles[i].x , gTiles[i].y, gTiles[i].z});
 			mat4_t modelViewMatrix = m4_mul(worldRotationMatrix, modelTranslationMatrix);
 			
-			TextureObject texture = (((i / 8) % 2) ^ (i % 2)) != 0 ? gTileOneTex : gTileTwoTex;
+			TextureObject texture = (((i / 8) % 2) ^ (i % 2)) != 0 ? gTileTextures.tile1 : gTileTextures.tile2;
 			
 			drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, texture, RENDERER_TRIANGLE_MODE, vertexAndTextureCoordinateArrayObject, indicesBufferObject, 24, (color4_t){gTiles[i].red, gTiles[i].green, gTiles[i].blue, 1.0f}, RENDERER_OPTION_NONE);
 		}
