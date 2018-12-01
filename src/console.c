@@ -190,7 +190,7 @@ static float getConsoleValue(void)
 		arg_val = atoi(num);
 		
 		// only valid arg values are 0 - 63 (for tiles)
-		if (arg_val >= 64 || arg_val < 0)
+		if (arg_val >= NUMBER_OF_TILES || arg_val < 0)
 			return value;
 		
 		// if it's two digits, increment stringIndexCount
@@ -465,7 +465,7 @@ static float setConsoleValue(SDL_bool *errorFlag)
 			
 			arg_val = atoi(number);
 			
-			if (arg_val >= 64)
+			if (arg_val >= NUMBER_OF_TILES)
 				return SDL_TRUE;
 			
 			if (arg_val > 9)

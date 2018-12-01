@@ -23,6 +23,7 @@
 #include "renderer.h"
 
 #define TILE_ALIVE_Z -25.0f
+#define NUMBER_OF_TILES 64
 
 typedef struct _tile
 {
@@ -43,7 +44,7 @@ typedef struct _tile
 	int recovery_timer;
 } Tile;
 
-Tile gTiles[64];
+Tile gTiles[NUMBER_OF_TILES];
 
 void initTiles(void);
 void loadTiles(void);

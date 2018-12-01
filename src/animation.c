@@ -469,7 +469,7 @@ static void collapseTiles(void)
 {
 	int tileIndex;
 	
-	for (tileIndex = 0; tileIndex < 64; tileIndex++)
+	for (tileIndex = 0; tileIndex < NUMBER_OF_TILES; tileIndex++)
 	{
 		if (gTiles[tileIndex].z <= -26.0)
 		{
@@ -483,7 +483,7 @@ static void recoverDestroyedTiles(void)
 {
 	int tileIndex;
 	
-	for (tileIndex = 0; tileIndex < 64; tileIndex++)
+	for (tileIndex = 0; tileIndex < NUMBER_OF_TILES; tileIndex++)
 	{
 		if (gTiles[tileIndex].recovery_timer > 0)
 		{
