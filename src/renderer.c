@@ -23,8 +23,6 @@
 #ifdef MAC_OS_X
 #include "renderer_metal.h"
 #include "utilities.h"
-
-static const SDL_bool FORCE_OPENGL = SDL_FALSE;
 #endif
 
 void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
@@ -38,7 +36,16 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 	SDL_bool createdRenderer = SDL_FALSE;
 	
 #ifdef MAC_OS_X
-	if (!FORCE_OPENGL)
+	SDL_bool forcingOpenGL = SDL_FALSE;
+	char *forceOpenGLEnvironmentVariable = getenv("FORCE_OPENGL");
+	if (forceOpenGLEnvironmentVariable != NULL && strlen(forceOpenGLEnvironmentVariable) > 0 && (tolower(forceOpenGLEnvironmentVariable[0]) == 'y' || forceOpenGLEnvironmentVariable[0] == '1'))
+	{
+		forcingOpenGL = SDL_TRUE;
+	}
+#endif
+	
+#ifdef MAC_OS_X
+	if (!forcingOpenGL)
 	{
 		// Metal
 		createdRenderer = createRenderer_metal(renderer, windowTitle, windowWidth, windowHeight, videoFlags, vsync, fsaa);

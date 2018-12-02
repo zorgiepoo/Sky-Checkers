@@ -140,6 +140,10 @@ static void initScene(Renderer *renderer)
 #ifdef _DEBUG
 	gConsoleFlag = SDL_TRUE;
 #endif
+	
+#ifdef _PROFILING
+	gConsoleFlag = SDL_TRUE;
+#endif
 
 	gRedRoverInput.character = &gRedRover;
 	gGreenTreeInput.character = &gGreenTree;
@@ -1250,11 +1254,15 @@ static void eventLoop(Renderer *renderer)
 		
 		renderFrame(renderer, drawScene);
 		
+#ifndef _PROFILING
 		SDL_bool hasAppFocus = (SDL_GetWindowFlags(renderer->window) & SDL_WINDOW_INPUT_FOCUS) != 0;
 		// Restrict game to 30 fps when the fps flag is enabled as well as when we don't have app focus
 		// This will allow the game to use less processing power when it's in the background,
 		// which fixes a bug on macOS where the game can have huge CPU spikes when the window is completly obscured
 		if (gFpsFlag || !hasAppFocus)
+#else
+		if (gFpsFlag)
+#endif
 		{
 			// time how long each draw-swap-delay cycle takes and adjust the delay to get closer to target framerate
 			if (thenTicks > 0)
@@ -1287,7 +1295,9 @@ static void eventLoop(Renderer *renderer)
 			if (gGameState == GAME_STATE_OFF && !isPlayingMainMenuMusic())
 			{
 				stopMusic();
+#ifndef _PROFILING
 				if (hasAppFocus)
+#endif
 				{
 					playMainMenuMusic();
 				}
@@ -1355,24 +1365,46 @@ int main(int argc, char *argv[])
 	};
 
 	readDefaults();
+	
+	SDL_bool fullscreen;
+#ifdef _PROFILING
+	fullscreen = SDL_FALSE;
+#elif _DEBUG
+	fullscreen = SDL_FALSE;
+#else
+	fullscreen = SDL_TRUE;
+#endif
+	
+	char *fullscreenEnvironmentVariable = getenv("FULLSCREEN");
+	if (fullscreenEnvironmentVariable != NULL && strlen(fullscreenEnvironmentVariable) > 0 && (tolower(fullscreenEnvironmentVariable[0]) == 'y' || fullscreenEnvironmentVariable[0] == '1'))
+	{
+		fullscreen = SDL_TRUE;
+	}
 
 	// Create renderer
 	uint32_t videoFlags = SDL_WINDOW_ALLOW_HIGHDPI;
-#ifndef _DEBUG
-	videoFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-#endif
 	
 	int32_t windowWidth;
 	int32_t windowHeight;
-#ifndef _DEBUG
-	windowWidth = 0;
-	windowHeight = 0;
-#else
-	windowWidth = 800;
-	windowHeight = 500;
-#endif
+
+	if (fullscreen)
+	{
+		videoFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+		
+		windowWidth = 0;
+		windowHeight = 0;
+	}
+	else
+	{
+		windowWidth = 800;
+		windowHeight = 500;
+	}
 	
+#ifdef _PROFILING
+	SDL_bool vsync = SDL_FALSE;
+#else
 	SDL_bool vsync = SDL_TRUE;
+#endif
 	SDL_bool fsaa = SDL_TRUE;
 	
 	Renderer renderer;
@@ -1381,6 +1413,10 @@ int main(int argc, char *argv[])
 	// Initialize game related things
 	// init random number generator
 	mt_init();
+	
+#ifdef _PROFILING
+	gDrawFPS = SDL_TRUE;
+#endif
 	
 	initScene(&renderer);
 	
