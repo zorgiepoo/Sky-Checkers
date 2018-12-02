@@ -23,7 +23,7 @@
 
 using namespace metal;
 
-vertex float4 positionVertexShader(ushort vertexID [[ vertex_id ]], constant packed_float3 *vertices [[ buffer(METAL_BUFFER_VERTICES_INDEX) ]], constant matrix_float4x4 &modelViewProjection [[ buffer(METAL_BUFFER_MODELVIEW_PROJECTION_INDEX) ]])
+vertex float4 positionVertexShader(const ushort vertexID [[ vertex_id ]], const device packed_float3 *vertices [[ buffer(METAL_BUFFER_VERTICES_INDEX) ]], constant matrix_float4x4 &modelViewProjection [[ buffer(METAL_BUFFER_MODELVIEW_PROJECTION_INDEX) ]])
 {
 	return modelViewProjection * float4(vertices[vertexID], 1.0f);
 }
@@ -39,7 +39,7 @@ typedef struct
 	float2 textureCoordinate;
 } TextureRasterizerData;
 
-vertex TextureRasterizerData texturePositionVertexShader(ushort vertexID [[ vertex_id ]], device packed_float3 *vertices [[ buffer(METAL_BUFFER_VERTICES_INDEX) ]], constant matrix_float4x4 &modelViewProjection [[ buffer(METAL_BUFFER_MODELVIEW_PROJECTION_INDEX) ]], device packed_float2 *textureCoordinates [[ buffer(METAL_BUFFER_TEXTURE_COORDINATES_INDEX) ]])
+vertex TextureRasterizerData texturePositionVertexShader(const ushort vertexID [[ vertex_id ]], const device packed_float3 *vertices [[ buffer(METAL_BUFFER_VERTICES_INDEX) ]], constant matrix_float4x4 &modelViewProjection [[ buffer(METAL_BUFFER_MODELVIEW_PROJECTION_INDEX) ]], const device packed_float2 *textureCoordinates [[ buffer(METAL_BUFFER_TEXTURE_COORDINATES_INDEX) ]])
 {
 	TextureRasterizerData output;
 	
@@ -49,7 +49,7 @@ vertex TextureRasterizerData texturePositionVertexShader(ushort vertexID [[ vert
 	return output;
 }
 
-fragment float4 texturePositionFragmentShader(TextureRasterizerData input [[stage_in]], texture2d<half> texture [[ texture(METAL_TEXTURE_INDEX) ]], constant float4 &color [[ buffer(METAL_BUFFER_COLOR_INDEX) ]])
+fragment float4 texturePositionFragmentShader(const TextureRasterizerData input [[stage_in]], const texture2d<half> texture [[ texture(METAL_TEXTURE_INDEX) ]], constant float4 &color [[ buffer(METAL_BUFFER_COLOR_INDEX) ]])
 {
 	constexpr sampler textureSampler(mag_filter::linear, min_filter::linear);
 	
@@ -65,7 +65,7 @@ typedef struct
 	ushort instanceID;
 } InstancedTextureRasterizerData;
 
-vertex InstancedTextureRasterizerData instancedTextureVertexShader(ushort vertexID [[ vertex_id ]], ushort instanceID [[instance_id]], device packed_float3 *vertices [[ buffer(METAL_BUFFER_VERTICES_INDEX) ]], device packed_float2 *textureCoordinates [[ buffer(METAL_BUFFER_TEXTURE_COORDINATES_INDEX) ]], constant matrix_float4x4 *modelViewProjections [[ buffer(METAL_BUFFER_MODELVIEW_PROJECTION_INDEX) ]])
+vertex InstancedTextureRasterizerData instancedTextureVertexShader(const ushort vertexID [[ vertex_id ]], const ushort instanceID [[instance_id]], const device packed_float3 *vertices [[ buffer(METAL_BUFFER_VERTICES_INDEX) ]], const device packed_float2 *textureCoordinates [[ buffer(METAL_BUFFER_TEXTURE_COORDINATES_INDEX) ]], const device matrix_float4x4 *modelViewProjections [[ buffer(METAL_BUFFER_MODELVIEW_PROJECTION_INDEX) ]])
 {
 	InstancedTextureRasterizerData output;
 	
@@ -76,7 +76,7 @@ vertex InstancedTextureRasterizerData instancedTextureVertexShader(ushort vertex
 	return output;
 }
 
-fragment float4 instancedTexturesFragmentShader(InstancedTextureRasterizerData input [[stage_in]], texture2d_array<half> textures [[ texture(METAL_TEXTURE_INDEX) ]], constant uint *textureIndices [[ buffer(METAL_BUFFER_TEXTURE_INDICES_INDEX) ]], constant packed_float4 *colors [[ buffer(METAL_BUFFER_COLOR_INDEX) ]])
+fragment float4 instancedTexturesFragmentShader(const InstancedTextureRasterizerData input [[stage_in]], const texture2d_array<half> textures [[ texture(METAL_TEXTURE_INDEX) ]], const device uint *textureIndices [[ buffer(METAL_BUFFER_TEXTURE_INDICES_INDEX) ]], const device packed_float4 *colors [[ buffer(METAL_BUFFER_COLOR_INDEX) ]])
 {
 	constexpr sampler textureSampler(mag_filter::linear, min_filter::linear);
 
@@ -85,7 +85,7 @@ fragment float4 instancedTexturesFragmentShader(InstancedTextureRasterizerData i
 	return colors[input.instanceID] * float4(colorSample);
 }
 
-fragment float4 instancedTextureFragmentShader(InstancedTextureRasterizerData input [[stage_in]], texture2d<half> texture [[ texture(METAL_TEXTURE_INDEX) ]], constant packed_float4 *colors [[ buffer(METAL_BUFFER_COLOR_INDEX) ]])
+fragment float4 instancedTextureFragmentShader(const InstancedTextureRasterizerData input [[stage_in]], const texture2d<half> texture [[ texture(METAL_TEXTURE_INDEX) ]], const device packed_float4 *colors [[ buffer(METAL_BUFFER_COLOR_INDEX) ]])
 {
 	constexpr sampler textureSampler(mag_filter::linear, min_filter::linear);
 	
