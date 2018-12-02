@@ -39,6 +39,10 @@
 #define VERTEX_ATTRIBUTE 0
 #define TEXTURE_ATTRIBUTE 1
 
+#define GLSL_VERSION_410 410
+#define GLSL_VERSION_330 330
+#define GLSL_VERSION_120 120
+
 void renderFrame_gl(Renderer *renderer, void (*drawFunc)(Renderer *));
 
 TextureObject textureFromPixelData_gl(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
@@ -240,17 +244,17 @@ static SDL_bool createOpenGLContext(SDL_Window **window, SDL_GLContext *glContex
 {
 	switch (glslVersion)
 	{
-		case 410:
+		case GLSL_VERSION_410:
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 			break;
-		case 330:
+		case GLSL_VERSION_330:
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 			break;
-		case 120:
+		case GLSL_VERSION_120:
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
@@ -316,14 +320,14 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	
 	renderer->supportsInstancing = SDL_TRUE;
 	
-	uint16_t glslVersion = 410;
+	uint16_t glslVersion = GLSL_VERSION_410;
 	SDL_GLContext glContext = NULL;
 	if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, windowTitle, windowWidth, windowHeight, videoFlags, fsaa))
 	{
-		glslVersion = 330;
+		glslVersion = GLSL_VERSION_330;
 		if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, windowTitle, windowWidth, windowHeight, videoFlags, fsaa))
 		{
-			glslVersion = 120;
+			glslVersion = GLSL_VERSION_120;
 			if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, windowTitle, windowWidth, windowHeight, videoFlags, fsaa))
 			{
 				zgPrint("Failed to create OpenGL context with even glsl version %i", glslVersion);
