@@ -27,7 +27,6 @@
 #import <QuartzCore/CAMetalLayer.h>
 
 #define DEPTH_STENCIL_PIXEL_FORMAT MTLPixelFormatDepth16Unorm
-#define MSAA_SAMPLE_COUNT 4
 
 void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *));
 

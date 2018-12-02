@@ -21,6 +21,8 @@
 
 #include "math_3d.h"
 
+#define MSAA_SAMPLE_COUNT 4
+
 typedef enum
 {
 	RENDERER_OPTION_NONE = 0,
