@@ -664,10 +664,7 @@ static void drawScene(Renderer *renderer)
 
 		// Characters renders at z = -25.3 to -24.7 after a world rotation when not fallen
 		// When falling, will reach to around -195
-		drawCharacter(renderer, &gRedRover);
-		drawCharacter(renderer, &gGreenTree);
-		drawCharacter(renderer, &gPinkBubbleGum);
-		drawCharacter(renderer, &gBlueLightning);
+		drawCharacters(renderer);
 
 		// Tiles renders at z = -25.0f to -26.0f after a world rotation when not fallen
 		drawTiles(renderer);

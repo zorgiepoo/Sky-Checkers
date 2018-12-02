@@ -31,7 +31,7 @@ typedef enum
 
 typedef enum
 {
-	METAL_TEXTURE1_INDEX = 0
+	METAL_TEXTURE_INDEX = 0
 } MetalTextureIndex;
 
 #endif /* metal_indices_h */

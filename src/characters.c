@@ -370,20 +370,83 @@ void buildCharacterModels(Renderer *renderer)
 	free(iconVerticesAndTextureCoordinates);
 }
 
-void drawCharacter(Renderer *renderer, Character *character)
+static mat4_t modelViewMatrixForCharacter(Character *character, mat4_t worldMatrix)
 {
-	// don't draw the character if they're not in the scene
-	if (character->z <= -170.0)
-		return;
-	
-	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((float)M_PI / 180.0f));
-	mat4_t worldTranslationMatrix = m4_translation((vec3_t){-7.0f, 12.5f, -25.0f});
 	mat4_t modelTranslationMatrix = m4_translation((vec3_t){character->x, character->y, character->z});
 	mat4_t modelRotationMatrix = m4_rotation_z(character->zRot);
 	
-	mat4_t modelViewMatrix = m4_mul(m4_mul(m4_mul(worldRotationMatrix, worldTranslationMatrix), modelTranslationMatrix), modelRotationMatrix);
+	return m4_mul(m4_mul(worldMatrix, modelTranslationMatrix), modelRotationMatrix);
+}
+
+static mat4_t modelViewProjectionMatrixForCharacter(Character *character, mat4_t worldMatrix, mat4_t projectionMatrix)
+{
+	return m4_mul(projectionMatrix, modelViewMatrixForCharacter(character, worldMatrix));
+}
+
+static void drawCharacter(Renderer *renderer, Character *character, mat4_t worldMatrix)
+{
+	// don't draw the character if they're not in the scene
+	if (character->z <= -170.0)
+	{
+		return;
+	}
+	
+	mat4_t modelViewMatrix = modelViewMatrixForCharacter(character, worldMatrix);
 	
 	drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, gCharacterTex, RENDERER_TRIANGLE_MODE, gCharacterVertexAndTextureCoordinateArrayObject, gCharacterIndicesBufferObject, 5220, (color4_t){character->red, character->green, character->blue, 1.0f}, RENDERER_OPTION_NONE);
+}
+
+void drawCharacters(Renderer *renderer)
+{
+	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((float)M_PI / 180.0f));
+	mat4_t worldTranslationMatrix = m4_translation((vec3_t){-7.0f, 12.5f, -25.0f});
+	mat4_t worldMatrix = m4_mul(worldRotationMatrix, worldTranslationMatrix);
+	
+	if (renderer->supportsInstancing)
+	{
+		mat4_t projectionMatrix = renderer->projectionMatrix;
+		
+		color4_t characterColors[4];
+		mat4_t characterModelViewProjectionMatrices[4];
+		uint8_t characterIndex = 0;
+		
+		if (gRedRover.z > -170.0f)
+		{
+			characterModelViewProjectionMatrices[characterIndex] = modelViewProjectionMatrixForCharacter(&gRedRover, worldMatrix, projectionMatrix);
+			characterColors[characterIndex] = (color4_t){gRedRover.red, gRedRover.green, gRedRover.blue, 1.0f};
+			characterIndex++;
+		}
+		
+		if (gGreenTree.z > -170.0f)
+		{
+			characterModelViewProjectionMatrices[characterIndex] = modelViewProjectionMatrixForCharacter(&gGreenTree, worldMatrix, projectionMatrix);
+			characterColors[characterIndex] = (color4_t){gGreenTree.red, gGreenTree.green, gGreenTree.blue, 1.0f};
+			characterIndex++;
+		}
+		
+		if (gPinkBubbleGum.z > -170.0f)
+		{
+			characterModelViewProjectionMatrices[characterIndex] = modelViewProjectionMatrixForCharacter(&gPinkBubbleGum, worldMatrix, projectionMatrix);
+			characterColors[characterIndex] = (color4_t){gPinkBubbleGum.red, gPinkBubbleGum.green, gPinkBubbleGum.blue, 1.0f};
+			characterIndex++;
+		}
+		
+		if (gBlueLightning.z > -170.0f)
+		{
+			characterModelViewProjectionMatrices[characterIndex] = modelViewProjectionMatrixForCharacter(&gBlueLightning, worldMatrix, projectionMatrix);
+			characterColors[characterIndex] = (color4_t){gBlueLightning.red, gBlueLightning.green, gBlueLightning.blue, 1.0f};
+			characterIndex++;
+		}
+		
+		drawInstancedTextureWithVerticesFromIndices(renderer, characterModelViewProjectionMatrices, gCharacterTex, characterColors, RENDERER_TRIANGLE_MODE, gCharacterVertexAndTextureCoordinateArrayObject, gCharacterIndicesBufferObject, 5220, characterIndex, RENDERER_OPTION_NONE);
+	}
+	else
+	{
+		drawCharacter(renderer, &gRedRover, worldMatrix);
+		drawCharacter(renderer, &gGreenTree, worldMatrix);
+		drawCharacter(renderer, &gPinkBubbleGum, worldMatrix);
+		drawCharacter(renderer, &gBlueLightning, worldMatrix);
+	}
 }
 
 void drawCharacterIcon(Renderer *renderer, mat4_t modelViewMatrix, Character *character)

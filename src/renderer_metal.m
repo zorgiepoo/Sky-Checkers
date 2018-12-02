@@ -51,12 +51,15 @@ void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, mat4_t modelVi
 
 void drawInstancedTexturesWithVerticesFromIndices_metal(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureArrayObject textureArray, color4_t *colors, uint32_t *textureArrayIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options);
 
+void drawInstancedTextureWithVerticesFromIndices_metal(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureObject texture, color4_t *colors, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options);
+
 // If this changes, make sure to change MAX_PIPELINE_COUNT
 typedef enum
 {
 	SHADER_FUNCTION_POSITION_PAIR_INDEX = 0,
 	SHADER_FUNCTION_POSITION_TEXTURE_PAIR_INDEX = 1,
-	SHADER_FUNCTION_TILES_PAIR_INDEX = 2
+	SHADER_FUNCTION_INSTANCED_TEXTURES_PAIR_INDEX = 2,
+	SHADER_FUNCTION_INSTANCED_TEXTURE_PAIR_INDEX = 3
 } ShaderFunctionPairIndex;
 
 // If this changes, make sure to change MAX_PIPELINE_COUNT
@@ -240,7 +243,7 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		renderer->metalDepthTexture = (void *)CFBridgingRetain(depthTexture);
 		renderer->metalDepthTestStencilState = (void *)CFBridgingRetain(depthStencilState);
 		
-		// Compile our shaders
+		// Compile our shader function pairs
 		
 		id<MTLLibrary> defaultLibrary = [device newDefaultLibrary];
 		if (defaultLibrary == nil)
@@ -249,17 +252,28 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 			SDL_Quit();
 		}
 		
-		NSArray<NSString *> *shaderFunctionNames = @[@"positionVertexShader", @"positionFragmentShader", @"texturePositionVertexShader", @"texturePositionFragmentShader", @"tilesVertexShader", @"tilesFragmentShader"];
+		NSArray<NSString *> *shaderFunctionNames = @[@"positionVertexShader", @"positionFragmentShader", @"texturePositionVertexShader", @"texturePositionFragmentShader", @"instancedTextureVertexShader", @"instancedTexturesFragmentShader", @"instancedTextureVertexShader", @"instancedTextureFragmentShader"];
 		
 		NSMutableArray<id<MTLFunction>> *shaderFunctions = [[NSMutableArray alloc] init];
+		NSMutableDictionary<NSString *, id<MTLFunction>> *cachedShaderFunctions = [[NSMutableDictionary alloc] init];
 		
 		for (NSString *shaderName in shaderFunctionNames)
 		{
-			id<MTLFunction> function = [defaultLibrary newFunctionWithName:shaderName];
-			if (function == nil)
+			id<MTLFunction> cachedFunction = [cachedShaderFunctions objectForKey:shaderName];
+			id<MTLFunction> function;
+			if (cachedFunction == nil)
 			{
-				NSLog(@"Failed to find shader: %@", shaderName);
-				SDL_Quit();
+				function = [defaultLibrary newFunctionWithName:shaderName];
+				if (function == nil)
+				{
+					NSLog(@"Failed to find shader: %@", shaderName);
+					SDL_Quit();
+				}
+				[cachedShaderFunctions setObject:function forKey:shaderName];
+			}
+			else
+			{
+				function = cachedFunction;
 			}
 			[shaderFunctions addObject:function];
 		}
@@ -279,11 +293,17 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		
 		createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_TEXTURE_PAIR_INDEX, PIPELINE_OPTION_BLENDING_ONE_MINUS_SOURCE_ALPHA_INDEX, fsaa);
 		
-		createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_TILES_PAIR_INDEX, PIPELINE_OPTION_NONE_INDEX, fsaa);
+		createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_INSTANCED_TEXTURES_PAIR_INDEX, PIPELINE_OPTION_NONE_INDEX, fsaa);
 		
 		// Unused pipelines
 		renderer->metalPipelineStates[7] = NULL;
 		renderer->metalPipelineStates[8] = NULL;
+		
+		createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_INSTANCED_TEXTURE_PAIR_INDEX, PIPELINE_OPTION_NONE_INDEX, fsaa);
+		
+		// Unused pipelines
+		renderer->metalPipelineStates[10] = NULL;
+		renderer->metalPipelineStates[11] = NULL;
 		
 		// Set up renderer properties
 		
@@ -303,6 +323,7 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		renderer->drawTextureWithVerticesPtr = drawTextureWithVertices_metal;
 		renderer->drawTextureWithVerticesFromIndicesPtr = drawTextureWithVerticesFromIndices_metal;
 		renderer->drawInstancedTexturesWithVerticesFromIndicesPtr = drawInstancedTexturesWithVerticesFromIndices_metal;
+		renderer->drawInstancedTextureWithVerticesFromIndicesPtr = drawInstancedTextureWithVerticesFromIndices_metal;
 	}
 	
 	return SDL_TRUE;
@@ -499,7 +520,7 @@ static void encodeVertexAndTextureState(id<MTLRenderCommandEncoder> renderComman
 	[renderCommandEncoder setVertexBuffer:vertexAndTextureBuffer offset:vertexAndTextureArrayObject.metalVerticesSize atIndex:METAL_BUFFER_TEXTURE_COORDINATES_INDEX];
 	
 	id<MTLTexture> texture = (__bridge id<MTLTexture>)(textureObject.metalObject);
-	[renderCommandEncoder setFragmentTexture:texture atIndex:METAL_TEXTURE1_INDEX];
+	[renderCommandEncoder setFragmentTexture:texture atIndex:METAL_TEXTURE_INDEX];
 }
 
 void drawVertices_metal(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options)
@@ -557,18 +578,38 @@ void drawInstancedTexturesWithVerticesFromIndices_metal(Renderer *renderer, mat4
 	id<MTLRenderCommandEncoder> renderCommandEncoder = (__bridge id<MTLRenderCommandEncoder>)(renderer->metalCurrentRenderCommandEncoder);
 	
 	id<MTLBuffer> vertexAndTextureBuffer = (__bridge id<MTLBuffer>)(vertexAndTextureArrayObject.metalObject);
-	encodeVertexState(renderCommandEncoder, renderer, SHADER_FUNCTION_TILES_PAIR_INDEX, vertexAndTextureBuffer, options);
+	encodeVertexState(renderCommandEncoder, renderer, SHADER_FUNCTION_INSTANCED_TEXTURES_PAIR_INDEX, vertexAndTextureBuffer, options);
 	
 	[renderCommandEncoder setVertexBuffer:vertexAndTextureBuffer offset:vertexAndTextureArrayObject.metalVerticesSize atIndex:METAL_BUFFER_TEXTURE_COORDINATES_INDEX];
 	
 	id<MTLTexture> texture = (__bridge id<MTLTexture>)(textureArray.metalObject);
-	[renderCommandEncoder setFragmentTexture:texture atIndex:METAL_TEXTURE1_INDEX];
+	[renderCommandEncoder setFragmentTexture:texture atIndex:METAL_TEXTURE_INDEX];
 	
 	[renderCommandEncoder setVertexBytes:modelViewProjectionMatrices length:sizeof(*modelViewProjectionMatrices) * instancesCount atIndex:METAL_BUFFER_MODELVIEW_PROJECTION_INDEX];
 	
 	[renderCommandEncoder setFragmentBytes:colors length:sizeof(*colors) * instancesCount atIndex:METAL_BUFFER_COLOR_INDEX];
 	
 	[renderCommandEncoder setFragmentBytes:textureArrayIndices length:sizeof(*textureArrayIndices) * instancesCount atIndex:METAL_BUFFER_TEXTURE_INDICES_INDEX];
+	
+	id<MTLBuffer> indicesBuffer = (__bridge id<MTLBuffer>)(indicesBufferObject.metalObject);
+	[renderCommandEncoder drawIndexedPrimitives:metalTypeFromRendererMode(mode) indexCount:indicesCount indexType:MTLIndexTypeUInt16 indexBuffer:indicesBuffer indexBufferOffset:0 instanceCount:instancesCount];
+}
+
+void drawInstancedTextureWithVerticesFromIndices_metal(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureObject textureObject, color4_t *colors, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options)
+{
+	id<MTLRenderCommandEncoder> renderCommandEncoder = (__bridge id<MTLRenderCommandEncoder>)(renderer->metalCurrentRenderCommandEncoder);
+	
+	id<MTLBuffer> vertexAndTextureBuffer = (__bridge id<MTLBuffer>)(vertexAndTextureArrayObject.metalObject);
+	encodeVertexState(renderCommandEncoder, renderer, SHADER_FUNCTION_INSTANCED_TEXTURE_PAIR_INDEX, vertexAndTextureBuffer, options);
+	
+	[renderCommandEncoder setVertexBuffer:vertexAndTextureBuffer offset:vertexAndTextureArrayObject.metalVerticesSize atIndex:METAL_BUFFER_TEXTURE_COORDINATES_INDEX];
+	
+	id<MTLTexture> texture = (__bridge id<MTLTexture>)(textureObject.metalObject);
+	[renderCommandEncoder setFragmentTexture:texture atIndex:METAL_TEXTURE_INDEX];
+	
+	[renderCommandEncoder setVertexBytes:modelViewProjectionMatrices length:sizeof(*modelViewProjectionMatrices) * instancesCount atIndex:METAL_BUFFER_MODELVIEW_PROJECTION_INDEX];
+	
+	[renderCommandEncoder setFragmentBytes:colors length:sizeof(*colors) * instancesCount atIndex:METAL_BUFFER_COLOR_INDEX];
 	
 	id<MTLBuffer> indicesBuffer = (__bridge id<MTLBuffer>)(indicesBufferObject.metalObject);
 	[renderCommandEncoder drawIndexedPrimitives:metalTypeFromRendererMode(mode) indexCount:indicesCount indexType:MTLIndexTypeUInt16 indexBuffer:indicesBuffer indexBufferOffset:0 instanceCount:instancesCount];
