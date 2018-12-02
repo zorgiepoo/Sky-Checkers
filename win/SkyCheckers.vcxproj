@@ -25,6 +25,7 @@
     <ClInclude Include="..\src\menu.h" />
     <ClInclude Include="..\src\network.h" />
     <ClInclude Include="..\src\renderer.h" />
+    <ClInclude Include="..\src\renderer_gl.h" />
     <ClInclude Include="..\src\scenery.h" />
     <ClInclude Include="..\src\utilities.h" />
     <ClInclude Include="..\src\weapon.h" />
@@ -45,6 +46,7 @@
     <ClCompile Include="..\src\menu.c" />
     <ClCompile Include="..\src\network.c" />
     <ClCompile Include="..\src\renderer.c" />
+    <ClCompile Include="..\src\renderer_gl.c" />
     <ClCompile Include="..\src\scenery.c" />
     <ClCompile Include="..\src\utilities.c" />
     <ClCompile Include="..\src\weapon.c" />
