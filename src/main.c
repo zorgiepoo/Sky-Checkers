@@ -136,6 +136,20 @@ static void initScene(Renderer *renderer)
 
 		gAIMode = AI_EASY_MODE;
 	}
+	else
+	{
+		// If any of the scan code's are unknown, assume they are all invalid and reset them
+		// The reason I'm doing this is because I gave development builds that saved SDL2 scan codes,
+		// but didn't record the defaults version, which would mean the defaults file would be treated the same
+		// as SDL 1.2 versioned file. This is a little robustness check against that case :)
+		if (gRedRoverInput.r_id == SDL_SCANCODE_UNKNOWN || gRedRoverInput.l_id == SDL_SCANCODE_UNKNOWN || gRedRoverInput.d_id == SDL_SCANCODE_UNKNOWN || gRedRoverInput.u_id == SDL_SCANCODE_UNKNOWN || gGreenTreeInput.r_id == SDL_SCANCODE_UNKNOWN || gGreenTreeInput.l_id == SDL_SCANCODE_UNKNOWN || gGreenTreeInput.d_id == SDL_SCANCODE_UNKNOWN || gGreenTreeInput.u_id == SDL_SCANCODE_UNKNOWN || gBlueLightningInput.r_id == SDL_SCANCODE_UNKNOWN || gBlueLightningInput.l_id == SDL_SCANCODE_UNKNOWN || gBlueLightningInput.d_id == SDL_SCANCODE_UNKNOWN || gBlueLightningInput.u_id == SDL_SCANCODE_UNKNOWN || gPinkBubbleGumInput.r_id == SDL_SCANCODE_UNKNOWN || gPinkBubbleGumInput.l_id == SDL_SCANCODE_UNKNOWN || gPinkBubbleGumInput.d_id == SDL_SCANCODE_UNKNOWN || gPinkBubbleGumInput.u_id == SDL_SCANCODE_UNKNOWN)
+		{
+			initInput(&gRedRoverInput, SDL_SCANCODE_B, SDL_SCANCODE_C, SDL_SCANCODE_F, SDL_SCANCODE_V, SDL_SCANCODE_G);
+			initInput(&gGreenTreeInput, SDL_SCANCODE_L, SDL_SCANCODE_J, SDL_SCANCODE_I, SDL_SCANCODE_K, SDL_SCANCODE_M);
+			initInput(&gBlueLightningInput, SDL_SCANCODE_D, SDL_SCANCODE_A, SDL_SCANCODE_W, SDL_SCANCODE_S, SDL_SCANCODE_Z);
+			initInput(&gPinkBubbleGumInput, SDL_SCANCODE_RIGHT, SDL_SCANCODE_LEFT, SDL_SCANCODE_UP, SDL_SCANCODE_DOWN, SDL_SCANCODE_SPACE);
+		}
+	}
 
 #ifdef _DEBUG
 	gConsoleFlag = SDL_TRUE;
@@ -220,22 +234,174 @@ static SDL_bool scanGroupedJoyString(FILE *fp, char *joyBuffer)
 	return SDL_TRUE;
 }
 
-static SDL_bool readCharacterInputDefaults(FILE *fp, const char *characterName, Input *input)
+// SDL 1.2 had a different mapping of key codes compared to SDL 2
+// We need to read user defaults from SDL 1.2 key codes once for migration purposes
+static SDL_Scancode scanCodeFromKeyCode1_2(int keyCode)
+{
+	switch (keyCode)
+	{
+		case 0: return SDL_SCANCODE_UNKNOWN;
+		case 8: return SDL_SCANCODE_BACKSPACE;
+		case 9: return SDL_SCANCODE_TAB;
+		case 12: return SDL_SCANCODE_CLEAR;
+		case 13: return SDL_SCANCODE_RETURN;
+		case 19: return SDL_SCANCODE_PAUSE;
+		case 27: return SDL_SCANCODE_ESCAPE;
+		case 32: return SDL_SCANCODE_SPACE;
+		case 35: return SDL_SCANCODE_KP_HASH;
+		case 38: return SDL_SCANCODE_KP_AMPERSAND;
+		case 40: return SDL_SCANCODE_KP_LEFTPAREN;
+		case 41: return SDL_SCANCODE_KP_RIGHTPAREN;
+		case 43: return SDL_SCANCODE_KP_PLUS;
+		case 44: return SDL_SCANCODE_COMMA;
+		case 45: return SDL_SCANCODE_MINUS;
+		case 46: return SDL_SCANCODE_PERIOD;
+		case 47: return SDL_SCANCODE_SLASH;
+		case 48: return SDL_SCANCODE_0;
+		case 49: return SDL_SCANCODE_1;
+		case 50: return SDL_SCANCODE_2;
+		case 51: return SDL_SCANCODE_3;
+		case 52: return SDL_SCANCODE_4;
+		case 53: return SDL_SCANCODE_5;
+		case 54: return SDL_SCANCODE_6;
+		case 55: return SDL_SCANCODE_7;
+		case 56: return SDL_SCANCODE_8;
+		case 57: return SDL_SCANCODE_9;
+		case 58: return SDL_SCANCODE_KP_COLON;
+		case 59: return SDL_SCANCODE_SEMICOLON;
+		case 60: return SDL_SCANCODE_KP_LESS;
+		case 61: return SDL_SCANCODE_EQUALS;
+		case 62: return SDL_SCANCODE_KP_GREATER;
+		case 64: return SDL_SCANCODE_KP_AT;
+		case 91: return SDL_SCANCODE_LEFTBRACKET;
+		case 92: return SDL_SCANCODE_BACKSLASH;
+		case 93: return SDL_SCANCODE_RIGHTBRACKET;
+		case 97: return SDL_SCANCODE_A;
+		case 98: return SDL_SCANCODE_B;
+		case 99: return SDL_SCANCODE_C;
+		case 100: return SDL_SCANCODE_D;
+		case 101: return SDL_SCANCODE_E;
+		case 102: return SDL_SCANCODE_F;
+		case 103: return SDL_SCANCODE_G;
+		case 104: return SDL_SCANCODE_H;
+		case 105: return SDL_SCANCODE_I;
+		case 106: return SDL_SCANCODE_J;
+		case 107: return SDL_SCANCODE_K;
+		case 108: return SDL_SCANCODE_L;
+		case 109: return SDL_SCANCODE_M;
+		case 110: return SDL_SCANCODE_N;
+		case 111: return SDL_SCANCODE_O;
+		case 112: return SDL_SCANCODE_P;
+		case 113: return SDL_SCANCODE_Q;
+		case 114: return SDL_SCANCODE_R;
+		case 115: return SDL_SCANCODE_S;
+		case 116: return SDL_SCANCODE_T;
+		case 117: return SDL_SCANCODE_U;
+		case 118: return SDL_SCANCODE_V;
+		case 119: return SDL_SCANCODE_W;
+		case 120: return SDL_SCANCODE_X;
+		case 121: return SDL_SCANCODE_Y;
+		case 122: return SDL_SCANCODE_Z;
+		case 127: return SDL_SCANCODE_DELETE;
+		case 256: return SDL_SCANCODE_KP_0;
+		case 257: return SDL_SCANCODE_KP_1;
+		case 258: return SDL_SCANCODE_KP_2;
+		case 259: return SDL_SCANCODE_KP_3;
+		case 260: return SDL_SCANCODE_KP_4;
+		case 261: return SDL_SCANCODE_KP_5;
+		case 262: return SDL_SCANCODE_KP_6;
+		case 263: return SDL_SCANCODE_KP_7;
+		case 264: return SDL_SCANCODE_KP_8;
+		case 265: return SDL_SCANCODE_KP_9;
+		case 266: return SDL_SCANCODE_KP_PERIOD;
+		case 267: return SDL_SCANCODE_KP_DIVIDE;
+		case 268: return SDL_SCANCODE_KP_MULTIPLY;
+		case 269: return SDL_SCANCODE_KP_MINUS;
+		case 270: return SDL_SCANCODE_KP_PLUS;
+		case 271: return SDL_SCANCODE_KP_ENTER;
+		case 272: return SDL_SCANCODE_KP_EQUALS;
+		case 273: return SDL_SCANCODE_UP;
+		case 274: return SDL_SCANCODE_DOWN;
+		case 275: return SDL_SCANCODE_RIGHT;
+		case 276: return SDL_SCANCODE_LEFT;
+		case 277: return SDL_SCANCODE_INSERT;
+		case 278: return SDL_SCANCODE_HOME;
+		case 279: return SDL_SCANCODE_END;
+		case 280: return SDL_SCANCODE_PAGEUP;
+		case 281: return SDL_SCANCODE_PAGEDOWN;
+		case 282: return SDL_SCANCODE_F1;
+		case 283: return SDL_SCANCODE_F2;
+		case 284: return SDL_SCANCODE_F3;
+		case 285: return SDL_SCANCODE_F4;
+		case 286: return SDL_SCANCODE_F5;
+		case 287: return SDL_SCANCODE_F6;
+		case 288: return SDL_SCANCODE_F7;
+		case 289: return SDL_SCANCODE_F8;
+		case 290: return SDL_SCANCODE_F9;
+		case 291: return SDL_SCANCODE_F10;
+		case 292: return SDL_SCANCODE_F11;
+		case 293: return SDL_SCANCODE_F12;
+		case 294: return SDL_SCANCODE_F13;
+		case 295: return SDL_SCANCODE_F14;
+		case 296: return SDL_SCANCODE_F15;
+		case 301: return SDL_SCANCODE_CAPSLOCK;
+		case 302: return SDL_SCANCODE_SCROLLLOCK;
+		case 303: return SDL_SCANCODE_RSHIFT;
+		case 304: return SDL_SCANCODE_LSHIFT;
+		case 305: return SDL_SCANCODE_RCTRL;
+		case 306: return SDL_SCANCODE_LCTRL;
+		case 307: return SDL_SCANCODE_RALT;
+		case 308: return SDL_SCANCODE_LALT;
+		case 309: return SDL_SCANCODE_RGUI;
+		case 310: return SDL_SCANCODE_LGUI;
+		case 313: return SDL_SCANCODE_MODE;
+		case 314: return SDL_SCANCODE_APPLICATION;
+		case 315: return SDL_SCANCODE_HELP;
+		case 316: return SDL_SCANCODE_PRINTSCREEN;
+		case 317: return SDL_SCANCODE_SYSREQ;
+		case 319: return SDL_SCANCODE_MENU;
+		case 320: return SDL_SCANCODE_POWER;
+		case 322: return SDL_SCANCODE_UNDO;
+	}
+	return SDL_SCANCODE_UNKNOWN;
+}
+
+static SDL_bool readCharacterInputDefaults(FILE *fp, const char *characterName, Input *input, int defaultsVersion)
 {
 	if (!scanExpectedString(fp, characterName)) return SDL_FALSE;
 	if (fscanf(fp, " key right: %i\n", &input->r_id) < 1) return SDL_FALSE;
+	if (defaultsVersion <= 1)
+	{
+		input->r_id = scanCodeFromKeyCode1_2(input->r_id);
+	}
 	
 	if (!scanExpectedString(fp, characterName)) return SDL_FALSE;
 	if (fscanf(fp, " key left: %i\n", &input->l_id) < 1) return SDL_FALSE;
+	if (defaultsVersion <= 1)
+	{
+		input->l_id = scanCodeFromKeyCode1_2(input->l_id);
+	}
 	
 	if (!scanExpectedString(fp, characterName)) return SDL_FALSE;
 	if (fscanf(fp, " key up: %i\n", &input->u_id) < 1) return SDL_FALSE;
+	if (defaultsVersion <= 1)
+	{
+		input->u_id = scanCodeFromKeyCode1_2(input->u_id);
+	}
 	
 	if (!scanExpectedString(fp, characterName)) return SDL_FALSE;
 	if (fscanf(fp, " key down: %i\n", &input->d_id) < 1) return SDL_FALSE;
+	if (defaultsVersion <= 1)
+	{
+		input->d_id = scanCodeFromKeyCode1_2(input->d_id);
+	}
 	
 	if (!scanExpectedString(fp, characterName)) return SDL_FALSE;
 	if (fscanf(fp, " key weapon: %i\n", &input->weap_id) < 1) return SDL_FALSE;
+	if (defaultsVersion <= 1)
+	{
+		input->weap_id = scanCodeFromKeyCode1_2(input->weap_id);
+	}
 	
 	input->joy_right = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
 	input->joy_left = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
@@ -282,6 +448,18 @@ static void readDefaults(void)
 	{
 		return;
 	}
+	
+	// Read defaults version at the end of the file if present
+	int defaultsVersion = 0;
+	if (fseek(fp, -20, SEEK_END) < 0) goto cleanup;
+	if (fscanf(fp, "Defaults version: %i\n", &defaultsVersion) < 1)
+	{
+		// If no defaults version is available, assume this is the first version
+		// (where no defaults version was specified in the file)
+		defaultsVersion = 1;
+	}
+	
+	if (fseek(fp, 0, SEEK_SET) < 0) goto cleanup;
 
 	// conole flag default
 	int consoleFlag = 0;
@@ -370,10 +548,10 @@ static void readDefaults(void)
 		gNumberOfNetHumans = 1;
 	}
 	
-	if (!readCharacterInputDefaults(fp, "Pink Bubblegum", &gPinkBubbleGumInput)) goto cleanup;
-	if (!readCharacterInputDefaults(fp, "Red Rover", &gRedRoverInput)) goto cleanup;
-	if (!readCharacterInputDefaults(fp, "Green Tree", &gGreenTreeInput)) goto cleanup;
-	if (!readCharacterInputDefaults(fp, "Blue Lightning", &gBlueLightningInput)) goto cleanup;
+	if (!readCharacterInputDefaults(fp, "Pink Bubblegum", &gPinkBubbleGumInput, defaultsVersion)) goto cleanup;
+	if (!readCharacterInputDefaults(fp, "Red Rover", &gRedRoverInput, defaultsVersion)) goto cleanup;
+	if (!readCharacterInputDefaults(fp, "Green Tree", &gGreenTreeInput, defaultsVersion)) goto cleanup;
+	if (!readCharacterInputDefaults(fp, "Blue Lightning", &gBlueLightningInput, defaultsVersion)) goto cleanup;
 	
 	if (!scanExpectedString(fp, "Server IP Address: ")) goto cleanup;
 	if (!scanLineTerminatingString(fp, gServerAddressString, sizeof(gServerAddressString))) goto cleanup;
@@ -516,6 +694,10 @@ static void writeDefaults(Renderer *renderer)
 	fprintf(fp, "\n");
 	fprintf(fp, "Audio effects: %i\n", gAudioEffectsFlag);
 	fprintf(fp, "Music: %i\n", gAudioMusicFlag);
+	
+	// If defaults version ever gets > 9, I may have to adjust the defaults reading code
+	// I doubt this will ever happen though
+	fprintf(fp, "\nDefaults version: 2\n");
 
 	fclose(fp);
 }
