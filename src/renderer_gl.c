@@ -277,6 +277,10 @@ static SDL_bool createOpenGLContext(SDL_Window **window, SDL_GLContext *glContex
 	{
 		if (!fsaa)
 		{
+			if (*window != NULL)
+			{
+				SDL_DestroyWindow(*window);
+			}
 			return SDL_FALSE;
 		}
 		else
