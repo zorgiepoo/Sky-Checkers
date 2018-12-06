@@ -5,6 +5,7 @@ Sky Checkers relies on the following dependencies:
 * SDL2_mixer
 * SDL2_ttf
 * SDL2_image
+* glew (for Windows and Linux)
 
 On Linux, development libraries for these dependencies may need to first be installed.
 
