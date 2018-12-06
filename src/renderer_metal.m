@@ -146,6 +146,7 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		SDL_Renderer *sdlRenderer = SDL_CreateRenderer(renderer->window, -1, sdlRenderFlags);
 		if (sdlRenderer == NULL)
 		{
+			SDL_DestroyWindow(renderer->window);
 			return SDL_FALSE;
 		}
 		
@@ -153,6 +154,7 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		if (metalLayer == nil)
 		{
 			SDL_DestroyRenderer(sdlRenderer);
+			SDL_DestroyWindow(renderer->window);
 			return SDL_FALSE;
 		}
 		
