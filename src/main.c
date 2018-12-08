@@ -1033,7 +1033,7 @@ static void drawScene(Renderer *renderer)
 	}
 }
 
-static void eventInput(SDL_Event *event, SDL_Window *window, int *quit)
+static void eventInput(SDL_Event *event, SDL_Window *window, SDL_bool *needsToDrawScene, SDL_bool *quit)
 {
 	switch (event->type)
 	{
@@ -1387,6 +1387,14 @@ static void eventInput(SDL_Event *event, SDL_Window *window, int *quit)
 			{
 				unPauseMusic();
 			}
+			else if (event->window.event == SDL_WINDOWEVENT_HIDDEN)
+			{
+				*needsToDrawScene = SDL_FALSE;
+			}
+			else if (event->window.event == SDL_WINDOWEVENT_SHOWN)
+			{
+				*needsToDrawScene = SDL_TRUE;
+			}
 			break;
 		case SDL_QUIT:
 			*quit = SDL_TRUE;
@@ -1419,7 +1427,8 @@ static void eventInput(SDL_Event *event, SDL_Window *window, int *quit)
 static void eventLoop(Renderer *renderer)
 {
 	SDL_Event event;
-	int done = 0;
+	SDL_bool needsToDrawScene = SDL_TRUE;
+	SDL_bool done = SDL_FALSE;
 
 	int fps = 30;
 	int delay = 1000 / fps;
@@ -1431,10 +1440,13 @@ static void eventLoop(Renderer *renderer)
 		//check for events.
 		while (SDL_PollEvent(&event))
 		{
-			eventInput(&event, renderer->window, &done);
+			eventInput(&event, renderer->window, &needsToDrawScene, &done);
 		}
 		
-		renderFrame(renderer, drawScene);
+		if (needsToDrawScene)
+		{
+			renderFrame(renderer, drawScene);
+		}
 		
 #ifndef _PROFILING
 		SDL_bool hasAppFocus = (SDL_GetWindowFlags(renderer->window) & SDL_WINDOW_INPUT_FOCUS) != 0;
