@@ -43,6 +43,8 @@
 #define GLSL_VERSION_330 330
 #define GLSL_VERSION_120 120
 
+static void updateViewport_gl(Renderer *renderer);
+
 void renderFrame_gl(Renderer *renderer, void (*drawFunc)(Renderer *));
 
 TextureObject textureFromPixelData_gl(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
@@ -313,6 +315,17 @@ static SDL_bool createOpenGLContext(SDL_Window **window, SDL_GLContext *glContex
 	return SDL_TRUE;
 }
 
+static void updateViewport_gl(Renderer *renderer)
+{
+	SDL_GL_GetDrawableSize(renderer->window, &renderer->screenWidth, &renderer->screenHeight);
+	
+	// Set the projection
+	glViewport(0, 0, renderer->screenWidth, renderer->screenHeight);
+	
+	// The aspect ratio is not quite correct, which is a mistake I made a long time ago that is too troubling to fix properly
+	renderer->projectionMatrix = m4_perspective(45.0f, (float)(renderer->screenWidth / renderer->screenHeight), 10.0f, 300.0f);
+}
+
 void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
 {
 	// VSYNC
@@ -368,13 +381,8 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	renderer->vsync = (value != 0);
 	
 	SDL_GetWindowSize(renderer->window, &renderer->windowWidth, &renderer->windowHeight);
-	SDL_GL_GetDrawableSize(renderer->window, &renderer->screenWidth, &renderer->screenHeight);
 	
-	// Set the projection
-	glViewport(0, 0, renderer->screenWidth, renderer->screenHeight);
-	
-	// The aspect ratio is not quite correct, which is a mistake I made a long time ago that is too troubling to fix properly
-	renderer->projectionMatrix = m4_perspective(45.0f, (float)(renderer->screenWidth / renderer->screenHeight), 10.0f, 300.0f);
+	updateViewport_gl(renderer);
 	
 	// OpenGL Initialization
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -394,6 +402,7 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 		compileAndLinkShader(&renderer->glInstancedTextureShader, glslVersion, "Data/Shaders/instanced-texture.vsh", "Data/Shaders/instanced-texture.fsh", SDL_TRUE, "modelViewProjectionMatrices", "colors", "textureSample", NULL);
 	}
 	
+	renderer->updateViewportPtr = updateViewport_gl;
 	renderer->renderFramePtr = renderFrame_gl;
 	renderer->textureFromPixelDataPtr = textureFromPixelData_gl;
 	renderer->createBufferObjectPtr = createBufferObject_gl;

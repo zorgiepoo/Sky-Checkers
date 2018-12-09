@@ -28,6 +28,8 @@
 
 #define DEPTH_STENCIL_PIXEL_FORMAT MTLPixelFormatDepth16Unorm
 
+static void updateViewport_metal(Renderer *renderer);
+
 void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *));
 
 TextureObject textureFromPixelData_metal(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
@@ -129,6 +131,79 @@ static void createAndStorePipelineState(void **pipelineStates, id<MTLDevice> dev
 	pipelineStates[pipelineIndex(shaderPairIndex, pipelineOptionIndex)] = (void *)CFBridgingRetain(pipelineState);
 }
 
+static void updateViewport_metal(Renderer *renderer)
+{
+	CAMetalLayer *metalLayer = (__bridge CAMetalLayer *)(renderer->metalLayer);
+	
+	CGSize drawableSize = metalLayer.drawableSize;
+	renderer->screenWidth = (int32_t)drawableSize.width;
+	renderer->screenHeight = (int32_t)drawableSize.height;
+	
+	// https://metashapes.com/blog/opengl-metal-projection-matrix-problem/
+	mat4_t metalProjectionAdjustMatrix =
+	mat4(
+		 1.0f, 0.0f, 0.0f, 0.0f,
+		 0.0f, 1.0f, 0.0f, 0.0f,
+		 0.0f, 0.0f, 0.5f, 0.5f,
+		 0.0f, 0.0f, 0.0f, 1.0f
+		 );
+	
+	// The aspect ratio is not quite correct, which is a mistake I made a long time ago that is too troubling to fix properly
+	renderer->projectionMatrix = m4_mul(metalProjectionAdjustMatrix, m4_perspective(45.0f, (float)(renderer->screenWidth / renderer->screenHeight), 10.0f, 300.0f));
+	
+	// Configure Anti Aliasing
+	
+	id<MTLDevice> device = metalLayer.device;
+	if (renderer->fsaa)
+	{
+		MTLTextureDescriptor *multisampleTextureDescriptor = [MTLTextureDescriptor new];
+		multisampleTextureDescriptor.pixelFormat = metalLayer.pixelFormat;
+		multisampleTextureDescriptor.width = (NSUInteger)renderer->screenWidth;
+		multisampleTextureDescriptor.height = (NSUInteger)renderer->screenHeight;
+		multisampleTextureDescriptor.resourceOptions = MTLResourceStorageModePrivate;
+		multisampleTextureDescriptor.usage = MTLTextureUsageRenderTarget;
+		multisampleTextureDescriptor.sampleCount = MSAA_SAMPLE_COUNT;
+		multisampleTextureDescriptor.textureType = MTLTextureType2DMultisample;
+		
+		id<MTLTexture> multisampleTexture = [device newTextureWithDescriptor:multisampleTextureDescriptor];
+		renderer->metalMultisampleTexture = (void *)CFBridgingRetain(multisampleTexture);
+	}
+	else
+	{
+		renderer->metalMultisampleTexture = NULL;
+	}
+	
+	// Set up depth stencil
+	
+	MTLDepthStencilDescriptor *depthStencilDescriptor = [MTLDepthStencilDescriptor new];
+	depthStencilDescriptor.depthCompareFunction = MTLCompareFunctionLessEqual;
+	depthStencilDescriptor.depthWriteEnabled = YES;
+	
+	id<MTLDepthStencilState> depthStencilState = [device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
+	if (depthStencilState == nil)
+	{
+		zgPrint("Depth stencil state failed to be created");
+		SDL_Quit();
+	}
+	
+	MTLTextureDescriptor *depthTextureDescriptor = [MTLTextureDescriptor new];
+	depthTextureDescriptor.pixelFormat = DEPTH_STENCIL_PIXEL_FORMAT;
+	depthTextureDescriptor.width = (NSUInteger)renderer->screenWidth;
+	depthTextureDescriptor.height = (NSUInteger)renderer->screenHeight;
+	depthTextureDescriptor.resourceOptions = MTLResourceStorageModePrivate;
+	depthTextureDescriptor.usage = MTLTextureUsageRenderTarget;
+	if (renderer->fsaa)
+	{
+		depthTextureDescriptor.sampleCount = MSAA_SAMPLE_COUNT;
+		depthTextureDescriptor.textureType = MTLTextureType2DMultisample;
+	}
+	
+	id<MTLTexture> depthTexture = [device newTextureWithDescriptor:depthTextureDescriptor];
+	
+	renderer->metalDepthTexture = (void *)CFBridgingRetain(depthTexture);
+	renderer->metalDepthTestStencilState = (void *)CFBridgingRetain(depthStencilState);
+}
+
 SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
 {
 	@autoreleasepool
@@ -171,78 +246,16 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		
 		renderer->supportsInstancing = SDL_TRUE;
 		
-		CGSize drawableSize = metalLayer.drawableSize;
-		renderer->screenWidth = (int32_t)drawableSize.width;
-		renderer->screenHeight = (int32_t)drawableSize.height;
-		
-		// https://metashapes.com/blog/opengl-metal-projection-matrix-problem/
-		mat4_t metalProjectionAdjustMatrix =
-		mat4(
-			 1.0f, 0.0f, 0.0f, 0.0f,
-			 0.0f, 1.0f, 0.0f, 0.0f,
-			 0.0f, 0.0f, 0.5f, 0.5f,
-			 0.0f, 0.0f, 0.0f, 1.0f
-			 );
-		
-		// The aspect ratio is not quite correct, which is a mistake I made a long time ago that is too troubling to fix properly
-		renderer->projectionMatrix = m4_mul(metalProjectionAdjustMatrix, m4_perspective(45.0f, (float)(renderer->screenWidth / renderer->screenHeight), 10.0f, 300.0f));
-		
 		SDL_GetWindowSize(renderer->window, &renderer->windowWidth, &renderer->windowHeight);
 		
 		id<MTLDevice> device = metalLayer.device;
 		
-		// Configure Anti Aliasing
+		// Update view port
 		
 		renderer->fsaa = (fsaa && [device supportsTextureSampleCount:MSAA_SAMPLE_COUNT]);
+		renderer->metalLayer = (void *)CFBridgingRetain(metalLayer);
 		
-		if (renderer->fsaa)
-		{
-			MTLTextureDescriptor *multisampleTextureDescriptor = [MTLTextureDescriptor new];
-			multisampleTextureDescriptor.pixelFormat = metalLayer.pixelFormat;
-			multisampleTextureDescriptor.width = (NSUInteger)renderer->screenWidth;
-			multisampleTextureDescriptor.height = (NSUInteger)renderer->screenHeight;
-			multisampleTextureDescriptor.resourceOptions = MTLResourceStorageModePrivate;
-			multisampleTextureDescriptor.usage = MTLTextureUsageRenderTarget;
-			multisampleTextureDescriptor.sampleCount = MSAA_SAMPLE_COUNT;
-			multisampleTextureDescriptor.textureType = MTLTextureType2DMultisample;
-			
-			id<MTLTexture> multisampleTexture = [device newTextureWithDescriptor:multisampleTextureDescriptor];
-			renderer->metalMultisampleTexture = (void *)CFBridgingRetain(multisampleTexture);
-		}
-		else
-		{
-			renderer->metalMultisampleTexture = NULL;
-		}
-		
-		// Set up depth stencil
-		
-		MTLDepthStencilDescriptor *depthStencilDescriptor = [MTLDepthStencilDescriptor new];
-		depthStencilDescriptor.depthCompareFunction = MTLCompareFunctionLessEqual;
-		depthStencilDescriptor.depthWriteEnabled = YES;
-		
-		id<MTLDepthStencilState> depthStencilState = [device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
-		if (depthStencilState == nil)
-		{
-			zgPrint("Depth stencil state failed to be created");
-			SDL_Quit();
-		}
-		
-		MTLTextureDescriptor *depthTextureDescriptor = [MTLTextureDescriptor new];
-		depthTextureDescriptor.pixelFormat = DEPTH_STENCIL_PIXEL_FORMAT;
-		depthTextureDescriptor.width = (NSUInteger)renderer->screenWidth;
-		depthTextureDescriptor.height = (NSUInteger)renderer->screenHeight;
-		depthTextureDescriptor.resourceOptions = MTLResourceStorageModePrivate;
-		depthTextureDescriptor.usage = MTLTextureUsageRenderTarget;
-		if (renderer->fsaa)
-		{
-			depthTextureDescriptor.sampleCount = MSAA_SAMPLE_COUNT;
-			depthTextureDescriptor.textureType = MTLTextureType2DMultisample;
-		}
-		
-		id<MTLTexture> depthTexture = [device newTextureWithDescriptor:depthTextureDescriptor];
-		
-		renderer->metalDepthTexture = (void *)CFBridgingRetain(depthTexture);
-		renderer->metalDepthTestStencilState = (void *)CFBridgingRetain(depthStencilState);
+		updateViewport_metal(renderer);
 		
 		// Compile our shader function pairs
 		
@@ -306,13 +319,13 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		renderer->metalPipelineStates[10] = NULL;
 		renderer->metalPipelineStates[11] = NULL;
 		
-		// Set up renderer properties
+		// Set up remaining renderer properties
 		
 		id<MTLCommandQueue> queue = [device newCommandQueue];
-		renderer->metalLayer = (void *)CFBridgingRetain(metalLayer);
 		renderer->metalCommandQueue = (void *)CFBridgingRetain(queue);
 		renderer->metalCurrentRenderCommandEncoder = NULL;
 		
+		renderer->updateViewportPtr = updateViewport_metal;
 		renderer->renderFramePtr = renderFrame_metal;
 		renderer->textureFromPixelDataPtr = textureFromPixelData_metal;
 		renderer->textureArrayFromPixelDataPtr = textureArrayFromPixelData_metal;

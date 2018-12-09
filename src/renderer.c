@@ -74,6 +74,14 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 #endif
 }
 
+void updateViewport(Renderer *renderer, int32_t windowWidth, int32_t windowHeight)
+{
+	renderer->windowWidth = windowWidth;
+	renderer->windowHeight = windowHeight;
+	
+	renderer->updateViewportPtr(renderer);
+}
+
 void renderFrame(Renderer *renderer, void (*drawFunc)(Renderer *))
 {
 	renderer->renderFramePtr(renderer, drawFunc);

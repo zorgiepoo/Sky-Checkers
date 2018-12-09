@@ -1033,8 +1033,10 @@ static void drawScene(Renderer *renderer)
 	}
 }
 
-static void eventInput(SDL_Event *event, SDL_Window *window, SDL_bool *needsToDrawScene, SDL_bool *quit)
+static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDrawScene, SDL_bool *quit)
 {
+	SDL_Window *window = renderer->window;
+	
 	switch (event->type)
 	{
 		case SDL_KEYDOWN:
@@ -1395,6 +1397,10 @@ static void eventInput(SDL_Event *event, SDL_Window *window, SDL_bool *needsToDr
 			{
 				*needsToDrawScene = SDL_TRUE;
 			}
+			else if (event->window.event == SDL_WINDOWEVENT_RESIZED)
+			{
+				updateViewport(renderer, event->window.data1, event->window.data2);
+			}
 			break;
 		case SDL_QUIT:
 			*quit = SDL_TRUE;
@@ -1440,7 +1446,7 @@ static void eventLoop(Renderer *renderer)
 		//check for events.
 		while (SDL_PollEvent(&event))
 		{
-			eventInput(&event, renderer->window, &needsToDrawScene, &done);
+			eventInput(&event, renderer, &needsToDrawScene, &done);
 		}
 		
 		if (needsToDrawScene)
@@ -1576,7 +1582,7 @@ int main(int argc, char *argv[])
 	}
 
 	// Create renderer
-	uint32_t videoFlags = SDL_WINDOW_ALLOW_HIGHDPI;
+	uint32_t videoFlags = SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE;
 	
 	int32_t windowWidth;
 	int32_t windowHeight;
