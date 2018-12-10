@@ -788,45 +788,51 @@ void drawFramesPerSecond(Renderer *renderer)
 	}
 }
 
-// We separate drawing icons vs scores on scoreboard because icons are opaque objects that should be rendered before any transparent ones
+static void drawScoreboardTextForCharacter(Renderer *renderer, Character *character, mat4_t iconModelViewMatrix)
+{
+	color4_t characterColor = (color4_t){character->red, character->green, character->blue, 0.7f};
+	
+	mat4_t winsLabelModelViewMatrix = m4_mul(iconModelViewMatrix, m4_translation((vec3_t){0.0f / 1.25f, -2.0f / 1.25f, 0.0f / 1.25f}));
+	drawString(renderer, winsLabelModelViewMatrix, characterColor, 0.5f / 1.25f, 0.5f / 1.25f, "Wins:");
+	
+	mat4_t winsModelViewMatrix = m4_mul(winsLabelModelViewMatrix, m4_translation((vec3_t){1.0f / 1.25f, 0.0f / 1.25f, 0.0f / 1.25f}));
+	drawStringf(renderer, winsModelViewMatrix, characterColor, 0.5f / 1.25f, 0.5f / 1.25f, "%i", character->wins);
+	
+	mat4_t killsLabelModelViewMatrix = m4_mul(winsModelViewMatrix, m4_translation((vec3_t){-1.0f / 1.25f, -2.0f / 1.25f, 0.0f / 1.25f}));
+	drawString(renderer, killsLabelModelViewMatrix, characterColor, 0.5f / 1.25f, 0.5f / 1.25f, "Kills:");
+	
+	mat4_t killsModelViewMatrix = m4_mul(killsLabelModelViewMatrix, m4_translation((vec3_t){1.0f / 1.25f, 0.0f / 1.25f, 0.0f / 1.25f}));
+	drawStringf(renderer, killsModelViewMatrix, characterColor, 0.5f / 1.25f, 0.5f / 1.25f, "%i", character->kills);
+}
+
+// We separate drawing icons vs scores on scoreboard
 typedef enum
 {
 	SCOREBOARD_RENDER_ICONS,
 	SCOREBOARD_RENDER_SCORES
 } ScoreboardRenderType;
 
-static void drawScoreboardForCharacter(Renderer *renderer, Character *character, ScoreboardRenderType renderType, float x, float y, float z)
+static void drawScoreboardForCharacters(Renderer *renderer, ScoreboardRenderType renderType)
 {
-	mat4_t iconModelViewMatrix = m4_translation((vec3_t){x, y, z});
+	mat4_t iconModelViewMatrices[] =
+	{
+		m4_translation((vec3_t){-6.0 / 1.25f, 7.0 / 1.25f, -25.0 / 1.25f}),
+		m4_translation((vec3_t){-2.0f / 1.25f, 7.0f / 1.25f, -25.0f / 1.25f}),
+		m4_translation((vec3_t){2.0f / 1.25f, 7.0f / 1.25f, -25.0f / 1.25f}),
+		m4_translation((vec3_t){6.0f / 1.25f, 7.0f / 1.25f, -25.0f / 1.25f})
+	};
 	
 	if (renderType == SCOREBOARD_RENDER_ICONS)
 	{
-		drawCharacterIcon(renderer, iconModelViewMatrix, character);
+		drawCharacterIcons(renderer, iconModelViewMatrices);
 	}
 	else
 	{
-		color4_t characterColor = (color4_t){character->red, character->green, character->blue, 0.7f};
-		
-		mat4_t winsLabelModelViewMatrix = m4_mul(iconModelViewMatrix, m4_translation((vec3_t){0.0f / 1.25f, -2.0f / 1.25f, 0.0f / 1.25f}));
-		drawString(renderer, winsLabelModelViewMatrix, characterColor, 0.5f / 1.25f, 0.5f / 1.25f, "Wins:");
-		
-		mat4_t winsModelViewMatrix = m4_mul(winsLabelModelViewMatrix, m4_translation((vec3_t){1.0f / 1.25f, 0.0f / 1.25f, 0.0f / 1.25f}));
-		drawStringf(renderer, winsModelViewMatrix, characterColor, 0.5f / 1.25f, 0.5f / 1.25f, "%i", character->wins);
-		
-		mat4_t killsLabelModelViewMatrix = m4_mul(winsModelViewMatrix, m4_translation((vec3_t){-1.0f / 1.25f, -2.0f / 1.25f, 0.0f / 1.25f}));
-		drawString(renderer, killsLabelModelViewMatrix, characterColor, 0.5f / 1.25f, 0.5f / 1.25f, "Kills:");
-		
-		mat4_t killsModelViewMatrix = m4_mul(killsLabelModelViewMatrix, m4_translation((vec3_t){1.0f / 1.25f, 0.0f / 1.25f, 0.0f / 1.25f}));
-		drawStringf(renderer, killsModelViewMatrix, characterColor, 0.5f / 1.25f, 0.5f / 1.25f, "%i", character->kills);
+		drawScoreboardTextForCharacter(renderer, &gPinkBubbleGum, iconModelViewMatrices[0]);
+		drawScoreboardTextForCharacter(renderer, &gRedRover, iconModelViewMatrices[1]);
+		drawScoreboardTextForCharacter(renderer, &gGreenTree, iconModelViewMatrices[2]);
+		drawScoreboardTextForCharacter(renderer, &gBlueLightning, iconModelViewMatrices[3]);
 	}
-}
-
-static void drawScoreboardForCharacters(Renderer *renderer, ScoreboardRenderType renderType)
-{
-	drawScoreboardForCharacter(renderer, &gPinkBubbleGum, renderType, -6.0 / 1.25f, 7.0 / 1.25f, -25.0 / 1.25f);
-	drawScoreboardForCharacter(renderer, &gRedRover, renderType, -2.0f / 1.25f, 7.0f / 1.25f, -25.0f / 1.25f);
-	drawScoreboardForCharacter(renderer, &gGreenTree, renderType, 2.0f / 1.25f, 7.0f / 1.25f, -25.0f / 1.25f);
-	drawScoreboardForCharacter(renderer, &gBlueLightning, renderType, 6.0f / 1.25f, 7.0f / 1.25f, -25.0f / 1.25f);
 }
 
 static void drawScene(Renderer *renderer)
@@ -855,7 +861,14 @@ static void drawScene(Renderer *renderer)
 		drawTiles(renderer);
 		
 		// Character icons at the bottom of the screen at z = -25.0f
-		drawCharacterIcons(renderer);
+		const mat4_t characterIconTranslations[] =
+		{
+			m4_translation((vec3_t){-9.0f, -9.5f, -25.0f}),
+			m4_translation((vec3_t){-3.67f, -9.5f, -25.0f}),
+			m4_translation((vec3_t){1.63f, -9.5f, -25.0f}),
+			m4_translation((vec3_t){6.93f, -9.5f, -25.0f})
+		};
+		drawCharacterIcons(renderer, characterIconTranslations);
 		
 		// Render transparent objects from zFar to zNear
 		

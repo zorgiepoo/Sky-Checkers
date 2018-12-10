@@ -137,8 +137,7 @@ void loadCharacterTextures(Renderer *renderer);
 
 void buildCharacterModels(Renderer *renderer);
 
-void drawCharacterIcon(Renderer *renderer, mat4_t modelViewMatrix, Character *character);
-void drawCharacterIcons(Renderer *renderer);
+void drawCharacterIcons(Renderer *renderer, const mat4_t *translations);
 
 void drawCharacters(Renderer *renderer);
 

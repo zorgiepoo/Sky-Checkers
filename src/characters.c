@@ -454,18 +454,13 @@ static mat4_t characterIconModelViewMatrix(mat4_t modelViewMatrix)
 	return m4_mul(modelViewMatrix, m4_rotation_x((float)M_PI));
 }
 
-void drawCharacterIcon(Renderer *renderer, mat4_t modelViewMatrix, Character *character)
+static void drawCharacterIcon(Renderer *renderer, mat4_t modelViewMatrix, Character *character)
 {
 	drawTextureWithVertices(renderer, characterIconModelViewMatrix(modelViewMatrix), gCharacterTex, RENDERER_TRIANGLE_STRIP_MODE, gIconVertexAndTextureCoordinateArrayObject, 1204 / 2, (color4_t){character->red, character->green, character->blue, 1.0f}, RENDERER_OPTION_NONE);
 }
 
-void drawCharacterIcons(Renderer *renderer)
+void drawCharacterIcons(Renderer *renderer, const mat4_t *translations)
 {
-	const vec3_t pinkBubbleGumTranslation = (vec3_t){-9.0f, -9.5f, -25.0f};
-	const vec3_t redRoverTranslation = (vec3_t){-3.67f, -9.5f, -25.0f};
-	const vec3_t greenTreeTranslation = (vec3_t){1.63f, -9.5f, -25.0f};
-	const vec3_t blueLightningTranslation = (vec3_t){6.93f, -9.5f, -25.0f};
-	
 	if (renderer->supportsInstancing)
 	{
 		mat4_t projectionMatrix = renderer->projectionMatrix;
@@ -480,20 +475,20 @@ void drawCharacterIcons(Renderer *renderer)
 		
 		mat4_t characterIconModelViewProjectionMatrices[] =
 		{
-			m4_mul(projectionMatrix, characterIconModelViewMatrix(m4_translation(pinkBubbleGumTranslation))),
-			m4_mul(projectionMatrix, characterIconModelViewMatrix(m4_translation(redRoverTranslation))),
-			m4_mul(projectionMatrix, characterIconModelViewMatrix(m4_translation(greenTreeTranslation))),
-			m4_mul(projectionMatrix, characterIconModelViewMatrix(m4_translation(blueLightningTranslation)))
+			m4_mul(projectionMatrix, characterIconModelViewMatrix(translations[0])),
+			m4_mul(projectionMatrix, characterIconModelViewMatrix(translations[1])),
+			m4_mul(projectionMatrix, characterIconModelViewMatrix(translations[2])),
+			m4_mul(projectionMatrix, characterIconModelViewMatrix(translations[3]))
 		};
 		
 		drawInstancedTextureWithVertices(renderer, characterIconModelViewProjectionMatrices, gCharacterTex, characterIconColors, RENDERER_TRIANGLE_STRIP_MODE, gIconVertexAndTextureCoordinateArrayObject, 1204 / 2, sizeof(characterIconModelViewProjectionMatrices) / sizeof(*characterIconModelViewProjectionMatrices), RENDERER_OPTION_NONE);
 	}
 	else
 	{
-		drawCharacterIcon(renderer, m4_translation(pinkBubbleGumTranslation), &gPinkBubbleGum);
-		drawCharacterIcon(renderer, m4_translation(redRoverTranslation), &gRedRover);
-		drawCharacterIcon(renderer, m4_translation(greenTreeTranslation), &gGreenTree);
-		drawCharacterIcon(renderer, m4_translation(blueLightningTranslation), &gBlueLightning);
+		drawCharacterIcon(renderer, translations[0], &gPinkBubbleGum);
+		drawCharacterIcon(renderer, translations[1], &gRedRover);
+		drawCharacterIcon(renderer, translations[2], &gGreenTree);
+		drawCharacterIcon(renderer, translations[3], &gBlueLightning);
 	}
 }
 
