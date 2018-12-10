@@ -749,7 +749,6 @@ void closeGameResources(void)
 	gBlueLightning.wins = 0;
 }
 
-// frames per second function.
 void drawFramesPerSecond(Renderer *renderer)
 {
 	static unsigned frame_count = 0;
@@ -784,7 +783,7 @@ void drawFramesPerSecond(Renderer *renderer)
 	size_t length = strlen(fpsString);
 	if (length > 0)
 	{
-		mat4_t modelViewMatrix = m4_translation((vec3_t){9.0f, 9.0f, -25.0f});
+		mat4_t modelViewMatrix = m4_translation((vec3_t){6.48f, 6.48f, -18.0f});
 		drawString(renderer, modelViewMatrix, (color4_t){0.0f, 0.5f, 0.8f, 1.0f}, 0.16f * length, 0.5f, fpsString);
 	}
 }
@@ -865,12 +864,6 @@ static void drawScene(Renderer *renderer)
 		
 		// Character lives at z = -25.0f
 		drawCharacterLives(renderer);
-		
-		if (gDrawFPS)
-		{
-			// FPS renders at z = -25.0f
-			drawFramesPerSecond(renderer);
-		}
 		
 		// Render game instruction text at -25.0f
 		if (!gGameHasStarted)
@@ -983,6 +976,12 @@ static void drawScene(Renderer *renderer)
 				drawConsoleText(renderer);
 			}
 		}
+		
+		if (gDrawFPS)
+		{
+			// FPS renders at z = -18.0f
+			drawFramesPerSecond(renderer);
+		}
 	}
 	else /* if (!gGameState) */
 	{
@@ -1029,6 +1028,12 @@ static void drawScene(Renderer *renderer)
 			color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 1.0f};
 
 			drawString(renderer, translationMatrix, textColor, 100.0 / 14.0f, 5.0 / 14.0f, "Click enter to modify a mapping value and input in a key. Click Escape to exit out.");
+		}
+		
+		if (gDrawFPS)
+		{
+			// FPS renders at z = -18.0f
+			drawFramesPerSecond(renderer);
 		}
 	}
 }
