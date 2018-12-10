@@ -449,26 +449,52 @@ void drawCharacters(Renderer *renderer)
 	}
 }
 
-void drawCharacterIcon(Renderer *renderer, mat4_t modelViewMatrix, Character *character)
+static mat4_t characterIconModelViewMatrix(mat4_t modelViewMatrix)
 {
-	mat4_t rotationMatrix = m4_rotation_x((float)M_PI);
-	mat4_t rotatedIconModelViewMatrix = m4_mul(modelViewMatrix, rotationMatrix);
-	
-	drawTextureWithVertices(renderer, rotatedIconModelViewMatrix, gCharacterTex, RENDERER_TRIANGLE_STRIP_MODE, gIconVertexAndTextureCoordinateArrayObject, 1204 / 2, (color4_t){character->red, character->green, character->blue, 1.0f}, RENDERER_OPTION_NONE);
+	return m4_mul(modelViewMatrix, m4_rotation_x((float)M_PI));
 }
 
-static void translateAndDrawCharacterIcon(Renderer *renderer, Character *character, float x, float y, float z)
+void drawCharacterIcon(Renderer *renderer, mat4_t modelViewMatrix, Character *character)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){x, y, z});
-	drawCharacterIcon(renderer, modelViewMatrix, character);
+	drawTextureWithVertices(renderer, characterIconModelViewMatrix(modelViewMatrix), gCharacterTex, RENDERER_TRIANGLE_STRIP_MODE, gIconVertexAndTextureCoordinateArrayObject, 1204 / 2, (color4_t){character->red, character->green, character->blue, 1.0f}, RENDERER_OPTION_NONE);
 }
 
 void drawCharacterIcons(Renderer *renderer)
 {
-	translateAndDrawCharacterIcon(renderer, &gPinkBubbleGum, -9.0f, -9.5f, -25.0f);
-	translateAndDrawCharacterIcon(renderer, &gRedRover, -3.67f, -9.5f, -25.0f);
-	translateAndDrawCharacterIcon(renderer, &gGreenTree, 1.63f, -9.5f, -25.0f);
-	translateAndDrawCharacterIcon(renderer, &gBlueLightning, 6.93f, -9.5f, -25.0f);
+	const vec3_t pinkBubbleGumTranslation = (vec3_t){-9.0f, -9.5f, -25.0f};
+	const vec3_t redRoverTranslation = (vec3_t){-3.67f, -9.5f, -25.0f};
+	const vec3_t greenTreeTranslation = (vec3_t){1.63f, -9.5f, -25.0f};
+	const vec3_t blueLightningTranslation = (vec3_t){6.93f, -9.5f, -25.0f};
+	
+	if (renderer->supportsInstancing)
+	{
+		mat4_t projectionMatrix = renderer->projectionMatrix;
+		
+		color4_t characterIconColors[] =
+		{
+			(color4_t){gPinkBubbleGum.red, gPinkBubbleGum.green, gPinkBubbleGum.blue, 1.0f},
+			(color4_t){gRedRover.red, gRedRover.green, gRedRover.blue, 1.0f},
+			(color4_t){gGreenTree.red, gGreenTree.green, gGreenTree.blue, 1.0f},
+			(color4_t){gBlueLightning.red, gBlueLightning.green, gBlueLightning.blue, 1.0f}
+		};
+		
+		mat4_t characterIconModelViewProjectionMatrices[] =
+		{
+			m4_mul(projectionMatrix, characterIconModelViewMatrix(m4_translation(pinkBubbleGumTranslation))),
+			m4_mul(projectionMatrix, characterIconModelViewMatrix(m4_translation(redRoverTranslation))),
+			m4_mul(projectionMatrix, characterIconModelViewMatrix(m4_translation(greenTreeTranslation))),
+			m4_mul(projectionMatrix, characterIconModelViewMatrix(m4_translation(blueLightningTranslation)))
+		};
+		
+		drawInstancedTextureWithVertices(renderer, characterIconModelViewProjectionMatrices, gCharacterTex, characterIconColors, RENDERER_TRIANGLE_STRIP_MODE, gIconVertexAndTextureCoordinateArrayObject, 1204 / 2, sizeof(characterIconModelViewProjectionMatrices) / sizeof(*characterIconModelViewProjectionMatrices), RENDERER_OPTION_NONE);
+	}
+	else
+	{
+		drawCharacterIcon(renderer, m4_translation(pinkBubbleGumTranslation), &gPinkBubbleGum);
+		drawCharacterIcon(renderer, m4_translation(redRoverTranslation), &gRedRover);
+		drawCharacterIcon(renderer, m4_translation(greenTreeTranslation), &gGreenTree);
+		drawCharacterIcon(renderer, m4_translation(blueLightningTranslation), &gBlueLightning);
+	}
 }
 
 static void drawCharacterLive(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, Character *character, const char *playerNumberString)
