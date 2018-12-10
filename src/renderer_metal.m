@@ -153,6 +153,11 @@ static void updateViewport_metal(Renderer *renderer)
 	
 	// Configure Anti Aliasing
 	
+	if (renderer->metalMultisampleTexture != NULL)
+	{
+		CFRelease(renderer->metalMultisampleTexture);
+	}
+	
 	id<MTLDevice> device = metalLayer.device;
 	if (renderer->fsaa)
 	{
@@ -174,6 +179,16 @@ static void updateViewport_metal(Renderer *renderer)
 	}
 	
 	// Set up depth stencil
+	
+	if (renderer->metalDepthTexture != NULL)
+	{
+		CFRelease(renderer->metalDepthTexture);
+	}
+	
+	if (renderer->metalDepthTestStencilState != NULL)
+	{
+		CFRelease(renderer->metalDepthTestStencilState);
+	}
 	
 	MTLDepthStencilDescriptor *depthStencilDescriptor = [MTLDepthStencilDescriptor new];
 	depthStencilDescriptor.depthCompareFunction = MTLCompareFunctionLessEqual;
@@ -254,7 +269,9 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		
 		renderer->fsaa = (fsaa && [device supportsTextureSampleCount:MSAA_SAMPLE_COUNT]);
 		renderer->metalLayer = (void *)CFBridgingRetain(metalLayer);
-		
+		renderer->metalDepthTexture = NULL;
+		renderer->metalDepthTestStencilState = NULL;
+		renderer->metalMultisampleTexture = NULL;
 		updateViewport_metal(renderer);
 		
 		// Compile our shader function pairs
