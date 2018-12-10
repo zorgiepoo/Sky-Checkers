@@ -76,7 +76,7 @@ vertex InstancedTextureRasterizerData instancedTextureVertexShader(const ushort 
 	return output;
 }
 
-fragment float4 instancedTexturesFragmentShader(const InstancedTextureRasterizerData input [[stage_in]], const texture2d_array<half> textures [[ texture(METAL_TEXTURE_INDEX) ]], const device uint *textureIndices [[ buffer(METAL_BUFFER_TEXTURE_INDICES_INDEX) ]], const device packed_float4 *colors [[ buffer(METAL_BUFFER_COLOR_INDEX) ]])
+fragment float4 instancedTextureArrayFragmentShader(const InstancedTextureRasterizerData input [[stage_in]], const texture2d_array<half> textures [[ texture(METAL_TEXTURE_INDEX) ]], const device uint *textureIndices [[ buffer(METAL_BUFFER_TEXTURE_INDICES_INDEX) ]], const device packed_float4 *colors [[ buffer(METAL_BUFFER_COLOR_INDEX) ]])
 {
 	constexpr sampler textureSampler(mag_filter::linear, min_filter::linear);
 

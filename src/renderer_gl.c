@@ -65,7 +65,7 @@ void drawTextureWithVertices_gl(Renderer *renderer, mat4_t modelViewMatrix, Text
 
 void drawTextureWithVerticesFromIndices_gl(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
 
-void drawInstancedTexturesWithVerticesFromIndices_gl(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureArrayObject textureArray, color4_t *colors, uint32_t *textureArrayIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options);
+void drawInstancedTextureArrayWithVerticesFromIndices_gl(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureArrayObject textureArray, color4_t *colors, uint32_t *textureArrayIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options);
 
 void drawInstancedTextureWithVerticesFromIndices_gl(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureObject texture, color4_t *colors, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options);
 
@@ -397,7 +397,7 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	
 	if (renderer->supportsInstancing)
 	{
-		compileAndLinkShader(&renderer->glInstancedTexturesShader, glslVersion, "Data/Shaders/instanced-texture.vsh", "Data/Shaders/instanced-textures.fsh", SDL_TRUE, "modelViewProjectionMatrices", "colors", "textureSamples", "textureIndices");
+		compileAndLinkShader(&renderer->glInstancedTexturesShader, glslVersion, "Data/Shaders/instanced-texture.vsh", "Data/Shaders/instanced-texture-array.fsh", SDL_TRUE, "modelViewProjectionMatrices", "colors", "textureSamples", "textureIndices");
 		
 		compileAndLinkShader(&renderer->glInstancedTextureShader, glslVersion, "Data/Shaders/instanced-texture.vsh", "Data/Shaders/instanced-texture.fsh", SDL_TRUE, "modelViewProjectionMatrices", "colors", "textureSample", NULL);
 	}
@@ -412,7 +412,7 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	renderer->drawVerticesFromIndicesPtr = drawVerticesFromIndices_gl;
 	renderer->drawTextureWithVerticesPtr = drawTextureWithVertices_gl;
 	renderer->drawTextureWithVerticesFromIndicesPtr = drawTextureWithVerticesFromIndices_gl;
-	renderer->drawInstancedTexturesWithVerticesFromIndicesPtr = drawInstancedTexturesWithVerticesFromIndices_gl;
+	renderer->drawInstancedTextureArrayWithVerticesFromIndicesPtr = drawInstancedTextureArrayWithVerticesFromIndices_gl;
 	renderer->textureArrayFromPixelDataPtr = textureArrayFromPixelData_gl;
 	renderer->drawInstancedTextureWithVerticesFromIndicesPtr = drawInstancedTextureWithVerticesFromIndices_gl;
 }
@@ -661,7 +661,7 @@ void drawTextureWithVerticesFromIndices_gl(Renderer *renderer, mat4_t modelViewM
 	endDrawingVerticesAndTextures(options);
 }
 
-void drawInstancedTexturesWithVerticesFromIndices_gl(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureArrayObject textureArray, color4_t *colors, uint32_t *textureArrayIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options)
+void drawInstancedTextureArrayWithVerticesFromIndices_gl(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureArrayObject textureArray, color4_t *colors, uint32_t *textureArrayIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options)
 {
 	Shader_gl *shader = &renderer->glInstancedTexturesShader;
 	beginDrawingVertices(shader, vertexAndTextureArrayObject, options);

@@ -394,7 +394,7 @@ void drawTiles(Renderer *renderer)
 			colors[i] = (color4_t){gTiles[i].red, gTiles[i].green, gTiles[i].blue, 1.0f};
 		}
 		
-		drawInstancedTexturesWithVerticesFromIndices(renderer, modelViewProjectionMatrices, gTileTextures.tiles, colors, textureIndices, RENDERER_TRIANGLE_MODE, vertexAndTextureCoordinateArrayObject, indicesBufferObject, 24, NUMBER_OF_TILES, RENDERER_OPTION_NONE);
+		drawInstancedTextureArrayWithVerticesFromIndices(renderer, modelViewProjectionMatrices, gTileTextures.tiles, colors, textureIndices, RENDERER_TRIANGLE_MODE, vertexAndTextureCoordinateArrayObject, indicesBufferObject, 24, NUMBER_OF_TILES, RENDERER_OPTION_NONE);
 	}
 	else
 	{
