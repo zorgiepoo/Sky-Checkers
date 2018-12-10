@@ -240,6 +240,21 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 			return SDL_FALSE;
 		}
 		
+		SDL_RendererInfo rendererInfo;
+		if (SDL_GetRendererInfo(sdlRenderer, &rendererInfo) < 0)
+		{
+			SDL_DestroyRenderer(sdlRenderer);
+			SDL_DestroyWindow(renderer->window);
+			return SDL_FALSE;
+		}
+		
+		if (strcmp(rendererInfo.name, "metal") != 0)
+		{
+			SDL_DestroyRenderer(sdlRenderer);
+			SDL_DestroyWindow(renderer->window);
+			return SDL_FALSE;
+		}
+		
 		CAMetalLayer *metalLayer = (__bridge CAMetalLayer *)(SDL_RenderGetMetalLayer(sdlRenderer));
 		if (metalLayer == nil)
 		{
