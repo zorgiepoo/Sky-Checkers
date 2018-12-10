@@ -223,6 +223,14 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 {
 	@autoreleasepool
 	{
+		if (@available(macOS 10.11, *))
+		{
+		}
+		else
+		{
+			return SDL_FALSE;
+		}
+		
 		SDL_SetHint(SDL_HINT_RENDER_DRIVER, "metal");
 		
 		renderer->window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags);
