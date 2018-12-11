@@ -93,3 +93,12 @@ fragment float4 instancedTextureFragmentShader(const InstancedTextureRasterizerD
 	
 	return colors[input.instanceID] * float4(colorSample);
 }
+
+fragment float4 instancedTexturesFragmentShader(const InstancedTextureRasterizerData input [[stage_in]], const array<texture2d<half>, METAL_MAX_TEXTURE_COUNT> textures [[ texture(METAL_TEXTURE_INDEX) ]], const device packed_float4 *colors [[ buffer(METAL_BUFFER_COLOR_INDEX) ]])
+{
+	constexpr sampler textureSampler(mag_filter::linear, min_filter::linear);
+	
+	const half4 colorSample = textures[input.instanceID].sample(textureSampler, input.textureCoordinate);
+	
+	return colors[input.instanceID] * float4(colorSample);
+}

@@ -35,12 +35,13 @@ static int gGlyphsCounter =	0;
 static int gMaxGlyphs =		256;
 static Glyph *gGlyphs;
 
+static BufferArrayObject gFontVertexAndTextureBufferObject;
+static BufferObject gFontIndicesBufferObject;
+
 static int lookUpGlyphIndex(const char *string);
 
-SDL_bool initFont(void)
+SDL_bool initFont(Renderer *renderer)
 {
-	int i;
-	
 	if (TTF_Init() == -1)
 	{
 		zgPrint("TTF_Init: %t or %e");
@@ -49,10 +50,35 @@ SDL_bool initFont(void)
 	
 	gGlyphs = malloc(sizeof(Glyph) * gMaxGlyphs);
 	
-	for (i = 0; i < gMaxGlyphs; i++)
+	for (int i = 0; i < gMaxGlyphs; i++)
 	{
 		gGlyphs[i].text = NULL;
 	}
+	
+	const uint16_t indices[] =
+	{
+		0, 1, 2,
+		2, 3, 0
+	};
+	
+	const float verticesAndTextureCoordinates[] =
+	{
+		// vertices
+		-1.0f, -1.0f, 0.0f,
+		-1.0f, 1.0f, 0.0f,
+		1.0f, 1.0f, 0.0f,
+		1.0f, -1.0f, 0.0f,
+		
+		// texture coordinates
+		0.0f, 1.0f,
+		0.0f, 0.0f,
+		1.0f, 0.0f,
+		1.0f, 1.0f
+	};
+	
+	gFontVertexAndTextureBufferObject = createVertexAndTextureCoordinateArrayObject(renderer, verticesAndTextureCoordinates, 12 * sizeof(*verticesAndTextureCoordinates), 8 * sizeof(*verticesAndTextureCoordinates));
+	
+	gFontIndicesBufferObject = createBufferObject(renderer, indices, sizeof(indices));
 	
 	return SDL_TRUE;
 }
@@ -224,6 +250,27 @@ int cacheString(Renderer *renderer, const char *string)
 	return index;
 }
 
+TextureObject textureForString(Renderer *renderer, const char *string)
+{
+	int index = cacheString(renderer, string);
+	if (index == -1)
+	{
+		return gGlyphs[gGlyphsCounter - 1].texture;
+	}
+	return gGlyphs[index].texture;
+}
+
+static mat4_t fontModelViewMatrix(mat4_t modelViewMatrix, float width, float height)
+{
+	mat4_t scaleMatrix = m4_scaling((vec3_t){width, height, 0.0f});
+	return m4_mul(modelViewMatrix, scaleMatrix);
+}
+
+mat4_t fontModelViewProjectionMatrix(mat4_t projectionMatrix, mat4_t modelViewMatrix, float width, float height)
+{
+	return m4_mul(projectionMatrix, fontModelViewMatrix(modelViewMatrix, width, height));
+}
+
 void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, float width, float height, const char *string)
 {
 	if (string == NULL)
@@ -237,42 +284,10 @@ void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, floa
 		return;
 	}
 	
-	static BufferArrayObject vertexAndTextureBufferObject;
-	static BufferObject indicesBufferObject;
-	static SDL_bool initializedBuffers;
-	
-	if (!initializedBuffers)
-	{
-		const uint16_t indices[] =
-		{
-			0, 1, 2,
-			2, 3, 0
-		};
-		
-		const float verticesAndTextureCoordinates[] =
-		{
-			// vertices
-			-1.0f, -1.0f, 0.0f,
-			-1.0f, 1.0f, 0.0f,
-			1.0f, 1.0f, 0.0f,
-			1.0f, -1.0f, 0.0f,
-			
-			// texture coordinates
-			0.0f, 1.0f,
-			0.0f, 0.0f,
-			1.0f, 0.0f,
-			1.0f, 1.0f
-		};
-		
-		vertexAndTextureBufferObject = createVertexAndTextureCoordinateArrayObject(renderer, verticesAndTextureCoordinates, 12 * sizeof(*verticesAndTextureCoordinates), 8 * sizeof(*verticesAndTextureCoordinates));
-		
-		indicesBufferObject = createBufferObject(renderer, indices, sizeof(indices));
-		
-		initializedBuffers = SDL_TRUE;
-	}
-	
-	mat4_t scaleMatrix = m4_scaling((vec3_t){width, height, 0.0f});
-	mat4_t transformMatrix = m4_mul(modelViewMatrix, scaleMatrix);
-	
-	drawTextureWithVerticesFromIndices(renderer, transformMatrix, gGlyphs[index].texture, RENDERER_TRIANGLE_MODE, vertexAndTextureBufferObject, indicesBufferObject, 6, color, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
+	drawTextureWithVerticesFromIndices(renderer, fontModelViewMatrix(modelViewMatrix, width, height), gGlyphs[index].texture, RENDERER_TRIANGLE_MODE, gFontVertexAndTextureBufferObject, gFontIndicesBufferObject, 6, color, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
+}
+
+void drawStrings(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureObject *textures, color4_t *colors, uint32_t stringCount)
+{
+	drawInstancedTexturesWithVerticesFromIndices(renderer, modelViewProjectionMatrices, textures, colors, RENDERER_TRIANGLE_MODE, gFontVertexAndTextureBufferObject, gFontIndicesBufferObject, 6, stringCount, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
 }

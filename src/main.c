@@ -1572,11 +1572,6 @@ int main(int argc, char *argv[])
 
 	initJoySticks();
 
-	if (!initFont())
-	{
-		return -2;
-	}
-
 	if (!initAudio())
 	{
 		return -3;
@@ -1627,6 +1622,11 @@ int main(int argc, char *argv[])
 	
 	Renderer renderer;
 	createRenderer(&renderer, windowWidth, windowHeight, videoFlags, vsync, fsaa);
+	
+	if (!initFont(&renderer))
+	{
+		return -2;
+	}
 	
 	// Initialize game related things
 	// init random number generator

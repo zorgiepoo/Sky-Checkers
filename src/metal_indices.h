@@ -34,4 +34,6 @@ typedef enum
 	METAL_TEXTURE_INDEX = 0
 } MetalTextureIndex;
 
+#define METAL_MAX_TEXTURE_COUNT 16
+
 #endif /* metal_indices_h */

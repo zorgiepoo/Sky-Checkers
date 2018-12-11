@@ -4,7 +4,7 @@ in vec2 texVarying;
 
 flat in int instanceID;
 
-uniform vec4 colors[64];
+uniform vec4 colors[4];
 uniform sampler2D textureSample;
 
 void main()

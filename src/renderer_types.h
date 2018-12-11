@@ -96,7 +96,7 @@ typedef struct
 	int32_t textureIndicesUniformLocation;
 } Shader_gl;
 
-#define MAX_PIPELINE_COUNT 12
+#define MAX_PIPELINE_COUNT 15
 
 typedef struct _Renderer
 {
@@ -121,8 +121,9 @@ typedef struct _Renderer
 		{
 			Shader_gl glPositionTextureShader;
 			Shader_gl glPositionShader;
-			Shader_gl glInstancedTexturesShader;
+			Shader_gl glInstancedTextureArrayShader;
 			Shader_gl glInstancedTextureShader;
+			Shader_gl glInstancedTexturesShader;
 		};
 		
 		// Private metal data
@@ -153,4 +154,5 @@ typedef struct _Renderer
 	void (*drawInstancedTextureArrayWithVerticesFromIndicesPtr)(struct _Renderer *, mat4_t *, TextureArrayObject, color4_t *, uint32_t *, RendererMode, BufferArrayObject, BufferObject, uint32_t, uint32_t, RendererOptions);
 	void (*drawInstancedTextureWithVerticesFromIndicesPtr)(struct _Renderer *, mat4_t *, TextureObject, color4_t *, RendererMode, BufferArrayObject, BufferObject, uint32_t, uint32_t, RendererOptions);
 	void (*drawInstancedTextureWithVerticesPtr)(struct _Renderer *, mat4_t *, TextureObject, color4_t *, RendererMode, BufferArrayObject, uint32_t, uint32_t, RendererOptions);
+	void (*drawInstancedTexturesWithVerticesFromIndicesPtr)(struct _Renderer *, mat4_t *, TextureObject *, color4_t *, RendererMode, BufferArrayObject, BufferObject, uint32_t, uint32_t, RendererOptions);
 } Renderer;

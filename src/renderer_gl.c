@@ -71,6 +71,8 @@ void drawInstancedTextureWithVerticesFromIndices_gl(Renderer *renderer, mat4_t *
 
 void drawInstancedTextureWithVertices_gl(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureObject texture, color4_t *colors, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, uint32_t vertexCount, uint32_t instancesCount, RendererOptions options);
 
+void drawInstancedTexturesWithVerticesFromIndices_gl(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureObject *textures, color4_t *colors, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options);
+
 static SDL_bool compileShader(GLuint *shader, uint16_t glslVersion, GLenum type, const char *filepath)
 {
 	GLint status;
@@ -399,9 +401,11 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	
 	if (renderer->supportsInstancing)
 	{
-		compileAndLinkShader(&renderer->glInstancedTexturesShader, glslVersion, "Data/Shaders/instanced-texture.vsh", "Data/Shaders/instanced-texture-array.fsh", SDL_TRUE, "modelViewProjectionMatrices", "colors", "textureSamples", "textureIndices");
+		compileAndLinkShader(&renderer->glInstancedTextureArrayShader, glslVersion, "Data/Shaders/instanced-texture.vsh", "Data/Shaders/instanced-texture-array.fsh", SDL_TRUE, "modelViewProjectionMatrices", "colors", "textureSamples", "textureIndices");
 		
 		compileAndLinkShader(&renderer->glInstancedTextureShader, glslVersion, "Data/Shaders/instanced-texture.vsh", "Data/Shaders/instanced-texture.fsh", SDL_TRUE, "modelViewProjectionMatrices", "colors", "textureSample", NULL);
+		
+		compileAndLinkShader(&renderer->glInstancedTexturesShader, glslVersion, "Data/Shaders/instanced-texture.vsh", "Data/Shaders/instanced-textures.fsh", SDL_TRUE, "modelViewProjectionMatrices", "colors", "textureSamples", NULL);
 	}
 	
 	renderer->updateViewportPtr = updateViewport_gl;
@@ -418,6 +422,7 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	renderer->textureArrayFromPixelDataPtr = textureArrayFromPixelData_gl;
 	renderer->drawInstancedTextureWithVerticesFromIndicesPtr = drawInstancedTextureWithVerticesFromIndices_gl;
 	renderer->drawInstancedTextureWithVerticesPtr = drawInstancedTextureWithVertices_gl;
+	renderer->drawInstancedTexturesWithVerticesFromIndicesPtr = drawInstancedTexturesWithVerticesFromIndices_gl;
 }
 
 void renderFrame_gl(Renderer *renderer, void (*drawFunc)(Renderer *))
@@ -666,7 +671,7 @@ void drawTextureWithVerticesFromIndices_gl(Renderer *renderer, mat4_t modelViewM
 
 void drawInstancedTextureArrayWithVerticesFromIndices_gl(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureArrayObject textureArray, color4_t *colors, uint32_t *textureArrayIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options)
 {
-	Shader_gl *shader = &renderer->glInstancedTexturesShader;
+	Shader_gl *shader = &renderer->glInstancedTextureArrayShader;
 	beginDrawingVertices(shader, vertexAndTextureArrayObject, options);
 
 	glUniformMatrix4fv(shader->modelViewProjectionMatrixUniformLocation, instancesCount, GL_FALSE, &modelViewProjectionMatrices->m00);
@@ -719,6 +724,28 @@ void drawInstancedTextureWithVertices_gl(Renderer *renderer, mat4_t *modelViewPr
 	glBindTexture(GL_TEXTURE_2D, texture.glObject);
 	
 	glDrawArraysInstanced(glModeFromMode(mode), 0, vertexCount, instancesCount);
+	
+	endDrawingVerticesAndTextures(options);
+}
+
+void drawInstancedTexturesWithVerticesFromIndices_gl(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureObject *textures, color4_t *colors, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options)
+{
+	Shader_gl *shader = &renderer->glInstancedTexturesShader;
+	beginDrawingVertices(shader, vertexAndTextureArrayObject, options);
+	
+	glUniformMatrix4fv(shader->modelViewProjectionMatrixUniformLocation, instancesCount, GL_FALSE, &modelViewProjectionMatrices->m00);
+	glUniform4fv(shader->colorUniformLocation, instancesCount, &colors->red);
+	
+	for (GLenum textureIndex = 0; textureIndex < instancesCount; textureIndex++)
+	{
+		glUniform1i(shader->textureUniformLocation + textureIndex, textureIndex);
+		glActiveTexture(GL_TEXTURE0 + textureIndex);
+		glBindTexture(GL_TEXTURE_2D, textures[textureIndex].glObject);
+	}
+	
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesBufferObject.glObject);
+	
+	glDrawElementsInstanced(glModeFromMode(mode), indicesCount, GL_UNSIGNED_SHORT, NULL, instancesCount);
 	
 	endDrawingVerticesAndTextures(options);
 }
