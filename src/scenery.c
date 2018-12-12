@@ -217,7 +217,7 @@ void loadSceneryTextures(Renderer *renderer)
 	gTileTexture2 = loadTexture(renderer, "Data/Textures/tiletex2.bmp");
 }
 
-void drawSky(Renderer *renderer)
+void drawSky(Renderer *renderer, RendererOptions options)
 {
 	static BufferArrayObject vertexAndTextureArrayObject;
 	static BufferObject indicesBufferObject;
@@ -254,7 +254,7 @@ void drawSky(Renderer *renderer)
 	
 	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 0.0f, -38.0f});
 	
-	drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, gSkyTex, RENDERER_TRIANGLE_MODE, vertexAndTextureArrayObject, indicesBufferObject, 6, (color4_t){1.0f, 1.0f, 1.0f, 0.9f}, RENDERER_OPTION_BLENDING_ALPHA);
+	drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, gSkyTex, RENDERER_TRIANGLE_MODE, vertexAndTextureArrayObject, indicesBufferObject, 6, (color4_t){1.0f, 1.0f, 1.0f, 0.9f}, options);
 }
 
 void drawTiles(Renderer *renderer)

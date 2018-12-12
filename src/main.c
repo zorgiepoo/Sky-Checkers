@@ -873,7 +873,7 @@ static void drawScene(Renderer *renderer)
 		// Render transparent objects from zFar to zNear
 		
 		// Sky renders at z = -38.0f
-		drawSky(renderer);
+		drawSky(renderer, RENDERER_OPTION_BLENDING_ALPHA);
 		
 		// Character lives at z = -25.0f
 		drawCharacterLives(renderer);
@@ -1003,7 +1003,7 @@ static void drawScene(Renderer *renderer)
 		// The sky should be behind the black box
 		
 		// Sky renders at -38.0f
-		drawSky(renderer);
+		drawSky(renderer, RENDERER_OPTION_DISABLE_DEPTH_TEST);
 		
 		// Black box renders at -22.0f
 		drawBlackBox(renderer);

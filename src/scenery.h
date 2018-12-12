@@ -53,5 +53,5 @@ SDL_bool availableTile(float x, float y);
 
 void loadSceneryTextures(Renderer *renderer);
 
-void drawSky(Renderer *renderer);
+void drawSky(Renderer *renderer, RendererOptions options);
 void drawTiles(Renderer *renderer);
