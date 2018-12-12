@@ -28,10 +28,4 @@ SDL_bool initFont(Renderer *renderer);
 void drawStringf(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, float width, float height, const char *format, ...);
 void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, float width, float height, const char *string);
 
-void drawStrings(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureObject *textures, color4_t *colors, uint32_t stringCount);
-
-TextureObject textureForString(Renderer *renderer, const char *string);
-
-mat4_t fontModelViewProjectionMatrix(mat4_t projectionMatrix, mat4_t modelViewMatrix, float width, float height);
-
 int cacheString(Renderer *renderer, const char *string);

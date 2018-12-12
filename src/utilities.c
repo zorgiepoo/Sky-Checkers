@@ -128,34 +128,6 @@ TextureObject surfaceToTexture(Renderer *renderer, SDL_Surface *surface)
 	return texture;
 }
 
-static TextureArrayObject surfacesTo2DTextureArray(Renderer *renderer, SDL_Surface *surface1, SDL_Surface *surface2)
-{
-	if (surface1->h != surface2->h || surface1->w != surface2->w)
-	{
-		zgPrint("Failed to create 2D texture because height for surfaces don't match!");
-		SDL_Quit();
-	}
-	
-	SDL_Surface *image = createSurfaceImage(surface1->w, surface1->h * 2);
-	
-	// Set alpha property to max
-	SDL_SetSurfaceAlphaMod(surface1, 255);
-	SDL_SetSurfaceAlphaMod(surface2, 255);
-	
-	// Copy the surfaces into the texture image
-	SDL_Rect firstArea = {.x = 0, .y = 0, .w = surface1->w, .h = surface1->h};
-	SDL_BlitSurface(surface1, NULL, image, &firstArea);
-	SDL_Rect secondArea = {.x = 0, .y = surface1->h, .w = surface2->w, .h = surface2->h};
-	SDL_BlitSurface(surface2, NULL, image, &secondArea);
-	
-	// Create textures from image data
-	TextureArrayObject textureArray = textureArrayFromPixelData(renderer, image->pixels, surface1->w, surface1->h * 2);
-	
-	SDL_FreeSurface(image);
-	
-	return textureArray;
-}
-
 static SDL_Surface *surfaceFromImage(const char *filePath)
 {
 	SDL_Surface *texImage = IMG_Load(filePath);
@@ -178,19 +150,6 @@ TextureObject loadTexture(Renderer *renderer, const char *filePath)
 	SDL_FreeSurface(texImage);
 	
 	return texture;
-}
-
-TextureArrayObject load2DTextureArray(Renderer *renderer, const char *texture1FilePath, const char *texture2FilePath)
-{
-	SDL_Surface *textureSurface1 = surfaceFromImage(texture1FilePath);
-	SDL_Surface *textureSurface2 = surfaceFromImage(texture2FilePath);
-	
-	TextureArrayObject textureArray = surfacesTo2DTextureArray(renderer, textureSurface1, textureSurface2);
-	
-	SDL_FreeSurface(textureSurface1);
-	SDL_FreeSurface(textureSurface2);
-	
-	return textureArray;
 }
 
 /*

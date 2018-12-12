@@ -30,7 +30,6 @@ void updateViewport(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 void renderFrame(Renderer *renderer, void (*drawFunc)(Renderer *));
 
 TextureObject textureFromPixelData(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
-TextureArrayObject textureArrayFromPixelData(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
 
 BufferObject createBufferObject(Renderer *renderer, const void *data, uint32_t size);
 
@@ -45,11 +44,3 @@ void drawVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, Rendere
 void drawTextureWithVertices(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options);
 
 void drawTextureWithVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
-
-void drawInstancedTextureArrayWithVerticesFromIndices(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureArrayObject textureArray, color4_t *colors, uint32_t *textureArrayIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options);
-
-void drawInstancedTextureWithVerticesFromIndices(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureObject texture, color4_t *colors, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options);
-
-void drawInstancedTextureWithVertices(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureObject texture, color4_t *colors, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, uint32_t vertexCount, uint32_t instancesCount, RendererOptions options);
-
-void drawInstancedTexturesWithVerticesFromIndices(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureObject *textures, color4_t *colors, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options);

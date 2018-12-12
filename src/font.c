@@ -250,25 +250,10 @@ int cacheString(Renderer *renderer, const char *string)
 	return index;
 }
 
-TextureObject textureForString(Renderer *renderer, const char *string)
-{
-	int index = cacheString(renderer, string);
-	if (index == -1)
-	{
-		return gGlyphs[gGlyphsCounter - 1].texture;
-	}
-	return gGlyphs[index].texture;
-}
-
 static mat4_t fontModelViewMatrix(mat4_t modelViewMatrix, float width, float height)
 {
 	mat4_t scaleMatrix = m4_scaling((vec3_t){width, height, 0.0f});
 	return m4_mul(modelViewMatrix, scaleMatrix);
-}
-
-mat4_t fontModelViewProjectionMatrix(mat4_t projectionMatrix, mat4_t modelViewMatrix, float width, float height)
-{
-	return m4_mul(projectionMatrix, fontModelViewMatrix(modelViewMatrix, width, height));
 }
 
 void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, float width, float height, const char *string)
@@ -285,9 +270,4 @@ void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, floa
 	}
 	
 	drawTextureWithVerticesFromIndices(renderer, fontModelViewMatrix(modelViewMatrix, width, height), gGlyphs[index].texture, RENDERER_TRIANGLE_MODE, gFontVertexAndTextureBufferObject, gFontIndicesBufferObject, 6, color, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
-}
-
-void drawStrings(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureObject *textures, color4_t *colors, uint32_t stringCount)
-{
-	drawInstancedTexturesWithVerticesFromIndices(renderer, modelViewProjectionMatrices, textures, colors, RENDERER_TRIANGLE_MODE, gFontVertexAndTextureBufferObject, gFontIndicesBufferObject, 6, stringCount, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
 }

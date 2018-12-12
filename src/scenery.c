@@ -31,20 +31,8 @@ static void linkColumn(int index);
 
 static TextureObject gSkyTex;
 
-typedef struct
-{
-	union
-	{
-		struct
-		{
-			TextureObject tile1;
-			TextureObject tile2;
-		};
-		TextureArrayObject tiles;
-	};
-} TileTextures;
-
-static TileTextures gTileTextures;
+static TextureObject gTileTexture1;
+static TextureObject gTileTexture2;
 
 void initTiles(void)
 {
@@ -225,15 +213,8 @@ void loadSceneryTextures(Renderer *renderer)
 {
 	gSkyTex = loadTexture(renderer, "Data/Textures/sky.bmp");
 	
-	if (renderer->supportsInstancing)
-	{
-		gTileTextures.tiles = load2DTextureArray(renderer, "Data/Textures/tiletex.bmp", "Data/Textures/tiletex2.bmp");
-	}
-	else
-	{
-		gTileTextures.tile1 = loadTexture(renderer, "Data/Textures/tiletex.bmp");
-		gTileTextures.tile2 = loadTexture(renderer, "Data/Textures/tiletex2.bmp");
-	}
+	gTileTexture1 = loadTexture(renderer, "Data/Textures/tiletex.bmp");
+	gTileTexture2 = loadTexture(renderer, "Data/Textures/tiletex2.bmp");
 }
 
 void drawSky(Renderer *renderer)
@@ -280,8 +261,6 @@ void drawTiles(Renderer *renderer)
 {
 	static BufferArrayObject vertexAndTextureCoordinateArrayObject;
 	static BufferObject indicesBufferObject;
-	static uint32_t textureIndices[NUMBER_OF_TILES];
-	static SDL_bool supportsInstancing;
 	static SDL_bool initializedBuffers;
 	
 	if (!initializedBuffers)
@@ -363,49 +342,18 @@ void drawTiles(Renderer *renderer)
 		
 		indicesBufferObject = createBufferObject(renderer, indices, sizeof(indices));
 		
-		supportsInstancing = renderer->supportsInstancing;
-		
-		if (supportsInstancing)
-		{
-			for (int i = 0; i < NUMBER_OF_TILES; i++)
-			{
-				uint32_t textureIndex = (((i / 8) % 2) ^ (i % 2)) != 0 ? 0 : 1;
-				textureIndices[i] = textureIndex;
-			}
-		}
-		
 		initializedBuffers = SDL_TRUE;
 	}
 	
 	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((float)M_PI / 180.0f));
-	if (supportsInstancing)
+	
+	for (int i = 0; i < NUMBER_OF_TILES; i++)
 	{
-		mat4_t projectionMatrix = renderer->projectionMatrix;
+		mat4_t modelTranslationMatrix = m4_translation((vec3_t){gTiles[i].x , gTiles[i].y, gTiles[i].z});
+		mat4_t modelViewMatrix = m4_mul(worldRotationMatrix, modelTranslationMatrix);
 		
-		mat4_t modelViewProjectionMatrices[NUMBER_OF_TILES];
-		color4_t colors[NUMBER_OF_TILES];
+		TextureObject texture = (((i / 8) % 2) ^ (i % 2)) != 0 ? gTileTexture1 : gTileTexture2;
 		
-		for (int i = 0; i < NUMBER_OF_TILES; i++)
-		{
-			mat4_t modelTranslationMatrix = m4_translation((vec3_t){gTiles[i].x , gTiles[i].y, gTiles[i].z});
-			mat4_t modelViewProjectionMatrix = m4_mul(projectionMatrix, m4_mul(worldRotationMatrix, modelTranslationMatrix));
-			
-			modelViewProjectionMatrices[i] = modelViewProjectionMatrix;
-			colors[i] = (color4_t){gTiles[i].red, gTiles[i].green, gTiles[i].blue, 1.0f};
-		}
-		
-		drawInstancedTextureArrayWithVerticesFromIndices(renderer, modelViewProjectionMatrices, gTileTextures.tiles, colors, textureIndices, RENDERER_TRIANGLE_MODE, vertexAndTextureCoordinateArrayObject, indicesBufferObject, 24, NUMBER_OF_TILES, RENDERER_OPTION_NONE);
-	}
-	else
-	{
-		for (int i = 0; i < NUMBER_OF_TILES; i++)
-		{
-			mat4_t modelTranslationMatrix = m4_translation((vec3_t){gTiles[i].x , gTiles[i].y, gTiles[i].z});
-			mat4_t modelViewMatrix = m4_mul(worldRotationMatrix, modelTranslationMatrix);
-			
-			TextureObject texture = (((i / 8) % 2) ^ (i % 2)) != 0 ? gTileTextures.tile1 : gTileTextures.tile2;
-			
-			drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, texture, RENDERER_TRIANGLE_MODE, vertexAndTextureCoordinateArrayObject, indicesBufferObject, 24, (color4_t){gTiles[i].red, gTiles[i].green, gTiles[i].blue, 1.0f}, RENDERER_OPTION_NONE);
-		}
+		drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, texture, RENDERER_TRIANGLE_MODE, vertexAndTextureCoordinateArrayObject, indicesBufferObject, 24, (color4_t){gTiles[i].red, gTiles[i].green, gTiles[i].blue, 1.0f}, RENDERER_OPTION_NONE);
 	}
 }

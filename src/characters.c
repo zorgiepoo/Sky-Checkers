@@ -378,15 +378,10 @@ static mat4_t modelViewMatrixForCharacter(Character *character, mat4_t worldMatr
 	return m4_mul(m4_mul(worldMatrix, modelTranslationMatrix), modelRotationMatrix);
 }
 
-static mat4_t modelViewProjectionMatrixForCharacter(Character *character, mat4_t worldMatrix, mat4_t projectionMatrix)
-{
-	return m4_mul(projectionMatrix, modelViewMatrixForCharacter(character, worldMatrix));
-}
-
 static void drawCharacter(Renderer *renderer, Character *character, mat4_t worldMatrix)
 {
 	// don't draw the character if they're not in the scene
-	if (character->z <= -170.0)
+	if (character->z <= -170.0f)
 	{
 		return;
 	}
@@ -402,51 +397,10 @@ void drawCharacters(Renderer *renderer)
 	mat4_t worldTranslationMatrix = m4_translation((vec3_t){-7.0f, 12.5f, -25.0f});
 	mat4_t worldMatrix = m4_mul(worldRotationMatrix, worldTranslationMatrix);
 	
-	if (renderer->supportsInstancing)
-	{
-		mat4_t projectionMatrix = renderer->projectionMatrix;
-		
-		color4_t characterColors[4];
-		mat4_t characterModelViewProjectionMatrices[4];
-		uint8_t characterIndex = 0;
-		
-		if (gRedRover.z > -170.0f)
-		{
-			characterModelViewProjectionMatrices[characterIndex] = modelViewProjectionMatrixForCharacter(&gRedRover, worldMatrix, projectionMatrix);
-			characterColors[characterIndex] = (color4_t){gRedRover.red, gRedRover.green, gRedRover.blue, 1.0f};
-			characterIndex++;
-		}
-		
-		if (gGreenTree.z > -170.0f)
-		{
-			characterModelViewProjectionMatrices[characterIndex] = modelViewProjectionMatrixForCharacter(&gGreenTree, worldMatrix, projectionMatrix);
-			characterColors[characterIndex] = (color4_t){gGreenTree.red, gGreenTree.green, gGreenTree.blue, 1.0f};
-			characterIndex++;
-		}
-		
-		if (gPinkBubbleGum.z > -170.0f)
-		{
-			characterModelViewProjectionMatrices[characterIndex] = modelViewProjectionMatrixForCharacter(&gPinkBubbleGum, worldMatrix, projectionMatrix);
-			characterColors[characterIndex] = (color4_t){gPinkBubbleGum.red, gPinkBubbleGum.green, gPinkBubbleGum.blue, 1.0f};
-			characterIndex++;
-		}
-		
-		if (gBlueLightning.z > -170.0f)
-		{
-			characterModelViewProjectionMatrices[characterIndex] = modelViewProjectionMatrixForCharacter(&gBlueLightning, worldMatrix, projectionMatrix);
-			characterColors[characterIndex] = (color4_t){gBlueLightning.red, gBlueLightning.green, gBlueLightning.blue, 1.0f};
-			characterIndex++;
-		}
-		
-		drawInstancedTextureWithVerticesFromIndices(renderer, characterModelViewProjectionMatrices, gCharacterTex, characterColors, RENDERER_TRIANGLE_MODE, gCharacterVertexAndTextureCoordinateArrayObject, gCharacterIndicesBufferObject, 5220, characterIndex, RENDERER_OPTION_NONE);
-	}
-	else
-	{
-		drawCharacter(renderer, &gRedRover, worldMatrix);
-		drawCharacter(renderer, &gGreenTree, worldMatrix);
-		drawCharacter(renderer, &gPinkBubbleGum, worldMatrix);
-		drawCharacter(renderer, &gBlueLightning, worldMatrix);
-	}
+	drawCharacter(renderer, &gRedRover, worldMatrix);
+	drawCharacter(renderer, &gGreenTree, worldMatrix);
+	drawCharacter(renderer, &gPinkBubbleGum, worldMatrix);
+	drawCharacter(renderer, &gBlueLightning, worldMatrix);
 }
 
 static mat4_t characterIconModelViewMatrix(mat4_t modelViewMatrix)
@@ -461,35 +415,10 @@ static void drawCharacterIcon(Renderer *renderer, mat4_t modelViewMatrix, Charac
 
 void drawCharacterIcons(Renderer *renderer, const mat4_t *translations)
 {
-	if (renderer->supportsInstancing)
-	{
-		mat4_t projectionMatrix = renderer->projectionMatrix;
-		
-		color4_t characterIconColors[] =
-		{
-			(color4_t){gPinkBubbleGum.red, gPinkBubbleGum.green, gPinkBubbleGum.blue, 1.0f},
-			(color4_t){gRedRover.red, gRedRover.green, gRedRover.blue, 1.0f},
-			(color4_t){gGreenTree.red, gGreenTree.green, gGreenTree.blue, 1.0f},
-			(color4_t){gBlueLightning.red, gBlueLightning.green, gBlueLightning.blue, 1.0f}
-		};
-		
-		mat4_t characterIconModelViewProjectionMatrices[] =
-		{
-			m4_mul(projectionMatrix, characterIconModelViewMatrix(translations[0])),
-			m4_mul(projectionMatrix, characterIconModelViewMatrix(translations[1])),
-			m4_mul(projectionMatrix, characterIconModelViewMatrix(translations[2])),
-			m4_mul(projectionMatrix, characterIconModelViewMatrix(translations[3]))
-		};
-		
-		drawInstancedTextureWithVertices(renderer, characterIconModelViewProjectionMatrices, gCharacterTex, characterIconColors, RENDERER_TRIANGLE_STRIP_MODE, gIconVertexAndTextureCoordinateArrayObject, 1204 / 2, sizeof(characterIconModelViewProjectionMatrices) / sizeof(*characterIconModelViewProjectionMatrices), RENDERER_OPTION_NONE);
-	}
-	else
-	{
-		drawCharacterIcon(renderer, translations[0], &gPinkBubbleGum);
-		drawCharacterIcon(renderer, translations[1], &gRedRover);
-		drawCharacterIcon(renderer, translations[2], &gGreenTree);
-		drawCharacterIcon(renderer, translations[3], &gBlueLightning);
-	}
+	drawCharacterIcon(renderer, translations[0], &gPinkBubbleGum);
+	drawCharacterIcon(renderer, translations[1], &gRedRover);
+	drawCharacterIcon(renderer, translations[2], &gGreenTree);
+	drawCharacterIcon(renderer, translations[3], &gBlueLightning);
 }
 
 static const char *labelForCharacter(Character *character, const char *playerNumberString)
@@ -555,83 +484,10 @@ void drawCharacterLives(Renderer *renderer)
 	const float livesWidth = 0.5f / 1.52f;
 	const float livesHeight = 0.5f / 1.52f;
 	
-	if (renderer->supportsInstancing)
-	{
-		mat4_t projectionMatrix = renderer->projectionMatrix;
-		
-		TextureObject textures[8];
-		color4_t colors[8];
-		mat4_t modelViewProjectionMatrices[8];
-		
-		textures[0] = textureForString(renderer, labelForCharacter(&gPinkBubbleGum, "[P1]"));
-		colors[0] = pinkBubbleGumColor;
-		modelViewProjectionMatrices[0] =
-		fontModelViewProjectionMatrix(projectionMatrix, playerLabelModelViewMatrix(pinkBubbleGumModelViewMatrix), playerLabelWidth, playerLabelHeight);
-		
-		textures[1] = textureForString(renderer, labelForCharacter(&gRedRover, "[P2]"));
-		colors[1] = redRoverColor;
-		modelViewProjectionMatrices[1] = fontModelViewProjectionMatrix(projectionMatrix, playerLabelModelViewMatrix(redRoverModelViewMatrix), playerLabelWidth, playerLabelHeight);
-		
-		textures[2] = textureForString(renderer, labelForCharacter(&gGreenTree, "[P3]"));
-		colors[2] = greenTreeColor;
-		modelViewProjectionMatrices[2] = fontModelViewProjectionMatrix(projectionMatrix, playerLabelModelViewMatrix(greenTreeModelViewMatrix), playerLabelWidth, playerLabelHeight);
-		
-		textures[3] = textureForString(renderer, labelForCharacter(&gBlueLightning, "[P4]"));
-		colors[3] = blueLightningColor;
-		modelViewProjectionMatrices[3] = fontModelViewProjectionMatrix(projectionMatrix, playerLabelModelViewMatrix(blueLightningModelViewMatrix), playerLabelWidth, playerLabelHeight);
-		
-		uint32_t objectIndex = 4;
-		char livesBuffer[16] = {0};
-		
-		if (gPinkBubbleGum.lives != 0)
-		{
-			snprintf(livesBuffer, sizeof(livesBuffer) - 1, "%d", gPinkBubbleGum.lives);
-			textures[objectIndex] = textureForString(renderer, livesBuffer);
-			colors[objectIndex] = pinkBubbleGumColor;
-			modelViewProjectionMatrices[objectIndex] = fontModelViewProjectionMatrix(projectionMatrix, pinkBubbleGumModelViewMatrix, livesWidth, livesHeight);
-			
-			objectIndex++;
-		}
-		
-		if (gRedRover.lives != 0)
-		{
-			snprintf(livesBuffer, sizeof(livesBuffer) - 1, "%d", gRedRover.lives);
-			textures[objectIndex] = textureForString(renderer, livesBuffer);
-			colors[objectIndex] = redRoverColor;
-			modelViewProjectionMatrices[objectIndex] = fontModelViewProjectionMatrix(projectionMatrix, redRoverModelViewMatrix, livesWidth, livesHeight);
-			
-			objectIndex++;
-		}
-		
-		if (gGreenTree.lives != 0)
-		{
-			snprintf(livesBuffer, sizeof(livesBuffer) - 1, "%d", gGreenTree.lives);
-			textures[objectIndex] = textureForString(renderer, livesBuffer);
-			colors[objectIndex] = greenTreeColor;
-			modelViewProjectionMatrices[objectIndex] = fontModelViewProjectionMatrix(projectionMatrix, greenTreeModelViewMatrix, livesWidth, livesHeight);
-			
-			objectIndex++;
-		}
-		
-		if (gBlueLightning.lives != 0)
-		{
-			snprintf(livesBuffer, sizeof(livesBuffer) - 1, "%d", gBlueLightning.lives);
-			textures[objectIndex] = textureForString(renderer, livesBuffer);
-			colors[objectIndex] = blueLightningColor;
-			modelViewProjectionMatrices[objectIndex] = fontModelViewProjectionMatrix(projectionMatrix, blueLightningModelViewMatrix, livesWidth, livesHeight);
-			
-			objectIndex++;
-		}
-		
-		drawStrings(renderer, modelViewProjectionMatrices, textures, colors, objectIndex);
-	}
-	else
-	{
-		drawCharacterLive(renderer, pinkBubbleGumModelViewMatrix, pinkBubbleGumColor, &gPinkBubbleGum, livesWidth, livesHeight, "[P1]", playerLabelWidth, playerLabelHeight);
-		drawCharacterLive(renderer, redRoverModelViewMatrix, redRoverColor, &gRedRover, livesWidth, livesHeight, "[P2]", playerLabelWidth, playerLabelHeight);
-		drawCharacterLive(renderer, greenTreeModelViewMatrix, greenTreeColor, &gGreenTree, livesWidth, livesHeight, "[P3]", playerLabelWidth, playerLabelHeight);
-		drawCharacterLive(renderer, blueLightningModelViewMatrix, blueLightningColor, &gBlueLightning, livesWidth, livesHeight, "[P4]", playerLabelWidth, playerLabelHeight);
-	}
+	drawCharacterLive(renderer, pinkBubbleGumModelViewMatrix, pinkBubbleGumColor, &gPinkBubbleGum, livesWidth, livesHeight, "[P1]", playerLabelWidth, playerLabelHeight);
+	drawCharacterLive(renderer, redRoverModelViewMatrix, redRoverColor, &gRedRover, livesWidth, livesHeight, "[P2]", playerLabelWidth, playerLabelHeight);
+	drawCharacterLive(renderer, greenTreeModelViewMatrix, greenTreeColor, &gGreenTree, livesWidth, livesHeight, "[P3]", playerLabelWidth, playerLabelHeight);
+	drawCharacterLive(renderer, blueLightningModelViewMatrix, blueLightningColor, &gBlueLightning, livesWidth, livesHeight, "[P4]", playerLabelWidth, playerLabelHeight);
 }
 
 /*

@@ -49,8 +49,6 @@ void renderFrame_gl(Renderer *renderer, void (*drawFunc)(Renderer *));
 
 TextureObject textureFromPixelData_gl(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
 
-TextureArrayObject textureArrayFromPixelData_gl(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
-
 BufferObject createBufferObject_gl(Renderer *renderer, const void *data, uint32_t size);
 
 BufferArrayObject createVertexArrayObject_gl(Renderer *renderer, const void *vertices, uint32_t verticesSize);
@@ -64,14 +62,6 @@ void drawVerticesFromIndices_gl(Renderer *renderer, mat4_t modelViewMatrix, Rend
 void drawTextureWithVertices_gl(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options);
 
 void drawTextureWithVerticesFromIndices_gl(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
-
-void drawInstancedTextureArrayWithVerticesFromIndices_gl(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureArrayObject textureArray, color4_t *colors, uint32_t *textureArrayIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options);
-
-void drawInstancedTextureWithVerticesFromIndices_gl(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureObject texture, color4_t *colors, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options);
-
-void drawInstancedTextureWithVertices_gl(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureObject texture, color4_t *colors, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, uint32_t vertexCount, uint32_t instancesCount, RendererOptions options);
-
-void drawInstancedTexturesWithVerticesFromIndices_gl(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureObject *textures, color4_t *colors, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options);
 
 static SDL_bool compileShader(GLuint *shader, uint16_t glslVersion, GLenum type, const char *filepath)
 {
@@ -339,8 +329,6 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	
-	renderer->supportsInstancing = SDL_TRUE;
-	
 	uint16_t glslVersion = GLSL_VERSION_410;
 	SDL_GLContext glContext = NULL;
 	if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, windowTitle, windowWidth, windowHeight, videoFlags, fsaa))
@@ -353,10 +341,6 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 			{
 				zgPrint("Failed to create OpenGL context with even glsl version %i", glslVersion);
 				exit(1);
-			}
-			else
-			{
-				renderer->supportsInstancing = SDL_FALSE;
 			}
 		}
 	}
@@ -399,15 +383,6 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	
 	compileAndLinkShader(&renderer->glPositionTextureShader, glslVersion, "Data/Shaders/texture-position.vsh", "Data/Shaders/texture-position.fsh", SDL_TRUE, "modelViewProjectionMatrix", "color", "textureSample", NULL);
 	
-	if (renderer->supportsInstancing)
-	{
-		compileAndLinkShader(&renderer->glInstancedTextureArrayShader, glslVersion, "Data/Shaders/instanced-texture.vsh", "Data/Shaders/instanced-texture-array.fsh", SDL_TRUE, "modelViewProjectionMatrices", "colors", "textureSamples", "textureIndices");
-		
-		compileAndLinkShader(&renderer->glInstancedTextureShader, glslVersion, "Data/Shaders/instanced-texture.vsh", "Data/Shaders/instanced-texture.fsh", SDL_TRUE, "modelViewProjectionMatrices", "colors", "textureSample", NULL);
-		
-		compileAndLinkShader(&renderer->glInstancedTexturesShader, glslVersion, "Data/Shaders/instanced-texture.vsh", "Data/Shaders/instanced-textures.fsh", SDL_TRUE, "modelViewProjectionMatrices", "colors", "textureSamples", NULL);
-	}
-	
 	renderer->updateViewportPtr = updateViewport_gl;
 	renderer->renderFramePtr = renderFrame_gl;
 	renderer->textureFromPixelDataPtr = textureFromPixelData_gl;
@@ -418,11 +393,6 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	renderer->drawVerticesFromIndicesPtr = drawVerticesFromIndices_gl;
 	renderer->drawTextureWithVerticesPtr = drawTextureWithVertices_gl;
 	renderer->drawTextureWithVerticesFromIndicesPtr = drawTextureWithVerticesFromIndices_gl;
-	renderer->drawInstancedTextureArrayWithVerticesFromIndicesPtr = drawInstancedTextureArrayWithVerticesFromIndices_gl;
-	renderer->textureArrayFromPixelDataPtr = textureArrayFromPixelData_gl;
-	renderer->drawInstancedTextureWithVerticesFromIndicesPtr = drawInstancedTextureWithVerticesFromIndices_gl;
-	renderer->drawInstancedTextureWithVerticesPtr = drawInstancedTextureWithVertices_gl;
-	renderer->drawInstancedTexturesWithVerticesFromIndicesPtr = drawInstancedTexturesWithVerticesFromIndices_gl;
 }
 
 void renderFrame_gl(Renderer *renderer, void (*drawFunc)(Renderer *))
@@ -466,20 +436,6 @@ TextureObject textureFromPixelData_gl(Renderer *renderer, const void *pixels, in
 {
 	GLuint texture = glTextureFromPixelData(renderer, pixels, width, height);
 	return (TextureObject){.glObject = texture};
-}
-
-TextureArrayObject textureArrayFromPixelData_gl(Renderer *renderer, const void *pixels, int32_t width, int32_t height)
-{
-	GLuint texture = 0;
-	
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
-	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	
-	glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, width, height / 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-	
-	return (TextureArrayObject){.glObject = texture};
 }
 
 static GLenum glModeFromMode(RendererMode mode)
@@ -665,87 +621,6 @@ void drawTextureWithVerticesFromIndices_gl(Renderer *renderer, mat4_t modelViewM
 	glDrawElements(glModeFromMode(mode), indicesCount, GL_UNSIGNED_SHORT, NULL);
 	
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	
-	endDrawingVerticesAndTextures(options);
-}
-
-void drawInstancedTextureArrayWithVerticesFromIndices_gl(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureArrayObject textureArray, color4_t *colors, uint32_t *textureArrayIndices, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options)
-{
-	Shader_gl *shader = &renderer->glInstancedTextureArrayShader;
-	beginDrawingVertices(shader, vertexAndTextureArrayObject, options);
-
-	glUniformMatrix4fv(shader->modelViewProjectionMatrixUniformLocation, instancesCount, GL_FALSE, &modelViewProjectionMatrices->m00);
-	glUniform4fv(shader->colorUniformLocation, instancesCount, &colors->red);
-	glUniform1uiv(shader->textureIndicesUniformLocation, instancesCount, textureArrayIndices);
-
-	glUniform1i(shader->textureUniformLocation, 0);
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D_ARRAY, textureArray.glObject);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesBufferObject.glObject);
-
-	glDrawElementsInstanced(glModeFromMode(mode), indicesCount, GL_UNSIGNED_SHORT, NULL, instancesCount);
-
-	endDrawingVerticesAndTextures(options);
-}
-
-void drawInstancedTextureWithVerticesFromIndices_gl(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureObject texture, color4_t *colors, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options)
-{
-	Shader_gl *shader = &renderer->glInstancedTextureShader;
-	beginDrawingVertices(shader, vertexAndTextureArrayObject, options);
-	
-	glUniformMatrix4fv(shader->modelViewProjectionMatrixUniformLocation, instancesCount, GL_FALSE, &modelViewProjectionMatrices->m00);
-	glUniform4fv(shader->colorUniformLocation, instancesCount, &colors->red);
-	
-	glUniform1i(shader->textureUniformLocation, 0);
-	
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture.glObject);
-	
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesBufferObject.glObject);
-	
-	glDrawElementsInstanced(glModeFromMode(mode), indicesCount, GL_UNSIGNED_SHORT, NULL, instancesCount);
-	
-	endDrawingVerticesAndTextures(options);
-}
-
-void drawInstancedTextureWithVertices_gl(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureObject texture, color4_t *colors, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, uint32_t vertexCount, uint32_t instancesCount, RendererOptions options)
-{
-	Shader_gl *shader = &renderer->glInstancedTextureShader;
-	beginDrawingVertices(shader, vertexAndTextureArrayObject, options);
-	
-	glUniformMatrix4fv(shader->modelViewProjectionMatrixUniformLocation, instancesCount, GL_FALSE, &modelViewProjectionMatrices->m00);
-	glUniform4fv(shader->colorUniformLocation, instancesCount, &colors->red);
-	
-	glUniform1i(shader->textureUniformLocation, 0);
-	
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture.glObject);
-	
-	glDrawArraysInstanced(glModeFromMode(mode), 0, vertexCount, instancesCount);
-	
-	endDrawingVerticesAndTextures(options);
-}
-
-void drawInstancedTexturesWithVerticesFromIndices_gl(Renderer *renderer, mat4_t *modelViewProjectionMatrices, TextureObject *textures, color4_t *colors, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, uint32_t instancesCount, RendererOptions options)
-{
-	Shader_gl *shader = &renderer->glInstancedTexturesShader;
-	beginDrawingVertices(shader, vertexAndTextureArrayObject, options);
-	
-	glUniformMatrix4fv(shader->modelViewProjectionMatrixUniformLocation, instancesCount, GL_FALSE, &modelViewProjectionMatrices->m00);
-	glUniform4fv(shader->colorUniformLocation, instancesCount, &colors->red);
-	
-	for (GLenum textureIndex = 0; textureIndex < instancesCount; textureIndex++)
-	{
-		glUniform1i(shader->textureUniformLocation + textureIndex, textureIndex);
-		glActiveTexture(GL_TEXTURE0 + textureIndex);
-		glBindTexture(GL_TEXTURE_2D, textures[textureIndex].glObject);
-	}
-	
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesBufferObject.glObject);
-	
-	glDrawElementsInstanced(glModeFromMode(mode), indicesCount, GL_UNSIGNED_SHORT, NULL, instancesCount);
 	
 	endDrawingVerticesAndTextures(options);
 }

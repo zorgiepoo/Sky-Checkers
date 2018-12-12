@@ -26,7 +26,6 @@ void mt_init();
 unsigned long mt_random();
 
 TextureObject loadTexture(Renderer *renderer, const char *filePath);
-TextureArrayObject load2DTextureArray(Renderer *renderer, const char *texture1FilePath, const char *texture2FilePath);
 
 TextureObject surfaceToTexture(Renderer *renderer, SDL_Surface *surface);
 

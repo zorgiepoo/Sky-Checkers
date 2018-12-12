@@ -78,15 +78,6 @@ typedef struct
 
 typedef struct
 {
-	union
-	{
-		void *metalObject;
-		uint32_t glObject;
-	};
-} TextureArrayObject;
-
-typedef struct
-{
 	int32_t program;
 	
 	int32_t modelViewProjectionMatrixUniformLocation;
@@ -96,7 +87,7 @@ typedef struct
 	int32_t textureIndicesUniformLocation;
 } Shader_gl;
 
-#define MAX_PIPELINE_COUNT 15
+#define MAX_PIPELINE_COUNT 6
 
 typedef struct _Renderer
 {
@@ -112,8 +103,6 @@ typedef struct _Renderer
 	SDL_bool vsync;
 	SDL_bool fsaa;
 	
-	SDL_bool supportsInstancing;
-	
 	union
 	{
 		// Private GL data
@@ -121,9 +110,6 @@ typedef struct _Renderer
 		{
 			Shader_gl glPositionTextureShader;
 			Shader_gl glPositionShader;
-			Shader_gl glInstancedTextureArrayShader;
-			Shader_gl glInstancedTextureShader;
-			Shader_gl glInstancedTexturesShader;
 		};
 		
 		// Private metal data
@@ -143,7 +129,6 @@ typedef struct _Renderer
 	void (*updateViewportPtr)(struct _Renderer *);
 	void (*renderFramePtr)(struct _Renderer *, void (*)(struct _Renderer *));
 	TextureObject (*textureFromPixelDataPtr)(struct _Renderer *, const void *, int32_t, int32_t);
-	TextureArrayObject (*textureArrayFromPixelDataPtr)(struct _Renderer *, const void *, int32_t, int32_t);
 	BufferObject (*createBufferObjectPtr)(struct _Renderer *, const void *data, uint32_t size);
 	BufferArrayObject (*createVertexArrayObjectPtr)(struct _Renderer *, const void *, uint32_t);
 	BufferArrayObject (*createVertexAndTextureCoordinateArrayObjectPtr)(struct _Renderer *, const void *, uint32_t, uint32_t);
@@ -151,8 +136,4 @@ typedef struct _Renderer
 	void (*drawVerticesFromIndicesPtr)(struct _Renderer *, mat4_t, RendererMode, BufferArrayObject, BufferObject, uint32_t, color4_t, RendererOptions);
 	void (*drawTextureWithVerticesPtr)(struct _Renderer *, mat4_t, TextureObject, RendererMode, BufferArrayObject, uint32_t, color4_t, RendererOptions);
 	void (*drawTextureWithVerticesFromIndicesPtr)(struct _Renderer *, mat4_t, TextureObject, RendererMode, BufferArrayObject, BufferObject, uint32_t, color4_t, RendererOptions);
-	void (*drawInstancedTextureArrayWithVerticesFromIndicesPtr)(struct _Renderer *, mat4_t *, TextureArrayObject, color4_t *, uint32_t *, RendererMode, BufferArrayObject, BufferObject, uint32_t, uint32_t, RendererOptions);
-	void (*drawInstancedTextureWithVerticesFromIndicesPtr)(struct _Renderer *, mat4_t *, TextureObject, color4_t *, RendererMode, BufferArrayObject, BufferObject, uint32_t, uint32_t, RendererOptions);
-	void (*drawInstancedTextureWithVerticesPtr)(struct _Renderer *, mat4_t *, TextureObject, color4_t *, RendererMode, BufferArrayObject, uint32_t, uint32_t, RendererOptions);
-	void (*drawInstancedTexturesWithVerticesFromIndicesPtr)(struct _Renderer *, mat4_t *, TextureObject *, color4_t *, RendererMode, BufferArrayObject, BufferObject, uint32_t, uint32_t, RendererOptions);
 } Renderer;
