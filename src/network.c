@@ -162,7 +162,10 @@ int serverNetworkThread(void *unused)
 				if (character->direction)
 				{
 					turnCharacter(character, direction);
-                    moveCharacter(character, direction);
+					// Sigh, this code is broken
+					// I will need to create a proper net input that the animation code uses
+					// to move the character
+                    moveCharacter(character, direction, 4.51977f);
 				}
 			}
 			

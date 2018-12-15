@@ -1484,7 +1484,7 @@ static void eventLoop(Renderer *renderer)
 			
 			if (gGameState)
 			{
-				animate(renderer->window);
+				animate(renderer->window, ANIMATION_TIMER_INTERVAL);
 			}
 			
 			if (gGameShouldReset)

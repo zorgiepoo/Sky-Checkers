@@ -150,7 +150,7 @@ Character *getCharacter(int ID);
 
 void spawnCharacter(Character *character);
 
-void moveCharacter(Character *character, int direction);
+void moveCharacter(Character *character, int direction, double timeDelta);
 
 void turnCharacter(Character *character, int direction);
 

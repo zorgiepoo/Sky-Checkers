@@ -408,7 +408,7 @@ void performUpAction(Input *input, SDL_Window *window, SDL_Event *event)
 	}
 }
 
-void moveCharacterFromInput(Input *input)
+void moveCharacterFromInput(Input *input, double timeDelta)
 {
 	if ((gNetworkConnection && !gNetworkConnection->input) || (input->character->state != CHARACTER_HUMAN_STATE && !gNetworkConnection))
 	{
@@ -430,19 +430,19 @@ void moveCharacterFromInput(Input *input)
 	
 	if (input->right)
 	{
-		moveCharacter(input->character, RIGHT);
+		moveCharacter(input->character, RIGHT, timeDelta);
 	}
 	else if (input->left)
 	{
-		moveCharacter(input->character, LEFT);
+		moveCharacter(input->character, LEFT, timeDelta);
 	}
 	else if (input->up)
 	{
-		moveCharacter(input->character, UP);
+		moveCharacter(input->character, UP, timeDelta);
 	}
 	else if (input->down)
 	{
-		moveCharacter(input->character, DOWN);
+		moveCharacter(input->character, DOWN, timeDelta);
 	}
 }
 

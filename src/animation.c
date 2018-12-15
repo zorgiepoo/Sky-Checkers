@@ -25,10 +25,19 @@
 #include "network.h"
 #include "audio.h"
 
-static const float TILE_FALLING_SPEED =			1.8f;
+#define OBJECT_FALLING_STEP 0.2f
+
+#define TILE_FALLING_SPEED 25.4237f
 
 // in seconds
-static const int STATS_WILL_APPEAR =			4;
+#define STATS_WILL_APPEAR 4
+
+#define CHARACTER_FALLING_SPEED 25.4237f
+
+#define WEAPON_PROJECTILE_SPEED 45.1977f
+
+#define BEGIN_TILE_LAYER_ANIMATION 100
+#define END_TILE_LAYER_ANIMATION 200
 
 static int gTilesLayer[28];
 
@@ -50,23 +59,24 @@ static int gStatsTimer =						0;
 
 static void colorTile(Tile *tile, Weapon *weap);
 
-static void animateWeapAndTiles(SDL_Window *window, Character *player);
+static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player);
+static void moveWeapon(Weapon *weapon, double timeDelta);
 
-static void firstTileLayerAnimation(SDL_Window *window, int beginAnimating, int endAnimating);
-static void secondTileLayerAnimation(SDL_Window *window, int beginAnimating, int endAnimating);
+static void firstTileLayerAnimation(SDL_Window *window);
+static void secondTileLayerAnimation(SDL_Window *window);
 
 static void loadFirstTileAnimationLayer(void);
 static void loadSecondTileAnimationLayer(void);
 
-static void collapseTiles(void);
+static void collapseTiles(double timeDelta);
 static void recoverDestroyedTiles(void);
 
-static void killCharacter(Input *characterInput);
+static void killCharacter(Input *characterInput, double timeDelta);
 static void recoverCharacter(Character *player);
 
-void animate(SDL_Window *window)
+void animate(SDL_Window *window, double timeDelta)
 {
-	gSecondTimer += ANIMATION_TIMER_INTERVAL;
+	gSecondTimer += timeDelta;
 	
 	// Update gSecondTimer and change gLastSecond
 	if ((int)gLastSecond != (int)gSecondTimer)
@@ -112,35 +122,38 @@ void animate(SDL_Window *window)
 	}
 	
 	// Move characters
-	moveCharacterFromInput(&gRedRoverInput);
-	moveCharacterFromInput(&gGreenTreeInput);
-	moveCharacterFromInput(&gPinkBubbleGumInput);
-	moveCharacterFromInput(&gBlueLightningInput);
+	moveCharacterFromInput(&gRedRoverInput, timeDelta);
+	moveCharacterFromInput(&gGreenTreeInput, timeDelta);
+	moveCharacterFromInput(&gPinkBubbleGumInput, timeDelta);
+	moveCharacterFromInput(&gBlueLightningInput, timeDelta);
 	
 	// Move AIs
-	moveAI(&gRedRover, (int)gSecondTimer);
-	moveAI(&gGreenTree, (int)gSecondTimer);
-	moveAI(&gPinkBubbleGum, (int)gSecondTimer);
-	moveAI(&gBlueLightning, (int)gSecondTimer);
+	moveAI(&gRedRover, (int)gSecondTimer, timeDelta);
+	moveAI(&gGreenTree, (int)gSecondTimer, timeDelta);
+	moveAI(&gPinkBubbleGum, (int)gSecondTimer, timeDelta);
+	moveAI(&gBlueLightning, (int)gSecondTimer, timeDelta);
 	
-	static const int BEGIN_TILE_LAYER_ANIMATION =	100;
-	static const int END_TILE_LAYER_ANIMATION =	200;
+	moveWeapon(gRedRover.weap, timeDelta);
+	moveWeapon(gGreenTree.weap, timeDelta);
+	moveWeapon(gPinkBubbleGum.weap, timeDelta);
+	moveWeapon(gBlueLightning.weap, timeDelta);
 	
-	firstTileLayerAnimation(window, BEGIN_TILE_LAYER_ANIMATION, END_TILE_LAYER_ANIMATION);
-	secondTileLayerAnimation(window, BEGIN_TILE_LAYER_ANIMATION, END_TILE_LAYER_ANIMATION);
+	killCharacter(&gRedRoverInput, timeDelta);
+	killCharacter(&gGreenTreeInput, timeDelta);
+	killCharacter(&gPinkBubbleGumInput, timeDelta);
+	killCharacter(&gBlueLightningInput, timeDelta);
 	
-	animateWeapAndTiles(window, &gRedRover);
-	animateWeapAndTiles(window, &gGreenTree);
-	animateWeapAndTiles(window, &gPinkBubbleGum);
-	animateWeapAndTiles(window, &gBlueLightning);
+	collapseTiles(timeDelta);
 	
-	collapseTiles();
+	firstTileLayerAnimation(window);
+	secondTileLayerAnimation(window);
+	
+	animateTilesAndPlayerRecovery(window, &gRedRover);
+	animateTilesAndPlayerRecovery(window, &gGreenTree);
+	animateTilesAndPlayerRecovery(window, &gPinkBubbleGum);
+	animateTilesAndPlayerRecovery(window, &gBlueLightning);
+	
 	recoverDestroyedTiles();
-	
-	killCharacter(&gRedRoverInput);
-	killCharacter(&gGreenTreeInput);
-	killCharacter(&gPinkBubbleGumInput);
-	killCharacter(&gBlueLightningInput);
 	
 	recoverCharacter(&gRedRover);
 	recoverCharacter(&gGreenTree);
@@ -164,7 +177,30 @@ static void colorTile(Tile *tile, Weapon *weap)
 	}
 }
 
-static void animateWeapAndTiles(SDL_Window *window, Character *player)
+static void moveWeapon(Weapon *weapon, double timeDelta)
+{
+	if (weapon->animationState)
+	{
+		if (weapon->direction == RIGHT)
+		{
+			weapon->x += WEAPON_PROJECTILE_SPEED * timeDelta;
+		}
+		else if (weapon->direction == LEFT)
+		{
+			weapon->x -= WEAPON_PROJECTILE_SPEED * timeDelta;
+		}
+		else if (weapon->direction == UP)
+		{
+			weapon->y += WEAPON_PROJECTILE_SPEED * timeDelta;
+		}
+		else if (weapon->direction == DOWN)
+		{
+			weapon->y -= WEAPON_PROJECTILE_SPEED * timeDelta;
+		}
+	}
+}
+
+static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player)
 {
 	if (player->weap->animationState)
 	{
@@ -173,25 +209,6 @@ static void animateWeapAndTiles(SDL_Window *window, Character *player)
 			playShootingSound();
 		}
 		player->animation_timer++;
-		
-		static const float WEAPON_PROJECTILE_SPEED = 0.8f;
-		
-		if (player->weap->direction == RIGHT)
-		{
-			player->weap->x += WEAPON_PROJECTILE_SPEED;
-		}
-		else if (player->weap->direction == LEFT)
-		{
-			player->weap->x -= WEAPON_PROJECTILE_SPEED;
-		}
-		else if (player->weap->direction == UP)
-		{
-			player->weap->y += WEAPON_PROJECTILE_SPEED;
-		}
-		else if (player->weap->direction == DOWN)
-		{
-			player->weap->y -= WEAPON_PROJECTILE_SPEED;
-		}
 		
 		/* First, color the tiles that are going to be destroyed */
 		if (!player->coloredTiles)
@@ -274,7 +291,7 @@ static void animateWeapAndTiles(SDL_Window *window, Character *player)
 				player->destroyed_tile->green == player->weap->green)
 			{
 				player->destroyed_tile->state = SDL_FALSE;
-				player->destroyed_tile->z -= TILE_FALLING_SPEED;
+				player->destroyed_tile->z -= OBJECT_FALLING_STEP;
 				
 				if (((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 				{
@@ -322,10 +339,10 @@ static void animateWeapAndTiles(SDL_Window *window, Character *player)
  * First layer of tiles to destroy (most outter one).
  * This animation is activated by setting gFirstLayerAnimationTimer = 1
  */
-static void firstTileLayerAnimation(SDL_Window *window, int beginAnimating, int endAnimating)
+static void firstTileLayerAnimation(SDL_Window *window)
 {
 	// Color the tiles gray
-	if (gLayerColorIndex != -1 && gFirstLayerAnimationTimer > beginAnimating)
+	if (gLayerColorIndex != -1 && gFirstLayerAnimationTimer > BEGIN_TILE_LAYER_ANIMATION)
 	{
 		if (gTiles[gTilesLayer[gLayerColorIndex]].red == gTiles[gTilesLayer[gLayerColorIndex]].d_red		&&
 			gTiles[gTilesLayer[gLayerColorIndex]].green == gTiles[gTilesLayer[gLayerColorIndex]].d_green	&&
@@ -355,11 +372,11 @@ static void firstTileLayerAnimation(SDL_Window *window, int beginAnimating, int 
 	}
 	
 	// Make the tiles fall down
-	if (gLayerDeathIndex != -1 && gFirstLayerAnimationTimer > endAnimating)
+	if (gLayerDeathIndex != -1 && gFirstLayerAnimationTimer > END_TILE_LAYER_ANIMATION)
 	{
 		if (!gTiles[gTilesLayer[gLayerDeathIndex]].isDead)
 		{
-			gTiles[gTilesLayer[gLayerDeathIndex]].z -= TILE_FALLING_SPEED;
+			gTiles[gTilesLayer[gLayerDeathIndex]].z -= OBJECT_FALLING_STEP;
 			gTiles[gTilesLayer[gLayerDeathIndex]].isDead = SDL_TRUE;
 			
 			if (((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
@@ -386,10 +403,10 @@ static void firstTileLayerAnimation(SDL_Window *window, int beginAnimating, int 
  * Second layer of tiles to destroy (second most outter one)
  * This animation is activated by setting gSecondLayerAnimationTimer = 1
  */
-static void secondTileLayerAnimation(SDL_Window *window, int beginAnimating, int endAnimating)
+static void secondTileLayerAnimation(SDL_Window *window)
 {
 	// Color the tiles gray
-	if (gLayerTwoColorIndex != -1 && gSecondLayerAnimationTimer > beginAnimating)
+	if (gLayerTwoColorIndex != -1 && gSecondLayerAnimationTimer > BEGIN_TILE_LAYER_ANIMATION)
 	{
 		if (gTiles[gTilesLayer[gLayerTwoColorIndex]].red == gTiles[gTilesLayer[gLayerTwoColorIndex]].d_red		&&
 			gTiles[gTilesLayer[gLayerTwoColorIndex]].green == gTiles[gTilesLayer[gLayerTwoColorIndex]].d_green	&&
@@ -419,11 +436,11 @@ static void secondTileLayerAnimation(SDL_Window *window, int beginAnimating, int
 	}
 	
 	// Make the tiles fall down
-	if (gLayerTwoDeathIndex != -1 && gSecondLayerAnimationTimer > endAnimating)
+	if (gLayerTwoDeathIndex != -1 && gSecondLayerAnimationTimer > END_TILE_LAYER_ANIMATION)
 	{
 		if (!gTiles[gTilesLayer[gLayerTwoDeathIndex]].isDead)
 		{
-			gTiles[gTilesLayer[gLayerTwoDeathIndex]].z -= TILE_FALLING_SPEED;
+			gTiles[gTilesLayer[gLayerTwoDeathIndex]].z -= OBJECT_FALLING_STEP;
 			gTiles[gTilesLayer[gLayerTwoDeathIndex]].isDead = SDL_TRUE;
 			
 			if (((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
@@ -445,15 +462,15 @@ static void secondTileLayerAnimation(SDL_Window *window, int beginAnimating, int
 		gSecondLayerAnimationTimer++;
 }
 
-static void collapseTiles(void)
+static void collapseTiles(double timeDelta)
 {
 	int tileIndex;
 	
 	for (tileIndex = 0; tileIndex < NUMBER_OF_TILES; tileIndex++)
 	{
-		if (gTiles[tileIndex].z <= -26.0)
+		if (gTiles[tileIndex].z < TILE_ALIVE_Z)
 		{
-			gTiles[tileIndex].z -= TILE_FALLING_SPEED / 4;
+			gTiles[tileIndex].z -= TILE_FALLING_SPEED * timeDelta;
 		}
 	}
 }
@@ -588,7 +605,7 @@ void prepareCharactersDeath(Character *player)
 /*
  * The characterInput is passed because we have to turn off the character's inputs
  */
-static void killCharacter(Input *characterInput)
+static void killCharacter(Input *characterInput, double timeDelta)
 {
 	// client's don't kill characters...
 	// server tells them when to kill!
@@ -658,9 +675,7 @@ static void killCharacter(Input *characterInput)
 			}
 		}
 		
-		static const float CHARACTER_FALLING_SPEED = 0.45f;
-		
-		player->z -= CHARACTER_FALLING_SPEED;
+		player->z -= CHARACTER_FALLING_SPEED * timeDelta;
 		player->recovery_timer = 1;
 		
 		if (gNetworkConnection && gNetworkConnection->type == NETWORK_SERVER_TYPE)

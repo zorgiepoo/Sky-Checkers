@@ -36,7 +36,7 @@ const int BLUE_LIGHTNING =				3;
 const int PINK_BUBBLE_GUM =				4;
 const int WEAPON =						5;
 
-static const float CHARACTER_SPEED =	0.08f;
+#define CHARACTER_SPEED	4.51977f
 
 const int CHARACTER_HUMAN_STATE =		1;
 const int CHARACTER_AI_STATE =			2;
@@ -623,7 +623,7 @@ static void sendCharacterMovement(Character *character)
 	}
 }
 
-void moveCharacter(Character *character, int direction)
+void moveCharacter(Character *character, int direction, double timeDelta)
 {
 	if (character->direction == NO_DIRECTION || !character->lives)
 		return;
@@ -642,7 +642,7 @@ void moveCharacter(Character *character, int direction)
 	{
 		if (characterIsOutOfBounds(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
 		{
-			character->x += CHARACTER_SPEED;
+			character->x += CHARACTER_SPEED * timeDelta;
 			
 			sendCharacterMovement(character);
 		}
@@ -653,7 +653,7 @@ void moveCharacter(Character *character, int direction)
 	{
 		if (characterIsOutOfBounds(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
 		{
-			character->x -= CHARACTER_SPEED;
+			character->x -= CHARACTER_SPEED * timeDelta;
 			
 			sendCharacterMovement(character);
 		}
@@ -664,7 +664,7 @@ void moveCharacter(Character *character, int direction)
 	{
 		if (characterIsOutOfBounds(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
 		{
-			character->y -= CHARACTER_SPEED;
+			character->y -= CHARACTER_SPEED * timeDelta;
 			
 			sendCharacterMovement(character);
 		}
@@ -675,7 +675,7 @@ void moveCharacter(Character *character, int direction)
 	{
 		if (characterIsOutOfBounds(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
 		{
-			character->y += CHARACTER_SPEED;
+			character->y += CHARACTER_SPEED * timeDelta;
 			
 			sendCharacterMovement(character);
 		}

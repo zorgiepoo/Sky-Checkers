@@ -30,7 +30,7 @@
 void startAnimation(void);
 void endAnimation(void);
 
-void animate(SDL_Window *window);
+void animate(SDL_Window *window, double timeDelta);
 
 void prepareCharactersDeath(Character *player);
 void decideWhetherToMakeAPlayerAWinner(Character *player);

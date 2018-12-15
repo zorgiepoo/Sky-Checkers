@@ -22,4 +22,4 @@
 #include "maincore.h"
 #include "input.h"
 
-void moveAI(Character *chnaracter, int currentTime);
+void moveAI(Character *chnaracter, int currentTime, double timeDelta);

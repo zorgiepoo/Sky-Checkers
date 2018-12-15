@@ -93,6 +93,6 @@ Character *characterFromInput(Input *characterInput);
 void performDownAction(Input *input, SDL_Window *window, SDL_Event *event);
 void performUpAction(Input *input, SDL_Window *window, SDL_Event *event);
 
-void moveCharacterFromInput(Input *input);
+void moveCharacterFromInput(Input *input, double timeDelta);
 void turnOffDirectionsExcept(Input *input, int direction);
 void turnInputOff(Input *input);
