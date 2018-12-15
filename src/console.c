@@ -132,12 +132,12 @@ SDL_bool performConsoleBackspace(void)
 
 void drawConsoleText(Renderer *renderer)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-6.7f, 9.13f, -24.0f});
-	
-	int length = (int)strlen(gConsoleString);
+	size_t length = strlen(gConsoleString);
 	if (length > 0)
 	{
-		drawString(renderer, modelViewMatrix, (color4_t){1.0f, 0.0f, 0.0f, 0.7f}, 0.15f * length, 0.48f, gConsoleString);
+		mat4_t modelViewMatrix = m4_translation((vec3_t){-9.3f, 9.13f, -24.0f});
+		
+		drawStringLeftAligned(renderer, modelViewMatrix, (color4_t){1.0f, 0.0f, 0.0f, 0.7f}, 0.00333f, gConsoleString);
 	}
 }
 

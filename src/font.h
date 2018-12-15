@@ -28,4 +28,6 @@ SDL_bool initFont(Renderer *renderer);
 void drawStringf(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, float width, float height, const char *format, ...);
 void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, float width, float height, const char *string);
 
+void drawStringLeftAligned(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, float scale, const char *string);
+
 int cacheString(Renderer *renderer, const char *string);
