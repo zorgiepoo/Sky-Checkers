@@ -1486,6 +1486,12 @@ static void eventLoop(Renderer *renderer)
 			{
 				animate(renderer->window);
 			}
+			
+			if (gGameShouldReset)
+			{
+				endGame();
+				initGame();
+			}
 		}
 		
 		cyclesLeftOver = updateIterations;
@@ -1522,13 +1528,6 @@ static void eventLoop(Renderer *renderer)
 			}
 
 			SDL_Delay(delay);
-		}
-
-		// game has ended stuff should be here.
-		if (gGameShouldReset)
-		{
-			endGame();
-			initGame();
 		}
 
 		// deal with what music to play
