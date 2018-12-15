@@ -39,6 +39,8 @@
 #define BEGIN_TILE_LAYER_ANIMATION 100
 #define END_TILE_LAYER_ANIMATION 200
 
+#define ANIMATION_TIME_ELAPSED_INTERVAL 0.0177 // in seconds
+
 static int gTilesLayer[28];
 
 static int gLayerColorIndex =					0;
@@ -54,6 +56,8 @@ static int gSecondLayerAnimationTimer =			0;
 
 static int gCurrentWinner =						0;
 static int gStatsTimer =						0;
+
+static double gTimeElapsedAccumulator = 0.0;
 
 /* Functions */
 
@@ -121,13 +125,13 @@ void animate(SDL_Window *window, double timeDelta)
 			gBlueLightning.time_alive++;
 	}
 	
-	// Move characters
+	// Animate objects based on time delta
+	
 	moveCharacterFromInput(&gRedRoverInput, timeDelta);
 	moveCharacterFromInput(&gGreenTreeInput, timeDelta);
 	moveCharacterFromInput(&gPinkBubbleGumInput, timeDelta);
 	moveCharacterFromInput(&gBlueLightningInput, timeDelta);
 	
-	// Move AIs
 	moveAI(&gRedRover, (int)gSecondTimer, timeDelta);
 	moveAI(&gGreenTree, (int)gSecondTimer, timeDelta);
 	moveAI(&gPinkBubbleGum, (int)gSecondTimer, timeDelta);
@@ -145,20 +149,27 @@ void animate(SDL_Window *window, double timeDelta)
 	
 	collapseTiles(timeDelta);
 	
-	firstTileLayerAnimation(window);
-	secondTileLayerAnimation(window);
-	
-	animateTilesAndPlayerRecovery(window, &gRedRover);
-	animateTilesAndPlayerRecovery(window, &gGreenTree);
-	animateTilesAndPlayerRecovery(window, &gPinkBubbleGum);
-	animateTilesAndPlayerRecovery(window, &gBlueLightning);
-	
-	recoverDestroyedTiles();
-	
-	recoverCharacter(&gRedRover);
-	recoverCharacter(&gGreenTree);
-	recoverCharacter(&gPinkBubbleGum);
-	recoverCharacter(&gBlueLightning);
+	// Trigger events based on time elapsed
+	gTimeElapsedAccumulator += timeDelta;
+	while (gTimeElapsedAccumulator - ANIMATION_TIME_ELAPSED_INTERVAL >= 0.0)
+	{
+		firstTileLayerAnimation(window);
+		secondTileLayerAnimation(window);
+		
+		animateTilesAndPlayerRecovery(window, &gRedRover);
+		animateTilesAndPlayerRecovery(window, &gGreenTree);
+		animateTilesAndPlayerRecovery(window, &gPinkBubbleGum);
+		animateTilesAndPlayerRecovery(window, &gBlueLightning);
+		
+		recoverDestroyedTiles();
+		
+		recoverCharacter(&gRedRover);
+		recoverCharacter(&gGreenTree);
+		recoverCharacter(&gPinkBubbleGum);
+		recoverCharacter(&gBlueLightning);
+		
+		gTimeElapsedAccumulator -= ANIMATION_TIME_ELAPSED_INTERVAL;
+	}
 }
 
 /*
@@ -791,6 +802,7 @@ void endAnimation(void)
 {
 	gSecondTimer = 0.0;
 	gLastSecond = 0.0;
+	gTimeElapsedAccumulator = 0.0;
 	
 	gLayerColorIndex = 0;
 	gLayerDeathIndex = 0;

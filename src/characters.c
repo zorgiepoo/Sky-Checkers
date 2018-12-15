@@ -36,6 +36,8 @@ const int BLUE_LIGHTNING =				3;
 const int PINK_BUBBLE_GUM =				4;
 const int WEAPON =						5;
 
+// If you were to use a stop watch, the time it takes for a character to go from one end
+// of the checkerboard to the other end (vertically) is ~3.50-3.60 seconds
 #define CHARACTER_SPEED	4.51977f
 
 const int CHARACTER_HUMAN_STATE =		1;

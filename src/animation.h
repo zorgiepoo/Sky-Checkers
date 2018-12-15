@@ -23,9 +23,7 @@
 #include "characters.h"
 #include "input.h"
 
-// If you were to use a stop watch, the time it takes for a character to go from one end
-// of the checkerboard to the other end (vertically) is ~3.50-3.60 seconds
-#define ANIMATION_TIMER_INTERVAL 0.0177 // in seconds
+#define ANIMATION_TIMER_INTERVAL 0.00833 // in seconds
 
 void startAnimation(void);
 void endAnimation(void);
