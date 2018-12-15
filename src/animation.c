@@ -43,16 +43,17 @@
 
 static int gTilesLayer[28];
 
-static int gLayerColorIndex =					0;
-static int gLayerDeathIndex =					0;
-static int gLayerTwoColorIndex =				0;
-static int gLayerTwoDeathIndex =				0;
+typedef struct
+{
+	int colorIndex;
+	int deathIndex;
+	int animationTimer;
+} TileLayerState;
+
+static TileLayerState gTileLayerStates[2];
 
 static float gSecondTimer =						0.0f;
 static float gLastSecond =						0.0f;
-
-static int gFirstLayerAnimationTimer =			0;
-static int gSecondLayerAnimationTimer =			0;
 
 static int gCurrentWinner =						0;
 static int gStatsTimer =						0;
@@ -353,16 +354,16 @@ static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player)
 static void firstTileLayerAnimation(SDL_Window *window)
 {
 	// Color the tiles gray
-	if (gLayerColorIndex != -1 && gFirstLayerAnimationTimer > BEGIN_TILE_LAYER_ANIMATION)
+	if (gTileLayerStates[0].colorIndex != -1 && gTileLayerStates[0].animationTimer > BEGIN_TILE_LAYER_ANIMATION)
 	{
-		if (gTiles[gTilesLayer[gLayerColorIndex]].red == gTiles[gTilesLayer[gLayerColorIndex]].d_red		&&
-			gTiles[gTilesLayer[gLayerColorIndex]].green == gTiles[gTilesLayer[gLayerColorIndex]].d_green	&&
-			gTiles[gTilesLayer[gLayerColorIndex]].blue == gTiles[gTilesLayer[gLayerColorIndex]].d_blue)
+		if (gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].red == gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].d_red		&&
+			gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].green == gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].d_green	&&
+			gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].blue == gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].d_blue)
 		{
 			// RGB { 0.31, 0.33, 0.36 } == Grayish color
-			gTiles[gTilesLayer[gLayerColorIndex]].red = 0.31f;
-			gTiles[gTilesLayer[gLayerColorIndex]].green = 0.33f;
-			gTiles[gTilesLayer[gLayerColorIndex]].blue = 0.36f;
+			gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].red = 0.31f;
+			gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].green = 0.33f;
+			gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].blue = 0.36f;
 			
 			if (((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 			{
@@ -371,24 +372,24 @@ static void firstTileLayerAnimation(SDL_Window *window)
 		}
 		else
 		{
-			gTiles[gTilesLayer[gLayerColorIndex]].isDead = SDL_TRUE;
+			gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].isDead = SDL_TRUE;
 		}
 		
-		gLayerColorIndex++;
+		gTileLayerStates[0].colorIndex++;
 		
-		if (gLayerColorIndex == 28)
+		if (gTileLayerStates[0].colorIndex == 28)
 		{
-			gLayerColorIndex = -1;
+			gTileLayerStates[0].colorIndex = -1;
 		}
 	}
 	
 	// Make the tiles fall down
-	if (gLayerDeathIndex != -1 && gFirstLayerAnimationTimer > END_TILE_LAYER_ANIMATION)
+	if (gTileLayerStates[0].deathIndex != -1 && gTileLayerStates[0].animationTimer > END_TILE_LAYER_ANIMATION)
 	{
-		if (!gTiles[gTilesLayer[gLayerDeathIndex]].isDead)
+		if (!gTiles[gTilesLayer[gTileLayerStates[0].deathIndex]].isDead)
 		{
-			gTiles[gTilesLayer[gLayerDeathIndex]].z -= OBJECT_FALLING_STEP;
-			gTiles[gTilesLayer[gLayerDeathIndex]].isDead = SDL_TRUE;
+			gTiles[gTilesLayer[gTileLayerStates[0].deathIndex]].z -= OBJECT_FALLING_STEP;
+			gTiles[gTilesLayer[gTileLayerStates[0].deathIndex]].isDead = SDL_TRUE;
 			
 			if (((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 			{
@@ -396,18 +397,18 @@ static void firstTileLayerAnimation(SDL_Window *window)
 			}
 		}
 		
-		gLayerDeathIndex++;
+		gTileLayerStates[0].deathIndex++;
 		
-		if (gLayerDeathIndex == 28)
+		if (gTileLayerStates[0].deathIndex == 28)
 		{
-			gLayerDeathIndex = -1;
+			gTileLayerStates[0].deathIndex = -1;
 			loadSecondTileAnimationLayer();
-			gFirstLayerAnimationTimer = -1;
+			gTileLayerStates[0].animationTimer = -1;
 		}
 	}
 	
-	if (gFirstLayerAnimationTimer > 0)
-		gFirstLayerAnimationTimer++;
+	if (gTileLayerStates[0].animationTimer > 0)
+		gTileLayerStates[0].animationTimer++;
 }
 
 /*
@@ -417,16 +418,16 @@ static void firstTileLayerAnimation(SDL_Window *window)
 static void secondTileLayerAnimation(SDL_Window *window)
 {
 	// Color the tiles gray
-	if (gLayerTwoColorIndex != -1 && gSecondLayerAnimationTimer > BEGIN_TILE_LAYER_ANIMATION)
+	if (gTileLayerStates[1].colorIndex != -1 && gTileLayerStates[1].animationTimer > BEGIN_TILE_LAYER_ANIMATION)
 	{
-		if (gTiles[gTilesLayer[gLayerTwoColorIndex]].red == gTiles[gTilesLayer[gLayerTwoColorIndex]].d_red		&&
-			gTiles[gTilesLayer[gLayerTwoColorIndex]].green == gTiles[gTilesLayer[gLayerTwoColorIndex]].d_green	&&
-			gTiles[gTilesLayer[gLayerTwoColorIndex]].blue == gTiles[gTilesLayer[gLayerTwoColorIndex]].d_blue)
+		if (gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].red == gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].d_red		&&
+			gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].green == gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].d_green	&&
+			gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].blue == gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].d_blue)
 		{
 			// RGB { 0.31, 0.33, 0.36 } == Grayish color
-			gTiles[gTilesLayer[gLayerTwoColorIndex]].red = 0.31f;
-			gTiles[gTilesLayer[gLayerTwoColorIndex]].green = 0.33f;
-			gTiles[gTilesLayer[gLayerTwoColorIndex]].blue = 0.36f;
+			gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].red = 0.31f;
+			gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].green = 0.33f;
+			gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].blue = 0.36f;
 			
 			if (((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 			{
@@ -435,24 +436,24 @@ static void secondTileLayerAnimation(SDL_Window *window)
 		}
 		else
 		{
-			gTiles[gTilesLayer[gLayerTwoColorIndex]].isDead = SDL_TRUE;
+			gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].isDead = SDL_TRUE;
 		}
 		
-		gLayerTwoColorIndex++;
+		gTileLayerStates[1].colorIndex++;
 		
-		if (gLayerTwoColorIndex == 20)
+		if (gTileLayerStates[1].colorIndex == 20)
 		{
-			gLayerTwoColorIndex = -1;
+			gTileLayerStates[1].colorIndex = -1;
 		}
 	}
 	
 	// Make the tiles fall down
-	if (gLayerTwoDeathIndex != -1 && gSecondLayerAnimationTimer > END_TILE_LAYER_ANIMATION)
+	if (gTileLayerStates[1].deathIndex != -1 && gTileLayerStates[1].animationTimer > END_TILE_LAYER_ANIMATION)
 	{
-		if (!gTiles[gTilesLayer[gLayerTwoDeathIndex]].isDead)
+		if (!gTiles[gTilesLayer[gTileLayerStates[1].deathIndex]].isDead)
 		{
-			gTiles[gTilesLayer[gLayerTwoDeathIndex]].z -= OBJECT_FALLING_STEP;
-			gTiles[gTilesLayer[gLayerTwoDeathIndex]].isDead = SDL_TRUE;
+			gTiles[gTilesLayer[gTileLayerStates[1].deathIndex]].z -= OBJECT_FALLING_STEP;
+			gTiles[gTilesLayer[gTileLayerStates[1].deathIndex]].isDead = SDL_TRUE;
 			
 			if (((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 			{
@@ -460,17 +461,17 @@ static void secondTileLayerAnimation(SDL_Window *window)
 			}
 		}
 		
-		gLayerTwoDeathIndex++;
+		gTileLayerStates[1].deathIndex++;
 		
-		if (gLayerTwoDeathIndex == 20)
+		if (gTileLayerStates[1].deathIndex == 20)
 		{
-			gLayerTwoDeathIndex = -1;
-			gSecondLayerAnimationTimer = -1;
+			gTileLayerStates[1].deathIndex = -1;
+			gTileLayerStates[1].animationTimer = -1;
 		}
 	}
 	
-	if (gSecondLayerAnimationTimer > 0 && gFirstLayerAnimationTimer == -1)
-		gSecondLayerAnimationTimer++;
+	if (gTileLayerStates[1].animationTimer > 0 && gTileLayerStates[0].animationTimer == -1)
+		gTileLayerStates[1].animationTimer++;
 }
 
 static void collapseTiles(double timeDelta)
@@ -551,13 +552,13 @@ void decideWhetherToMakeAPlayerAWinner(Character *player)
 		
 		if (numPlayersAlive >= 2)
 		{
-			if (gFirstLayerAnimationTimer == 0)
+			if (gTileLayerStates[0].animationTimer == 0)
 			{
-				gFirstLayerAnimationTimer = 1;
+				gTileLayerStates[0].animationTimer = 1;
 			}
-			else if (gSecondLayerAnimationTimer == 0)
+			else if (gTileLayerStates[1].animationTimer == 0)
 			{
-				gSecondLayerAnimationTimer = 1;
+				gTileLayerStates[1].animationTimer = 1;
 			}
 		}
 		else if (numPlayersAlive == 1)
@@ -804,13 +805,13 @@ void endAnimation(void)
 	gLastSecond = 0.0;
 	gTimeElapsedAccumulator = 0.0;
 	
-	gLayerColorIndex = 0;
-	gLayerDeathIndex = 0;
-	gLayerTwoColorIndex = 0;
-	gLayerTwoDeathIndex = 0;
+	gTileLayerStates[0].colorIndex = 0;
+	gTileLayerStates[0].deathIndex = 0;
+	gTileLayerStates[0].animationTimer = 0;
 	
-	gFirstLayerAnimationTimer = 0;
-	gSecondLayerAnimationTimer = 0;
+	gTileLayerStates[1].colorIndex = 0;
+	gTileLayerStates[1].deathIndex = 0;
+	gTileLayerStates[1].animationTimer = 0;
 	
 	// stop weapon animation and drawing
 	gRedRover.weap->drawingState = SDL_FALSE;
