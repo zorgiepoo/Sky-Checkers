@@ -68,7 +68,7 @@ static int gGameState;
 
 #define MAX_CHARACTER_LIVES 10
 
-void initGame(SDL_Window *window);
+void initGame(void);
 
 static void initScene(Renderer *renderer);
 
@@ -702,7 +702,7 @@ static void writeDefaults(Renderer *renderer)
 	fclose(fp);
 }
 
-void initGame(SDL_Window *window)
+void initGame(void)
 {
 	loadTiles();
 
@@ -711,10 +711,7 @@ void initGame(SDL_Window *window)
 	loadCharacter(&gPinkBubbleGum);
 	loadCharacter(&gBlueLightning);
 
-	if (!startAnimation(window))
-	{
-		zgPrint("Timer is long gone");
-	}
+	startAnimation();
 
 	int initialNumberOfLives = (gNetworkConnection && gNetworkConnection->type == NETWORK_CLIENT_TYPE) ? gNetworkConnection->characterLives : (gNetworkConnection && gNetworkConnection->type == NETWORK_SERVER_TYPE ? gCharacterNetLives : gCharacterLives);
 
@@ -1448,6 +1445,8 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 	}
 }
 
+#define MAX_ITERATIONS 0.4
+
 static void eventLoop(Renderer *renderer)
 {
 	SDL_Event event;
@@ -1461,11 +1460,36 @@ static void eventLoop(Renderer *renderer)
 
 	while (!done)
 	{
-		//check for events.
 		while (SDL_PollEvent(&event))
 		{
 			eventInput(&event, renderer, &needsToDrawScene, &done);
 		}
+		
+		// Update game state
+		// http://ludobloom.com/tutorials/timestep.html
+		static double lastFrameTime = 0.0;
+		static double cyclesLeftOver = 0.0;
+		
+		double currentTime = SDL_GetTicks() / 1000.0;
+		double updateIterations = ((currentTime - lastFrameTime) + cyclesLeftOver);
+		
+		if (updateIterations > MAX_ITERATIONS)
+		{
+			updateIterations = MAX_ITERATIONS;
+		}
+		
+		while (updateIterations > ANIMATION_TIMER_INTERVAL)
+		{
+			updateIterations -= ANIMATION_TIMER_INTERVAL;
+			
+			if (gGameState)
+			{
+				animate(renderer->window);
+			}
+		}
+		
+		cyclesLeftOver = updateIterations;
+		lastFrameTime = currentTime;
 		
 		if (needsToDrawScene)
 		{
@@ -1504,7 +1528,7 @@ static void eventLoop(Renderer *renderer)
 		if (gGameShouldReset)
 		{
 			endGame();
-			initGame(renderer->window);
+			initGame();
 		}
 
 		// deal with what music to play

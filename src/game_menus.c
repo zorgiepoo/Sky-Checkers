@@ -99,8 +99,7 @@ void drawPlayMenu(Renderer *renderer, color4_t preferredColor)
 
 void playGameAction(void *context)
 {
-	SDL_Window *window = (SDL_Window *)context;
-	initGame(window);
+	initGame();
 }
 
 void drawNetworkPlayMenu(Renderer *renderer, color4_t preferredColor)
@@ -243,8 +242,7 @@ void networkServerPlayMenuAction(void *context)
 	
 	SDL_CreateThread(serverNetworkThread, "server-thread", NULL);
 	
-	SDL_Window *window = (SDL_Window *)context;
-	initGame(window);
+	initGame();
 	
 	gRedRoverInput.character = gNetworkConnection->input->character;
 	gBlueLightningInput.character = gNetworkConnection->input->character;

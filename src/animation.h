@@ -23,8 +23,14 @@
 #include "characters.h"
 #include "input.h"
 
-SDL_bool startAnimation(SDL_Window *window);
+// If you were to use a stop watch, the time it takes for a character to go from one end
+// of the checkerboard to the other end (vertically) is ~3.50-3.60 seconds
+#define ANIMATION_TIMER_INTERVAL 0.0177 // in seconds
+
+void startAnimation(void);
 void endAnimation(void);
+
+void animate(SDL_Window *window);
 
 void prepareCharactersDeath(Character *player);
 void decideWhetherToMakeAPlayerAWinner(Character *player);

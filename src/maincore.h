@@ -88,7 +88,7 @@
 
 /* Game Globals */
 
-void initGame(SDL_Window *window);
+void initGame(void);
 void endGame(void);
 void closeGameResources(void);
 

@@ -267,8 +267,7 @@ int clientNetworkThread(void *context)
 					// server is pending
 					gPinkBubbleGum.netState = NETWORK_PENDING_STATE;
 					
-					SDL_Window *window = (SDL_Window *)context;
-					initGame(window);
+					initGame();
 					
 					gPinkBubbleGum.lives = gNetworkConnection->characterLives;
 					gRedRover.lives = gNetworkConnection->characterLives;

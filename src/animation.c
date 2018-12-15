@@ -25,9 +25,6 @@
 #include "network.h"
 #include "audio.h"
 
-// in milliseconds
-static const uint32_t TIMER_INTERVAL =				16;
-
 static const float TILE_FALLING_SPEED =			1.8f;
 
 // in seconds
@@ -49,11 +46,7 @@ static int gSecondLayerAnimationTimer =			0;
 static int gCurrentWinner =						0;
 static int gStatsTimer =						0;
 
-static SDL_TimerID gTimer;
-
 /* Functions */
-
-static Uint32 timedEvents(Uint32 interval, void *param);
 
 static void colorTile(Tile *tile, Weapon *weap);
 
@@ -71,18 +64,9 @@ static void recoverDestroyedTiles(void);
 static void killCharacter(Input *characterInput);
 static void recoverCharacter(Character *player);
 
-static Uint32 timedEvents(Uint32 interval, void *param)
+void animate(SDL_Window *window)
 {
-	SDL_Event event;
-	
-	event.type = SDL_USEREVENT;
-    event.user.code = 1;
-    event.user.data1 = 0;
-    event.user.data2 = 0;
-	
-	SDL_Window *window = (SDL_Window *)param;
-	
-	gSecondTimer += TIMER_INTERVAL / 1000.0f;
+	gSecondTimer += ANIMATION_TIMER_INTERVAL;
 	
 	// Update gSecondTimer and change gLastSecond
 	if ((int)gLastSecond != (int)gSecondTimer)
@@ -162,10 +146,6 @@ static Uint32 timedEvents(Uint32 interval, void *param)
 	recoverCharacter(&gGreenTree);
 	recoverCharacter(&gPinkBubbleGum);
 	recoverCharacter(&gBlueLightning);
-    
-    SDL_PushEvent(&event);
-	
-	return interval;
 }
 
 /*
@@ -787,28 +767,13 @@ static void loadSecondTileAnimationLayer(void)
 	gTilesLayer[19] = 41;
 }
 
-SDL_bool startAnimation(SDL_Window *window)
+void startAnimation(void)
 {
-	if (SDL_Init(SDL_INIT_TIMER) < 0)
-	{
-		zgPrint("Couldn't initialize SDL Timer: %e");
-		return SDL_FALSE;
-	}
-	
 	loadFirstTileAnimationLayer();
-	
-	gTimer = SDL_AddTimer(TIMER_INTERVAL, timedEvents, window);
-	
-	return SDL_TRUE;
 }
 
 void endAnimation(void)
 {
-	if (!SDL_RemoveTimer(gTimer))
-		zgPrint("Removing timer failed");
-	
-	SDL_QuitSubSystem(SDL_INIT_TIMER);
-	
 	gSecondTimer = 0.0;
 	gLastSecond = 0.0;
 	
