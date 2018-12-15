@@ -1445,7 +1445,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 	}
 }
 
-#define MAX_ITERATIONS 0.4
+#define MAX_ITERATIONS (25 * ANIMATION_TIMER_INTERVAL)
 
 static void eventLoop(Renderer *renderer)
 {
