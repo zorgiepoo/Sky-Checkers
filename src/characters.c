@@ -383,14 +383,12 @@ static mat4_t modelViewMatrixForCharacter(Character *character, mat4_t worldMatr
 static void drawCharacter(Renderer *renderer, Character *character, mat4_t worldMatrix)
 {
 	// don't draw the character if they're not in the scene
-	if (character->z <= -170.0f)
+	if (character->z > CHARACTER_TERMINATING_Z)
 	{
-		return;
+		mat4_t modelViewMatrix = modelViewMatrixForCharacter(character, worldMatrix);
+		
+		drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, gCharacterTex, RENDERER_TRIANGLE_MODE, gCharacterVertexAndTextureCoordinateArrayObject, gCharacterIndicesBufferObject, 5220, (color4_t){character->red, character->green, character->blue, 1.0f}, RENDERER_OPTION_NONE);
 	}
-	
-	mat4_t modelViewMatrix = modelViewMatrixForCharacter(character, worldMatrix);
-	
-	drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, gCharacterTex, RENDERER_TRIANGLE_MODE, gCharacterVertexAndTextureCoordinateArrayObject, gCharacterIndicesBufferObject, 5220, (color4_t){character->red, character->green, character->blue, 1.0f}, RENDERER_OPTION_NONE);
 }
 
 void drawCharacters(Renderer *renderer)

@@ -25,6 +25,8 @@
 #include "math_3d.h"
 #include "renderer.h"
 
+#define CHARACTER_TERMINATING_Z -70.0f
+
 extern const int NO_DIRECTION;
 extern const int RIGHT;
 extern const int LEFT;

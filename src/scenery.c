@@ -349,11 +349,14 @@ void drawTiles(Renderer *renderer)
 	
 	for (int i = 0; i < NUMBER_OF_TILES; i++)
 	{
-		mat4_t modelTranslationMatrix = m4_translation((vec3_t){gTiles[i].x , gTiles[i].y, gTiles[i].z});
-		mat4_t modelViewMatrix = m4_mul(worldRotationMatrix, modelTranslationMatrix);
-		
-		TextureObject texture = (((i / 8) % 2) ^ (i % 2)) != 0 ? gTileTexture1 : gTileTexture2;
-		
-		drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, texture, RENDERER_TRIANGLE_MODE, vertexAndTextureCoordinateArrayObject, indicesBufferObject, 24, (color4_t){gTiles[i].red, gTiles[i].green, gTiles[i].blue, 1.0f}, RENDERER_OPTION_NONE);
+		if (gTiles[i].z > TILE_TERMINATING_Z)
+		{
+			mat4_t modelTranslationMatrix = m4_translation((vec3_t){gTiles[i].x , gTiles[i].y, gTiles[i].z});
+			mat4_t modelViewMatrix = m4_mul(worldRotationMatrix, modelTranslationMatrix);
+			
+			TextureObject texture = (((i / 8) % 2) ^ (i % 2)) != 0 ? gTileTexture1 : gTileTexture2;
+			
+			drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, texture, RENDERER_TRIANGLE_MODE, vertexAndTextureCoordinateArrayObject, indicesBufferObject, 24, (color4_t){gTiles[i].red, gTiles[i].green, gTiles[i].blue, 1.0f}, RENDERER_OPTION_NONE);
+		}
 	}
 }

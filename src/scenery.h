@@ -23,6 +23,7 @@
 #include "renderer.h"
 
 #define TILE_ALIVE_Z -25.0f
+#define TILE_TERMINATING_Z -105.0f
 #define NUMBER_OF_TILES 64
 
 typedef struct _tile
