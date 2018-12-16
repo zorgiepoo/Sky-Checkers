@@ -191,7 +191,7 @@ static void updateViewport_metal(Renderer *renderer)
 	id<MTLDepthStencilState> depthStencilState = [device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
 	if (depthStencilState == nil)
 	{
-		zgPrint("Depth stencil state failed to be created");
+		fprintf(stderr, "Depth stencil state failed to be created\n");
 		SDL_Quit();
 	}
 	
@@ -295,7 +295,7 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		id<MTLLibrary> defaultLibrary = [device newDefaultLibrary];
 		if (defaultLibrary == nil)
 		{
-			zgPrint("Failed to find default metal library");
+			fprintf(stderr, "Failed to find default metal library\n");
 			SDL_Quit();
 		}
 		
@@ -418,7 +418,7 @@ TextureObject textureFromPixelData_metal(Renderer *renderer, const void *pixels,
 	id<MTLTexture> texture = [device newTextureWithDescriptor:textureDescriptor];
 	if (texture == nil)
 	{
-		zgPrint("Failed to create texture in textureFromPixelData_metal");
+		fprintf(stderr, "Failed to create texture in textureFromPixelData_metal\n");
 		SDL_Quit();
 	}
 	
@@ -443,7 +443,7 @@ static id<MTLBuffer> createBuffer(Renderer *renderer, const void *data, uint32_t
 	id<MTLBuffer> buffer = [device newBufferWithBytes:data length:size options:MTLResourceStorageModeShared];
 	if (buffer == nil)
 	{
-		zgPrint("Failed to create buffer object in createBuffer");
+		fprintf(stderr, "Failed to create buffer object in createBuffer\n");
 		SDL_Quit();
 	}
 	

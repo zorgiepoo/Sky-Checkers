@@ -52,13 +52,13 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 #ifdef _DEBUG
 		if (!createdRenderer)
 		{
-			zgPrint("ERROR: Failed creating Metal renderer!! Falling back to OpenGL.");
+			fprintf(stderr, "ERROR: Failed creating Metal renderer!! Falling back to OpenGL.\n");
 		}
 #endif
 	}
 	else
 	{
-		zgPrint("NOTICE: Forcing OpenGL usage!!");
+		fprintf(stderr, "NOTICE: Forcing OpenGL usage!!\n");
 	}
 #endif
 

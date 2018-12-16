@@ -102,7 +102,7 @@ static SDL_Surface *createSurfaceImage(int32_t width, int32_t height)
 											  );
 	if (image == NULL)
 	{
-		zgPrint("Failed to create SDL RGB surface..");
+		fprintf(stderr, "Failed to create SDL RGB surface..\n");
 		SDL_Quit();
 	}
 	
@@ -134,7 +134,7 @@ static SDL_Surface *surfaceFromImage(const char *filePath)
 	
 	if (texImage == NULL)
 	{
-		zgPrint("Couldn't load texture: %s", filePath);
+		fprintf(stderr, "Couldn't load texture: %s\n", filePath);
 		SDL_Quit();
 	}
 	
@@ -150,108 +150,4 @@ TextureObject loadTexture(Renderer *renderer, const char *filePath)
 	SDL_FreeSurface(texImage);
 	
 	return texture;
-}
-
-/*
- * This function does what printf does (however limited), except that it prints
- * to stderr and appends a '\n' to the string for us. This function was created because
- * of lazyness. It can also print out SDL error messages with just typing %e (no arguements needed).
- *
- * example of what zgPrint() supports: zgPrint("hi %% %c, %i : %c, %f, %s\n, zor! %i", 'g', 453, 'c', 5.2, "foo", 452);
- *
- * And..
- * example of SDL Error message: zgPrint("Something went wrong! ERROR MESSAGE: %e");
- */
-void zgPrint(const char *format, ...)
-{
-	va_list ap;
-	char buffer[256];
-	int formatIndex;
-	int bufferIndex = 0;
-	int stringIndex;
-	const char *string;
-	char newLine = 1;
-	
-	va_start(ap, format);
-	
-	for (formatIndex = 0; format[formatIndex] != '\0'; formatIndex++)
-	{
-		if (format[formatIndex] != '%')
-		{
-			buffer[bufferIndex] = format[formatIndex];
-			bufferIndex++;
-			continue;
-		}
-		
-		formatIndex++;
-		
-		switch (format[formatIndex])
-		{
-			case 'c':
-				buffer[bufferIndex] = va_arg(ap, int);
-				break;
-			case 'd':
-				bufferIndex += sprintf(&buffer[bufferIndex], "%i", va_arg(ap, int)) - 1;
-				break;
-			case 'i':
-				bufferIndex += sprintf(&buffer[bufferIndex], "%i", va_arg(ap, int)) - 1;
-				break;
-			case '%':
-				buffer[bufferIndex] = '%';
-				break;
-			case 'f':
-				bufferIndex += sprintf(&buffer[bufferIndex], "%f", va_arg(ap, double)) - 1;
-				break;
-			case 's':
-				string = va_arg(ap, char *);
-				
-				for (stringIndex = 0; string[stringIndex] != '\0'; stringIndex++)
-				{
-					buffer[bufferIndex++] = string[stringIndex];
-				}
-				
-				bufferIndex--;
-				break;
-			case 'e':
-				string = SDL_GetError();
-				
-				for (stringIndex = 0; string[stringIndex] != '\0'; stringIndex++)
-				{
-					buffer[bufferIndex++] = string[stringIndex];
-				}
-				
-				bufferIndex--;
-				break;
-			case 't':
-				string = TTF_GetError();
-				
-				for (stringIndex = 0; string[stringIndex] != '\0'; stringIndex++)
-				{
-					buffer[bufferIndex++] = string[stringIndex];
-				}
-					
-				bufferIndex--;
-				break;
-		}
-		
-		bufferIndex++;
-	}
-	
-	va_end(ap);
-	
-	// if there's a ^ at the end of the string, then we won't put a newline character at the end of the output.
-	if (buffer[bufferIndex - 1] == '^')
-	{
-		buffer[bufferIndex - 1] = '\0';
-		newLine = 0;
-	}
-	else
-	{
-		buffer[bufferIndex] = '\0';
-	}
-	
-	fprintf(stderr, "%s", buffer);
-	
-	if (newLine == 1)
-		fprintf(stderr, "\n");
 }

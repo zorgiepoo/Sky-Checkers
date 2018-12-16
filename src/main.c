@@ -582,7 +582,7 @@ static void writeDefaults(Renderer *renderer)
 
 	if (fp == NULL)
 	{
-		zgPrint("writeDefaults: file pointer is NULL");
+		fprintf(stderr, "writeDefaults: file pointer is NULL\n");
 		return;
 	}
 
@@ -1585,7 +1585,7 @@ void initJoySticks(void)
 
 		if (numJoySticks > 4)
 		{
-			zgPrint("There's more than 4 joysticks available. We're going to only read the first four joysticks connected to the system.");
+			fprintf(stderr, "There's more than 4 joysticks available. We're going to only read the first four joysticks connected to the system.\n");
 			numJoySticks = 4;
 		}
 
@@ -1600,7 +1600,7 @@ int main(int argc, char *argv[])
 {
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO) < 0)
 	{
-        zgPrint("Couldn't initialize SDL: %e");
+        fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
 		return -1;
 	}
 	
@@ -1609,7 +1609,7 @@ int main(int argc, char *argv[])
 	const char *baseDirectory = SDL_GetBasePath();
 	if (baseDirectory != NULL && chdir(baseDirectory) != 0)
 	{
-		zgPrint("Failed to change current working directory to %s", baseDirectory);
+		fprintf(stderr, "Failed to change current working directory to %s\n", baseDirectory);
 		return -4;
 	}
 #endif

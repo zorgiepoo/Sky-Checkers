@@ -28,5 +28,3 @@ unsigned long mt_random();
 TextureObject loadTexture(Renderer *renderer, const char *filePath);
 
 TextureObject surfaceToTexture(Renderer *renderer, SDL_Surface *surface);
-
-void zgPrint(const char *format, ...);

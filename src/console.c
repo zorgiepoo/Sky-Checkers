@@ -149,7 +149,7 @@ void executeConsoleCommand(void)
 	
 	// get command
 	if (gConsoleString[MIN_CONSOLE_STRING_LENGTH] == 'g' && gConsoleString[MIN_CONSOLE_STRING_LENGTH + 1] == 'e')
-		zgPrint("(scc) get: %f", getConsoleValue());
+		fprintf(stderr, "(scc) get: %f\n", getConsoleValue());
 	
 	// set command
 	else
@@ -158,11 +158,11 @@ void executeConsoleCommand(void)
 		float value = setConsoleValue(&errorFlag);
 		if (!errorFlag)
 		{
-			zgPrint("(scc) set: %f", value);
+			fprintf(stderr, "(scc) set: %f\n", value);
 		}
 		else
 		{
-			zgPrint("(scc) set: error!");
+			fprintf(stderr, "(scc) set: error!\n");
 		}
 	}
 }

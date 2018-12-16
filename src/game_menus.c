@@ -409,7 +409,7 @@ void connectToNetworkGameMenuAction(void *context)
 #ifndef WINDOWS
 		herror("gethostbyname");
 #else
-		zgPrint("host_entry windows error\n");
+		fprintf(stderr, "host_entry windows error\n");
 #endif
 		
 		closeSocket(gNetworkConnection->socket);
@@ -2008,7 +2008,7 @@ unsigned getJoyStickTrigger(Sint16 *value, Uint8 *axis, int *joy_id)
 					// check for invalid value
 					if (!(( event.jaxis.value < -32000 ) || (event.jaxis.value > 32000 )))
 					{
-						zgPrint("Invalid value: %i with axis: %i", event.jaxis.value, event.jaxis.axis);
+						fprintf(stderr, "Invalid value: %d with axis: %d\n", event.jaxis.value, event.jaxis.axis);
 						break;
 					}
 					

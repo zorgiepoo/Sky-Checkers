@@ -460,7 +460,7 @@ void networkInitialization(void)
 	
 	if (WSAStartup(MAKEWORD(1, 1), &wsaData) != 0)
 	{
-		zgPrint("WSAStartup failed.\n");
+		fprintf(stderr, "WSAStartup failed.\n");
     }
 #endif
 }

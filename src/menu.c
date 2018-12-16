@@ -111,7 +111,7 @@ void invokeMenu(void *context)
 	if (gCurrentMenu->action != NULL)
 		gCurrentMenu->action(context);
 	else
-		zgPrint("gCurrentMenu's action() function is NULL");
+		fprintf(stderr, "gCurrentMenu's action() function is NULL\n");
 }
 
 void drawMenus(Renderer *renderer)
@@ -120,7 +120,7 @@ void drawMenus(Renderer *renderer)
 	
 	if (gCurrentMenu->parent == NULL)
 	{
-		zgPrint("Parent is NULL drawMenu():");
+		fprintf(stderr, "Parent is NULL drawMenu():\n");
 		return;
 	}
 	
@@ -134,7 +134,7 @@ void drawMenus(Renderer *renderer)
 		}
 		else
 		{
-			zgPrint("Current menu's draw function is NULL. Under if (gCurrentMenu->under == NULL) condition");
+			fprintf(stderr, "Current menu's draw function is NULL. Under if (gCurrentMenu->under == NULL) condition\n");
 		}
 		return;
 	}
@@ -151,7 +151,7 @@ void drawMenus(Renderer *renderer)
 		}
 		else
 		{
-			zgPrint("theMenu's draw function is NULL. Under while ((theMenu = theMenu->under) != gCurrentMenu)");
+			fprintf(stderr, "theMenu's draw function is NULL. Under while ((theMenu = theMenu->under) != gCurrentMenu)\n");
 		}
 	}
 	
@@ -162,7 +162,7 @@ void drawMenus(Renderer *renderer)
 	}
 	else
 	{
-		zgPrint("Current menu's draw function is NULL. Last step in drawMenus");
+		fprintf(stderr, "Current menu's draw function is NULL. Last step in drawMenus\n");
 	}
 }
 

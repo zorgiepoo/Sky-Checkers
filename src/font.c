@@ -44,7 +44,7 @@ SDL_bool initFont(Renderer *renderer)
 {
 	if (TTF_Init() == -1)
 	{
-		zgPrint("TTF_Init: %t or %e");
+		fprintf(stderr, "TTF_Init: %s or %s\n", TTF_GetError(), SDL_GetError());
 		return SDL_FALSE;
 	}
 	
@@ -54,7 +54,7 @@ SDL_bool initFont(Renderer *renderer)
 	
 	if (gFont == NULL)
 	{
-		zgPrint("loading font error! %t");
+		fprintf(stderr, "loading font error! %s\n", TTF_GetError());
 		SDL_Quit();
 	}
 	
@@ -98,7 +98,7 @@ TextureObject loadString(Renderer *renderer, const char *string)
 	
 	if (fontSurface == NULL)
 	{
-		zgPrint("font surface is null: %t");
+		fprintf(stderr, "font surface is null: %s", TTF_GetError());
 		SDL_Quit();
 	}
 	
@@ -110,7 +110,6 @@ TextureObject loadString(Renderer *renderer, const char *string)
 	return texture;
 }
 
-// partially copied from zgPrint(...)
 void drawStringf(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, float width, float height, const char *format, ...)
 {
 	va_list ap;

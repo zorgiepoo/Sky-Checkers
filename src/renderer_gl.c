@@ -72,7 +72,7 @@ static SDL_bool compileShader(GLuint *shader, uint16_t glslVersion, GLenum type,
 	FILE *sourceFile = fopen(filepath, "r");
 	if (sourceFile == NULL)
 	{
-		zgPrint("Shader doesn't exist at: %s", filepath);
+		fprintf(stderr, "Shader doesn't exist at: %s\n", filepath);
 		return SDL_FALSE;
 	}
 	
@@ -102,7 +102,7 @@ static SDL_bool compileShader(GLuint *shader, uint16_t glslVersion, GLenum type,
 	{
 		GLchar *log = (GLchar *)malloc(logLength);
 		glGetShaderInfoLog(*shader, logLength, &logLength, log);
-		zgPrint("Shader compiler log:\n%s", log);
+		fprintf(stderr, "Shader compiler log:\n%s\n", log);
 		free(log);
 	}
 #endif
@@ -129,7 +129,7 @@ static SDL_bool linkProgram(GLuint prog)
 	{
 		GLchar *log = (GLchar *)malloc(logLength);
 		glGetProgramInfoLog(prog, logLength, &logLength, log);
-		zgPrint("Program link log:\n%s", log);
+		fprintf(stderr, "Program link log:\n%s\n", log);
 		free(log);
 	}
 #endif
@@ -149,21 +149,21 @@ static void compileAndLinkShader(Shader_gl *shader, uint16_t glslVersion, const 
 	GLuint vertexShader = 0;
 	if (!compileShader(&vertexShader, glslVersion, GL_VERTEX_SHADER, vertexShaderPath))
 	{
-		zgPrint("Error: Failed to compile vertex shader: %s..\n", vertexShaderPath);
+		fprintf(stderr, "Error: Failed to compile vertex shader: %s..\n", vertexShaderPath);
 		exit(2);
 	}
 	
 	GLuint fragmentShader = 0;
 	if (!compileShader(&fragmentShader, glslVersion, GL_FRAGMENT_SHADER, fragmentShaderPath))
 	{
-		zgPrint("Error: Failed to compile fragment shader: %s..\n", fragmentShaderPath);
+		fprintf(stderr, "Error: Failed to compile fragment shader: %s..\n", fragmentShaderPath);
 		exit(2);
 	}
 	
 	GLuint shaderProgram = glCreateProgram();
 	if (shaderProgram == 0)
 	{
-		zgPrint("Failed to create a shader program.. Odd.");
+		fprintf(stderr, "Failed to create a shader program.. Odd.\n");
 		exit(1);
 	}
 	
@@ -187,14 +187,14 @@ static void compileAndLinkShader(Shader_gl *shader, uint16_t glslVersion, const 
 	
 	if (!linkProgram(shaderProgram))
 	{
-		zgPrint("Failed to link shader program");
+		fprintf(stderr, "Failed to link shader program\n");
 		exit(2);
 	}
 	
 	GLint modelViewProjectionMatrixUniformLocation = glGetUniformLocation(shaderProgram, modelViewProjectionUniform);
 	if (modelViewProjectionMatrixUniformLocation == -1)
 	{
-		zgPrint("Failed to find %s uniform", modelViewProjectionUniform);
+		fprintf(stderr, "Failed to find %s uniform\n", modelViewProjectionUniform);
 		exit(1);
 	}
 	shader->modelViewProjectionMatrixUniformLocation = modelViewProjectionMatrixUniformLocation;
@@ -202,7 +202,7 @@ static void compileAndLinkShader(Shader_gl *shader, uint16_t glslVersion, const 
 	GLint colorUniformLocation = glGetUniformLocation(shaderProgram, colorUniform);
 	if (colorUniformLocation == -1)
 	{
-		zgPrint("Failed to find %s uniform", colorUniform);
+		fprintf(stderr, "Failed to find %s uniform\n", colorUniform);
 		exit(1);
 	}
 	shader->colorUniformLocation = colorUniformLocation;
@@ -212,7 +212,7 @@ static void compileAndLinkShader(Shader_gl *shader, uint16_t glslVersion, const 
 		GLint textureUniformLocation = glGetUniformLocation(shaderProgram, textureSampleUniform);
 		if (textureUniformLocation == -1)
 		{
-			zgPrint("Failed to find %s uniform", textureSampleUniform);
+			fprintf(stderr, "Failed to find %s uniform\n", textureSampleUniform);
 			exit(1);
 		}
 		shader->textureUniformLocation = textureUniformLocation;
@@ -247,7 +247,7 @@ static SDL_bool createOpenGLContext(SDL_Window **window, SDL_GLContext *glContex
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 			break;
 		default:
-			zgPrint("Invalid glsl version passed..");
+			fprintf(stderr, "Invalid glsl version passed..\n");
 			exit(1);
 	}
 	
@@ -330,7 +330,7 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 			glslVersion = GLSL_VERSION_120;
 			if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, windowTitle, windowWidth, windowHeight, videoFlags, fsaa))
 			{
-				zgPrint("Failed to create OpenGL context with even glsl version %i", glslVersion);
+				fprintf(stderr, "Failed to create OpenGL context with even glsl version %d\n", glslVersion);
 				exit(1);
 			}
 		}
@@ -338,7 +338,7 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	
 	if (SDL_GL_MakeCurrent(renderer->window, glContext) != 0)
 	{
-		zgPrint("Couldn't make OpenGL context current: %e");
+		fprintf(stderr, "Couldn't make OpenGL context current: %s\n", SDL_GetError());
 		exit(9);
 	}
 	
@@ -347,7 +347,7 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	GLenum glewError = glewInit();
 	if (glewError != GLEW_OK)
 	{
-		zgPrint("Failed to initialize GLEW: %s", glewGetErrorString(glewError));
+		fprintf(stderr, "Failed to initialize GLEW: %s\n", glewGetErrorString(glewError));
 		exit(6);
 	}
 #endif
@@ -399,7 +399,7 @@ void renderFrame_gl(Renderer *renderer, void (*drawFunc)(Renderer *))
 	GLenum error;
 	while((error = glGetError()) != GL_NO_ERROR)
 	{
-		zgPrint("Found OpenGL Error: %d", error);
+		fprintf(stderr, "Found OpenGL Error: %d\n", error);
 	}
 #endif
 }
