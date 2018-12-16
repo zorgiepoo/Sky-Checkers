@@ -110,32 +110,36 @@ static void directCharacterBasedOnCollisions(Character *character, int currentTi
 	
 	/* The AI should avoid dieing from the gray stones */
 	
-	Tile *tile = &gTiles[getTileIndexLocation((int)character->x, (int)character->y)];
-	// gray color red == 0.31
-	if (fabs(tile->red - 0.31) < 0.00001)
+	int tileLocation = getTileIndexLocation((int)character->x, (int)character->y);
+	if (tileLocation < NUMBER_OF_TILES)
 	{
-		int row = rowOfCharacter(character);
-		int column = columnOfCharacter(character);
-		
-		if (row == 0 || row == 1)
+		Tile *tile = &gTiles[tileLocation];
+		// gray color red == 0.31
+		if (fabs(tile->red - 0.31) < 0.00001)
 		{
-			if (tile->up && !tile->up->isDead && tile->up->state)
-				character->direction = UP;
-		}
-		else if (row == 7 || row == 6)
-		{
-			if (tile->down && !tile->down->isDead && tile->down->state)
-				character->direction = DOWN;
-		}
-		else if (column == 0 || column == 1)
-		{
-			if (tile->right && !tile->right->isDead && tile->right->state)
-				character->direction = RIGHT;
-		}
-		else if (column == 7 || column == 6)
-		{
-			if (tile->left && !tile->left->isDead && tile->left->state)
-				character->direction = LEFT;
+			int row = rowOfCharacter(character);
+			int column = columnOfCharacter(character);
+			
+			if (row == 0 || row == 1)
+			{
+				if (tile->up && !tile->up->isDead && tile->up->state)
+					character->direction = UP;
+			}
+			else if (row == 7 || row == 6)
+			{
+				if (tile->down && !tile->down->isDead && tile->down->state)
+					character->direction = DOWN;
+			}
+			else if (column == 0 || column == 1)
+			{
+				if (tile->right && !tile->right->isDead && tile->right->state)
+					character->direction = RIGHT;
+			}
+			else if (column == 7 || column == 6)
+			{
+				if (tile->left && !tile->left->isDead && tile->left->state)
+					character->direction = LEFT;
+			}
 		}
 	}
 }
@@ -154,6 +158,11 @@ static void shootWeaponProjectile(Character *character, int currentTime)
 	getOtherCharacters(character, &characterB, &characterC, &characterD);
 	
 	int tileIndex = getTileIndexLocation((int)character->x, (int)character->y);
+	
+	if (tileIndex >= NUMBER_OF_TILES)
+	{
+		return;
+	}
 	
 	// AI should be worrying about not colliding into another character
 	if (tileIndex == getTileIndexLocation((int)characterB->x, (int)characterB->y) ||

@@ -98,7 +98,7 @@ void loadCharacter(Character *character)
 	character->coloredTiles = SDL_FALSE;
 	character->needTileLoc = SDL_TRUE;
 	character->recovery_time_delay = 71;
-	character->player_loc = 0;
+	character->player_loc = -1;
 	character->destroyed_tile = NULL;
 	
 	character->ai_timer = 0;
@@ -717,30 +717,34 @@ void shootCharacterWeaponWithoutChecks(Character *character)
 
 void shootCharacterWeapon(Character *character)
 {
-	if (!character->weap->animationState && gTiles[getTileIndexLocation((int)character->x, (int)character->y)].z == -25.0)
+	if (!character->weap->animationState)
 	{
-		if (gNetworkConnection)
+		int tileIndex = getTileIndexLocation((int)character->x, (int)character->y);
+		if (tileIndex < NUMBER_OF_TILES && gTiles[tileIndex].z == -25.0)
 		{
-			char shootWeaponMessage[256];
-			char movementMessage[256];
-			
-			sprintf(shootWeaponMessage, "sw%i", IDOfCharacter(character));
-			sprintf(movementMessage, "mo%i %f %f %f %i", IDOfCharacter(character), character->x, character->y, character->z, character->direction);
-			
-			if (gNetworkConnection->type == NETWORK_SERVER_TYPE)
+			if (gNetworkConnection)
 			{
-				sendToClients(0, movementMessage);
-				sendToClients(0, shootWeaponMessage);
+				char shootWeaponMessage[256];
+				char movementMessage[256];
+				
+				sprintf(shootWeaponMessage, "sw%i", IDOfCharacter(character));
+				sprintf(movementMessage, "mo%i %f %f %f %i", IDOfCharacter(character), character->x, character->y, character->z, character->direction);
+				
+				if (gNetworkConnection->type == NETWORK_SERVER_TYPE)
+				{
+					sendToClients(0, movementMessage);
+					sendToClients(0, shootWeaponMessage);
+				}
+				else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE && gNetworkConnection->input->character == character)
+				{
+					sendto(gNetworkConnection->socket, shootWeaponMessage, strlen(shootWeaponMessage), 0, (struct sockaddr *)&gNetworkConnection->hostAddress, sizeof(gNetworkConnection->hostAddress));
+				}
 			}
-			else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE && gNetworkConnection->input->character == character)
+			
+			if (!gNetworkConnection || gNetworkConnection->type != NETWORK_CLIENT_TYPE)
 			{
-				sendto(gNetworkConnection->socket, shootWeaponMessage, strlen(shootWeaponMessage), 0, (struct sockaddr *)&gNetworkConnection->hostAddress, sizeof(gNetworkConnection->hostAddress));
+				shootCharacterWeaponWithoutChecks(character);
 			}
-		}
-		
-		if (!gNetworkConnection || gNetworkConnection->type != NETWORK_CLIENT_TYPE)
-		{
-            shootCharacterWeaponWithoutChecks(character);
 		}
 	}
 }

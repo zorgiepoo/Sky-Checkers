@@ -86,6 +86,11 @@ SDL_bool characterIsOutOfBounds(int direction, Character *character)
 	
 	index = getTileIndexLocation(x, y);
 	
+	if (index >= NUMBER_OF_TILES)
+	{
+		return SDL_FALSE;
+	}
+	
 	/*
 	 * First, check if they're on a tile of which's state is SDL_FALSE
 	 * If so, then return SDL_FALSE

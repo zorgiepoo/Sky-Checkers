@@ -228,46 +228,50 @@ static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player)
 			Tile *currentTile;
 			
 			// Get the location of where the player is
-			player->player_loc = getTileIndexLocation((int)player->x, (int)player->y);
-			
-			currentTile = &gTiles[player->player_loc];
-			
-			if (player->weap->direction == RIGHT)
+			int tileLocation = getTileIndexLocation((int)player->x, (int)player->y);;
+			if (tileLocation < NUMBER_OF_TILES)
 			{
-				while ((currentTile = currentTile->right) != NULL)
+				player->player_loc = tileLocation;
+				
+				currentTile = &gTiles[player->player_loc];
+				
+				if (player->weap->direction == RIGHT)
 				{
-					colorTile(currentTile, player->weap);
+					while ((currentTile = currentTile->right) != NULL)
+					{
+						colorTile(currentTile, player->weap);
+					}
 				}
-			}
-			else if (player->weap->direction == LEFT)
-			{
-				while ((currentTile = currentTile->left) != NULL)
+				else if (player->weap->direction == LEFT)
 				{
-					colorTile(currentTile, player->weap);
+					while ((currentTile = currentTile->left) != NULL)
+					{
+						colorTile(currentTile, player->weap);
+					}
 				}
-			}
-			else if (player->weap->direction == UP)
-			{
-				while ((currentTile = currentTile->up) != NULL)
+				else if (player->weap->direction == UP)
 				{
-					colorTile(currentTile, player->weap);
+					while ((currentTile = currentTile->up) != NULL)
+					{
+						colorTile(currentTile, player->weap);
+					}
 				}
-			}
-			else if (player->weap->direction == DOWN)
-			{
-				while ((currentTile = currentTile->down) != NULL)
+				else if (player->weap->direction == DOWN)
 				{
-					colorTile(currentTile, player->weap);
+					while ((currentTile = currentTile->down) != NULL)
+					{
+						colorTile(currentTile, player->weap);
+					}
 				}
+				
+				player->coloredTiles = SDL_TRUE;
 			}
-			
-			player->coloredTiles = SDL_TRUE;
 		}
 		
 		/* Then when animation_timer reaches BEGIN_DESTROYING_TILES, decrement the colored tile's z value by TILE_FALLING_SPEED, disable the tile's state, enable the tile's recovery_timer, and give the tile a proper recovery time delay */
 		static const int BEGIN_DESTROYING_TILES =		30;
 		
-		if (player->needTileLoc && player->animation_timer > BEGIN_DESTROYING_TILES)
+		if (player->needTileLoc && player->animation_timer > BEGIN_DESTROYING_TILES && player->player_loc != -1)
 		{
 			player->destroyed_tile = &gTiles[player->player_loc];
 			player->needTileLoc = SDL_FALSE;
@@ -337,7 +341,7 @@ static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player)
 			player->needTileLoc = SDL_TRUE;
 			player->coloredTiles = SDL_FALSE;
 			player->destroyed_tile = NULL;
-			player->player_loc = 0;
+			player->player_loc = -1;
 			/*
 			 * A character can only destroy 7 tiles at once.
 			 * Setting the recovery_time_delay to 6 * RECOVERY_TIME_DELAY_DELTA + 1 gaurantees that each tile in the list will be activated -- that is, have a recovery_timer value greater than zero.
@@ -564,7 +568,8 @@ void decideWhetherToMakeAPlayerAWinner(Character *player)
 		else if (numPlayersAlive == 1)
 		{
 			// check if the winner is really about to die, in that case, we'll need to see who is the highest up to determine the winner
-			SDL_bool winnerIsReadyForDeath = (gTiles[getTileIndexLocation((int)winnerCharacter->x, (int)winnerCharacter->y)].z < TILE_ALIVE_Z && winnerCharacter->z > CHARACTER_TERMINATING_Z && winnerCharacter->lives == 1);
+			int winnerTileIndex = getTileIndexLocation((int)winnerCharacter->x, (int)winnerCharacter->y);
+			SDL_bool winnerIsReadyForDeath = (winnerTileIndex < NUMBER_OF_TILES && gTiles[winnerTileIndex].z < TILE_ALIVE_Z && winnerCharacter->z > CHARACTER_TERMINATING_Z && winnerCharacter->lives == 1);
 			if (winnerIsReadyForDeath)
 			{
 				if (winnerCharacter != &gRedRover && gRedRover.z > winnerCharacter->z)
@@ -631,7 +636,7 @@ static void killCharacter(Input *characterInput, double timeDelta)
 	int location = getTileIndexLocation((int)player->x, (int)player->y);
 	
 	// Make the character fall down if the tile is falling down
-	if (gTiles[location].z < TILE_ALIVE_Z && player->z > CHARACTER_TERMINATING_Z)
+	if (location < NUMBER_OF_TILES && gTiles[location].z < TILE_ALIVE_Z && player->z > CHARACTER_TERMINATING_Z)
 	{
 		if (player->direction && !player->weap->animationState)
 		{
@@ -654,8 +659,6 @@ static void killCharacter(Input *characterInput, double timeDelta)
 			}
 			
 			decideWhetherToMakeAPlayerAWinner(player);
-			
-			int location = getTileIndexLocation((int)player->x, (int)player->y);
 			
 			// who killed me?
 			Character *killer = NULL;

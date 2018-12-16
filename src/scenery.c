@@ -79,6 +79,8 @@ void loadTiles(void)
 SDL_bool availableTile(float x, float y)
 {
 	int tile_loc = getTileIndexLocation((int)x, (int)y);
+	if (tile_loc >= NUMBER_OF_TILES)
+		return SDL_FALSE;
 	
 	if (gTiles[tile_loc].state == SDL_FALSE)
 		return SDL_FALSE;
