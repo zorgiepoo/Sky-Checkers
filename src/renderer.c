@@ -94,7 +94,7 @@ TextureObject textureFromPixelData(Renderer *renderer, const void *pixels, int32
 
 void deleteTexture(Renderer *renderer, TextureObject texture)
 {
-	return renderer->deleteTexturePtr(renderer, texture);
+	renderer->deleteTexturePtr(renderer, texture);
 }
 
 BufferObject createBufferObject(Renderer *renderer, const void *data, uint32_t size)
