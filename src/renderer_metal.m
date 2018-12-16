@@ -34,6 +34,8 @@ void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *));
 
 TextureObject textureFromPixelData_metal(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
 
+void deleteTexture_metal(Renderer *renderer, TextureObject texture);
+
 BufferObject createBufferObject_metal(Renderer *renderer, const void *data, uint32_t size);
 
 BufferArrayObject createVertexArrayObject_metal(Renderer *renderer, const void *vertices, uint32_t verticesSize);
@@ -331,6 +333,7 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		renderer->updateViewportPtr = updateViewport_metal;
 		renderer->renderFramePtr = renderFrame_metal;
 		renderer->textureFromPixelDataPtr = textureFromPixelData_metal;
+		renderer->deleteTexturePtr = deleteTexture_metal;
 		renderer->createBufferObjectPtr = createBufferObject_metal;
 		renderer->createVertexArrayObjectPtr = createVertexArrayObject_metal;
 		renderer->createVertexAndTextureCoordinateArrayObjectPtr = createVertexAndTextureCoordinateArrayObject_metal;
@@ -425,6 +428,11 @@ TextureObject textureFromPixelData_metal(Renderer *renderer, const void *pixels,
 	[texture replaceRegion:region mipmapLevel:0 withBytes:pixels bytesPerRow:bytesPerRow];
 	
 	return (TextureObject){.metalObject = (void *)CFBridgingRetain(texture)};
+}
+
+void deleteTexture_metal(Renderer *renderer, TextureObject textureObject)
+{
+	CFRelease(textureObject.metalObject);
 }
 
 static id<MTLBuffer> createBuffer(Renderer *renderer, const void *data, uint32_t size)

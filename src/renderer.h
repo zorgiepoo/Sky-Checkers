@@ -31,6 +31,8 @@ void renderFrame(Renderer *renderer, void (*drawFunc)(Renderer *));
 
 TextureObject textureFromPixelData(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
 
+void deleteTexture(Renderer *renderer, TextureObject texture);
+
 BufferObject createBufferObject(Renderer *renderer, const void *data, uint32_t size);
 
 BufferArrayObject createVertexArrayObject(Renderer *renderer, const void *vertices, uint32_t verticesSize);

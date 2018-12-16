@@ -49,6 +49,8 @@ void renderFrame_gl(Renderer *renderer, void (*drawFunc)(Renderer *));
 
 TextureObject textureFromPixelData_gl(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
 
+void deleteTexture_gl(Renderer *renderer, TextureObject texture);
+
 BufferObject createBufferObject_gl(Renderer *renderer, const void *data, uint32_t size);
 
 BufferArrayObject createVertexArrayObject_gl(Renderer *renderer, const void *vertices, uint32_t verticesSize);
@@ -386,6 +388,7 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	renderer->updateViewportPtr = updateViewport_gl;
 	renderer->renderFramePtr = renderFrame_gl;
 	renderer->textureFromPixelDataPtr = textureFromPixelData_gl;
+	renderer->deleteTexturePtr = deleteTexture_gl;
 	renderer->createBufferObjectPtr = createBufferObject_gl;
 	renderer->createVertexArrayObjectPtr = createVertexArrayObject_gl;
 	renderer->createVertexAndTextureCoordinateArrayObjectPtr = createVertexAndTextureCoordinateArrayObject_gl;
@@ -436,6 +439,11 @@ TextureObject textureFromPixelData_gl(Renderer *renderer, const void *pixels, in
 {
 	GLuint texture = glTextureFromPixelData(renderer, pixels, width, height);
 	return (TextureObject){.glObject = texture};
+}
+
+void deleteTexture_gl(Renderer *renderer, TextureObject texture)
+{
+	glDeleteTextures(1, &texture.glObject);
 }
 
 static GLenum glModeFromMode(RendererMode mode)

@@ -22,27 +22,23 @@
 
 TextureObject loadString(Renderer *renderer, const char *string);
 
-/* Glyph structure */
 typedef struct
 {
 	TextureObject texture;
 	char *text;
 	int width;
 	int height;
-} Glyph;
+} TextRendering;
 
 static TTF_Font *gFont;
 
-// records how many glyphs we've loaded with a counter
-static int gGlyphsCounter =	0;
-// gMaxGlyphs may be incremented by 256 if it needs to resize itself
-static int gMaxGlyphs =		256;
-static Glyph *gGlyphs;
+#define MAX_TEXT_RENDERING_COUNT 256
+
+static int gTextRenderingCount = 0;
+static TextRendering *gTextRenderings;
 
 static BufferArrayObject gFontVertexAndTextureBufferObject;
 static BufferObject gFontIndicesBufferObject;
-
-static int lookUpGlyphIndex(const char *string);
 
 SDL_bool initFont(Renderer *renderer)
 {
@@ -62,12 +58,7 @@ SDL_bool initFont(Renderer *renderer)
 		SDL_Quit();
 	}
 	
-	gGlyphs = malloc(sizeof(Glyph) * gMaxGlyphs);
-	
-	for (int i = 0; i < gMaxGlyphs; i++)
-	{
-		gGlyphs[i].text = NULL;
-	}
+	gTextRenderings = calloc(MAX_TEXT_RENDERING_COUNT, sizeof(*gTextRenderings));
 	
 	const uint16_t indices[] =
 	{
@@ -117,30 +108,6 @@ TextureObject loadString(Renderer *renderer, const char *string)
 	SDL_FreeSurface(fontSurface);
 	
 	return texture;
-}
-
-// Sees if character can be found in the collection of compiled glyphs.
-// If so, it returns the index that it is in the glyphs array.
-// otherwise, returns -1 if the glyph index can't be found, which will probably mean we'll
-// want to compile the character later on and add it to the collection of compiled glyphs.
-static int lookUpGlyphIndex(const char *string)
-{	
-	int i;
-	int index = -1;
-	
-	if (gGlyphsCounter == 0)
-		return index;
-	
-	for (i = 0; i <= gGlyphsCounter; i++)
-	{
-		if (gGlyphs[i].text != NULL && strcmp(gGlyphs[i].text, string) == 0)
-		{
-			index = i;
-			break;
-		}
-	}
-	
-	return index;
 }
 
 // partially copied from zgPrint(...)
@@ -221,65 +188,87 @@ void drawStringf(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, flo
 	drawString(renderer, modelViewMatrix, color, width, height, buffer);
 }
 
+#define MAX_TEXT_LENGTH 256
 int cacheString(Renderer *renderer, const char *string)
 {
-	int index = lookUpGlyphIndex(string);
-	if (index == -1)
+	int cachedIndex = -1;
+	int renderingCount = gTextRenderingCount < MAX_TEXT_RENDERING_COUNT ? gTextRenderingCount : MAX_TEXT_RENDERING_COUNT;
+	for (int i = 0; i < renderingCount; i++)
 	{
-		// Add the new glyph and cache it so we can re-use it.
-		if (gGlyphsCounter == gMaxGlyphs)
+		if (strncmp(string, gTextRenderings[i].text, 256) == 0)
 		{
-			gMaxGlyphs += 256;
-			gGlyphs = realloc(gGlyphs, gMaxGlyphs);
+			cachedIndex = i;
+			break;
 		}
-		
-		gGlyphs[gGlyphsCounter].text = calloc(256, 1);
-		strncpy(gGlyphs[gGlyphsCounter].text, string, 256 - 1);
-		gGlyphs[gGlyphsCounter].texture = loadString(renderer, gGlyphs[gGlyphsCounter].text);
-		TTF_SizeUTF8(gFont, gGlyphs[gGlyphsCounter].text, &gGlyphs[gGlyphsCounter].width, &gGlyphs[gGlyphsCounter].height);
-		
-		gGlyphsCounter++;
-		
-		return (gGlyphsCounter - 1);
 	}
 	
-	return index;
+	if (cachedIndex == -1)
+	{
+		char *newText = calloc(MAX_TEXT_LENGTH, 1);
+		if (newText != NULL)
+		{
+			// If we run past MAX_TEXT_RENDERING_COUNT, re-cycle through our old text renderings
+			// and replace those
+			int insertionIndex = gTextRenderingCount % MAX_TEXT_RENDERING_COUNT;
+			
+			if (gTextRenderings[insertionIndex].text != NULL)
+			{
+				free(gTextRenderings[insertionIndex].text);
+				deleteTexture(renderer, gTextRenderings[insertionIndex].texture);
+			}
+			
+			gTextRenderings[insertionIndex].text = newText;
+			strncpy(gTextRenderings[insertionIndex].text, string, MAX_TEXT_LENGTH - 1);
+			
+			gTextRenderings[insertionIndex].texture = loadString(renderer, gTextRenderings[insertionIndex].text);
+			
+			TTF_SizeUTF8(gFont, gTextRenderings[insertionIndex].text, &gTextRenderings[insertionIndex].width, &gTextRenderings[insertionIndex].height);
+			
+			cachedIndex = insertionIndex;
+			gTextRenderingCount++;
+		}
+	}
+	
+	return cachedIndex;
 }
 
 void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, float width, float height, const char *string)
 {
 	int index = cacheString(renderer, string);
+	if (index == -1) return;
 	
 	mat4_t scaleMatrix = m4_scaling((vec3_t){width, height, 0.0f});
 	mat4_t transformMatrix = m4_mul(modelViewMatrix, scaleMatrix);
 	
-	drawTextureWithVerticesFromIndices(renderer, transformMatrix, gGlyphs[index].texture, RENDERER_TRIANGLE_MODE, gFontVertexAndTextureBufferObject, gFontIndicesBufferObject, 6, color, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
+	drawTextureWithVerticesFromIndices(renderer, transformMatrix, gTextRenderings[index].texture, RENDERER_TRIANGLE_MODE, gFontVertexAndTextureBufferObject, gFontIndicesBufferObject, 6, color, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
 }
 
 void drawStringScaled(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, float scale, const char *string)
 {
 	int index = cacheString(renderer, string);
+	if (index == -1) return;
 	
-	int width = gGlyphs[index].width;
-	int height = gGlyphs[index].height;
+	int width = gTextRenderings[index].width;
+	int height = gTextRenderings[index].height;
 	
 	mat4_t scaleMatrix = m4_scaling((vec3_t){width * scale, height * scale, 0.0f});
 	mat4_t transformMatrix = m4_mul(modelViewMatrix, scaleMatrix);
 	
-	drawTextureWithVerticesFromIndices(renderer, transformMatrix, gGlyphs[index].texture, RENDERER_TRIANGLE_MODE, gFontVertexAndTextureBufferObject, gFontIndicesBufferObject, 6, color, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
+	drawTextureWithVerticesFromIndices(renderer, transformMatrix, gTextRenderings[index].texture, RENDERER_TRIANGLE_MODE, gFontVertexAndTextureBufferObject, gFontIndicesBufferObject, 6, color, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
 }
 
 void drawStringLeftAligned(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, float scale, const char *string)
 {
 	int index = cacheString(renderer, string);
+	if (index == -1) return;
 	
-	int width = gGlyphs[index].width;
-	int height = gGlyphs[index].height;
+	int width = gTextRenderings[index].width;
+	int height = gTextRenderings[index].height;
 	
 	mat4_t scaleMatrix = m4_scaling((vec3_t){width * scale, height * scale, 0.0f});
 	mat4_t translationMatrix = m4_translation((vec3_t){width * scale, 0.0f, 0.0f});
 	
 	mat4_t transformMatrix = m4_mul(modelViewMatrix, m4_mul(translationMatrix, scaleMatrix));
 	
-	drawTextureWithVerticesFromIndices(renderer, transformMatrix, gGlyphs[index].texture, RENDERER_TRIANGLE_MODE, gFontVertexAndTextureBufferObject, gFontIndicesBufferObject, 6, color, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
+	drawTextureWithVerticesFromIndices(renderer, transformMatrix, gTextRenderings[index].texture, RENDERER_TRIANGLE_MODE, gFontVertexAndTextureBufferObject, gFontIndicesBufferObject, 6, color, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
 }
