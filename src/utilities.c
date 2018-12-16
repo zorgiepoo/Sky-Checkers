@@ -130,7 +130,7 @@ TextureObject surfaceToTexture(Renderer *renderer, SDL_Surface *surface)
 
 static SDL_Surface *surfaceFromImage(const char *filePath)
 {
-	SDL_Surface *texImage = IMG_Load(filePath);
+	SDL_Surface *texImage = SDL_LoadBMP(filePath);
 	
 	if (texImage == NULL)
 	{

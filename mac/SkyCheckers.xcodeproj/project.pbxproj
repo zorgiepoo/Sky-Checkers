@@ -14,12 +14,10 @@
 		721A007521AA7D350099D093 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721A007421AA7D350099D093 /* QuartzCore.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		721A007721AB11CD0099D093 /* shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 721A007621AB11CC0099D093 /* shaders.metal */; };
 		721B0022204A47C1005AF984 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721B0021204A47C1005AF984 /* SDL2.framework */; };
-		721B0024204A47FB005AF984 /* SDL2_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721B0023204A47FB005AF984 /* SDL2_image.framework */; };
 		721B0026204A482D005AF984 /* SDL2_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721B0025204A482D005AF984 /* SDL2_ttf.framework */; };
 		721B0028204A4855005AF984 /* SDL2_mixer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721B0027204A4855005AF984 /* SDL2_mixer.framework */; };
 		721B0029204A4861005AF984 /* SDL2_mixer.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 721B0027204A4855005AF984 /* SDL2_mixer.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		721B002A204A4861005AF984 /* SDL2_ttf.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 721B0025204A482D005AF984 /* SDL2_ttf.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		721B002B204A4861005AF984 /* SDL2_image.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 721B0023204A47FB005AF984 /* SDL2_image.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		721B002C204A4861005AF984 /* SDL2.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 721B0021204A47C1005AF984 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		72A14F3121A71C6900606E14 /* renderer.c in Sources */ = {isa = PBXBuildFile; fileRef = 72A14F2F21A71C6700606E14 /* renderer.c */; };
 		770FFA0810B8F465009FD46A /* osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 770FFA0710B8F465009FD46A /* osx.m */; };
@@ -53,7 +51,6 @@
 			files = (
 				721B0029204A4861005AF984 /* SDL2_mixer.framework in Copy Frameworks into .app bundle */,
 				721B002A204A4861005AF984 /* SDL2_ttf.framework in Copy Frameworks into .app bundle */,
-				721B002B204A4861005AF984 /* SDL2_image.framework in Copy Frameworks into .app bundle */,
 				721B002C204A4861005AF984 /* SDL2.framework in Copy Frameworks into .app bundle */,
 			);
 			name = "Copy Frameworks into .app bundle";
@@ -77,7 +74,6 @@
 		721A007621AB11CC0099D093 /* shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; name = shaders.metal; path = ../src/shaders.metal; sourceTree = "<group>"; };
 		721A007821AB96C60099D093 /* metal_indices.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = metal_indices.h; path = ../src/metal_indices.h; sourceTree = "<group>"; };
 		721B0021204A47C1005AF984 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = Frameworks/SDL2.framework; sourceTree = "<group>"; };
-		721B0023204A47FB005AF984 /* SDL2_image.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_image.framework; path = Frameworks/SDL2_image.framework; sourceTree = "<group>"; };
 		721B0025204A482D005AF984 /* SDL2_ttf.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_ttf.framework; path = Frameworks/SDL2_ttf.framework; sourceTree = "<group>"; };
 		721B0027204A4855005AF984 /* SDL2_mixer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_mixer.framework; path = Frameworks/SDL2_mixer.framework; sourceTree = "<group>"; };
 		72A14F1721A5E26200606E14 /* math_3d.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = math_3d.h; path = ../src/math_3d.h; sourceTree = "<group>"; };
@@ -132,7 +128,6 @@
 				77CCC2B30BA4D374007F9F3A /* Cocoa.framework in Frameworks */,
 				721B0022204A47C1005AF984 /* SDL2.framework in Frameworks */,
 				721B0026204A482D005AF984 /* SDL2_ttf.framework in Frameworks */,
-				721B0024204A47FB005AF984 /* SDL2_image.framework in Frameworks */,
 				721B0028204A4855005AF984 /* SDL2_mixer.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -145,7 +140,6 @@
 			children = (
 				721B0027204A4855005AF984 /* SDL2_mixer.framework */,
 				721B0025204A482D005AF984 /* SDL2_ttf.framework */,
-				721B0023204A47FB005AF984 /* SDL2_image.framework */,
 				721B0021204A47C1005AF984 /* SDL2.framework */,
 				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
 				002F3C0009D093BD00EBEB88 /* OpenGL.framework */,

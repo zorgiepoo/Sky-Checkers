@@ -1,10 +1,8 @@
 Sky Checkers relies on the following dependencies:
 
 * SDL2
-* SDL2_image
 * SDL2_mixer
 * SDL2_ttf
-* SDL2_image
 * glew (for Windows and Linux)
 
 On Linux, development libraries for these dependencies may need to first be installed.
@@ -14,7 +12,6 @@ Eg: On Ubuntu, I had to execute:
 apt-get install libsdl2-dev
 apt-get install libsdl2-mixer-dev
 apt-get install libsdl2-ttf-dev
-apt-get install libsdl2-image-dev
 apt-get install libglew-dev
 
 On CentOS, I executed:
@@ -24,7 +21,6 @@ yum install epel-release
 yum install SDL2-devel.x86_64
 yum install SDL2_mixer-devel.x86_64
 yum install SDL2_ttf-devel.x86_64
-yum install SDL2_image-devel.x86_64
 yum install glew-devel.x86_64
 
 For macOS and Windows, these dependencies are bundled in the source code already.
