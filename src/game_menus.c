@@ -328,9 +328,9 @@ void drawNetworkAddressFieldMenu(Renderer *renderer, color4_t preferredColor)
 	
 	if (strlen(gServerAddressString) > 0)
 	{
-		mat4_t hostModelViewMatrix = m4_mul(hostLabelModelViewMatrix, m4_translation((vec3_t){(strlen(gServerAddressString) + 28.0f) / 14.0f, 0.0f, 0.0f}));
+		mat4_t hostModelViewMatrix = m4_mul(hostLabelModelViewMatrix, m4_translation((vec3_t){1.6f, 0.0f, 0.0f}));
 		
-		drawString(renderer, hostModelViewMatrix, color, (strlen(gServerAddressString) + 5.0f) / 14.0f, 5.0f / 14.0f, gServerAddressString);
+		drawStringLeftAligned(renderer, hostModelViewMatrix, color, 0.0024f, gServerAddressString);
 	}
 }
 
