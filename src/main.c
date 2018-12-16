@@ -788,18 +788,26 @@ void drawFramesPerSecond(Renderer *renderer)
 static void drawScoreboardTextForCharacter(Renderer *renderer, Character *character, mat4_t iconModelViewMatrix)
 {
 	color4_t characterColor = (color4_t){character->red, character->green, character->blue, 0.7f};
-	
-	mat4_t winsLabelModelViewMatrix = m4_mul(iconModelViewMatrix, m4_translation((vec3_t){0.0f / 1.25f, -2.0f / 1.25f, 0.0f / 1.25f}));
-	drawString(renderer, winsLabelModelViewMatrix, characterColor, 0.5f / 1.25f, 0.5f / 1.25f, "Wins:");
-	
-	mat4_t winsModelViewMatrix = m4_mul(winsLabelModelViewMatrix, m4_translation((vec3_t){1.0f / 1.25f, 0.0f / 1.25f, 0.0f / 1.25f}));
-	drawStringf(renderer, winsModelViewMatrix, characterColor, 0.5f / 1.25f, 0.5f / 1.25f, "%i", character->wins);
-	
-	mat4_t killsLabelModelViewMatrix = m4_mul(winsModelViewMatrix, m4_translation((vec3_t){-1.0f / 1.25f, -2.0f / 1.25f, 0.0f / 1.25f}));
-	drawString(renderer, killsLabelModelViewMatrix, characterColor, 0.5f / 1.25f, 0.5f / 1.25f, "Kills:");
-	
-	mat4_t killsModelViewMatrix = m4_mul(killsLabelModelViewMatrix, m4_translation((vec3_t){1.0f / 1.25f, 0.0f / 1.25f, 0.0f / 1.25f}));
-	drawStringf(renderer, killsModelViewMatrix, characterColor, 0.5f / 1.25f, 0.5f / 1.25f, "%i", character->kills);
+
+	char buffer[256] = {0};
+
+	mat4_t winsLabelModelViewMatrix = m4_mul(iconModelViewMatrix, m4_translation((vec3_t){0.225f, -1.6f, 0.0f}));
+
+	drawStringScaled(renderer, winsLabelModelViewMatrix, characterColor, 0.0024f, "Wins:");
+
+	mat4_t winsModelViewMatrix = m4_mul(winsLabelModelViewMatrix, m4_translation((vec3_t){0.87f, 0.0f, 0.0f}));
+
+	snprintf(buffer, sizeof(buffer) - 1, "%d", character->wins);
+	drawStringScaled(renderer, winsModelViewMatrix, characterColor, 0.0024f, buffer);
+
+	mat4_t killsLabelModelViewMatrix = m4_mul(winsLabelModelViewMatrix, m4_translation((vec3_t){0.0f, -1.6f, 0.0f}));
+
+	drawStringScaled(renderer, killsLabelModelViewMatrix, characterColor, 0.0024f, "Kills:");
+
+	mat4_t killsModelViewMatrix = m4_mul(winsModelViewMatrix, m4_translation((vec3_t){0.0f, -1.6f, 0.0f}));
+
+	snprintf(buffer, sizeof(buffer) - 1, "%d", character->kills);
+	drawStringScaled(renderer, killsModelViewMatrix, characterColor, 0.0024f, buffer);
 }
 
 // We separate drawing icons vs scores on scoreboard
@@ -889,22 +897,35 @@ static void drawScene(Renderer *renderer)
 					// be sure to take account the plural form of player(s)
 					if (gNetworkConnection->numberOfPlayersToWaitFor > 1)
 					{
-						drawStringf(renderer, modelViewMatrix, textColor, 50.0f / 11.2f, 10.0 / 11.2f, "Waiting for %i players to connect...", gNetworkConnection->numberOfPlayersToWaitFor);
+						char buffer[256] = {0};
+						snprintf(buffer, sizeof(buffer) - 1, "Waiting for %d players to connect...", gNetworkConnection->numberOfPlayersToWaitFor);
+						
+						mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-6.8f, 0.0f, 0.0f}), modelViewMatrix);
+						
+						drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, 0.0045538f, buffer);
 					}
 					else if (gNetworkConnection->numberOfPlayersToWaitFor == 0)
 					{
-						drawString(renderer, modelViewMatrix, textColor, 50.0 / 11.2f, 10.0 / 11.2f, "Waiting for players to connect...");
+						mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-6.8f, 0.0f, 0.0f}), modelViewMatrix);
+						
+						drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, 0.0045538f, "Waiting for players to connect...");
 					}
 					else
 					{
-						drawString(renderer, modelViewMatrix, textColor, 50.0 / 11.2f, 10.0 / 11.2f, "Waiting for 1 player to connect...");
+						mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-6.8f, 0.0f, 0.0f}), modelViewMatrix);
+						
+						drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, 0.0045538f, "Waiting for 1 player to connect...");
 					}
 				}
 			}
 			
 			else if (gGameStartNumber > 0)
 			{
-				drawStringf(renderer, modelViewMatrix, textColor, 40.0 / 11.2f, 10.0 / 11.2f, "Game begins in %i", gGameStartNumber);
+				char buffer[256] = {0};
+				snprintf(buffer, sizeof(buffer) - 1, "Game begins in %d", gGameStartNumber);
+				
+				mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-3.8f, 0.0f, 0.0f}), modelViewMatrix);
+				drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, 0.0045538f, buffer);
 			}
 			
 			else if (gGameStartNumber == 0)
@@ -950,19 +971,19 @@ static void drawScene(Renderer *renderer)
 			{
 				if (gGameWinner == RED_ROVER)
 				{
-					drawString(renderer, winLoseModelViewMatrix, textColor, 40.0f / 14.0f, 10.0f / 14.0f, "Red Rover wins!");
+					drawStringScaled(renderer, winLoseModelViewMatrix, (color4_t){gRedRover.red, gRedRover.green, gRedRover.blue, 1.0f}, 0.0027f, "Red Rover wins!");
 				}
 				else if (gGameWinner == GREEN_TREE)
 				{
-					drawString(renderer, winLoseModelViewMatrix, textColor, 40.0f / 14.0f, 10.0f / 14.0f, "Green Tree wins!");
+					drawStringScaled(renderer, winLoseModelViewMatrix, (color4_t){gGreenTree.red, gGreenTree.green, gGreenTree.blue, 1.0f}, 0.0027f, "Green Tree wins!");
 				}
 				else if (gGameWinner == PINK_BUBBLE_GUM)
 				{
-					drawString(renderer, winLoseModelViewMatrix, textColor, 40.0f / 14.0f, 10.0f / 14.0f, "Pink Bubblegum wins!");
+					drawStringScaled(renderer, winLoseModelViewMatrix, (color4_t){gPinkBubbleGum.red, gPinkBubbleGum.green, gPinkBubbleGum.blue, 1.0f}, 0.0027f, "Pink Bubblegum wins!");
 				}
 				else if (gGameWinner == BLUE_LIGHTNING)
 				{
-					drawString(renderer, winLoseModelViewMatrix, textColor, 40.0f / 14.0f, 10.0f / 14.0f, "Blue Lightning wins!");
+					drawStringScaled(renderer, winLoseModelViewMatrix, (color4_t){gBlueLightning.red, gBlueLightning.green, gBlueLightning.blue, 1.0f}, 0.0027f, "Blue Lightning wins!");
 				}
 			}
 			
@@ -975,7 +996,7 @@ static void drawScene(Renderer *renderer)
 				// Draw a "Press ENTER to play again" notice
 				mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f / 1.25f, -7.0f / 1.25f, -25.0f / 1.25f});
 				
-				drawString(renderer, modelViewMatrix, (color4_t){0.0f, 0.0f, 0.4f, 0.6f}, 5.0f, 1.0f, "Fire to play again or Escape to quit");
+				drawStringScaled(renderer, modelViewMatrix, (color4_t){0.0f, 0.0f, 0.4f, 0.6f}, 0.004f, "Fire to play again or Escape to quit");
 			}
 		}
 		else
@@ -1007,7 +1028,7 @@ static void drawScene(Renderer *renderer)
 		
 		// Title renders at -20.0f
 		mat4_t gameTitleModelViewMatrix = m4_translation((vec3_t){-0.2f, 5.4f, -20.0f});
-		drawString(renderer, gameTitleModelViewMatrix, (color4_t){0.3f, 0.2f, 1.0f, 0.4f}, 4.0f, 0.8f, "Sky Checkers");
+		drawStringScaled(renderer, gameTitleModelViewMatrix, (color4_t){0.3f, 0.2f, 1.0f, 0.4f}, 0.00592f, "Sky Checkers");
 		
 		// Menus render at z = -20.0f
 		drawMenus(renderer);
@@ -1670,9 +1691,6 @@ int main(int argc, char *argv[])
 	cacheString(&renderer, "Game begins in 3");
 	cacheString(&renderer, "Game begins in 4");
 	cacheString(&renderer, "Game begins in 5");
-	
-	cacheString(&renderer, "Wins:");
-	cacheString(&renderer, "Kills:");
 
 	// Start the game event loop
     eventLoop(&renderer);

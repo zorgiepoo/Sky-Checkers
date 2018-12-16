@@ -122,8 +122,9 @@ void drawNetworkUserNameFieldMenu(Renderer *renderer, color4_t preferredColor)
 	
 	if (strlen(gUserNameString) > 0)
 	{
-		mat4_t nameModelViewMatrix = m4_mul(nameLabelModelViewMatrix, m4_translation((vec3_t){(strlen(gUserNameString) + 15.0f) / 14.0f, 0.0f, 0.0f}));
-		drawString(renderer, nameModelViewMatrix, color, (strlen(gUserNameString) + 2.0f) / 14.0f, 5.0f / 14.0f, gUserNameString);
+		mat4_t nameModelViewMatrix = m4_mul(nameLabelModelViewMatrix, m4_translation((vec3_t){0.8f, 0.0f, 0.0f}));
+		
+		drawStringLeftAligned(renderer, nameModelViewMatrix, color, 0.0024f, gUserNameString);
 	}
 }
 

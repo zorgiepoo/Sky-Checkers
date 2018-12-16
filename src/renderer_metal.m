@@ -396,6 +396,7 @@ void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *))
 			
 			[renderCommandEncoder endEncoding];
 			[commandBuffer presentDrawable:drawable];
+			
 			[commandBuffer commit];
 		}
 	}

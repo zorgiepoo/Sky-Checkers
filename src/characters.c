@@ -452,18 +452,20 @@ static const char *labelForCharacter(Character *character, const char *playerNum
 
 static mat4_t playerLabelModelViewMatrix(mat4_t modelViewMatrix)
 {
-	return m4_mul(modelViewMatrix, m4_translation((vec3_t){2.0f / 1.52f, 0.0f, 0.0f}));
+	return m4_mul(modelViewMatrix, m4_translation((vec3_t){0.5f, 0.0f, 0.0f}));
 }
 
 static void drawCharacterLive(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, Character *character, float livesWidth, float livesHeight, const char *playerNumberString, float playerLabelWidth, float playerLabelHeight)
 {
 	if (character->lives != 0)
 	{
-		drawStringf(renderer, modelViewMatrix, color, livesWidth, livesHeight, "%i", character->lives);
+		char buffer[256] = {0};
+		snprintf(buffer, sizeof(buffer) - 1, "%d", character->lives);
+		drawStringScaled(renderer, modelViewMatrix, color, 0.0035f, buffer);
 	}
 	
 	const char *playerLabel = labelForCharacter(character, playerNumberString);
-	drawString(renderer, playerLabelModelViewMatrix(modelViewMatrix), color, playerLabelWidth, playerLabelHeight, playerLabel);
+	drawStringLeftAligned(renderer, playerLabelModelViewMatrix(modelViewMatrix), color, 0.0027f, playerLabel);
 }
 
 void drawCharacterLives(Renderer *renderer)

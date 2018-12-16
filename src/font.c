@@ -256,6 +256,19 @@ void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, floa
 	drawTextureWithVerticesFromIndices(renderer, transformMatrix, gGlyphs[index].texture, RENDERER_TRIANGLE_MODE, gFontVertexAndTextureBufferObject, gFontIndicesBufferObject, 6, color, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
 }
 
+void drawStringScaled(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, float scale, const char *string)
+{
+	int index = cacheString(renderer, string);
+	
+	int width = gGlyphs[index].width;
+	int height = gGlyphs[index].height;
+	
+	mat4_t scaleMatrix = m4_scaling((vec3_t){width * scale, height * scale, 0.0f});
+	mat4_t transformMatrix = m4_mul(modelViewMatrix, scaleMatrix);
+	
+	drawTextureWithVerticesFromIndices(renderer, transformMatrix, gGlyphs[index].texture, RENDERER_TRIANGLE_MODE, gFontVertexAndTextureBufferObject, gFontIndicesBufferObject, 6, color, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
+}
+
 void drawStringLeftAligned(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, float scale, const char *string)
 {
 	int index = cacheString(renderer, string);
