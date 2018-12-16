@@ -25,6 +25,34 @@
 #include "utilities.h"
 #endif
 
+static void updateProjectionMatrix(Renderer *renderer)
+{
+	// The aspect ratio is not quite correct, which is a mistake I made a long time ago that is too troubling to fix properly
+	mat4_t glProjectionMatrix = m4_perspective(45.0f, (float)(renderer->screenWidth / renderer->screenHeight), 10.0f, 300.0f);
+	
+	switch (renderer->ndcType)
+	{
+		case NDC_TYPE_GL:
+			memcpy(renderer->projectionMatrix, glProjectionMatrix.m, sizeof(glProjectionMatrix.m));
+			break;
+		case NDC_TYPE_METAL:
+		{
+			// https://metashapes.com/blog/opengl-metal-projection-matrix-problem/
+			mat4_t metalProjectionAdjustMatrix =
+			mat4(
+				 1.0f, 0.0f, 0.0f, 0.0f,
+				 0.0f, 1.0f, 0.0f, 0.0f,
+				 0.0f, 0.0f, 0.5f, 0.5f,
+				 0.0f, 0.0f, 0.0f, 1.0f
+				 );
+			mat4_t finalProjectionMatrix = m4_mul(metalProjectionAdjustMatrix, glProjectionMatrix);
+			memcpy(renderer->projectionMatrix, finalProjectionMatrix.m, sizeof(finalProjectionMatrix.m));
+			
+			break;
+		}
+	}
+}
+
 void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
 {
 #ifndef MAC_OS_X
@@ -69,6 +97,8 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 		createdRenderer = SDL_TRUE;
 	}
 	
+	updateProjectionMatrix(renderer);
+	
 #ifndef _DEBUG
 	SDL_ShowCursor(SDL_DISABLE);
 #endif
@@ -80,6 +110,8 @@ void updateViewport(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 	renderer->windowHeight = windowHeight;
 	
 	renderer->updateViewportPtr(renderer);
+	
+	updateProjectionMatrix(renderer);
 }
 
 void renderFrame(Renderer *renderer, void (*drawFunc)(Renderer *))
@@ -112,22 +144,32 @@ BufferArrayObject createVertexAndTextureCoordinateArrayObject(Renderer *renderer
 	return renderer->createVertexAndTextureCoordinateArrayObjectPtr(renderer, verticesAndTextureCoordinates, verticesSize, textureCoordinatesSize);
 }
 
+static mat4_t computeModelViewProjectionMatrix(float *projectionFloatMatrix, mat4_t modelViewMatrix)
+{
+	mat4_t projectionMatrix = *(mat4_t *)projectionFloatMatrix;
+	return m4_mul(projectionMatrix, modelViewMatrix);
+}
+
 void drawVertices(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options)
 {
-	renderer->drawVerticesPtr(renderer, modelViewMatrix, mode, vertexArrayObject, vertexCount, color, options);
+	mat4_t modelViewProjectionMatrix = computeModelViewProjectionMatrix(renderer->projectionMatrix, modelViewMatrix);
+	renderer->drawVerticesPtr(renderer, &modelViewProjectionMatrix.m00, mode, vertexArrayObject, vertexCount, color, options);
 }
 
 void drawVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options)
 {
-	renderer->drawVerticesFromIndicesPtr(renderer, modelViewMatrix, mode, vertexArrayObject, indicesBufferObject, indicesCount, color, options);
+	mat4_t modelViewProjectionMatrix = computeModelViewProjectionMatrix(renderer->projectionMatrix, modelViewMatrix);
+	renderer->drawVerticesFromIndicesPtr(renderer, &modelViewProjectionMatrix.m00, mode, vertexArrayObject, indicesBufferObject, indicesCount, color, options);
 }
 
 void drawTextureWithVertices(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options)
 {
-	renderer->drawTextureWithVerticesPtr(renderer, modelViewMatrix, texture, mode, vertexAndTextureArrayObject, vertexCount, color, options);
+	mat4_t modelViewProjectionMatrix = computeModelViewProjectionMatrix(renderer->projectionMatrix, modelViewMatrix);
+	renderer->drawTextureWithVerticesPtr(renderer, &modelViewProjectionMatrix.m00, texture, mode, vertexAndTextureArrayObject, vertexCount, color, options);
 }
 
 void drawTextureWithVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options)
 {
-	renderer->drawTextureWithVerticesFromIndicesPtr(renderer, modelViewMatrix, texture, mode, vertexAndTextureArrayObject, indicesBufferObject, indicesCount, color, options);
+	mat4_t modelViewProjectionMatrix = computeModelViewProjectionMatrix(renderer->projectionMatrix, modelViewMatrix);
+	renderer->drawTextureWithVerticesFromIndicesPtr(renderer, &modelViewProjectionMatrix.m00, texture, mode, vertexAndTextureArrayObject, indicesBufferObject, indicesCount, color, options);
 }

@@ -19,8 +19,6 @@
 
 #pragma once
 
-#include "math_3d.h"
-
 #define MSAA_SAMPLE_COUNT 4
 
 typedef enum
@@ -90,7 +88,7 @@ typedef struct
 typedef struct _Renderer
 {
 	SDL_Window *window;
-	mat4_t projectionMatrix;
+	float projectionMatrix[16];
 	
 	int32_t screenWidth;
 	int32_t screenHeight;
@@ -100,6 +98,12 @@ typedef struct _Renderer
 	
 	SDL_bool vsync;
 	SDL_bool fsaa;
+	
+	enum
+	{
+		NDC_TYPE_GL,
+		NDC_TYPE_METAL
+	} ndcType;
 	
 	union
 	{
@@ -131,8 +135,8 @@ typedef struct _Renderer
 	BufferObject (*createBufferObjectPtr)(struct _Renderer *, const void *data, uint32_t size);
 	BufferArrayObject (*createVertexArrayObjectPtr)(struct _Renderer *, const void *, uint32_t);
 	BufferArrayObject (*createVertexAndTextureCoordinateArrayObjectPtr)(struct _Renderer *, const void *, uint32_t, uint32_t);
-	void (*drawVerticesPtr)(struct _Renderer *, mat4_t, RendererMode, BufferArrayObject, uint32_t, color4_t, RendererOptions);
-	void (*drawVerticesFromIndicesPtr)(struct _Renderer *, mat4_t, RendererMode, BufferArrayObject, BufferObject, uint32_t, color4_t, RendererOptions);
-	void (*drawTextureWithVerticesPtr)(struct _Renderer *, mat4_t, TextureObject, RendererMode, BufferArrayObject, uint32_t, color4_t, RendererOptions);
-	void (*drawTextureWithVerticesFromIndicesPtr)(struct _Renderer *, mat4_t, TextureObject, RendererMode, BufferArrayObject, BufferObject, uint32_t, color4_t, RendererOptions);
+	void (*drawVerticesPtr)(struct _Renderer *, float *, RendererMode, BufferArrayObject, uint32_t, color4_t, RendererOptions);
+	void (*drawVerticesFromIndicesPtr)(struct _Renderer *, float *, RendererMode, BufferArrayObject, BufferObject, uint32_t, color4_t, RendererOptions);
+	void (*drawTextureWithVerticesPtr)(struct _Renderer *, float *, TextureObject, RendererMode, BufferArrayObject, uint32_t, color4_t, RendererOptions);
+	void (*drawTextureWithVerticesFromIndicesPtr)(struct _Renderer *, float *, TextureObject, RendererMode, BufferArrayObject, BufferObject, uint32_t, color4_t, RendererOptions);
 } Renderer;

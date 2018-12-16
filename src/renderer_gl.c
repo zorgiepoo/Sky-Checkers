@@ -19,7 +19,6 @@
 
 #include "renderer_gl.h"
 
-#include "math_3d.h"
 #include "utilities.h"
 
 #ifdef WINDOWS
@@ -57,13 +56,13 @@ BufferArrayObject createVertexArrayObject_gl(Renderer *renderer, const void *ver
 
 BufferArrayObject createVertexAndTextureCoordinateArrayObject_gl(Renderer *renderer, const void *verticesAndTextureCoordinates, uint32_t verticesSize, uint32_t textureCoordinatesSize);
 
-void drawVertices_gl(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options);
+void drawVertices_gl(Renderer *renderer, float *modelViewProjectionMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options);
 
-void drawVerticesFromIndices_gl(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
+void drawVerticesFromIndices_gl(Renderer *renderer, float *modelViewProjectionMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
 
-void drawTextureWithVertices_gl(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options);
+void drawTextureWithVertices_gl(Renderer *renderer, float *modelViewProjectionMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options);
 
-void drawTextureWithVerticesFromIndices_gl(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
+void drawTextureWithVerticesFromIndices_gl(Renderer *renderer, float *modelViewProjectionMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
 
 static SDL_bool compileShader(GLuint *shader, uint16_t glslVersion, GLenum type, const char *filepath)
 {
@@ -304,11 +303,7 @@ static void updateViewport_gl(Renderer *renderer)
 {
 	SDL_GL_GetDrawableSize(renderer->window, &renderer->screenWidth, &renderer->screenHeight);
 	
-	// Set the projection
 	glViewport(0, 0, renderer->screenWidth, renderer->screenHeight);
-	
-	// The aspect ratio is not quite correct, which is a mistake I made a long time ago that is too troubling to fix properly
-	renderer->projectionMatrix = m4_perspective(45.0f, (float)(renderer->screenWidth / renderer->screenHeight), 10.0f, 300.0f);
 }
 
 void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
@@ -373,6 +368,8 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	compileAndLinkShader(&renderer->glPositionShader, glslVersion, "Data/Shaders/position.vsh", "Data/Shaders/position.fsh", SDL_FALSE, "modelViewProjectionMatrix", "color", NULL);
 	
 	compileAndLinkShader(&renderer->glPositionTextureShader, glslVersion, "Data/Shaders/texture-position.vsh", "Data/Shaders/texture-position.fsh", SDL_TRUE, "modelViewProjectionMatrix", "color", "textureSample");
+	
+	renderer->ndcType = NDC_TYPE_GL;
 	
 	renderer->updateViewportPtr = updateViewport_gl;
 	renderer->renderFramePtr = renderFrame_gl;
@@ -535,10 +532,9 @@ static void beginDrawingVertices(Shader_gl *shader, BufferArrayObject vertexArra
 	glUseProgram(shader->program);
 }
 
-static void setModelViewProjectionAndColorUniforms(Shader_gl *shader, mat4_t modelViewMatrix, mat4_t projectionMatrix, color4_t color)
+static void setModelViewProjectionAndColorUniforms(Shader_gl *shader, float *modelViewProjectionMatrix, color4_t color)
 {
-	mat4_t modelViewProjectionMatrix = m4_mul(projectionMatrix, modelViewMatrix);
-	glUniformMatrix4fv(shader->modelViewProjectionMatrixUniformLocation, 1, GL_FALSE, &modelViewProjectionMatrix.m00);
+	glUniformMatrix4fv(shader->modelViewProjectionMatrixUniformLocation, 1, GL_FALSE, modelViewProjectionMatrix);
 	glUniform4f(shader->colorUniformLocation, color.red, color.green, color.blue, color.alpha);
 }
 
@@ -561,22 +557,22 @@ static void endDrawingVerticesAndTextures(RendererOptions options)
 	}
 }
 
-void drawVertices_gl(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options)
+void drawVertices_gl(Renderer *renderer, float *modelViewProjectionMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options)
 {
 	beginDrawingVertices(&renderer->glPositionShader, vertexArrayObject, options);
 	
-	setModelViewProjectionAndColorUniforms(&renderer->glPositionShader, modelViewMatrix, renderer->projectionMatrix, color);
+	setModelViewProjectionAndColorUniforms(&renderer->glPositionShader, modelViewProjectionMatrix, color);
 	
 	glDrawArrays(glModeFromMode(mode), 0, vertexCount);
 	
 	endDrawingVerticesAndTextures(options);
 }
 
-void drawVerticesFromIndices_gl(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options)
+void drawVerticesFromIndices_gl(Renderer *renderer, float *modelViewProjectionMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options)
 {
 	beginDrawingVertices(&renderer->glPositionShader, vertexArrayObject, options);
 	
-	setModelViewProjectionAndColorUniforms(&renderer->glPositionShader, modelViewMatrix, renderer->projectionMatrix, color);
+	setModelViewProjectionAndColorUniforms(&renderer->glPositionShader, modelViewProjectionMatrix, color);
 	
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesBufferObject.glObject);
 	
@@ -596,22 +592,22 @@ static void beginDrawingTexture(Shader_gl *shader, TextureObject texture, Buffer
 	glUniform1i(shader->textureUniformLocation, 0);
 }
 
-void drawTextureWithVertices_gl(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options)
+void drawTextureWithVertices_gl(Renderer *renderer, float *modelViewProjectionMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options)
 {
 	beginDrawingTexture(&renderer->glPositionTextureShader, texture, vertexAndTextureArrayObject, options);
 	
-	setModelViewProjectionAndColorUniforms(&renderer->glPositionTextureShader, modelViewMatrix, renderer->projectionMatrix, color);
+	setModelViewProjectionAndColorUniforms(&renderer->glPositionTextureShader, modelViewProjectionMatrix, color);
 	
 	glDrawArrays(glModeFromMode(mode), 0, vertexCount);
 	
 	endDrawingVerticesAndTextures(options);
 }
 
-void drawTextureWithVerticesFromIndices_gl(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options)
+void drawTextureWithVerticesFromIndices_gl(Renderer *renderer, float *modelViewProjectionMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options)
 {
 	beginDrawingTexture(&renderer->glPositionTextureShader, texture, vertexAndTextureArrayObject, options);
 	
-	setModelViewProjectionAndColorUniforms(&renderer->glPositionTextureShader, modelViewMatrix, renderer->projectionMatrix, color);
+	setModelViewProjectionAndColorUniforms(&renderer->glPositionTextureShader, modelViewProjectionMatrix, color);
 	
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesBufferObject.glObject);
 	

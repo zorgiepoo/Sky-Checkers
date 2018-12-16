@@ -20,8 +20,6 @@
 #import "renderer_metal.h"
 
 #include "metal_indices.h"
-#include "math_3d.h"
-#include "utilities.h"
 
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
@@ -42,13 +40,13 @@ BufferArrayObject createVertexArrayObject_metal(Renderer *renderer, const void *
 
 BufferArrayObject createVertexAndTextureCoordinateArrayObject_metal(Renderer *renderer, const void *verticesAndTextureCoordinates, uint32_t verticesSize, uint32_t textureCoordinatesSize);
 
-void drawVertices_metal(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options);
+void drawVertices_metal(Renderer *renderer, float *modelViewProjectionMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options);
 
-void drawVerticesFromIndices_metal(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
+void drawVerticesFromIndices_metal(Renderer *renderer, float *modelViewProjectionMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
 
-void drawTextureWithVertices_metal(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options);
+void drawTextureWithVertices_metal(Renderer *renderer, float *modelViewProjectionMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options);
 
-void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, mat4_t modelViewMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
+void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, float *modelViewProjectionMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
 
 // If this changes, make sure to change MAX_PIPELINE_COUNT
 typedef enum
@@ -132,18 +130,6 @@ static void updateViewport_metal(Renderer *renderer)
 	CGSize drawableSize = metalLayer.drawableSize;
 	renderer->screenWidth = (int32_t)drawableSize.width;
 	renderer->screenHeight = (int32_t)drawableSize.height;
-	
-	// https://metashapes.com/blog/opengl-metal-projection-matrix-problem/
-	mat4_t metalProjectionAdjustMatrix =
-	mat4(
-		 1.0f, 0.0f, 0.0f, 0.0f,
-		 0.0f, 1.0f, 0.0f, 0.0f,
-		 0.0f, 0.0f, 0.5f, 0.5f,
-		 0.0f, 0.0f, 0.0f, 1.0f
-		 );
-	
-	// The aspect ratio is not quite correct, which is a mistake I made a long time ago that is too troubling to fix properly
-	renderer->projectionMatrix = m4_mul(metalProjectionAdjustMatrix, m4_perspective(45.0f, (float)(renderer->screenWidth / renderer->screenHeight), 10.0f, 300.0f));
 	
 	// Configure Anti Aliasing
 	
@@ -330,6 +316,8 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		renderer->metalCommandQueue = (void *)CFBridgingRetain(queue);
 		renderer->metalCurrentRenderCommandEncoder = NULL;
 		
+		renderer->ndcType = NDC_TYPE_METAL;
+		
 		renderer->updateViewportPtr = updateViewport_metal;
 		renderer->renderFramePtr = renderFrame_metal;
 		renderer->textureFromPixelDataPtr = textureFromPixelData_metal;
@@ -497,10 +485,9 @@ static void encodeVertexState(id<MTLRenderCommandEncoder> renderCommandEncoder, 
 	[renderCommandEncoder setVertexBuffer:vertexBuffer offset:0 atIndex:METAL_BUFFER_VERTICES_INDEX];
 }
 
-static void encodeModelViewMatrixAndColor(id<MTLRenderCommandEncoder> renderCommandEncoder, Renderer *renderer, mat4_t modelViewMatrix, color4_t color)
+static void encodeModelViewMatrixAndColor(id<MTLRenderCommandEncoder> renderCommandEncoder, Renderer *renderer, float *modelViewProjectionMatrix, color4_t color)
 {
-	mat4_t modelViewProjectionMatrix = m4_mul(renderer->projectionMatrix, modelViewMatrix);
-	[renderCommandEncoder setVertexBytes:modelViewProjectionMatrix.m length:sizeof(modelViewProjectionMatrix.m) atIndex:METAL_BUFFER_MODELVIEW_PROJECTION_INDEX];
+	[renderCommandEncoder setVertexBytes:modelViewProjectionMatrix length:sizeof(*modelViewProjectionMatrix) * 16 atIndex:METAL_BUFFER_MODELVIEW_PROJECTION_INDEX];
 	
 	[renderCommandEncoder setFragmentBytes:&color.red length:sizeof(color) atIndex:METAL_BUFFER_COLOR_INDEX];
 }
@@ -516,7 +503,7 @@ static void encodeVertexAndTextureState(id<MTLRenderCommandEncoder> renderComman
 	[renderCommandEncoder setFragmentTexture:texture atIndex:METAL_TEXTURE_INDEX];
 }
 
-void drawVertices_metal(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options)
+void drawVertices_metal(Renderer *renderer, float *modelViewProjectionMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options)
 {
 	id<MTLRenderCommandEncoder> renderCommandEncoder = (__bridge id<MTLRenderCommandEncoder>)(renderer->metalCurrentRenderCommandEncoder);
 	
@@ -524,12 +511,12 @@ void drawVertices_metal(Renderer *renderer, mat4_t modelViewMatrix, RendererMode
 	
 	encodeVertexState(renderCommandEncoder, renderer, SHADER_FUNCTION_POSITION_PAIR_INDEX, vertexBuffer, options);
 	
-	encodeModelViewMatrixAndColor(renderCommandEncoder, renderer, modelViewMatrix, color);
+	encodeModelViewMatrixAndColor(renderCommandEncoder, renderer, modelViewProjectionMatrix, color);
 	
 	[renderCommandEncoder drawPrimitives:metalTypeFromRendererMode(mode) vertexStart:0 vertexCount:vertexCount];
 }
 
-void drawVerticesFromIndices_metal(Renderer *renderer, mat4_t modelViewMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options)
+void drawVerticesFromIndices_metal(Renderer *renderer, float *modelViewProjectionMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options)
 {
 	id<MTLRenderCommandEncoder> renderCommandEncoder = (__bridge id<MTLRenderCommandEncoder>)(renderer->metalCurrentRenderCommandEncoder);
 	
@@ -537,30 +524,30 @@ void drawVerticesFromIndices_metal(Renderer *renderer, mat4_t modelViewMatrix, R
 	
 	encodeVertexState(renderCommandEncoder, renderer, SHADER_FUNCTION_POSITION_PAIR_INDEX, vertexBuffer, options);
 	
-	encodeModelViewMatrixAndColor(renderCommandEncoder, renderer, modelViewMatrix, color);
+	encodeModelViewMatrixAndColor(renderCommandEncoder, renderer, modelViewProjectionMatrix, color);
 	
 	id<MTLBuffer> indicesBuffer = (__bridge id<MTLBuffer>)(indicesBufferObject.metalObject);
 	[renderCommandEncoder drawIndexedPrimitives:metalTypeFromRendererMode(mode) indexCount:indicesCount indexType:MTLIndexTypeUInt16 indexBuffer:indicesBuffer indexBufferOffset:0];
 }
 
-void drawTextureWithVertices_metal(Renderer *renderer, mat4_t modelViewMatrix, TextureObject textureObject, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options)
+void drawTextureWithVertices_metal(Renderer *renderer, float *modelViewProjectionMatrix, TextureObject textureObject, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options)
 {
 	id<MTLRenderCommandEncoder> renderCommandEncoder = (__bridge id<MTLRenderCommandEncoder>)(renderer->metalCurrentRenderCommandEncoder);
 	
 	encodeVertexAndTextureState(renderCommandEncoder, renderer, textureObject, vertexAndTextureArrayObject, options);
 	
-	encodeModelViewMatrixAndColor(renderCommandEncoder, renderer, modelViewMatrix, color);
+	encodeModelViewMatrixAndColor(renderCommandEncoder, renderer, modelViewProjectionMatrix, color);
 	
 	[renderCommandEncoder drawPrimitives:metalTypeFromRendererMode(mode) vertexStart:0 vertexCount:vertexCount];
 }
 
-void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, mat4_t modelViewMatrix, TextureObject textureObject, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options)
+void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, float *modelViewProjectionMatrix, TextureObject textureObject, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options)
 {
 	id<MTLRenderCommandEncoder> renderCommandEncoder = (__bridge id<MTLRenderCommandEncoder>)(renderer->metalCurrentRenderCommandEncoder);
 	
 	encodeVertexAndTextureState(renderCommandEncoder, renderer, textureObject, vertexAndTextureArrayObject, options);
 	
-	encodeModelViewMatrixAndColor(renderCommandEncoder, renderer, modelViewMatrix, color);
+	encodeModelViewMatrixAndColor(renderCommandEncoder, renderer, modelViewProjectionMatrix, color);
 	
 	id<MTLBuffer> indicesBuffer = (__bridge id<MTLBuffer>)(indicesBufferObject.metalObject);
 	[renderCommandEncoder drawIndexedPrimitives:metalTypeFromRendererMode(mode) indexCount:indicesCount indexType:MTLIndexTypeUInt16 indexBuffer:indicesBuffer indexBufferOffset:0];
