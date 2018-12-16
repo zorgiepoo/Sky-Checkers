@@ -83,8 +83,6 @@ typedef struct
 	int32_t modelViewProjectionMatrixUniformLocation;
 	int32_t colorUniformLocation;
 	int32_t textureUniformLocation;
-	// For tile instancing
-	int32_t textureIndicesUniformLocation;
 } Shader_gl;
 
 #define MAX_PIPELINE_COUNT 6

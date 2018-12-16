@@ -143,7 +143,7 @@ static SDL_bool linkProgram(GLuint prog)
 	return SDL_TRUE;
 }
 
-static void compileAndLinkShader(Shader_gl *shader, uint16_t glslVersion, const char *vertexShaderPath, const char *fragmentShaderPath, SDL_bool textured, const char *modelViewProjectionUniform, const char *colorUniform, const char *textureSampleUniform, const char *textureIndicesUniform)
+static void compileAndLinkShader(Shader_gl *shader, uint16_t glslVersion, const char *vertexShaderPath, const char *fragmentShaderPath, SDL_bool textured, const char *modelViewProjectionUniform, const char *colorUniform, const char *textureSampleUniform)
 {
 	// Create a pair of shaders
 	GLuint vertexShader = 0;
@@ -216,17 +216,6 @@ static void compileAndLinkShader(Shader_gl *shader, uint16_t glslVersion, const 
 			exit(1);
 		}
 		shader->textureUniformLocation = textureUniformLocation;
-	}
-	
-	if (textureIndicesUniform != NULL)
-	{
-		GLint textureIndicesUniformLocation = glGetUniformLocation(shaderProgram, textureIndicesUniform);
-		if (textureIndicesUniformLocation == -1)
-		{
-			zgPrint("Failed to find %s uniform", textureIndicesUniform);
-			exit(1);
-		}
-		shader->textureIndicesUniformLocation = textureIndicesUniformLocation;
 	}
 	
 	shader->program = shaderProgram;
@@ -381,9 +370,9 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_DEPTH_TEST);
 	
-	compileAndLinkShader(&renderer->glPositionShader, glslVersion, "Data/Shaders/position.vsh", "Data/Shaders/position.fsh", SDL_FALSE, "modelViewProjectionMatrix", "color", NULL, NULL);
+	compileAndLinkShader(&renderer->glPositionShader, glslVersion, "Data/Shaders/position.vsh", "Data/Shaders/position.fsh", SDL_FALSE, "modelViewProjectionMatrix", "color", NULL);
 	
-	compileAndLinkShader(&renderer->glPositionTextureShader, glslVersion, "Data/Shaders/texture-position.vsh", "Data/Shaders/texture-position.fsh", SDL_TRUE, "modelViewProjectionMatrix", "color", "textureSample", NULL);
+	compileAndLinkShader(&renderer->glPositionTextureShader, glslVersion, "Data/Shaders/texture-position.vsh", "Data/Shaders/texture-position.fsh", SDL_TRUE, "modelViewProjectionMatrix", "color", "textureSample");
 	
 	renderer->updateViewportPtr = updateViewport_gl;
 	renderer->renderFramePtr = renderFrame_gl;
