@@ -157,15 +157,13 @@ int serverNetworkThread(void *unused)
 				
 				sscanf(buffer + 2, "%i %i", &characterID, &direction);
 				
-				Character *character = getCharacter(characterID);
-					
-				if (character->direction)
+				if (direction == LEFT || direction == RIGHT || direction == UP || direction == DOWN || direction == NO_DIRECTION)
 				{
-					turnCharacter(character, direction);
-					// Sigh, this code is broken
-					// I will need to create a proper net input that the animation code uses
-					// to move the character
-                    moveCharacter(character, direction, 4.51977f);
+					Character *character = getCharacter(characterID);
+					if (character->active)
+					{
+						character->direction = direction;
+					}
 				}
 			}
 			
@@ -279,7 +277,7 @@ int clientNetworkThread(void *context)
 					
 					gNetworkConnection->input->character->x = x;
 					gNetworkConnection->input->character->y = y;
-					turnCharacter(gNetworkConnection->input->character, direction);
+					gNetworkConnection->input->character->direction = direction;
 				}
 			}
 		}
@@ -367,7 +365,7 @@ int clientNetworkThread(void *context)
 				
 				Character *character = getCharacter(characterID);
 				
-				turnCharacter(character, direction);
+				character->direction = direction;
 				
 				character->x = x;
 				character->y = y;
@@ -411,12 +409,11 @@ int clientNetworkThread(void *context)
 				
 				character = getCharacter(characterID);
 				
-				character->z = 2.0;
+				character->z = 2.0f;
 				character->x = x;
 				character->y = y;
 				
-				character->direction = character->backup_direction;
-				character->backup_direction = NO_DIRECTION;
+				character->active = SDL_TRUE;
 			}
 			else if (buffer[0] == 's' && buffer[1] == 'w')
 			{

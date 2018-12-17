@@ -38,18 +38,17 @@ static void attackCharacterOnColumn(Character *character, Character *characterB,
 
 static void avoidCharacter(Character *character, Character *characterB, int currentTime);
 
-void moveAI(Character *character, int currentTime, double timeDelta)
+void updateAI(Character *character, int currentTime, double timeDelta)
 {
-	if (character->z != 2.0 || character->state != CHARACTER_AI_STATE || character->direction == NO_DIRECTION || !character->lives || (gNetworkConnection && gNetworkConnection->type == NETWORK_CLIENT_TYPE))
+	if (character->z != 2.0 || character->state != CHARACTER_AI_STATE || !character->active || !character->lives || (gNetworkConnection && gNetworkConnection->type == NETWORK_CLIENT_TYPE))
 		return;
 	
-	if (currentTime > character->ai_timer)
+	if (character->direction == NO_DIRECTION || currentTime > character->ai_timer)
 	{
 		setNewDirection(&character->direction);
 		character->ai_timer = currentTime + (mt_random() % 2) + 1;
 	}
 	
-	moveCharacter(character, character->direction, timeDelta);
 	directCharacterBasedOnCollisions(character, currentTime);
 	
 	if (!gNetworkConnection || (gRedRover.netState == NETWORK_PLAYING_STATE && gGreenTree.netState == NETWORK_PLAYING_STATE && gBlueLightning.netState == NETWORK_PLAYING_STATE))
@@ -235,19 +234,19 @@ static void attackCharacterOnRow(Character *character, Character *characterB, in
 	if (character->x > characterB->x && character->direction != LEFT)
 	{
 		turnCharacter(character, LEFT);
+		character->direction = LEFT;
 		fireAIWeapon(character);
 		
-		// the character's direction before firing is stored in backup_direction, this will revert itself afterwards
-		setNewDirection(&character->backup_direction);
+		setNewDirection(&character->direction);
 		character->ai_timer = currentTime + (mt_random() % 2) + 1;
 	}
 	else if (character->x < characterB->x && character->direction != RIGHT)
 	{
 		turnCharacter(character, RIGHT);
+		character->direction = RIGHT;
 		fireAIWeapon(character);
 		
-		// the character's direction before firing is stored in backup_direction, this will revert itself afterwards
-		setNewDirection(&character->backup_direction);
+		setNewDirection(&character->direction);
 		character->ai_timer = currentTime + (mt_random() % 2) + 1;
 	}
 }
@@ -257,19 +256,19 @@ static void attackCharacterOnColumn(Character *character, Character *characterB,
 	if (character->y > characterB->y && character->direction != DOWN)
 	{
 		turnCharacter(character, DOWN);
+		character->direction = DOWN;
 		fireAIWeapon(character);
 		
-		// the character's direction before firing is stored in backup_direction, this will revert itself afterwards
-		setNewDirection(&character->backup_direction);
+		setNewDirection(&character->direction);
 		character->ai_timer = currentTime + (mt_random() % 2) + 1;
 	}
 	else if (character->y < characterB->y && character->direction != UP)
 	{
 		turnCharacter(character, UP);
+		character->direction = UP;
 		fireAIWeapon(character);
 		
-		// the character's direction before firing is stored in backup_direction, this will revert itself afterwards
-		setNewDirection(&character->backup_direction);
+		setNewDirection(&character->direction);
 		character->ai_timer = currentTime + (mt_random() % 2) + 1;
 	}
 }

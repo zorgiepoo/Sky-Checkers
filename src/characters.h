@@ -68,14 +68,11 @@ typedef struct _Character
 	/* Colors of character faces */
 	float red, green, blue;
 	
-	/* Direction character is going in */
+	/* Direction character is curerntly going in */
 	int direction;
 	
-	/*
-	 * Sometimes we'll need to set the character's direction to NO_DIRECTION, which means that it won't be able to move.
-	 * So, we need to store the backup value in backup_direction so we can regain the character's direction later on.
-	 */
-	int backup_direction;
+	/* The direction the character was last pointing towards */
+	int pointing_direction;
 	
 	/* Character's current amount of lives. When this reaches zero, the character dies */
 	int lives;
@@ -98,6 +95,7 @@ typedef struct _Character
 	char *netName;
 	
 	Weapon *weap;
+	SDL_bool active;
 	
 	/*
 	 * Each character holds data for animation purposes, including stuff with tiles.
@@ -152,7 +150,7 @@ Character *getCharacter(int ID);
 
 void spawnCharacter(Character *character);
 
-void moveCharacter(Character *character, int direction, double timeDelta);
+void moveCharacter(Character *character, double timeDelta);
 
 void turnCharacter(Character *character, int direction);
 

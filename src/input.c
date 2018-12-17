@@ -408,41 +408,84 @@ void performUpAction(Input *input, SDL_Window *window, SDL_Event *event)
 	}
 }
 
-void moveCharacterFromInput(Input *input, double timeDelta)
+void updateCharacterFromAnyInput(double timeDelta)
 {
-	if ((gNetworkConnection && !gNetworkConnection->input) || (input->character->state != CHARACTER_HUMAN_STATE && !gNetworkConnection))
+	if (!gNetworkConnection || !gNetworkConnection->input)
 	{
 		return;
-	} 
+	}
+	
+	Character *character = gNetworkConnection->input->character;
+	
+	if (!character->active)
+	{
+		return;
+	}
 	
 	// Any input will move the character if it's a network game, however, only one input can be active at a time
 	
-	if (gNetworkConnection)
+	SDL_bool inputRedRoverState = gRedRoverInput.right || gRedRoverInput.left || gRedRoverInput.up || gRedRoverInput.down;
+	SDL_bool inputPinkBubbleGumState = gPinkBubbleGumInput.right || gPinkBubbleGumInput.left || gPinkBubbleGumInput.up || gPinkBubbleGumInput.down;
+	SDL_bool inputGreenTreeState = gGreenTreeInput.right || gGreenTreeInput.left || gGreenTreeInput.up || gGreenTreeInput.down;
+	SDL_bool inputBlueLightningState = gBlueLightningInput.right || gBlueLightningInput.left || gBlueLightningInput.up || gBlueLightningInput.down;
+	
+	if (inputRedRoverState + inputPinkBubbleGumState + inputGreenTreeState + inputBlueLightningState > 1)
 	{
-		SDL_bool inputRedRoverState = gRedRoverInput.right || gRedRoverInput.left || gRedRoverInput.up || gRedRoverInput.down;
-		SDL_bool inputPinkBubbleGumState = gPinkBubbleGumInput.right || gPinkBubbleGumInput.left || gPinkBubbleGumInput.up || gPinkBubbleGumInput.down;
-		SDL_bool inputGreenTreeState = gGreenTreeInput.right || gGreenTreeInput.left || gGreenTreeInput.up || gGreenTreeInput.down;
-		SDL_bool inputBlueLightningState = gBlueLightningInput.right || gBlueLightningInput.left || gBlueLightningInput.up || gBlueLightningInput.down;
-		
-		if (inputRedRoverState + inputPinkBubbleGumState + inputGreenTreeState + inputBlueLightningState > 1)
-			return;
+		character->direction = NO_DIRECTION;
+	}
+	else if (gRedRoverInput.right || gPinkBubbleGumInput.right || gGreenTreeInput.right || gBlueLightningInput.right)
+	{
+		character->direction = RIGHT;
+	}
+	else if (gRedRoverInput.left || gPinkBubbleGumInput.left || gGreenTreeInput.left || gBlueLightningInput.left)
+	{
+		character->direction = LEFT;
+	}
+	else if (gRedRoverInput.down || gPinkBubbleGumInput.down || gGreenTreeInput.down || gBlueLightningInput.down)
+	{
+		character->direction = DOWN;
+	}
+	else if (gRedRoverInput.up || gPinkBubbleGumInput.up || gGreenTreeInput.up || gBlueLightningInput.up)
+	{
+		character->direction = UP;
+	}
+	else
+	{
+		character->direction = NO_DIRECTION;
+	}
+}
+
+void updateCharacterFromInput(Input *input, double timeDelta)
+{
+	if (gNetworkConnection || (input->character->state != CHARACTER_HUMAN_STATE))
+	{
+		return;
+	}
+	
+	if (!input->character->active)
+	{
+		return;
 	}
 	
 	if (input->right)
 	{
-		moveCharacter(input->character, RIGHT, timeDelta);
+		input->character->direction = RIGHT;
 	}
 	else if (input->left)
 	{
-		moveCharacter(input->character, LEFT, timeDelta);
+		input->character->direction = LEFT;
 	}
 	else if (input->up)
 	{
-		moveCharacter(input->character, UP, timeDelta);
+		input->character->direction = UP;
 	}
 	else if (input->down)
 	{
-		moveCharacter(input->character, DOWN, timeDelta);
+		input->character->direction = DOWN;
+	}
+	else
+	{
+		input->character->direction = NO_DIRECTION;
 	}
 }
 

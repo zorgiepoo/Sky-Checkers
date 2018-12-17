@@ -86,11 +86,9 @@ void loadCharacter(Character *character)
 	}
 	else if (gNetworkConnection && gNetworkConnection->type == NETWORK_CLIENT_TYPE)
 	{
-		if (character->direction == NO_DIRECTION)
-		{
-			randomizeCharacterDirection(character);
-		}
-		character->z = 2.0;
+		randomizeCharacterDirection(character);
+		character->active = SDL_TRUE;
+		character->z = 2.0f;
 	}
 	
 	character->recovery_timer = 0;
@@ -582,29 +580,15 @@ void spawnCharacter(Character *character)
 	
 	character->x = (float)randOne;
 	character->y = (float)randTwo;
-	character->z = 2.0;
+	character->z = 2.0f;
+	character->active = SDL_TRUE;
+	character->direction = NO_DIRECTION;
 }
 
 static void randomizeCharacterDirection(Character *character)
 {
-	character->direction = (mt_random() % 4) + 1;
-	
-	if (character->direction == RIGHT)
-	{
-		character->zRot = (float)M_PI;
-	}
-	else if (character->direction == LEFT)
-	{
-		character->zRot = 0.0f;
-	}
-	else if (character->direction == DOWN)
-	{
-		character->zRot = 100.0f * ((float)M_PI / 180.0f);
-	}
-	else if (character->direction == UP)
-	{
-		character->zRot = 3.0f * (float)M_PI / 2.0f;
-	}
+	int newDirection = (mt_random() % 4) + 1;
+	turnCharacter(character, newDirection);
 }
 
 static void sendCharacterMovement(Character *character)
@@ -625,65 +609,58 @@ static void sendCharacterMovement(Character *character)
 	}
 }
 
-void moveCharacter(Character *character, int direction, double timeDelta)
+void moveCharacter(Character *character, double timeDelta)
 {
-	if (character->direction == NO_DIRECTION || !character->lives)
+	if (!character->lives)
 		return;
 	
-	Character *characterB = NULL;
-	Character *characterC = NULL;
-	Character *characterD = NULL;
-	
-	getOtherCharacters(character, &characterB, &characterC, &characterD);
-	
-	character->direction = direction;
-	
-	// Test which direction the character is moving in, then make the character look into that direction, and move the character in that direction if it won't collide with anything
-	
-	if (direction == RIGHT)
+	if (character->active)
 	{
-		if (characterIsOutOfBounds(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
+		Character *characterB = NULL;
+		Character *characterC = NULL;
+		Character *characterD = NULL;
+		
+		int direction = character->direction;
+		
+		turnCharacter(character, direction);
+		
+		if (direction != NO_DIRECTION)
 		{
-			character->x += CHARACTER_SPEED * timeDelta;
-			
-			sendCharacterMovement(character);
+			getOtherCharacters(character, &characterB, &characterC, &characterD);
 		}
 		
-		character->zRot = (float)M_PI;
-	}
-	else if (direction == LEFT)
-	{
-		if (characterIsOutOfBounds(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
+		// Test which direction the character is moving in, then move the character in that direction if it won't collide with anything
+		if (direction == RIGHT)
 		{
-			character->x -= CHARACTER_SPEED * timeDelta;
-			
-			sendCharacterMovement(character);
+			if (characterIsOutOfBounds(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
+			{
+				character->x += CHARACTER_SPEED * timeDelta;
+			}
 		}
-		
-		character->zRot = 0.0f;
-	}
-	else if (direction == DOWN)
-	{
-		if (characterIsOutOfBounds(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
+		else if (direction == LEFT)
 		{
-			character->y -= CHARACTER_SPEED * timeDelta;
-			
-			sendCharacterMovement(character);
+			if (characterIsOutOfBounds(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
+			{
+				character->x -= CHARACTER_SPEED * timeDelta;
+			}
 		}
-		
-		character->zRot = 100.0f * ((float)M_PI / 180.0f);
-	}
-	else if (direction == UP)
-	{
-		if (characterIsOutOfBounds(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
+		else if (direction == DOWN)
 		{
-			character->y += CHARACTER_SPEED * timeDelta;
-			
-			sendCharacterMovement(character);
+			if (characterIsOutOfBounds(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
+			{
+				character->y -= CHARACTER_SPEED * timeDelta;
+			}
 		}
-		
-		character->zRot = 3.0f * (float)M_PI / 2.0f;
+		else if (direction == UP)
+		{
+			if (characterIsOutOfBounds(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
+			{
+				character->y += CHARACTER_SPEED * timeDelta;
+			}
+		}
 	}
+	
+	sendCharacterMovement(character);
 }
 
 void turnCharacter(Character *character, int direction)
@@ -705,7 +682,10 @@ void turnCharacter(Character *character, int direction)
 		character->zRot = 3.0f * (float)M_PI / 2.0f;
 	}
 	
-	character->direction = direction;
+	if (direction != NO_DIRECTION)
+	{
+		character->pointing_direction = direction;
+	}
 }
 
 void shootCharacterWeaponWithoutChecks(Character *character)
@@ -754,9 +734,8 @@ void bindWeaponWithCharacter(Character *character)
 	// don't bind z coordinate value
 	character->weap->x = character->x;
 	character->weap->y = character->y;
-	character->weap->direction = character->direction;
+	character->weap->direction = character->pointing_direction;
 	
 	// make sure character can't move while firing the weapon
-	character->backup_direction = character->direction;
-	character->direction = NO_DIRECTION;
+	character->active = SDL_FALSE;
 }

@@ -128,15 +128,22 @@ void animate(SDL_Window *window, double timeDelta)
 	
 	// Animate objects based on time delta
 	
-	moveCharacterFromInput(&gRedRoverInput, timeDelta);
-	moveCharacterFromInput(&gGreenTreeInput, timeDelta);
-	moveCharacterFromInput(&gPinkBubbleGumInput, timeDelta);
-	moveCharacterFromInput(&gBlueLightningInput, timeDelta);
+	updateCharacterFromInput(&gRedRoverInput, timeDelta);
+	updateCharacterFromInput(&gGreenTreeInput, timeDelta);
+	updateCharacterFromInput(&gPinkBubbleGumInput, timeDelta);
+	updateCharacterFromInput(&gBlueLightningInput, timeDelta);
 	
-	moveAI(&gRedRover, (int)gSecondTimer, timeDelta);
-	moveAI(&gGreenTree, (int)gSecondTimer, timeDelta);
-	moveAI(&gPinkBubbleGum, (int)gSecondTimer, timeDelta);
-	moveAI(&gBlueLightning, (int)gSecondTimer, timeDelta);
+	updateCharacterFromAnyInput(timeDelta);
+	
+	updateAI(&gRedRover, (int)gSecondTimer, timeDelta);
+	updateAI(&gGreenTree, (int)gSecondTimer, timeDelta);
+	updateAI(&gPinkBubbleGum, (int)gSecondTimer, timeDelta);
+	updateAI(&gBlueLightning, (int)gSecondTimer, timeDelta);
+	
+	moveCharacter(&gRedRover, timeDelta);
+	moveCharacter(&gGreenTree, timeDelta);
+	moveCharacter(&gPinkBubbleGum, timeDelta);
+	moveCharacter(&gBlueLightning, timeDelta);
 	
 	moveWeapon(gRedRover.weap, timeDelta);
 	moveWeapon(gGreenTree.weap, timeDelta);
@@ -327,7 +334,7 @@ static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player)
 		
 		if (player->animation_timer == CHARACTER_REGAIN_MOVEMENT)
 		{
-			player->direction = player->backup_direction;
+			player->active = SDL_TRUE;
 		}
 		
 		static const int END_CHARACTER_ANIMATION = 70;
@@ -615,8 +622,7 @@ void prepareCharactersDeath(Character *player)
 		turnInputOff(&gPinkBubbleGumInput);
 	}
 	
-	player->backup_direction = player->direction;
-	player->direction = NO_DIRECTION;
+	player->active = SDL_FALSE;
 }
 
 /*
@@ -638,7 +644,7 @@ static void killCharacter(Input *characterInput, double timeDelta)
 	// Make the character fall down if the tile is falling down
 	if (location < NUMBER_OF_TILES && gTiles[location].z < TILE_ALIVE_Z && player->z > CHARACTER_TERMINATING_Z)
 	{
-		if (player->direction && !player->weap->animationState)
+		if (player->active && !player->weap->animationState)
 		{
 			prepareCharactersDeath(player);
 			
@@ -652,6 +658,7 @@ static void killCharacter(Input *characterInput, double timeDelta)
 			player->time_alive = 0;
 			
 			player->lives--;
+			player->active = SDL_FALSE;
 			
 			if (gNetworkConnection && gNetworkConnection->type == NETWORK_SERVER_TYPE)
 			{
@@ -726,7 +733,7 @@ static void recoverCharacter(Character *player)
 				sendToClients(0, "sp%i %f %f", IDOfCharacter(player), player->x, player->y);
 			}
 			
-			player->direction = player->backup_direction;
+			player->active = SDL_TRUE;
 		}
 		
 		player->recovery_timer = 0;
