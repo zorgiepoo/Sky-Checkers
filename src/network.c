@@ -160,9 +160,10 @@ int serverNetworkThread(void *unused)
 				if (direction == LEFT || direction == RIGHT || direction == UP || direction == DOWN || direction == NO_DIRECTION)
 				{
 					Character *character = getCharacter(characterID);
-					if (character->active)
+					if (character != NULL)
 					{
 						character->direction = direction;
+						turnCharacter(character, direction);
 					}
 				}
 			}
@@ -172,7 +173,11 @@ int serverNetworkThread(void *unused)
 				// shoot weapon
 				
 				int characterID = atoi(buffer + 2);
-				shootCharacterWeapon(getCharacter(characterID));
+				Character *character = getCharacter(characterID);
+				if (character != NULL)
+				{
+					shootCharacterWeapon(character);
+				}
 			}
 			
 			else if (buffer[0] == 'q' && buffer[1] == 'u')
@@ -278,6 +283,7 @@ int clientNetworkThread(void *context)
 					gNetworkConnection->input->character->x = x;
 					gNetworkConnection->input->character->y = y;
 					gNetworkConnection->input->character->direction = direction;
+					turnCharacter(gNetworkConnection->input->character, direction);
 				}
 			}
 		}
@@ -364,12 +370,15 @@ int clientNetworkThread(void *context)
 				sscanf(buffer + 2, "%i %f %f %f %i", &characterID, &x, &y, &z, &direction);
 				
 				Character *character = getCharacter(characterID);
-				
-				character->direction = direction;
-				
-				character->x = x;
-				character->y = y;
-				character->z = z;
+				if (character != NULL)
+				{
+					character->direction = direction;
+					turnCharacter(character, direction);
+					
+					character->x = x;
+					character->y = y;
+					character->z = z;
+				}
 			}
 			else if (buffer[0] == 'p' && buffer[1] == 'k')
 			{
@@ -380,11 +389,14 @@ int clientNetworkThread(void *context)
 				sscanf(buffer + 2, "%i %i", &characterID, &characterLives);
 				
 				Character *character = getCharacter(characterID);
-				character->lives = characterLives;
-				
-				// it doesn't matter which input we choose
-				prepareCharactersDeath(character);
-				decideWhetherToMakeAPlayerAWinner(character);
+				if (character != NULL)
+				{
+					character->lives = characterLives;
+					
+					// it doesn't matter which input we choose
+					prepareCharactersDeath(character);
+					decideWhetherToMakeAPlayerAWinner(character);
+				}
 			}
 			else if (buffer[0] == 'c' && buffer[1] == 'k')
 			{
@@ -395,7 +407,10 @@ int clientNetworkThread(void *context)
 				sscanf(buffer + 2, "%i %i", &characterID, &characterKills);
 				
 				Character *character = getCharacter(characterID);
-				character->kills = characterKills;
+				if (character != NULL)
+				{
+					character->kills = characterKills;
+				}
 			}
 			else if (buffer[0] =='s' && buffer[1] == 'p')
 			{
@@ -408,17 +423,23 @@ int clientNetworkThread(void *context)
 				sscanf(buffer + 2, "%i %f %f", &characterID, &x, &y);
 				
 				character = getCharacter(characterID);
-				
-				character->z = 2.0f;
-				character->x = x;
-				character->y = y;
-				
-				character->active = SDL_TRUE;
+				if (character != NULL)
+				{
+					character->z = 2.0f;
+					character->x = x;
+					character->y = y;
+					
+					character->active = SDL_TRUE;
+				}
 			}
 			else if (buffer[0] == 's' && buffer[1] == 'w')
 			{
 				// shoot weapon
-				shootCharacterWeaponWithoutChecks(getCharacter(atoi(buffer + 2)));
+				Character *character = getCharacter(atoi(buffer + 2));
+				if (character != NULL)
+				{
+					shootCharacterWeaponWithoutChecks(character);
+				}
 			}
 			else if (buffer[0] == 'n' && buffer[1] == 'g')
 			{

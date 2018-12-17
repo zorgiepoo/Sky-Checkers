@@ -665,6 +665,11 @@ void moveCharacter(Character *character, double timeDelta)
 
 void turnCharacter(Character *character, int direction)
 {
+	if (!character->active)
+	{
+		return;
+	}
+	
 	if (direction == RIGHT)
 	{
 		character->zRot = (float)M_PI;
