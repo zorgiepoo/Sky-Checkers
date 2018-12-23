@@ -599,7 +599,7 @@ static void sendCharacterMovement(Character *character)
 		{
 			sendToClients(0, "mo%i %f %f %f %i", IDOfCharacter(character), character->x, character->y, character->z, character->direction);
 		}
-		else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE && character == gNetworkConnection->input->character)
+		else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE && character == gNetworkConnection->character)
 		{
 			char buffer[256];
 			sprintf(buffer, "rm%i %i", IDOfCharacter(character), character->direction);
@@ -693,19 +693,12 @@ void turnCharacter(Character *character, int direction)
 	}
 }
 
-void shootCharacterWeaponWithoutChecks(Character *character)
+void fireCharacterWeapon(Character *character)
 {
-    bindWeaponWithCharacter(character);
-	character->weap->drawingState = SDL_TRUE;
-	character->weap->animationState = SDL_TRUE;
-}
-
-void shootCharacterWeapon(Character *character)
-{
-	if (!character->weap->animationState)
+	if (gGameHasStarted && !character->weap->animationState && character->weap->fired)
 	{
 		int tileIndex = getTileIndexLocation((int)character->x, (int)character->y);
-		if (tileIndex < NUMBER_OF_TILES && gTiles[tileIndex].z == -25.0)
+		if (tileIndex < NUMBER_OF_TILES && gTiles[tileIndex].z == TILE_ALIVE_Z)
 		{
 			if (gNetworkConnection)
 			{
@@ -720,27 +713,23 @@ void shootCharacterWeapon(Character *character)
 					sendToClients(0, movementMessage);
 					sendToClients(0, shootWeaponMessage);
 				}
-				else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE && gNetworkConnection->input->character == character)
+				else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE && gNetworkConnection->character == character)
 				{
 					sendto(gNetworkConnection->socket, shootWeaponMessage, strlen(shootWeaponMessage), 0, (struct sockaddr *)&gNetworkConnection->hostAddress, sizeof(gNetworkConnection->hostAddress));
 				}
 			}
 			
-			if (!gNetworkConnection || gNetworkConnection->type != NETWORK_CLIENT_TYPE)
-			{
-				shootCharacterWeaponWithoutChecks(character);
-			}
+			// don't bind z coordinate value
+			character->weap->x = character->x;
+			character->weap->y = character->y;
+			character->weap->direction = character->pointing_direction;
+			
+			// make sure character can't move while firing the weapon
+			character->active = SDL_FALSE;
+			
+			character->weap->drawingState = SDL_TRUE;
+			character->weap->animationState = SDL_TRUE;
 		}
 	}
-}
-
-void bindWeaponWithCharacter(Character *character)
-{
-	// don't bind z coordinate value
-	character->weap->x = character->x;
-	character->weap->y = character->y;
-	character->weap->direction = character->pointing_direction;
-	
-	// make sure character can't move while firing the weapon
-	character->active = SDL_FALSE;
+	character->weap->fired = SDL_FALSE;
 }

@@ -154,6 +154,4 @@ void moveCharacter(Character *character, double timeDelta);
 
 void turnCharacter(Character *character, int direction);
 
-void shootCharacterWeaponWithoutChecks(Character *character);
-void shootCharacterWeapon(Character *character);
-void bindWeaponWithCharacter(Character *character);
+void fireCharacterWeapon(Character *character);

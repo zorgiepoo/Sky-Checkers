@@ -176,7 +176,7 @@ int serverNetworkThread(void *unused)
 				Character *character = getCharacter(characterID);
 				if (character != NULL)
 				{
-					shootCharacterWeapon(character);
+					character->weap->fired = SDL_TRUE;
 				}
 			}
 			
@@ -251,24 +251,23 @@ int clientNetworkThread(void *context)
 					
 					if (slotID + 1 == RED_ROVER)
 					{
-						gNetworkConnection->input = &gRedRoverInput;
-						gRedRover.netName = gUserNameString;
+						gNetworkConnection->character = &gRedRover;
 					}
 					else if (slotID + 1 == GREEN_TREE)
 					{
-						gNetworkConnection->input = &gGreenTreeInput;
-						gGreenTree.netName = gUserNameString;
+						gNetworkConnection->character = &gGreenTree;
 					}
 					else if (slotID + 1 == BLUE_LIGHTNING)
 					{
-						gNetworkConnection->input = &gBlueLightningInput;
-						gBlueLightning.netName = gUserNameString;
+						gNetworkConnection->character = &gBlueLightning;
 					}
 					
-					gPinkBubbleGumInput.character = gNetworkConnection->input->character;
-					gRedRoverInput.character = gNetworkConnection->input->character;
-					gBlueLightningInput.character = gNetworkConnection->input->character;
-					gGreenTreeInput.character = gNetworkConnection->input->character;
+					gNetworkConnection->character->netName = gUserNameString;
+					
+					gPinkBubbleGumInput.character = gNetworkConnection->character;
+					gRedRoverInput.character = gNetworkConnection->character;
+					gBlueLightningInput.character = gNetworkConnection->character;
+					gGreenTreeInput.character = gNetworkConnection->character;
 					
 					// server is pending
 					gPinkBubbleGum.netState = NETWORK_PENDING_STATE;
@@ -280,10 +279,10 @@ int clientNetworkThread(void *context)
 					gGreenTree.lives = gNetworkConnection->characterLives;
 					gBlueLightning.lives = gNetworkConnection->characterLives;
 					
-					gNetworkConnection->input->character->x = x;
-					gNetworkConnection->input->character->y = y;
-					gNetworkConnection->input->character->direction = direction;
-					turnCharacter(gNetworkConnection->input->character, direction);
+					gNetworkConnection->character->x = x;
+					gNetworkConnection->character->y = y;
+					gNetworkConnection->character->direction = direction;
+					turnCharacter(gNetworkConnection->character, direction);
 				}
 			}
 		}
@@ -438,7 +437,7 @@ int clientNetworkThread(void *context)
 				Character *character = getCharacter(atoi(buffer + 2));
 				if (character != NULL)
 				{
-					shootCharacterWeaponWithoutChecks(character);
+					character->weap->fired = SDL_TRUE;
 				}
 			}
 			else if (buffer[0] == 'n' && buffer[1] == 'g')

@@ -31,6 +31,7 @@ typedef struct
 	SDL_bool animationState;
 	
 	int direction;
+	SDL_bool fired;
 } Weapon;
 
 void initWeapon(Weapon *weap);

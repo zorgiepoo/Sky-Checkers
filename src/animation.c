@@ -126,19 +126,28 @@ void animate(SDL_Window *window, double timeDelta)
 			gBlueLightning.time_alive++;
 	}
 	
+	// Update inputs
+	
+	updateCharacterFromInput(&gRedRoverInput);
+	updateCharacterFromInput(&gGreenTreeInput);
+	updateCharacterFromInput(&gPinkBubbleGumInput);
+	updateCharacterFromInput(&gBlueLightningInput);
+	
+	updateCharacterFromAnyInput();
+	
 	// Animate objects based on time delta
-	
-	updateCharacterFromInput(&gRedRoverInput, timeDelta);
-	updateCharacterFromInput(&gGreenTreeInput, timeDelta);
-	updateCharacterFromInput(&gPinkBubbleGumInput, timeDelta);
-	updateCharacterFromInput(&gBlueLightningInput, timeDelta);
-	
-	updateCharacterFromAnyInput(timeDelta);
 	
 	updateAI(&gRedRover, (int)gSecondTimer, timeDelta);
 	updateAI(&gGreenTree, (int)gSecondTimer, timeDelta);
 	updateAI(&gPinkBubbleGum, (int)gSecondTimer, timeDelta);
 	updateAI(&gBlueLightning, (int)gSecondTimer, timeDelta);
+	
+	// Weapons must have possibility of being updated before moving characters,
+	// which could change their look direction
+	fireCharacterWeapon(&gRedRover);
+	fireCharacterWeapon(&gGreenTree);
+	fireCharacterWeapon(&gPinkBubbleGum);
+	fireCharacterWeapon(&gBlueLightning);
 	
 	moveCharacter(&gRedRover, timeDelta);
 	moveCharacter(&gGreenTree, timeDelta);

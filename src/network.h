@@ -20,7 +20,7 @@
 #pragma once
 
 #include "maincore.h"
-#include "input.h"
+#include "characters.h"
 
 extern const int NETWORK_SERVER_TYPE;
 extern const int NETWORK_CLIENT_TYPE;
@@ -28,7 +28,7 @@ extern const Uint16 NETWORK_PORT;
 
 typedef struct
 {
-	Input *input;
+	Character *character;
 	int type;
 	int socket;
 	

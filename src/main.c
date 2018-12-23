@@ -958,7 +958,7 @@ static void drawScene(Renderer *renderer)
 			
 			if (gNetworkConnection)
 			{
-				if (gGameWinner == IDOfCharacter(gNetworkConnection->input->character))
+				if (gGameWinner == IDOfCharacter(gNetworkConnection->character))
 				{
 					drawString(renderer, winLoseModelViewMatrix, textColor, 20.0f / 14.0f, 10.0f / 14.0f, "You win!");
 				}
@@ -1323,7 +1323,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 							else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE)
 							{
 								char buffer[256];
-								sprintf(buffer, "qu%i", IDOfCharacter(gNetworkConnection->input->character));
+								sprintf(buffer, "qu%i", IDOfCharacter(gNetworkConnection->character));
 
 								sendto(gNetworkConnection->socket, buffer, strlen(buffer), 0, (struct sockaddr *)&gNetworkConnection->hostAddress, sizeof(gNetworkConnection->hostAddress));
 							}
@@ -1709,7 +1709,7 @@ int main(int argc, char *argv[])
 		else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE && gNetworkConnection->isConnected)
 		{
 			char buffer[256];
-			sprintf(buffer, "qu%i", IDOfCharacter(gNetworkConnection->input->character));
+			sprintf(buffer, "qu%i", IDOfCharacter(gNetworkConnection->character));
 			
 			sendto(gNetworkConnection->socket, buffer, strlen(buffer), 0, (struct sockaddr *)&gNetworkConnection->hostAddress, sizeof(gNetworkConnection->hostAddress));
 		}

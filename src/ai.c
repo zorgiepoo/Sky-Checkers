@@ -226,7 +226,7 @@ static int columnOfCharacter(Character *character)
 
 static void fireAIWeapon(Character *character)
 {
-	shootCharacterWeapon(character);
+	character->weap->fired = SDL_TRUE;
 }
 
 static void attackCharacterOnRow(Character *character, Character *characterB, int currentTime)

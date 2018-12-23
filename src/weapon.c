@@ -29,7 +29,7 @@ void initWeapon(Weapon *weap)
 	
 	weap->drawingState = SDL_FALSE;
 	weap->animationState = SDL_FALSE;
-	weap->direction = 0;
+	weap->direction = NO_DIRECTION;
 }
 
 void drawWeapon(Renderer *renderer, Weapon *weap)

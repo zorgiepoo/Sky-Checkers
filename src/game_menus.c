@@ -189,7 +189,7 @@ void networkServerPlayMenuAction(void *context)
 	
 	gNetworkConnection = malloc(sizeof(NetworkConnection));
 	gNetworkConnection->type = NETWORK_SERVER_TYPE;
-	gNetworkConnection->input = &gPinkBubbleGumInput;
+	gNetworkConnection->character = &gPinkBubbleGum;
 	gPinkBubbleGum.netName = gUserNameString;
 	gNetworkConnection->shouldRun = SDL_TRUE;
 	
@@ -245,9 +245,9 @@ void networkServerPlayMenuAction(void *context)
 	
 	initGame();
 	
-	gRedRoverInput.character = gNetworkConnection->input->character;
-	gBlueLightningInput.character = gNetworkConnection->input->character;
-	gGreenTreeInput.character = gNetworkConnection->input->character;
+	gRedRoverInput.character = gNetworkConnection->character;
+	gBlueLightningInput.character = gNetworkConnection->character;
+	gGreenTreeInput.character = gNetworkConnection->character;
 	
 	// make sure we are at main menu
 	changeMenu(LEFT);
@@ -379,7 +379,7 @@ void connectToNetworkGameMenuAction(void *context)
 	}
 	
 	gNetworkConnection = malloc(sizeof(NetworkConnection));
-	gNetworkConnection->input = NULL;
+	gNetworkConnection->character = NULL;
 	gNetworkConnection->isConnected = SDL_FALSE;
 	gNetworkConnection->type = NETWORK_CLIENT_TYPE;
 	gNetworkConnection->numberOfPlayersToWaitFor = 0;

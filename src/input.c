@@ -352,9 +352,8 @@ void performUpAction(Input *input, SDL_Window *window, SDL_Event *event)
 		{
 			if (gGameHasStarted)
 			{
-				shootCharacterWeapon(input->character);
+				input->character->weap->fired = SDL_TRUE;
 			}
-			
 			input->weap = SDL_FALSE;
 		}
 	}
@@ -385,9 +384,8 @@ void performUpAction(Input *input, SDL_Window *window, SDL_Event *event)
 		{
 			if (gGameHasStarted)
 			{
-				shootCharacterWeapon(input->character);
+				input->character->weap->fired = SDL_TRUE;
 			}
-			
 			input->weap = SDL_FALSE;
 		}
 	}
@@ -397,25 +395,23 @@ void performUpAction(Input *input, SDL_Window *window, SDL_Event *event)
 		
 		if (input->weap && !input->character->weap->animationState && input->weapjs_axis_id != JOY_AXIS_NONE)
 		{
-			
 			if (gGameHasStarted)
 			{
-				shootCharacterWeapon(input->character);
+				input->character->weap->fired = SDL_TRUE;
 			}
-			
 			input->weap = SDL_FALSE;
 		}
 	}
 }
 
-void updateCharacterFromAnyInput(double timeDelta)
+void updateCharacterFromAnyInput(void)
 {
-	if (!gNetworkConnection || !gNetworkConnection->input)
+	if (!gNetworkConnection || !gNetworkConnection->character)
 	{
 		return;
 	}
 	
-	Character *character = gNetworkConnection->input->character;
+	Character *character = gNetworkConnection->character;
 	
 	if (!character->active)
 	{
@@ -455,7 +451,7 @@ void updateCharacterFromAnyInput(double timeDelta)
 	}
 }
 
-void updateCharacterFromInput(Input *input, double timeDelta)
+void updateCharacterFromInput(Input *input)
 {
 	if (gNetworkConnection || (input->character->state != CHARACTER_HUMAN_STATE))
 	{
@@ -514,28 +510,9 @@ void turnOffDirectionsExcept(Input *input, int direction)
 
 void turnInputOff(Input *input)
 {
-	if (input->weap)
-	{
-		input->weap = SDL_FALSE;
-	}
-	
-	if (input->right)
-	{
-		input->right = SDL_FALSE;
-	}
-	
-	if (input->left)
-	{
-		input->left = SDL_FALSE;
-	}
-	
-	if (input->down)
-	{
-		input->down = SDL_FALSE;
-	}
-	
-	if (input->up)
-	{
-		input->up = SDL_FALSE;
-	}
+	input->weap = SDL_FALSE;
+	input->right = SDL_FALSE;
+	input->left = SDL_FALSE;
+	input->down = SDL_FALSE;
+	input->up = SDL_FALSE;
 }
