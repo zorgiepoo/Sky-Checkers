@@ -103,6 +103,7 @@ void loadCharacter(Character *character)
 	character->time_alive = 0;
 	
 	character->kills = 0;
+	character->wins = 0;
 }
 
 void initCharacters(void)

@@ -65,7 +65,6 @@ int serverNetworkThread(void *unused)
 			gNetworkConnection = NULL;
 			
 			endGame();
-			closeGameResources();
 			
 			break;
 		}
@@ -189,7 +188,6 @@ int serverNetworkThread(void *unused)
 				gNetworkConnection = NULL;
 				
 				endGame();
-				closeGameResources();
 			}
 		}
 	}
@@ -319,7 +317,6 @@ int clientNetworkThread(void *context)
 			gNetworkConnection = NULL;
 			
 			endGame();
-			closeGameResources();
 		}
 		else
 		{
@@ -453,7 +450,6 @@ int clientNetworkThread(void *context)
 				gNetworkConnection = NULL;
 				
 				endGame();
-				closeGameResources();
 			}
 		}
 	}

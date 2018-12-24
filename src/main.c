@@ -738,14 +738,6 @@ void endGame(void)
 	gGameShouldReset = SDL_FALSE;
 }
 
-void closeGameResources(void)
-{
-	gRedRover.wins = 0;
-	gPinkBubbleGum.wins = 0;
-	gGreenTree.wins = 0;
-	gBlueLightning.wins = 0;
-}
-
 void drawFramesPerSecond(Renderer *renderer)
 {
 	static unsigned frame_count = 0;
@@ -1312,7 +1304,6 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 					if (!gConsoleActivated)
 					{
 						endGame();
-						closeGameResources();
 
 						if (gNetworkConnection)
 						{

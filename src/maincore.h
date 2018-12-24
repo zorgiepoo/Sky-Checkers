@@ -87,7 +87,6 @@
 
 void initGame(void);
 void endGame(void);
-void closeGameResources(void);
 
 extern SDL_bool gGameHasStarted;
 extern SDL_bool gGameShouldReset;
