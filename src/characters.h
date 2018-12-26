@@ -62,9 +62,6 @@ typedef struct _Character
 	/* x, y, z translate values for character */
 	float x, y, z;
 	
-	/* Rotation axes of character */
-	float zRot;
-	
 	/* Colors of character faces */
 	float red, green, blue;
 	

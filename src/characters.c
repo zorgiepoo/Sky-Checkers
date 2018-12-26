@@ -89,6 +89,7 @@ void loadCharacter(Character *character)
 			message.movedUpdate.y = character->y;
 			message.movedUpdate.z = character->z;
 			message.movedUpdate.direction = character->direction;
+			message.movedUpdate.pointing_direction = character->pointing_direction;
 			
 			sendToClients(0, &message);
 		}
@@ -380,10 +381,26 @@ void buildCharacterModels(Renderer *renderer)
 	free(iconVerticesAndTextureCoordinates);
 }
 
+static float zRotationForCharacter(Character *character)
+{
+	switch (character->pointing_direction)
+	{
+		case RIGHT:
+			return (float)M_PI;
+		case LEFT:
+			return 0.0f;
+		case DOWN:
+			return 100.0f * ((float)M_PI / 180.0f);
+		case UP:
+			return 3.0f * (float)M_PI / 2.0f;
+	}
+	return 0.0f;
+}
+
 static mat4_t modelViewMatrixForCharacter(Character *character, mat4_t worldMatrix)
 {
 	mat4_t modelTranslationMatrix = m4_translation((vec3_t){character->x, character->y, character->z});
-	mat4_t modelRotationMatrix = m4_rotation_z(character->zRot);
+	mat4_t modelRotationMatrix = m4_rotation_z(zRotationForCharacter(character));
 	
 	return m4_mul(m4_mul(worldMatrix, modelTranslationMatrix), modelRotationMatrix);
 }
@@ -614,6 +631,7 @@ static void sendCharacterMovement(Character *character)
 			message.movedUpdate.y = character->y;
 			message.movedUpdate.z = character->z;
 			message.movedUpdate.direction = character->direction;
+			message.movedUpdate.pointing_direction = character->pointing_direction;
 			
 			sendToClients(0, &message);
 		}
@@ -689,23 +707,6 @@ void turnCharacter(Character *character, int direction)
 		return;
 	}
 	
-	if (direction == RIGHT)
-	{
-		character->zRot = (float)M_PI;
-	}
-	else if (direction == LEFT)
-	{
-		character->zRot = 0.0f;
-	}
-	else if (direction == DOWN)
-	{
-		character->zRot = 100.0f * ((float)M_PI / 180.0f);
-	}
-	else if (direction == UP)
-	{
-		character->zRot = 3.0f * (float)M_PI / 2.0f;
-	}
-	
 	if (direction != NO_DIRECTION)
 	{
 		character->pointing_direction = direction;
@@ -731,6 +732,7 @@ void fireCharacterWeapon(Character *character)
 						message.movedUpdate.y = character->y;
 						message.movedUpdate.z = character->z;
 						message.movedUpdate.direction = character->direction;
+						message.movedUpdate.pointing_direction = character->pointing_direction;
 						
 						sendToClients(0, &message);
 					}

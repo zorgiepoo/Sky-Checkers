@@ -127,7 +127,7 @@ void syncNetworkState(void)
 					character->y = message.movedUpdate.y;
 					character->z = message.movedUpdate.z;
 					character->direction = message.movedUpdate.direction;
-					turnCharacter(character, character->direction);
+					character->pointing_direction = message.movedUpdate.pointing_direction;
 					break;
 				}
 				case CHARACTER_KILLED_UPDATE_MESSAGE_TYPE:
@@ -154,6 +154,7 @@ void syncNetworkState(void)
 					float x = message.firstServerResponse.x;
 					float y = message.firstServerResponse.y;
 					int direction = message.firstServerResponse.direction;
+					int pointing_direction = message.firstServerResponse.pointing_direction;
 					int characterLives = message.firstServerResponse.characterLives;
 					
 					gNetworkConnection->characterLives = characterLives;
@@ -192,7 +193,7 @@ void syncNetworkState(void)
 					gNetworkConnection->character->y = y;
 					gNetworkConnection->character->y = 2.0f;
 					gNetworkConnection->character->direction = direction;
-					turnCharacter(gNetworkConnection->character, direction);
+					gNetworkConnection->character->pointing_direction = pointing_direction;
 					
 					break;
 				}
@@ -218,6 +219,7 @@ void syncNetworkState(void)
 						characterInfo->y = character->y;
 						characterInfo->z = character->z;
 						characterInfo->direction = character->direction;
+						characterInfo->pointing_direction = character->pointing_direction;
 						characterInfo->netName = character->netName;
 					}
 					
@@ -348,7 +350,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					case CHARACTER_MOVED_UPDATE_MESSAGE_TYPE:
 					{
 						char buffer[256];
-						snprintf(buffer, sizeof(buffer) - 1, "mo%d %f %f %f %d", message.movedUpdate.characterID, message.movedUpdate.x, message.movedUpdate.y, message.movedUpdate.z, message.movedUpdate.direction);
+						snprintf(buffer, sizeof(buffer) - 1, "mo%d %f %f %f %d %d", message.movedUpdate.characterID, message.movedUpdate.x, message.movedUpdate.y, message.movedUpdate.z, message.movedUpdate.direction, message.movedUpdate.pointing_direction);
 						
 						sendData(gNetworkConnection->socket, buffer, strlen(buffer), address);
 						
@@ -382,7 +384,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					case FIRST_SERVER_RESPONSE_MESSAGE_TYPE:
 					{
 						char buffer[256];
-						snprintf(buffer, sizeof(buffer) - 1, "sr%d %f %f %d %d", message.firstServerResponse.slotID, message.firstServerResponse.x, message.firstServerResponse.y, message.firstServerResponse.direction, message.firstServerResponse.characterLives);
+						snprintf(buffer, sizeof(buffer) - 1, "sr%d %f %f %d %d %d", message.firstServerResponse.slotID, message.firstServerResponse.x, message.firstServerResponse.y, message.firstServerResponse.direction, message.firstServerResponse.pointing_direction, message.firstServerResponse.characterLives);
 						
 						sendData(gNetworkConnection->socket, buffer, strlen(buffer), address);
 						
@@ -404,6 +406,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							responseMessage.firstServerResponse.x = clientCharacterInfo->x;
 							responseMessage.firstServerResponse.y = clientCharacterInfo->y;
 							responseMessage.firstServerResponse.direction = clientCharacterInfo->direction;
+							responseMessage.firstServerResponse.pointing_direction = clientCharacterInfo->pointing_direction;
 							responseMessage.firstServerResponse.characterLives = gCharacterLives;
 							
 							responseMessage.addressIndex = message.addressIndex;
@@ -434,6 +437,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							movedMessage.movedUpdate.y = clientCharacterInfo->y;
 							movedMessage.movedUpdate.z = clientCharacterInfo->z;
 							movedMessage.movedUpdate.direction = clientCharacterInfo->direction;
+							movedMessage.movedUpdate.pointing_direction = clientCharacterInfo->pointing_direction;
 							
 							sendToClients(message.addressIndex + 1, &movedMessage);
 						}
@@ -452,6 +456,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 									movementMessage.movedUpdate.y = characterInfo->y;
 									movementMessage.movedUpdate.z = characterInfo->z;
 									movementMessage.movedUpdate.direction = characterInfo->direction;
+									movementMessage.movedUpdate.pointing_direction = characterInfo->pointing_direction;
 									
 									movementMessage.addressIndex = message.addressIndex;
 									pushNetworkMessage(&gGameMessagesToNet, movementMessage);
@@ -764,9 +769,10 @@ int clientNetworkThread(void *context)
 						float x = 0;
 						float y = 0;
 						int direction = NO_DIRECTION;
+						int pointing_direction = NO_DIRECTION;
 						int characterLives = 0;
 						
-						sscanf(buffer, "sr%d %f %f %d %d", &slotID, &x, &y, &direction, &characterLives);
+						sscanf(buffer, "sr%d %f %f %d %d %d", &slotID, &x, &y, &direction, &pointing_direction, &characterLives);
 						
 						GameMessage message;
 						message.type = FIRST_SERVER_RESPONSE_MESSAGE_TYPE;
@@ -774,6 +780,7 @@ int clientNetworkThread(void *context)
 						message.firstServerResponse.x = x;
 						message.firstServerResponse.y = y;
 						message.firstServerResponse.direction = direction;
+						message.firstServerResponse.pointing_direction = pointing_direction;
 						message.firstServerResponse.characterLives = characterLives;
 						
 						pushNetworkMessage(&gGameMessagesFromNet, message);
@@ -839,11 +846,12 @@ int clientNetworkThread(void *context)
 				{
 					int characterID = 0;
 					int direction = 0;
+					int pointing_direction = 0;
 					float x = 0.0;
 					float y = 0.0;
 					float z = 0.0;
 					
-					sscanf(buffer + 2, "%d %f %f %f %d", &characterID, &x, &y, &z, &direction);
+					sscanf(buffer + 2, "%d %f %f %f %d %d", &characterID, &x, &y, &z, &direction, &pointing_direction);
 					
 					if (characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 					{
@@ -854,6 +862,7 @@ int clientNetworkThread(void *context)
 						message.movedUpdate.y = y;
 						message.movedUpdate.z = z;
 						message.movedUpdate.direction = direction;
+						message.movedUpdate.pointing_direction = pointing_direction;
 						pushNetworkMessage(&gGameMessagesFromNet, message);
 					}
 				}

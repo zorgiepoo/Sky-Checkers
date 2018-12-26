@@ -729,6 +729,7 @@ static void killCharacter(Input *characterInput, double timeDelta)
 			message.movedUpdate.y = player->y;
 			message.movedUpdate.z = player->z;
 			message.movedUpdate.direction = player->direction;
+			message.movedUpdate.pointing_direction = player->pointing_direction;
 			
 			sendToClients(0, &message);
 		}

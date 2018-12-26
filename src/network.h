@@ -95,6 +95,7 @@ typedef struct
 	int characterID;
 	float x, y, z;
 	int direction;
+	int pointing_direction;
 } CharacterMovedUpdate;
 
 typedef struct
@@ -114,6 +115,7 @@ typedef struct
 	int slotID;
 	float x, y;
 	int direction;
+	int pointing_direction;
 	int characterLives;
 } FirstServerResponse;
 
@@ -130,6 +132,7 @@ typedef struct
 	char *netName;
 	float x, y, z;
 	int direction;
+	int pointing_direction;
 } CharacterInfo;
 
 typedef struct

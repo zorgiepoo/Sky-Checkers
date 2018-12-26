@@ -228,8 +228,6 @@ static float getConsoleValue(void)
 		value = gRedRover.y;
 	else if (strcmp(gConsoleString, "scc~: get redRover.z") == 0)
 		value = gRedRover.z;
-	else if (strcmp(gConsoleString, "scc~: get redRover.zrot") == 0)
-		value = gRedRover.zRot;
 	else if (strcmp(gConsoleString, "scc~: get redRover.direction") == 0)
 		value = (float)gRedRover.direction;
 	else if (strcmp(gConsoleString, "scc~: get redRover.state") == 0)
@@ -266,8 +264,6 @@ static float getConsoleValue(void)
 		value = gGreenTree.y;
 	else if (strcmp(gConsoleString, "scc~: get greenTree.z") == 0)
 		value = gGreenTree.z;
-	else if (strcmp(gConsoleString, "scc~: get greenTree.zrot") == 0)
-		value = gGreenTree.zRot;
 	else if (strcmp(gConsoleString, "scc~: get greenTree.direction") == 0)
 		value = (float)gGreenTree.direction;
 	else if (strcmp(gConsoleString, "scc~: get greenTree.state") == 0)
@@ -304,8 +300,6 @@ static float getConsoleValue(void)
 		value = gPinkBubbleGum.y;
 	else if (strcmp(gConsoleString, "scc~: get pinkBubbleGum.z") == 0)
 		value = gPinkBubbleGum.z;
-	else if (strcmp(gConsoleString, "scc~: get pinkBubbleGum.zrot") == 0)
-		value = gPinkBubbleGum.zRot;
 	else if (strcmp(gConsoleString, "scc~: get pinkBubbleGum.direction") == 0)
 		value = (float)gPinkBubbleGum.direction;
 	else if (strcmp(gConsoleString, "scc~: get pinkBubbleGum.state") == 0)
@@ -342,8 +336,6 @@ static float getConsoleValue(void)
 		value = gBlueLightning.y;
 	else if (strcmp(gConsoleString, "scc~: get blueLightning.z") == 0)
 		value = gBlueLightning.z;
-	else if (strcmp(gConsoleString, "scc~: get blueLightning.zrot") == 0)
-		value = gBlueLightning.zRot;
 	else if (strcmp(gConsoleString, "scc~: get blueLightning.direction") == 0)
 		value = (float)gBlueLightning.direction;
 	else if (strcmp(gConsoleString, "scc~: get blueLightning.state") == 0)
@@ -519,10 +511,6 @@ static float setConsoleValue(SDL_bool *errorFlag)
 		{
 			gRedRover.z = value;
 		}
-		else if (strcmp(input, "scc~: redRover.zrot") == 0)
-		{
-			gRedRover.zRot = value;
-		}
 		else if (strcmp(input, "scc~: redRover.direction") == 0)
 		{
 			gRedRover.direction = (int)value;
@@ -588,10 +576,6 @@ static float setConsoleValue(SDL_bool *errorFlag)
 		else if (strcmp(input, "scc~: greenTree.z") == 0)
 		{
 			gGreenTree.z = value;
-		}
-		else if (strcmp(input, "scc~: greenTree.zrot") == 0)
-		{
-			gGreenTree.zRot = value;
 		}
 		else if (strcmp(input, "scc~: greenTree.direction") == 0)
 		{
@@ -659,10 +643,6 @@ static float setConsoleValue(SDL_bool *errorFlag)
 		{
 			gPinkBubbleGum.z = value;
 		}
-		else if (strcmp(input, "scc~: pinkBubbleGum.zrot") == 0)
-		{
-			gPinkBubbleGum.zRot = value;
-		}
 		else if (strcmp(input, "scc~: pinkBubbleGum.direction") == 0)
 		{
 			gPinkBubbleGum.direction = (int)value;
@@ -728,10 +708,6 @@ static float setConsoleValue(SDL_bool *errorFlag)
 		else if (strcmp(input, "scc~: blueLightning.z") == 0)
 		{
 			gBlueLightning.z = value;
-		}
-		else if (strcmp(input, "scc~: blueLightning.zrot") == 0)
-		{
-			gBlueLightning.zRot = value;
 		}
 		else if (strcmp(input, "scc~: blueLightning.direction") == 0)
 		{
