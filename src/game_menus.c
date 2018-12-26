@@ -174,8 +174,8 @@ void networkServerPlayMenuAction(void *context)
 {
 	if (gNetworkConnection != NULL && gNetworkConnection->thread != NULL)
 	{
-		fprintf(stderr, "game_menus: Waiting for server thread to terminate..\n");
-		SDL_WaitThread(gNetworkConnection->thread, NULL);
+		fprintf(stderr, "game_menus: (server play) thread hasn't terminated yet.. Try again later.\n");
+		return;
 	}
 	
 	networkInitialization();
@@ -370,12 +370,8 @@ void connectToNetworkGameMenuAction(void *context)
 {
 	if (gNetworkConnection != NULL && gNetworkConnection->thread != NULL)
 	{
-		GameMessage quitMessage;
-		quitMessage.type = QUIT_MESSAGE_TYPE;
-		sendToServer(quitMessage);
-		
-		fprintf(stderr, "game_menus: Waiting for client thread to terminate..\n");
-		SDL_WaitThread(gNetworkConnection->thread, NULL);
+		fprintf(stderr, "game_menus: (connect to server) thread hasn't terminated yet.. Try again later.\n");
+		return;
 	}
 	
 	gNetworkConnection = malloc(sizeof(*gNetworkConnection));
