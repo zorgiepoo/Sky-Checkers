@@ -91,7 +91,7 @@ void endGame(void);
 extern SDL_bool gGameHasStarted;
 extern SDL_bool gGameShouldReset;
 extern int gGameWinner;
-extern int gGameStartNumber;
+extern int32_t gGameStartNumber;
 extern SDL_bool gDrawFPS;
 
 extern int gCharacterLives;

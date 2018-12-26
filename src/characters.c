@@ -73,15 +73,24 @@ static void randomizeCharacterDirection(Character *character);
 /* Note: Does not initialize the character's weapon */
 void loadCharacter(Character *character)
 {	
-	if (!gNetworkConnection || gNetworkConnection->type != NETWORK_CLIENT_TYPE)
+	if (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE)
 	{
 		spawnCharacter(character);
 		randomizeCharacterDirection(character);
 		
-		if (gNetworkConnection && gNetworkConnection->type == NETWORK_SERVER_TYPE)
+		if (gNetworkConnection)
 		{
 			// update movement
-			sendToClients(0, "mo%i %f %f %f %i", IDOfCharacter(character), character->x, character->y, character->z, character->direction);
+			
+			GameMessage message;
+			message.type = CHARACTER_MOVED_UPDATE_MESSAGE_TYPE;
+			message.movedUpdate.characterID = IDOfCharacter(character);
+			message.movedUpdate.x = character->x;
+			message.movedUpdate.y = character->y;
+			message.movedUpdate.z = character->z;
+			message.movedUpdate.direction = character->direction;
+			
+			sendToClients(0, &message);
 		}
 	}
 	else if (gNetworkConnection && gNetworkConnection->type == NETWORK_CLIENT_TYPE)
@@ -598,14 +607,23 @@ static void sendCharacterMovement(Character *character)
 	{
 		if (gNetworkConnection->type == NETWORK_SERVER_TYPE)
 		{
-			sendToClients(0, "mo%i %f %f %f %i", IDOfCharacter(character), character->x, character->y, character->z, character->direction);
+			GameMessage message;
+			message.type = CHARACTER_MOVED_UPDATE_MESSAGE_TYPE;
+			message.movedUpdate.characterID = IDOfCharacter(character);
+			message.movedUpdate.x = character->x;
+			message.movedUpdate.y = character->y;
+			message.movedUpdate.z = character->z;
+			message.movedUpdate.direction = character->direction;
+			
+			sendToClients(0, &message);
 		}
 		else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE && character == gNetworkConnection->character)
 		{
-			char buffer[256];
-			sprintf(buffer, "rm%i %i", IDOfCharacter(character), character->direction);
+			GameMessage message;
+			message.type = MOVEMENT_REQUEST_MESSAGE_TYPE;
+			message.movementRequest.direction = character->direction;
 			
-			sendto(gNetworkConnection->socket, buffer, strlen(buffer), 0, (struct sockaddr *)&gNetworkConnection->hostAddress, sizeof(gNetworkConnection->hostAddress));
+			sendToServer(message);
 		}
 	}
 }
@@ -703,20 +721,34 @@ void fireCharacterWeapon(Character *character)
 		{
 			if (gNetworkConnection)
 			{
-				char shootWeaponMessage[256];
-				char movementMessage[256];
-				
-				sprintf(shootWeaponMessage, "sw%i", IDOfCharacter(character));
-				sprintf(movementMessage, "mo%i %f %f %f %i", IDOfCharacter(character), character->x, character->y, character->z, character->direction);
-				
 				if (gNetworkConnection->type == NETWORK_SERVER_TYPE)
 				{
-					sendToClients(0, movementMessage);
-					sendToClients(0, shootWeaponMessage);
+					{
+						GameMessage message;
+						message.type = CHARACTER_MOVED_UPDATE_MESSAGE_TYPE;
+						message.movedUpdate.characterID = IDOfCharacter(character);
+						message.movedUpdate.x = character->x;
+						message.movedUpdate.y = character->y;
+						message.movedUpdate.z = character->z;
+						message.movedUpdate.direction = character->direction;
+						
+						sendToClients(0, &message);
+					}
+					
+					{
+						GameMessage message;
+						message.type = CHARACTER_FIRED_MESSAGE_TYPE;
+						message.firingRequest.characterID = IDOfCharacter(character);
+						
+						sendToClients(0, &message);
+					}
 				}
 				else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE && gNetworkConnection->character == character)
-				{
-					sendto(gNetworkConnection->socket, shootWeaponMessage, strlen(shootWeaponMessage), 0, (struct sockaddr *)&gNetworkConnection->hostAddress, sizeof(gNetworkConnection->hostAddress));
+				{	
+					GameMessage message;
+					message.type = CHARACTER_FIRED_MESSAGE_TYPE;
+					
+					sendToServer(message);
 				}
 			}
 			

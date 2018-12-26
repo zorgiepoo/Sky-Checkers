@@ -452,7 +452,7 @@ static float setConsoleValue(SDL_bool *errorFlag)
 		}
 	}
 	
-	if ((!gNetworkConnection || gNetworkConnection->type != NETWORK_CLIENT_TYPE))
+	if ((!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE))
 	{
 		if (gConsoleString[MIN_CONSOLE_STRING_LENGTH + 4] == '(')
 		{
@@ -791,7 +791,7 @@ static float setConsoleValue(SDL_bool *errorFlag)
 		}
 		else if (strcmp(input, "scc~: game_reset") == 0)
 		{
-			if (!gNetworkConnection || gNetworkConnection->type != NETWORK_CLIENT_TYPE)
+			if (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE)
 			{
 				if (valueExists)
 				{
@@ -804,9 +804,11 @@ static float setConsoleValue(SDL_bool *errorFlag)
 				}
 
 				
-				if (gNetworkConnection && gNetworkConnection->type == NETWORK_SERVER_TYPE)
+				if (gNetworkConnection)
 				{
-					sendToClients(0, "ng");
+					GameMessage message;
+					message.type = GAME_RESET_MESSAGE_TYPE;
+					sendToClients(0, &message);
 				}
 			}
 		}

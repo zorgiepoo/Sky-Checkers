@@ -172,33 +172,16 @@ void drawNetworkServerPlayMenu(Renderer *renderer, color4_t preferredColor)
 
 void networkServerPlayMenuAction(void *context)
 {
-	gPinkBubbleGum.backup_state = gPinkBubbleGum.state;
-	gRedRover.backup_state = gRedRover.state;
-	gGreenTree.backup_state = gGreenTree.state;
-	gBlueLightning.backup_state = gBlueLightning.state;
-	
-	gPinkBubbleGum.state = CHARACTER_HUMAN_STATE;
-	gRedRover.state = CHARACTER_HUMAN_STATE;
-	gGreenTree.state = gNumberOfNetHumans > 1 ? CHARACTER_HUMAN_STATE : CHARACTER_AI_STATE;
-	gBlueLightning.state = gNumberOfNetHumans > 2 ? CHARACTER_HUMAN_STATE : CHARACTER_AI_STATE;
-	
-	gPinkBubbleGum.netState = NETWORK_PLAYING_STATE;
-	gRedRover.netState = gRedRover.state == CHARACTER_HUMAN_STATE ? NETWORK_PENDING_STATE : NETWORK_PLAYING_STATE;
-	gGreenTree.netState = gGreenTree.state == CHARACTER_HUMAN_STATE ? NETWORK_PENDING_STATE : NETWORK_PLAYING_STATE;
-	gBlueLightning.netState = gBlueLightning.state == CHARACTER_HUMAN_STATE ? NETWORK_PENDING_STATE : NETWORK_PLAYING_STATE;
-	
-	gNetworkConnection = malloc(sizeof(NetworkConnection));
-	gNetworkConnection->type = NETWORK_SERVER_TYPE;
-	gNetworkConnection->character = &gPinkBubbleGum;
-	gPinkBubbleGum.netName = gUserNameString;
-	gNetworkConnection->shouldRun = SDL_TRUE;
-	
-	gNetworkConnection->numberOfPlayersToWaitFor = 0; 
- 	gNetworkConnection->numberOfPlayersToWaitFor += (gRedRover.netState == NETWORK_PENDING_STATE);
- 	gNetworkConnection->numberOfPlayersToWaitFor += (gGreenTree.netState == NETWORK_PENDING_STATE);
- 	gNetworkConnection->numberOfPlayersToWaitFor += (gBlueLightning.netState == NETWORK_PENDING_STATE);
+	if (gNetworkConnection != NULL && gNetworkConnection->thread != NULL)
+	{
+		fprintf(stderr, "game_menus: Waiting for server thread to terminate..\n");
+		SDL_WaitThread(gNetworkConnection->thread, NULL);
+	}
 	
 	networkInitialization();
+	
+	gNetworkConnection = malloc(sizeof(*gNetworkConnection));
+	memset(gNetworkConnection, 0, sizeof(*gNetworkConnection));
 	
 	// open socket
 	gNetworkConnection->socket = socket(AF_INET, SOCK_DGRAM, 0);
@@ -209,10 +192,6 @@ void networkServerPlayMenuAction(void *context)
 		
 		free(gNetworkConnection);
 		gNetworkConnection = NULL;
-		
-		restoreAllBackupStates();
-		
-		networkCleanup();
 		
 		return;
 	}
@@ -234,14 +213,34 @@ void networkServerPlayMenuAction(void *context)
 		free(gNetworkConnection);
 		gNetworkConnection = NULL;
 		
-		restoreAllBackupStates();
-		
-		networkCleanup();
-		
 		return;
     }
 	
-	SDL_CreateThread(serverNetworkThread, "server-thread", NULL);
+	gPinkBubbleGum.backup_state = gPinkBubbleGum.state;
+	gRedRover.backup_state = gRedRover.state;
+	gGreenTree.backup_state = gGreenTree.state;
+	gBlueLightning.backup_state = gBlueLightning.state;
+	
+	gPinkBubbleGum.state = CHARACTER_HUMAN_STATE;
+	gRedRover.state = CHARACTER_HUMAN_STATE;
+	gGreenTree.state = gNumberOfNetHumans > 1 ? CHARACTER_HUMAN_STATE : CHARACTER_AI_STATE;
+	gBlueLightning.state = gNumberOfNetHumans > 2 ? CHARACTER_HUMAN_STATE : CHARACTER_AI_STATE;
+	
+	gPinkBubbleGum.netState = NETWORK_PLAYING_STATE;
+	gRedRover.netState = gRedRover.state == CHARACTER_HUMAN_STATE ? NETWORK_PENDING_STATE : NETWORK_PLAYING_STATE;
+	gGreenTree.netState = gGreenTree.state == CHARACTER_HUMAN_STATE ? NETWORK_PENDING_STATE : NETWORK_PLAYING_STATE;
+	gBlueLightning.netState = gBlueLightning.state == CHARACTER_HUMAN_STATE ? NETWORK_PENDING_STATE : NETWORK_PLAYING_STATE;
+	
+	gNetworkConnection->type = NETWORK_SERVER_TYPE;
+	gNetworkConnection->character = &gPinkBubbleGum;
+	gPinkBubbleGum.netName = gUserNameString;
+	
+	gNetworkConnection->numberOfPlayersToWaitFor = 0;
+	gNetworkConnection->numberOfPlayersToWaitFor += (gRedRover.netState == NETWORK_PENDING_STATE);
+	gNetworkConnection->numberOfPlayersToWaitFor += (gGreenTree.netState == NETWORK_PENDING_STATE);
+	gNetworkConnection->numberOfPlayersToWaitFor += (gBlueLightning.netState == NETWORK_PENDING_STATE);
+	
+	gCurrentSlot = 0;
 	
 	initGame();
 	
@@ -252,6 +251,8 @@ void networkServerPlayMenuAction(void *context)
 	// make sure we are at main menu
 	changeMenu(LEFT);
 	changeMenu(LEFT);
+	
+	gNetworkConnection->thread = SDL_CreateThread(serverNetworkThread, "server-thread", &gNetworkConnection->numberOfPlayersToWaitFor);
 }
 
 void drawNetworkServerNumberOfPlayersMenu(Renderer *renderer, color4_t preferredColor)
@@ -367,23 +368,23 @@ void drawConnectToNetworkGameMenu(Renderer *renderer, color4_t preferredColor)
 
 void connectToNetworkGameMenuAction(void *context)
 {
-	if (gNetworkConnection && gNetworkConnection->shouldRun)
+	if (gNetworkConnection != NULL && gNetworkConnection->thread != NULL)
 	{
-		// the thread already exists, wait for it to die
-		gNetworkConnection->shouldRun = SDL_FALSE;
-		SDL_WaitThread(gNetworkConnection->thread, NULL);
-	}
-	else if (gNetworkConnection && !(gNetworkConnection->shouldRun))
-	{
+		GameMessage quitMessage;
+		quitMessage.type = QUIT_MESSAGE_TYPE;
+		sendToServer(quitMessage);
+		
+		fprintf(stderr, "game_menus: Waiting for client thread to terminate..\n");
 		SDL_WaitThread(gNetworkConnection->thread, NULL);
 	}
 	
-	gNetworkConnection = malloc(sizeof(NetworkConnection));
+	gNetworkConnection = malloc(sizeof(*gNetworkConnection));
+	memset(gNetworkConnection, 0, sizeof(*gNetworkConnection));
+	
+	gNetworkConnection->thread = NULL;
 	gNetworkConnection->character = NULL;
-	gNetworkConnection->isConnected = SDL_FALSE;
 	gNetworkConnection->type = NETWORK_CLIENT_TYPE;
 	gNetworkConnection->numberOfPlayersToWaitFor = 0;
-	gNetworkConnection->shouldRun = SDL_TRUE;
 	
 	networkInitialization();
 	
@@ -396,8 +397,6 @@ void connectToNetworkGameMenuAction(void *context)
 		
 		free(gNetworkConnection);
 		gNetworkConnection = NULL;
-		
-		networkCleanup();
 		
 		return;
 	}
@@ -415,8 +414,6 @@ void connectToNetworkGameMenuAction(void *context)
 		closeSocket(gNetworkConnection->socket);
 		free(gNetworkConnection);
 		gNetworkConnection = NULL;
-		
-		networkCleanup();
 		
 		return;
 	}

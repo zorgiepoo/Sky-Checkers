@@ -41,7 +41,7 @@ static const int NEW_GAME_WILL_BEGIN_DELAY =	3;
 
 SDL_bool gGameHasStarted;
 SDL_bool gGameShouldReset;
-int gGameStartNumber;
+int32_t gGameStartNumber;
 int gGameWinner;
 
 // Console flag indicating if we can use the console
@@ -983,7 +983,7 @@ static void drawScene(Renderer *renderer)
 			drawScoreboardForCharacters(renderer, SCOREBOARD_RENDER_SCORES);
 			
 			// Play again text at z = -20.0f
-			if (!gNetworkConnection || gNetworkConnection->type != NETWORK_CLIENT_TYPE)
+			if (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE)
 			{
 				// Draw a "Press ENTER to play again" notice
 				mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f / 1.25f, -7.0f / 1.25f, -25.0f / 1.25f});
@@ -1074,11 +1074,13 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 				event->key.keysym.scancode == SDL_SCANCODE_RETURN || event->key.keysym.scancode == SDL_SCANCODE_KP_ENTER))
 			{
 				// new game
-				if (!gNetworkConnection || gNetworkConnection->type != NETWORK_CLIENT_TYPE)
+				if (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE)
 				{
-					if (gNetworkConnection && gNetworkConnection->type == NETWORK_SERVER_TYPE)
+					if (gNetworkConnection)
 					{
-						sendToClients(0, "ng");
+						GameMessage message;
+						message.type = GAME_RESET_MESSAGE_TYPE;
+						sendToClients(0, &message);
 					}
 					gGameShouldReset = SDL_TRUE;
 				}
@@ -1309,17 +1311,16 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 						{
 							if (gNetworkConnection->type == NETWORK_SERVER_TYPE)
 							{
-								sendToClients(0, "qu");
+								GameMessage message;
+								message.type = QUIT_MESSAGE_TYPE;
+								sendToClients(0, &message);
 							}
 							else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE)
 							{
-								char buffer[256];
-								sprintf(buffer, "qu%i", IDOfCharacter(gNetworkConnection->character));
-
-								sendto(gNetworkConnection->socket, buffer, strlen(buffer), 0, (struct sockaddr *)&gNetworkConnection->hostAddress, sizeof(gNetworkConnection->hostAddress));
+								GameMessage message;
+								message.type = QUIT_MESSAGE_TYPE;
+								sendToServer(message);
 							}
-
-							gNetworkConnection->shouldRun = SDL_FALSE;
 						}
 					}
 					else /* if (gConsoleActivated) */
@@ -1396,11 +1397,13 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 				event->jaxis.axis == gBlueLightningInput.weapjs_axis_id || event->jaxis.axis == gGreenTreeInput.weapjs_axis_id))
 			{
 				// new game
-				if (!gConsoleActivated && (!gNetworkConnection || gNetworkConnection->type != NETWORK_CLIENT_TYPE))
+				if (!gConsoleActivated && (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE))
 				{
-					if (gNetworkConnection && gNetworkConnection->type == NETWORK_SERVER_TYPE)
+					if (gNetworkConnection)
 					{
-						sendToClients(0, "ng");
+						GameMessage message;
+						message.type = GAME_RESET_MESSAGE_TYPE;
+						sendToClients(0, &message);
 					}
 					gGameShouldReset = SDL_TRUE;
 				}
@@ -1493,6 +1496,8 @@ static void eventLoop(Renderer *renderer)
 		while (updateIterations > ANIMATION_TIMER_INTERVAL)
 		{
 			updateIterations -= ANIMATION_TIMER_INTERVAL;
+			
+			syncNetworkState();
 			
 			if (gGameState)
 			{
@@ -1682,6 +1687,9 @@ int main(int argc, char *argv[])
 	cacheString(&renderer, "Game begins in 3");
 	cacheString(&renderer, "Game begins in 4");
 	cacheString(&renderer, "Game begins in 5");
+	
+	// Create netcode buffers and mutex's in case we need them later
+	initializeNetworkBuffers();
 
 	// Start the game event loop
     eventLoop(&renderer);
@@ -1695,14 +1703,22 @@ int main(int argc, char *argv[])
 	{
 		if (gNetworkConnection->type == NETWORK_SERVER_TYPE)
 		{
-			sendToClients(0, "qu");
+			GameMessage message;
+			message.type = QUIT_MESSAGE_TYPE;
+			sendToClients(0, &message);
 		}
-		else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE && gNetworkConnection->isConnected)
+		else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE && gNetworkConnection->character)
 		{
-			char buffer[256];
-			sprintf(buffer, "qu%i", IDOfCharacter(gNetworkConnection->character));
-			
-			sendto(gNetworkConnection->socket, buffer, strlen(buffer), 0, (struct sockaddr *)&gNetworkConnection->hostAddress, sizeof(gNetworkConnection->hostAddress));
+			GameMessage message;
+			message.type = QUIT_MESSAGE_TYPE;
+			sendToServer(message);
+		}
+		
+		// Wait for the thread to finish before we terminate the main thread
+		while (gNetworkConnection != NULL)
+		{
+			syncNetworkState();
+			SDL_Delay(10);
 		}
 	}
 

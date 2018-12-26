@@ -92,7 +92,10 @@ void animate(SDL_Window *window, double timeDelta)
 		{
 			if (gNetworkConnection && gNetworkConnection->type == NETWORK_SERVER_TYPE)
 			{
-				sendToClients(0, "gs%i", gGameStartNumber - 1);
+				GameMessage message;
+				message.type = GAME_START_NUMBER_UPDATE_MESSAGE_TYPE;
+				message.gameStartNumber = gGameStartNumber - 1;
+				sendToClients(0, &message);
 			}
 			
 			if (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE)
@@ -671,7 +674,10 @@ static void killCharacter(Input *characterInput, double timeDelta)
 			
 			if (gNetworkConnection && gNetworkConnection->type == NETWORK_SERVER_TYPE)
 			{
-				sendToClients(0, "pk%i %i", IDOfCharacter(player), player->lives);
+				GameMessage message;
+				message.type = CHARACTER_DIED_UPDATE_MESSAGE_TYPE;
+				message.diedUpdate.characterID = IDOfCharacter(player);
+				message.diedUpdate.characterLives = player->lives;
 			}
 			
 			decideWhetherToMakeAPlayerAWinner(player);
@@ -701,7 +707,12 @@ static void killCharacter(Input *characterInput, double timeDelta)
 				
 				if (gNetworkConnection && gNetworkConnection->type == NETWORK_SERVER_TYPE)
 				{
-					sendToClients(0, "ck%i %i", IDOfCharacter(killer), killer->kills);
+					GameMessage message;
+					message.type = CHARACTER_KILLED_UPDATE_MESSAGE_TYPE;
+					message.killedUpdate.characterID = IDOfCharacter(killer);
+					message.killedUpdate.kills = killer->kills;
+					
+					sendToClients(0, &message);
 				}
 			}
 		}
@@ -710,8 +721,16 @@ static void killCharacter(Input *characterInput, double timeDelta)
 		player->recovery_timer = 1;
 		
 		if (gNetworkConnection && gNetworkConnection->type == NETWORK_SERVER_TYPE)
-		{
-			sendToClients(0, "mo%i %f %f %f %i", IDOfCharacter(player), player->x, player->y, player->z, player->direction);
+		{	
+			GameMessage message;
+			message.type = CHARACTER_MOVED_UPDATE_MESSAGE_TYPE;
+			message.movedUpdate.characterID = IDOfCharacter(player);
+			message.movedUpdate.x = player->x;
+			message.movedUpdate.y = player->y;
+			message.movedUpdate.z = player->z;
+			message.movedUpdate.direction = player->direction;
+			
+			sendToClients(0, &message);
 		}
 	}
 }
@@ -739,7 +758,13 @@ static void recoverCharacter(Character *player)
 			if (gNetworkConnection && gNetworkConnection->type == NETWORK_SERVER_TYPE)
 			{
 				// tell clients we spawned
-				sendToClients(0, "sp%i %f %f", IDOfCharacter(player), player->x, player->y);
+				GameMessage message;
+				message.type = CHARACTER_SPAWNED_UPDATE_MESSAGE_TYPE;
+				message.spawnedUpdate.characterID = IDOfCharacter(player);
+				message.spawnedUpdate.x = player->x;
+				message.spawnedUpdate.y = player->y;
+				
+				sendToClients(0, &message);
 			}
 			
 			player->active = SDL_TRUE;
