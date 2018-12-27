@@ -739,8 +739,11 @@ void fireCharacterWeapon(Character *character)
 					
 					{
 						GameMessage message;
-						message.type = CHARACTER_FIRED_MESSAGE_TYPE;
-						message.firingRequest.characterID = IDOfCharacter(character);
+						message.type = CHARACTER_FIRED_UPDATE_MESSAGE_TYPE;
+						message.firedUpdate.characterID = IDOfCharacter(character);
+						message.firedUpdate.x = character->x;
+						message.firedUpdate.y = character->y;
+						message.firedUpdate.direction = character->pointing_direction;
 						
 						sendToClients(0, &message);
 					}
@@ -748,16 +751,11 @@ void fireCharacterWeapon(Character *character)
 				else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE && gNetworkConnection->character == character)
 				{	
 					GameMessage message;
-					message.type = CHARACTER_FIRED_MESSAGE_TYPE;
+					message.type = CHARACTER_FIRED_REQUEST_MESSAGE_TYPE;
 					
 					sendToServer(message);
 				}
 			}
-			
-			// don't bind z coordinate value
-			character->weap->x = character->x;
-			character->weap->y = character->y;
-			character->weap->direction = character->pointing_direction;
 			
 			// make sure character can't move while firing the weapon
 			character->active = SDL_FALSE;
@@ -767,4 +765,14 @@ void fireCharacterWeapon(Character *character)
 		}
 	}
 	character->weap->fired = SDL_FALSE;
+}
+
+void prepareFiringCharacterWeapon(Character *character)
+{
+	// don't bind z coordinate value
+	character->weap->x = character->x;
+	character->weap->y = character->y;
+	character->weap->direction = character->pointing_direction;
+	
+	character->weap->fired = SDL_TRUE;
 }

@@ -352,7 +352,7 @@ void performUpAction(Input *input, SDL_Window *window, SDL_Event *event)
 		{
 			if (gGameHasStarted)
 			{
-				input->character->weap->fired = SDL_TRUE;
+				prepareFiringCharacterWeapon(input->character);
 			}
 			input->weap = SDL_FALSE;
 		}
@@ -384,7 +384,7 @@ void performUpAction(Input *input, SDL_Window *window, SDL_Event *event)
 		{
 			if (gGameHasStarted)
 			{
-				input->character->weap->fired = SDL_TRUE;
+				prepareFiringCharacterWeapon(input->character);
 			}
 			input->weap = SDL_FALSE;
 		}
@@ -397,7 +397,7 @@ void performUpAction(Input *input, SDL_Window *window, SDL_Event *event)
 		{
 			if (gGameHasStarted)
 			{
-				input->character->weap->fired = SDL_TRUE;
+				prepareFiringCharacterWeapon(input->character);
 			}
 			input->weap = SDL_FALSE;
 		}

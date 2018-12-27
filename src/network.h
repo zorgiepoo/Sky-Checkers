@@ -52,7 +52,7 @@ typedef enum
 {
 	QUIT_MESSAGE_TYPE = 0,
 	MOVEMENT_REQUEST_MESSAGE_TYPE = 1,
-	CHARACTER_FIRED_MESSAGE_TYPE = 2,
+	CHARACTER_FIRED_REQUEST_MESSAGE_TYPE = 2,
 	NUMBER_OF_PLAYERS_WAITING_FOR_MESSAGE_TYPE = 3,
 	NET_NAME_MESSAGE_TYPE = 4,
 	START_GAME_MESSAGE_TYPE = 5,
@@ -65,7 +65,8 @@ typedef enum
 	FIRST_SERVER_RESPONSE_MESSAGE_TYPE = 12,
 	FIRST_CLIENT_RESPONSE_MESSAGE_TYPE = 13,
 	FIRST_DATA_TO_CLIENT_MESSAGE_TYPE = 14,
-	WELCOME_MESSAGE_TO_SERVER_MESSAGE_TYPE = 15
+	WELCOME_MESSAGE_TO_SERVER_MESSAGE_TYPE = 15,
+	CHARACTER_FIRED_UPDATE_MESSAGE_TYPE = 16
 } MessageType;
 
 typedef struct
@@ -76,7 +77,14 @@ typedef struct
 typedef struct
 {
 	int characterID;
-} CharacterFiringRequest;
+} CharacterFiredRequest;
+
+typedef struct
+{
+	int characterID;
+	float x, y;
+	int direction;
+} CharacterFiredUpdate;
 
 typedef struct
 {
@@ -154,7 +162,8 @@ typedef struct
 	union
 	{
 		CharacterMovementRequest movementRequest;
-		CharacterFiringRequest firingRequest;
+		CharacterFiredRequest firedRequest;
+		CharacterFiredUpdate firedUpdate;
 		CharacterNetNameRequest netNameRequest;
 		CharacterDiedUpdate diedUpdate;
 		CharacterMovedUpdate movedUpdate;

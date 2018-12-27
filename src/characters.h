@@ -152,3 +152,4 @@ void moveCharacter(Character *character, double timeDelta);
 void turnCharacter(Character *character, int direction);
 
 void fireCharacterWeapon(Character *character);
+void prepareFiringCharacterWeapon(Character *character);

@@ -88,11 +88,23 @@ void syncNetworkState(void)
 					
 					break;
 				}
-				case CHARACTER_FIRED_MESSAGE_TYPE:
+				case CHARACTER_FIRED_UPDATE_MESSAGE_TYPE:
 				{
-					int characterID = message.firingRequest.characterID;
+					int characterID = message.firedUpdate.characterID;
 					Character *character = getCharacter(characterID);
-					character->weap->fired = SDL_TRUE;
+					
+					character->x = message.firedUpdate.x;
+					character->y = message.firedUpdate.y;
+					character->pointing_direction = message.firedUpdate.direction;
+					prepareFiringCharacterWeapon(character);
+					
+					break;
+				}
+				case CHARACTER_FIRED_REQUEST_MESSAGE_TYPE:
+				{
+					int characterID = message.firedUpdate.characterID;
+					Character *character = getCharacter(characterID);
+					prepareFiringCharacterWeapon(character);
 					
 					break;
 				}
@@ -295,15 +307,17 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						
 						break;
 					}
-					case CHARACTER_FIRED_MESSAGE_TYPE:
+					case CHARACTER_FIRED_UPDATE_MESSAGE_TYPE:
 					{
 						char buffer[256];
-						snprintf(buffer, sizeof(buffer) - 1, "sw%d", message.firingRequest.characterID);
+						snprintf(buffer, sizeof(buffer) - 1, "sw%d %f %f %d", message.firedUpdate.characterID, message.firedUpdate.x, message.firedUpdate.y, message.firedUpdate.direction);
 						
 						sendData(gNetworkConnection->socket, buffer, strlen(buffer), address);
 						
 						break;
 					}
+					case CHARACTER_FIRED_REQUEST_MESSAGE_TYPE:
+						break;
 					case NUMBER_OF_PLAYERS_WAITING_FOR_MESSAGE_TYPE:
 					{
 						char buffer[256];
@@ -603,8 +617,8 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					if (characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 					{
 						GameMessage message;
-						message.type = CHARACTER_FIRED_MESSAGE_TYPE;
-						message.firingRequest.characterID = characterID;
+						message.type = CHARACTER_FIRED_REQUEST_MESSAGE_TYPE;
+						message.firedRequest.characterID = characterID;
 						
 						pushNetworkMessage(&gGameMessagesFromNet, message);
 					}
@@ -683,7 +697,7 @@ int clientNetworkThread(void *context)
 						
 						break;
 					}
-					case CHARACTER_FIRED_MESSAGE_TYPE:
+					case CHARACTER_FIRED_REQUEST_MESSAGE_TYPE:
 					{
 						char buffer[] = "sw";
 						
@@ -691,6 +705,8 @@ int clientNetworkThread(void *context)
 						
 						break;
 					}
+					case CHARACTER_FIRED_UPDATE_MESSAGE_TYPE:
+						break;
 					case NUMBER_OF_PLAYERS_WAITING_FOR_MESSAGE_TYPE:
 						break;
 					case NET_NAME_MESSAGE_TYPE:
@@ -922,12 +938,21 @@ int clientNetworkThread(void *context)
 				else if (buffer[0] == 's' && buffer[1] == 'w')
 				{
 					// shoot weapon
-					int characterID = atoi(buffer + 2);
+					int characterID = 0;
+					float x = 0.0f;
+					float y = 0.0f;
+					int pointing_direction = 0;
+					
+					sscanf(buffer + 2, "%d %f %f %d", &characterID, &x, &y, &pointing_direction);
+					
 					if (characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 					{
 						GameMessage message;
-						message.type = CHARACTER_FIRED_MESSAGE_TYPE;
-						message.firingRequest.characterID = characterID;
+						message.type = CHARACTER_FIRED_UPDATE_MESSAGE_TYPE;
+						message.firedUpdate.characterID = characterID;
+						message.firedUpdate.x = x;
+						message.firedUpdate.y = y;
+						message.firedUpdate.direction = pointing_direction;
 						
 						pushNetworkMessage(&gGameMessagesFromNet, message);
 					}
