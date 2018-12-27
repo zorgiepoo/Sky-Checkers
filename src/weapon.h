@@ -26,6 +26,7 @@ typedef struct
 {
 	float x, y, z;
 	float red, green, blue;
+	float initialX, initialY;
 	
 	SDL_bool drawingState;
 	SDL_bool animationState;

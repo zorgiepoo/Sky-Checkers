@@ -246,8 +246,8 @@ static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player)
 		{
 			Tile *currentTile;
 			
-			// Get the location of where the player is
-			int tileLocation = getTileIndexLocation((int)player->x, (int)player->y);;
+			// Get the location of where the player fired their weapon
+			int tileLocation = getTileIndexLocation((int)player->weap->initialX, (int)player->weap->initialY);
 			if (tileLocation < NUMBER_OF_TILES)
 			{
 				player->player_loc = tileLocation;

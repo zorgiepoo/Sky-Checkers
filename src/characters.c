@@ -772,6 +772,8 @@ void prepareFiringCharacterWeapon(Character *character)
 	// don't bind z coordinate value
 	character->weap->x = character->x;
 	character->weap->y = character->y;
+	character->weap->initialX = character->weap->x;
+	character->weap->initialY = character->weap->y;
 	character->weap->direction = character->pointing_direction;
 	
 	character->weap->fired = SDL_TRUE;
