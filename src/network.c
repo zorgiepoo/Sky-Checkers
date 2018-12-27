@@ -373,7 +373,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					case CHARACTER_KILLED_UPDATE_MESSAGE_TYPE:
 					{
 						char buffer[256];
-						snprintf(buffer, sizeof(buffer) - 1, "ck%d %d", IDOfCharacter(message.killedUpdate.characterID), message.killedUpdate.kills);
+						snprintf(buffer, sizeof(buffer) - 1, "ck%d %d", message.killedUpdate.characterID, message.killedUpdate.kills);
 						
 						sendData(gNetworkConnection->socket, buffer, strlen(buffer), address);
 						

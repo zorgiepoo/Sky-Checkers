@@ -678,6 +678,8 @@ static void killCharacter(Input *characterInput, double timeDelta)
 				message.type = CHARACTER_DIED_UPDATE_MESSAGE_TYPE;
 				message.diedUpdate.characterID = IDOfCharacter(player);
 				message.diedUpdate.characterLives = player->lives;
+				
+				sendToClients(0, &message);
 			}
 			
 			decideWhetherToMakeAPlayerAWinner(player);
