@@ -66,7 +66,8 @@ typedef enum
 	FIRST_CLIENT_RESPONSE_MESSAGE_TYPE = 13,
 	FIRST_DATA_TO_CLIENT_MESSAGE_TYPE = 14,
 	WELCOME_MESSAGE_TO_SERVER_MESSAGE_TYPE = 15,
-	CHARACTER_FIRED_UPDATE_MESSAGE_TYPE = 16
+	CHARACTER_FIRED_UPDATE_MESSAGE_TYPE = 16,
+	ACK_MESSAGE_TYPE = 17
 } MessageType;
 
 typedef struct
@@ -158,6 +159,7 @@ typedef struct
 typedef struct
 {
 	MessageType type;
+	uint64_t packetNumber;
 	int addressIndex;
 	union
 	{
