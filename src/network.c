@@ -333,7 +333,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 			for (uint32_t messageIndex = 0; messageIndex < messagesCount; messageIndex++)
 			{
 				GameMessage message = messagesAvailable[messageIndex];
-				struct sockaddr_in *address = (message.type == QUIT_MESSAGE_TYPE) ? NULL :  &gClientAddress[message.addressIndex];
+				struct sockaddr_in *address = (message.addressIndex == -1) ? NULL :  &gClientAddress[message.addressIndex];
 				
 				if (message.type != QUIT_MESSAGE_TYPE && message.type != ACK_MESSAGE_TYPE && message.type != FIRST_DATA_TO_CLIENT_MESSAGE_TYPE)
 				{
@@ -1477,17 +1477,9 @@ int clientNetworkThread(void *context)
 				else if (buffer[0] == 'q' && buffer[1] == 'u')
 				{
 					// quit
-					uint64_t packetNumber = 0;
-					sscanf(buffer + 2, "%llu", &packetNumber);
-					
-					if (packetNumber == triggerIncomingPacketNumber + 1)
-					{
-						triggerIncomingPacketNumber++;
-						
-						GameMessage message;
-						message.type = QUIT_MESSAGE_TYPE;
-						pushNetworkMessage(&gGameMessagesFromNet, message);
-					}
+					GameMessage message;
+					message.type = QUIT_MESSAGE_TYPE;
+					pushNetworkMessage(&gGameMessagesFromNet, message);
 					
 					break;
 				}
