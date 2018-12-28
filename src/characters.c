@@ -101,6 +101,7 @@ void loadCharacter(Character *character)
 		character->z = 2.0f;
 	}
 	
+	character->last_direction = NO_DIRECTION;
 	character->recovery_timer = 0;
 	character->animation_timer = 0;
 	character->coloredTiles = SDL_FALSE;
@@ -637,11 +638,16 @@ static void sendCharacterMovement(Character *character)
 		}
 		else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE && character == gNetworkConnection->character)
 		{
-			GameMessage message;
-			message.type = MOVEMENT_REQUEST_MESSAGE_TYPE;
-			message.movementRequest.direction = character->direction;
-			
-			sendToServer(message);
+			if (character->direction != character->last_direction)
+			{
+				GameMessage message;
+				message.type = MOVEMENT_REQUEST_MESSAGE_TYPE;
+				message.movementRequest.direction = character->direction;
+				
+				sendToServer(message);
+				
+				character->last_direction = character->direction;
+			}
 		}
 	}
 }

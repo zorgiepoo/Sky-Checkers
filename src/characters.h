@@ -65,8 +65,11 @@ typedef struct _Character
 	/* Colors of character faces */
 	float red, green, blue;
 	
-	/* Direction character is curerntly going in */
+	/* Direction character is currently going in */
 	int direction;
+	
+	/* The last direction the character is currently going in - used for netcode */
+	int last_direction;
 	
 	/* The direction the character was last pointing towards */
 	int pointing_direction;

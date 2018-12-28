@@ -316,7 +316,6 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 	uint64_t realTimeOutgoingPacketNumbers[] = {1, 1, 1};
 	
 	uint64_t triggerIncomingPacketNumbers[] = {0, 0, 0};
-	uint64_t realTimeIncomingPacketNumbers[] = {0, 0, 0};
 	
 	uint64_t receivedAckPacketNumbers[3][256] = {{0}, {0}, {0}};
 	size_t receivedAckPacketsCapacity = sizeof(receivedAckPacketNumbers[0]) / sizeof(*receivedAckPacketNumbers[0]);
@@ -752,9 +751,9 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					
 					sscanf(buffer + 2, "%llu %d", &packetNumber, &direction);
 					
-					if (packetNumber > realTimeIncomingPacketNumbers[addressIndex])
+					if (packetNumber == triggerIncomingPacketNumbers[addressIndex] + 1)
 					{
-						realTimeIncomingPacketNumbers[addressIndex] = packetNumber;
+						triggerIncomingPacketNumbers[addressIndex]++;
 						
 						if (direction == LEFT || direction == RIGHT || direction == UP || direction == DOWN || direction == NO_DIRECTION)
 						{
@@ -762,12 +761,21 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							{
 								GameMessage message;
 								message.type = MOVEMENT_REQUEST_MESSAGE_TYPE;
-								message.addressIndex = characterID - 1;
+								message.addressIndex = addressIndex;
 								message.movementRequest.direction = direction;
 								
 								pushNetworkMessage(&gGameMessagesFromNet, message);
 							}
 						}
+					}
+					
+					if (packetNumber <= triggerIncomingPacketNumbers[addressIndex])
+					{
+						GameMessage ackMessage;
+						ackMessage.type = ACK_MESSAGE_TYPE;
+						ackMessage.packetNumber = packetNumber;
+						ackMessage.addressIndex = addressIndex;
+						pushNetworkMessage(&gGameMessagesToNet, ackMessage);
 					}
 				}
 				
@@ -853,7 +861,6 @@ int clientNetworkThread(void *context)
 	SDL_bool receivedFirstServerMessage = SDL_FALSE;
 	
 	uint64_t triggerOutgoingPacketNumber = 1;
-	uint64_t realTimeOutgoingPacketNumber = 1;
 	
 	uint64_t triggerIncomingPacketNumber = 0;
 	uint64_t realTimeIncomingPacketNumber = 0;
@@ -883,21 +890,13 @@ int clientNetworkThread(void *context)
 				{
 					if (message.packetNumber == 0)
 					{
-						if (message.type == MOVEMENT_REQUEST_MESSAGE_TYPE)
-						{
-							message.packetNumber = realTimeOutgoingPacketNumber;
-							realTimeOutgoingPacketNumber++;
-						}
-						else
-						{
-							message.packetNumber = triggerOutgoingPacketNumber;
-							triggerOutgoingPacketNumber++;
-							
-							// Re-send message until we receive an ack
-							pushNetworkMessage(&gGameMessagesToNet, message);
-						}
+						message.packetNumber = triggerOutgoingPacketNumber;
+						triggerOutgoingPacketNumber++;
+						
+						// Re-send message until we receive an ack
+						pushNetworkMessage(&gGameMessagesToNet, message);
 					}
-					else if (message.type != MOVEMENT_REQUEST_MESSAGE_TYPE)
+					else
 					{
 						SDL_bool foundAck = SDL_FALSE;
 						uint64_t maxPacketCount = receivedAckPacketCount < receivedAckPacketsCapacity ? receivedAckPacketCount + 1 : receivedAckPacketsCapacity;
