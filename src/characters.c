@@ -777,13 +777,13 @@ void fireCharacterWeapon(Character *character)
 	character->weap->fired = SDL_FALSE;
 }
 
-void prepareFiringCharacterWeapon(Character *character)
+void prepareFiringCharacterWeapon(Character *character, float x, float y)
 {
 	// don't bind z coordinate value
-	character->weap->x = character->x;
-	character->weap->y = character->y;
-	character->weap->initialX = character->weap->x;
-	character->weap->initialY = character->weap->y;
+	character->weap->x = x;
+	character->weap->y = y;
+	character->weap->initialX = x;
+	character->weap->initialY = y;
 	character->weap->direction = character->pointing_direction;
 	
 	character->weap->fired = SDL_TRUE;

@@ -96,10 +96,8 @@ void syncNetworkState(SDL_Window *window)
 					int characterID = message.firedUpdate.characterID;
 					Character *character = getCharacter(characterID);
 					
-					character->x = message.firedUpdate.x;
-					character->y = message.firedUpdate.y;
 					character->pointing_direction = message.firedUpdate.direction;
-					prepareFiringCharacterWeapon(character);
+					prepareFiringCharacterWeapon(character, message.firedUpdate.x, message.firedUpdate.y);
 					
 					break;
 				}
@@ -107,7 +105,7 @@ void syncNetworkState(SDL_Window *window)
 				{
 					int characterID = message.firedUpdate.characterID;
 					Character *character = getCharacter(characterID);
-					prepareFiringCharacterWeapon(character);
+					prepareFiringCharacterWeapon(character, character->x, character->y);
 					
 					break;
 				}
