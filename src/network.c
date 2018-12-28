@@ -1651,6 +1651,7 @@ static void initializeGameBuffer(GameMessageArray *messageArray)
 {
 	messageArray->messages = NULL;
 	messageArray->count = 0;
+	messageArray->capacity = 1024;
 	messageArray->mutex = SDL_CreateMutex();
 }
 
@@ -1662,23 +1663,31 @@ void initializeNetworkBuffers(void)
 	gCurrentSlotMutex = SDL_CreateMutex();
 }
 
-#define MAX_MESSAGES_CAPACITY 1024
 static void _pushNetworkMessage(GameMessageArray *messageArray, GameMessage message)
 {
 	SDL_bool appending = SDL_TRUE;
 	
 	if (messageArray->messages == NULL)
 	{
-		messageArray->messages = malloc(MAX_MESSAGES_CAPACITY * sizeof(message));
+		messageArray->messages = malloc(messageArray->capacity * sizeof(message));
 		if (messageArray->messages == NULL)
 		{
 			appending = SDL_FALSE;
 		}
 	}
 	
-	if (messageArray->count >= MAX_MESSAGES_CAPACITY)
+	if (messageArray->count >= messageArray->capacity)
 	{
-		appending = SDL_FALSE;
+		messageArray->capacity = (uint32_t)(messageArray->capacity * 1.6f);
+		void *newBuffer = realloc(messageArray->messages, messageArray->capacity * sizeof(message));
+		if (newBuffer == NULL)
+		{
+			appending = SDL_FALSE;
+		}
+		else
+		{
+			messageArray->messages = newBuffer;
+		}
 	}
 	
 	if (appending)

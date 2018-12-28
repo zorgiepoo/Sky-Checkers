@@ -208,6 +208,7 @@ typedef struct
 {
 	GameMessage *messages;
 	uint32_t count;
+	uint32_t capacity;
 	SDL_mutex *mutex;
 } GameMessageArray;
 
