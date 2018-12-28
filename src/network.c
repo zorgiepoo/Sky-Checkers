@@ -332,7 +332,10 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 		
 		if (messagesAvailable != NULL)
 		{
-			for (uint32_t messageIndex = 0; messageIndex < messagesCount; messageIndex++)
+			char sendBuffers[3][4096];
+			char *sendBufferPtrs[] = {sendBuffers[0], sendBuffers[1], sendBuffers[2]};
+			
+			for (uint32_t messageIndex = 0; messageIndex < messagesCount && !needsToQuit; messageIndex++)
 			{
 				GameMessage message = messagesAvailable[messageIndex];
 				int addressIndex = message.addressIndex;
@@ -401,10 +404,15 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						break;
 					case CHARACTER_FIRED_UPDATE_MESSAGE_TYPE:
 					{
-						char buffer[256];
-						snprintf(buffer, sizeof(buffer) - 1, "sw%llu %d %f %f %d", message.packetNumber, message.firedUpdate.characterID, message.firedUpdate.x, message.firedUpdate.y, message.firedUpdate.direction);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "sw%llu %d %f %f %d", message.packetNumber, message.firedUpdate.characterID, message.firedUpdate.x, message.firedUpdate.y, message.firedUpdate.direction);
 						
-						sendData(gNetworkConnection->socket, buffer, strlen(buffer), address);
+						sendBufferPtrs[addressIndex] += length + 1;
+						
+						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
+						{
+							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
+							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
+						}
 						
 						break;
 					}
@@ -412,127 +420,197 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						break;
 					case NUMBER_OF_PLAYERS_WAITING_FOR_MESSAGE_TYPE:
 					{
-						char buffer[256];
-						snprintf(buffer, sizeof(buffer) - 1, "nw%llu %d", message.packetNumber, message.numberOfWaitingPlayers);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "nw%llu %d", message.packetNumber, message.numberOfWaitingPlayers);
 						
-						sendData(gNetworkConnection->socket, buffer, strlen(buffer), address);
+						sendBufferPtrs[addressIndex] += length + 1;
+						
+						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
+						{
+							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
+							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
+						}
 						
 						break;
 					}
 					case NET_NAME_MESSAGE_TYPE:
 					{
-						char buffer[256];
-						snprintf(buffer, sizeof(buffer) - 1, "nn%llu %d %s", message.packetNumber, message.netNameRequest.characterID, message.netNameRequest.netName);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "nn%llu %d %s", message.packetNumber, message.netNameRequest.characterID, message.netNameRequest.netName);
 						
-						sendData(gNetworkConnection->socket, buffer, strlen(buffer), address);
+						sendBufferPtrs[addressIndex] += length + 1;
+						
+						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
+						{
+							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
+							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
+						}
 						
 						break;
 					}
 					case START_GAME_MESSAGE_TYPE:
 					{
-						char buffer[256];
-						snprintf(buffer, sizeof(buffer) - 1, "sg%llu", message.packetNumber);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "sg%llu", message.packetNumber);
 						
-						sendData(gNetworkConnection->socket, buffer, sizeof(buffer) - 1, address);
+						sendBufferPtrs[addressIndex] += length + 1;
+						
+						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
+						{
+							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
+							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
+						}
 						
 						break;
 					}
 					case GAME_START_NUMBER_UPDATE_MESSAGE_TYPE:
 					{
-						char buffer[256];
-						snprintf(buffer, sizeof(buffer) - 1, "gs%llu %d", message.packetNumber, message.gameStartNumber);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "gs%llu %d", message.packetNumber, message.gameStartNumber);
 						
-						sendData(gNetworkConnection->socket, buffer, strlen(buffer), address);
+						sendBufferPtrs[addressIndex] += length + 1;
+						
+						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
+						{
+							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
+							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
+						}
 						
 						break;
 					}
 					case CHARACTER_DIED_UPDATE_MESSAGE_TYPE:
 					{
-						char buffer[256];
-						snprintf(buffer, sizeof(buffer) - 1, "pk%llu %d %d", message.packetNumber, message.diedUpdate.characterID, message.diedUpdate.characterLives);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "pk%llu %d %d", message.packetNumber, message.diedUpdate.characterID, message.diedUpdate.characterLives);
 						
-						sendData(gNetworkConnection->socket, buffer, strlen(buffer), address);
+						sendBufferPtrs[addressIndex] += length + 1;
+						
+						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
+						{
+							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
+							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
+						}
 						
 						break;
 					}
 					case COLOR_TILE_MESSAGE_TYPE:
 					{
-						char buffer[256];
-						snprintf(buffer, sizeof(buffer) - 1, "ct%llu %d %d", message.packetNumber, message.colorTile.characterID, message.colorTile.tileIndex);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "ct%llu %d %d", message.packetNumber, message.colorTile.characterID, message.colorTile.tileIndex);
 						
-						sendData(gNetworkConnection->socket, buffer, strlen(buffer), address);
+						sendBufferPtrs[addressIndex] += length + 1;
+						
+						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
+						{
+							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
+							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
+						}
 						
 						break;
 					}
 					case TILE_FALLING_DOWN_MESSAGE_TYPE:
 					{
-						char buffer[256];
-						snprintf(buffer, sizeof(buffer) - 1, "tf%llu %d %d", message.packetNumber, message.fallingTile.tileIndex, message.fallingTile.dead);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "tf%llu %d %d", message.packetNumber, message.fallingTile.tileIndex, message.fallingTile.dead);
 						
-						sendData(gNetworkConnection->socket, buffer, strlen(buffer), address);
+						sendBufferPtrs[addressIndex] += length + 1;
+						
+						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
+						{
+							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
+							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
+						}
 						
 						break;
 					}
 					case RECOVER_TILE_MESSAGE_TYPE:
 					{
-						char buffer[256];
-						snprintf(buffer, sizeof(buffer) - 1, "rt%llu %d", message.packetNumber, message.recoverTile.tileIndex);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "rt%llu %d", message.packetNumber, message.recoverTile.tileIndex);
 						
-						sendData(gNetworkConnection->socket, buffer, strlen(buffer), address);
+						sendBufferPtrs[addressIndex] += length + 1;
+						
+						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
+						{
+							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
+							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
+						}
 						
 						break;
 					}
 					case CHARACTER_MOVED_UPDATE_MESSAGE_TYPE:
 					{
-						char buffer[256];
-						snprintf(buffer, sizeof(buffer) - 1, "mo%llu %d %f %f %f %d %d", message.packetNumber, message.movedUpdate.characterID, message.movedUpdate.x, message.movedUpdate.y, message.movedUpdate.z, message.movedUpdate.direction, message.movedUpdate.pointing_direction);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "mo%llu %d %f %f %f %d %d", message.packetNumber, message.movedUpdate.characterID, message.movedUpdate.x, message.movedUpdate.y, message.movedUpdate.z, message.movedUpdate.direction, message.movedUpdate.pointing_direction);
 						
-						sendData(gNetworkConnection->socket, buffer, strlen(buffer), address);
+						sendBufferPtrs[addressIndex] += length + 1;
+						
+						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
+						{
+							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
+							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
+						}
 						
 						break;
 					}
 					case CHARACTER_KILLED_UPDATE_MESSAGE_TYPE:
 					{
-						char buffer[256];
-						snprintf(buffer, sizeof(buffer) - 1, "ck%llu %d %d", message.packetNumber, message.killedUpdate.characterID, message.killedUpdate.kills);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "ck%llu %d %d", message.packetNumber, message.killedUpdate.characterID, message.killedUpdate.kills);
 						
-						sendData(gNetworkConnection->socket, buffer, strlen(buffer), address);
+						sendBufferPtrs[addressIndex] += length + 1;
+						
+						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
+						{
+							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
+							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
+						}
 						
 						break;
 					}
 					case CHARACTER_SPAWNED_UPDATE_MESSAGE_TYPE:
 					{
-						char buffer[256];
-						snprintf(buffer, sizeof(buffer) - 1, "sp%llu %d %f %f", message.packetNumber, message.spawnedUpdate.characterID, message.spawnedUpdate.x, message.spawnedUpdate.y);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "sp%llu %d %f %f", message.packetNumber, message.spawnedUpdate.characterID, message.spawnedUpdate.x, message.spawnedUpdate.y);
 						
-						sendData(gNetworkConnection->socket, buffer, strlen(buffer), address);
+						sendBufferPtrs[addressIndex] += length + 1;
+						
+						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
+						{
+							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
+							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
+						}
 						
 						break;
 					}
 					case GAME_RESET_MESSAGE_TYPE:
 					{
-						char buffer[256];
-						snprintf(buffer, sizeof(buffer) - 1, "ng%llu", message.packetNumber);
+						int length = snprintf(sendBufferPtrs[addressIndex], sizeof(sendBufferPtrs[addressIndex]) - 1, "ng%llu", message.packetNumber);
 						
-						sendData(gNetworkConnection->socket, buffer, sizeof(buffer) - 1, address);
+						sendBufferPtrs[addressIndex] += length + 1;
+						
+						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
+						{
+							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
+							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
+						}
 						
 						break;
 					}
 					case ACK_MESSAGE_TYPE:
 					{
-						char buffer[256];
-						snprintf(buffer, sizeof(buffer) - 1, "ak%llu", message.packetNumber);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "ak%llu", message.packetNumber);
 						
-						sendData(gNetworkConnection->socket, buffer, sizeof(buffer) - 1, address);
+						sendBufferPtrs[addressIndex] += length + 1;
+						
+						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
+						{
+							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
+							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
+						}
 						
 						break;
 					}
 					case FIRST_SERVER_RESPONSE_MESSAGE_TYPE:
 					{
-						char buffer[256];
-						snprintf(buffer, sizeof(buffer) - 1, "sr%llu %d %f %f %d %d %d", message.packetNumber, message.firstServerResponse.slotID, message.firstServerResponse.x, message.firstServerResponse.y, message.firstServerResponse.direction, message.firstServerResponse.pointing_direction, message.firstServerResponse.characterLives);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "sr%llu %d %f %f %d %d %d", message.packetNumber, message.firstServerResponse.slotID, message.firstServerResponse.x, message.firstServerResponse.y, message.firstServerResponse.direction, message.firstServerResponse.pointing_direction, message.firstServerResponse.characterLives);
 						
-						sendData(gNetworkConnection->socket, buffer, strlen(buffer), address);
+						sendBufferPtrs[addressIndex] += length + 1;
+						
+						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
+						{
+							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
+							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
+						}
 						
 						break;
 					}
@@ -647,6 +725,14 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						
 						break;
 					}
+				}
+			}
+			
+			for (int addressIndex = 0; addressIndex < 3; addressIndex++)
+			{
+				if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) > 0)
+				{
+					sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), &gClientAddress[addressIndex]);
 				}
 			}
 			
@@ -1057,56 +1143,140 @@ int clientNetworkThread(void *context)
 			}
 			else
 			{
-				int numberOfBytes;
-				char buffer[256];
-				unsigned int address_length = sizeof(gNetworkConnection->hostAddress);
+				int numberOfBytes = 0;
+				char packetBuffer[4096];
+				unsigned int addressLength = sizeof(gNetworkConnection->hostAddress);
 				
-				if ((numberOfBytes = recvfrom(gNetworkConnection->socket, buffer, MAX_NETWORK_BUFFER - 1, 0, (struct sockaddr *)&gNetworkConnection->hostAddress, &address_length)) == -1)
+				if ((numberOfBytes = recvfrom(gNetworkConnection->socket, packetBuffer, sizeof(packetBuffer), 0, (struct sockaddr *)&gNetworkConnection->hostAddress, &addressLength)) == -1)
 				{
 					fprintf(stderr, "recvfrom() actually returned -1\n");
 				}
 				else
 				{
-					buffer[numberOfBytes] = '\0';
-					
-					if (buffer[0] == 's' && buffer[1] == 'r')
+					char *buffer = packetBuffer;
+					while ((int)(buffer - packetBuffer) < numberOfBytes)
 					{
-						if (buffer[2] == 'n')
+						if (buffer[0] == 's' && buffer[1] == 'r')
 						{
-							GameMessage message;
-							message.type = QUIT_MESSAGE_TYPE;
-							pushNetworkMessage(&gGameMessagesFromNet, message);
-							
-							break;
+							if (buffer[2] == 'n')
+							{
+								GameMessage message;
+								message.type = QUIT_MESSAGE_TYPE;
+								pushNetworkMessage(&gGameMessagesFromNet, message);
+								
+								break;
+							}
+							else
+							{
+								uint64_t packetNumber = 0;
+								int slotID = 0;
+								float x = 0;
+								float y = 0;
+								int direction = NO_DIRECTION;
+								int pointing_direction = NO_DIRECTION;
+								int characterLives = 0;
+								
+								sscanf(buffer, "sr%llu %d %f %f %d %d %d", &packetNumber, &slotID, &x, &y, &direction, &pointing_direction, &characterLives);
+								
+								if (packetNumber == triggerIncomingPacketNumber + 1)
+								{
+									triggerIncomingPacketNumber++;
+									
+									GameMessage message;
+									message.type = FIRST_SERVER_RESPONSE_MESSAGE_TYPE;
+									message.firstServerResponse.slotID = slotID;
+									message.firstServerResponse.x = x;
+									message.firstServerResponse.y = y;
+									message.firstServerResponse.direction = direction;
+									message.firstServerResponse.pointing_direction = pointing_direction;
+									message.firstServerResponse.characterLives = characterLives;
+									
+									pushNetworkMessage(&gGameMessagesFromNet, message);
+									
+									receivedFirstServerMessage = SDL_TRUE;
+								}
+								
+								if (packetNumber <= triggerIncomingPacketNumber)
+								{
+									GameMessage ackMessage;
+									ackMessage.type = ACK_MESSAGE_TYPE;
+									ackMessage.packetNumber = packetNumber;
+									pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+								}
+							}
 						}
-						else
+						else if (buffer[0] == 'n' && buffer[1] == 'w')
 						{
 							uint64_t packetNumber = 0;
-							int slotID = 0;
-							float x = 0;
-							float y = 0;
-							int direction = NO_DIRECTION;
-							int pointing_direction = NO_DIRECTION;
-							int characterLives = 0;
+							int numberOfWaitingPlayers = 0;
+							sscanf(buffer + 2, "%llu %d", &packetNumber, &numberOfWaitingPlayers);
 							
-							sscanf(buffer, "sr%llu %d %f %f %d %d %d", &packetNumber, &slotID, &x, &y, &direction, &pointing_direction, &characterLives);
+							if (packetNumber == triggerIncomingPacketNumber + 1 && numberOfWaitingPlayers >= 0 && numberOfWaitingPlayers < 4)
+							{
+								triggerIncomingPacketNumber++;
+								
+								GameMessage message;
+								message.type = NUMBER_OF_PLAYERS_WAITING_FOR_MESSAGE_TYPE;
+								message.numberOfWaitingPlayers = numberOfWaitingPlayers;
+								pushNetworkMessage(&gGameMessagesFromNet, message);
+							}
+							
+							if (packetNumber <= triggerIncomingPacketNumber)
+							{
+								GameMessage ackMessage;
+								ackMessage.type = ACK_MESSAGE_TYPE;
+								ackMessage.packetNumber = packetNumber;
+								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+							}
+						}
+						else if (buffer[0] == 'n' && buffer[1] == 'n')
+						{
+							// net name
+							uint64_t packetNumber = 0;
+							int characterID = 0;
+							char *netName = malloc(MAX_USER_NAME_SIZE);
+							if (netName != NULL)
+							{
+								memset(netName, 0, MAX_USER_NAME_SIZE);
+								sscanf(buffer + 2, "%llu %d %s", &packetNumber, &characterID, netName);
+								
+								if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
+								{
+									triggerIncomingPacketNumber++;
+									
+									GameMessage message;
+									message.type = NET_NAME_MESSAGE_TYPE;
+									message.netNameRequest.characterID = characterID;
+									message.netNameRequest.netName = netName;
+									pushNetworkMessage(&gGameMessagesFromNet, message);
+								}
+								else
+								{
+									free(netName);
+								}
+								
+								if (packetNumber <= triggerIncomingPacketNumber)
+								{
+									GameMessage ackMessage;
+									ackMessage.type = ACK_MESSAGE_TYPE;
+									ackMessage.packetNumber = packetNumber;
+									pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+								}
+							}
+						}
+						else if (buffer[0] == 's' && buffer[1] == 'g')
+						{
+							// start game
+							uint64_t packetNumber = 0;
+							sscanf(buffer + 2, "%llu", &packetNumber);
 							
 							if (packetNumber == triggerIncomingPacketNumber + 1)
 							{
 								triggerIncomingPacketNumber++;
 								
 								GameMessage message;
-								message.type = FIRST_SERVER_RESPONSE_MESSAGE_TYPE;
-								message.firstServerResponse.slotID = slotID;
-								message.firstServerResponse.x = x;
-								message.firstServerResponse.y = y;
-								message.firstServerResponse.direction = direction;
-								message.firstServerResponse.pointing_direction = pointing_direction;
-								message.firstServerResponse.characterLives = characterLives;
-								
+								message.type = START_GAME_MESSAGE_TYPE;
 								pushNetworkMessage(&gGameMessagesFromNet, message);
-								
-								receivedFirstServerMessage = SDL_TRUE;
 							}
 							
 							if (packetNumber <= triggerIncomingPacketNumber)
@@ -1117,55 +1287,80 @@ int clientNetworkThread(void *context)
 								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
 							}
 						}
-					}
-					else if (buffer[0] == 'n' && buffer[1] == 'w')
-					{
-						uint64_t packetNumber = 0;
-						int numberOfWaitingPlayers = 0;
-						sscanf(buffer + 2, "%llu %d", &packetNumber, &numberOfWaitingPlayers);
-						
-						if (packetNumber == triggerIncomingPacketNumber + 1 && numberOfWaitingPlayers >= 0 && numberOfWaitingPlayers < 4)
+						else if (buffer[0] == 'g' && buffer[1] == 's')
 						{
-							triggerIncomingPacketNumber++;
+							uint64_t packetNumber = 0;
+							int gameStartNumber;
+							sscanf(buffer + 2, "%llu %d", &packetNumber, &gameStartNumber);
 							
-							GameMessage message;
-							message.type = NUMBER_OF_PLAYERS_WAITING_FOR_MESSAGE_TYPE;
-							message.numberOfWaitingPlayers = numberOfWaitingPlayers;
-							pushNetworkMessage(&gGameMessagesFromNet, message);
+							if (packetNumber == triggerIncomingPacketNumber + 1)
+							{
+								triggerIncomingPacketNumber++;
+								
+								GameMessage message;
+								message.type = GAME_START_NUMBER_UPDATE_MESSAGE_TYPE;
+								message.gameStartNumber = gameStartNumber;
+								pushNetworkMessage(&gGameMessagesFromNet, message);
+								
+								GameMessage ackMessage;
+								ackMessage.type = ACK_MESSAGE_TYPE;
+								ackMessage.packetNumber = packetNumber;
+								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+							}
+							
+							if (packetNumber <= triggerIncomingPacketNumber)
+							{
+								GameMessage ackMessage;
+								ackMessage.type = ACK_MESSAGE_TYPE;
+								ackMessage.packetNumber = packetNumber;
+								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+							}
 						}
-						
-						if (packetNumber <= triggerIncomingPacketNumber)
+						else if (receivedFirstServerMessage && buffer[0] == 'm' && buffer[1] == 'o')
 						{
-							GameMessage ackMessage;
-							ackMessage.type = ACK_MESSAGE_TYPE;
-							ackMessage.packetNumber = packetNumber;
-							pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+							uint64_t packetNumber = 0;
+							int characterID = 0;
+							int direction = 0;
+							int pointing_direction = 0;
+							float x = 0.0;
+							float y = 0.0;
+							float z = 0.0;
+							
+							sscanf(buffer + 2, "%llu %d %f %f %f %d %d", &packetNumber, &characterID, &x, &y, &z, &direction, &pointing_direction);
+							
+							if (packetNumber > realTimeIncomingPacketNumber && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
+							{
+								realTimeIncomingPacketNumber = packetNumber;
+								
+								GameMessage message;
+								message.type = CHARACTER_MOVED_UPDATE_MESSAGE_TYPE;
+								message.movedUpdate.characterID = characterID;
+								message.movedUpdate.x = x;
+								message.movedUpdate.y = y;
+								message.movedUpdate.z = z;
+								message.movedUpdate.direction = direction;
+								message.movedUpdate.pointing_direction = pointing_direction;
+								pushNetworkMessage(&gGameMessagesFromNet, message);
+							}
 						}
-					}
-					else if (buffer[0] == 'n' && buffer[1] == 'n')
-					{
-						// net name
-						uint64_t packetNumber = 0;
-						int characterID = 0;
-						char *netName = malloc(MAX_USER_NAME_SIZE);
-						if (netName != NULL)
+						else if (buffer[0] == 'p' && buffer[1] == 'k')
 						{
-							memset(netName, 0, MAX_USER_NAME_SIZE);
-							sscanf(buffer + 2, "%llu %d %s", &packetNumber, &characterID, netName);
+							// character gets killed
+							
+							uint64_t packetNumber = 0;
+							int characterID = 0;
+							int characterLives = 0;
+							sscanf(buffer + 2, "%llu %d %d", &packetNumber, &characterID, &characterLives);
 							
 							if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 							{
 								triggerIncomingPacketNumber++;
 								
 								GameMessage message;
-								message.type = NET_NAME_MESSAGE_TYPE;
-								message.netNameRequest.characterID = characterID;
-								message.netNameRequest.netName = netName;
+								message.type = CHARACTER_DIED_UPDATE_MESSAGE_TYPE;
+								message.diedUpdate.characterID = characterID;
+								message.diedUpdate.characterLives = characterLives;
 								pushNetworkMessage(&gGameMessagesFromNet, message);
-							}
-							else
-							{
-								free(netName);
 							}
 							
 							if (packetNumber <= triggerIncomingPacketNumber)
@@ -1176,339 +1371,234 @@ int clientNetworkThread(void *context)
 								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
 							}
 						}
-					}
-					else if (buffer[0] == 's' && buffer[1] == 'g')
-					{
-						// start game
-						uint64_t packetNumber = 0;
-						sscanf(buffer + 2, "%llu", &packetNumber);
-						
-						if (packetNumber == triggerIncomingPacketNumber + 1)
+						else if (buffer[0] == 'c' && buffer[1] == 'k')
 						{
-							triggerIncomingPacketNumber++;
+							// character's kills increase
+							uint64_t packetNumber = 0;
+							int characterID = 0;
+							int characterKills = 0;
+							sscanf(buffer + 2, "%llu %d %d", &packetNumber, &characterID, &characterKills);
 							
-							GameMessage message;
-							message.type = START_GAME_MESSAGE_TYPE;
-							pushNetworkMessage(&gGameMessagesFromNet, message);
-						}
-						
-						if (packetNumber <= triggerIncomingPacketNumber)
-						{
-							GameMessage ackMessage;
-							ackMessage.type = ACK_MESSAGE_TYPE;
-							ackMessage.packetNumber = packetNumber;
-							pushNetworkMessage(&gGameMessagesToNet, ackMessage);
-						}
-					}
-					else if (buffer[0] == 'g' && buffer[1] == 's')
-					{
-						uint64_t packetNumber = 0;
-						int gameStartNumber;
-						sscanf(buffer + 2, "%llu %d", &packetNumber, &gameStartNumber);
-						
-						if (packetNumber == triggerIncomingPacketNumber + 1)
-						{
-							triggerIncomingPacketNumber++;
-							
-							GameMessage message;
-							message.type = GAME_START_NUMBER_UPDATE_MESSAGE_TYPE;
-							message.gameStartNumber = gameStartNumber;
-							pushNetworkMessage(&gGameMessagesFromNet, message);
-							
-							GameMessage ackMessage;
-							ackMessage.type = ACK_MESSAGE_TYPE;
-							ackMessage.packetNumber = packetNumber;
-							pushNetworkMessage(&gGameMessagesToNet, ackMessage);
-						}
-						
-						if (packetNumber <= triggerIncomingPacketNumber)
-						{
-							GameMessage ackMessage;
-							ackMessage.type = ACK_MESSAGE_TYPE;
-							ackMessage.packetNumber = packetNumber;
-							pushNetworkMessage(&gGameMessagesToNet, ackMessage);
-						}
-					}
-					else if (receivedFirstServerMessage && buffer[0] == 'm' && buffer[1] == 'o')
-					{
-						uint64_t packetNumber = 0;
-						int characterID = 0;
-						int direction = 0;
-						int pointing_direction = 0;
-						float x = 0.0;
-						float y = 0.0;
-						float z = 0.0;
-						
-						sscanf(buffer + 2, "%llu %d %f %f %f %d %d", &packetNumber, &characterID, &x, &y, &z, &direction, &pointing_direction);
-						
-						if (packetNumber > realTimeIncomingPacketNumber && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
-						{
-							realTimeIncomingPacketNumber = packetNumber;
-							
-							GameMessage message;
-							message.type = CHARACTER_MOVED_UPDATE_MESSAGE_TYPE;
-							message.movedUpdate.characterID = characterID;
-							message.movedUpdate.x = x;
-							message.movedUpdate.y = y;
-							message.movedUpdate.z = z;
-							message.movedUpdate.direction = direction;
-							message.movedUpdate.pointing_direction = pointing_direction;
-							pushNetworkMessage(&gGameMessagesFromNet, message);
-						}
-					}
-					else if (buffer[0] == 'p' && buffer[1] == 'k')
-					{
-						// character gets killed
-						
-						uint64_t packetNumber = 0;
-						int characterID = 0;
-						int characterLives = 0;
-						sscanf(buffer + 2, "%llu %d %d", &packetNumber, &characterID, &characterLives);
-						
-						if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
-						{
-							triggerIncomingPacketNumber++;
-							
-							GameMessage message;
-							message.type = CHARACTER_DIED_UPDATE_MESSAGE_TYPE;
-							message.diedUpdate.characterID = characterID;
-							message.diedUpdate.characterLives = characterLives;
-							pushNetworkMessage(&gGameMessagesFromNet, message);
-						}
-						
-						if (packetNumber <= triggerIncomingPacketNumber)
-						{
-							GameMessage ackMessage;
-							ackMessage.type = ACK_MESSAGE_TYPE;
-							ackMessage.packetNumber = packetNumber;
-							pushNetworkMessage(&gGameMessagesToNet, ackMessage);
-						}
-					}
-					else if (buffer[0] == 'c' && buffer[1] == 'k')
-					{
-						// character's kills increase
-						uint64_t packetNumber = 0;
-						int characterID = 0;
-						int characterKills = 0;
-						sscanf(buffer + 2, "%llu %d %d", &packetNumber, &characterID, &characterKills);
-						
-						if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
-						{
-							triggerIncomingPacketNumber++;
-							
-							GameMessage message;
-							message.type = CHARACTER_KILLED_UPDATE_MESSAGE_TYPE;
-							message.killedUpdate.characterID = characterID;
-							message.killedUpdate.kills = characterKills;
-							pushNetworkMessage(&gGameMessagesFromNet, message);
-						}
-						
-						if (packetNumber <= triggerIncomingPacketNumber)
-						{
-							GameMessage ackMessage;
-							ackMessage.type = ACK_MESSAGE_TYPE;
-							ackMessage.packetNumber = packetNumber;
-							pushNetworkMessage(&gGameMessagesToNet, ackMessage);
-						}
-					}
-					else if (buffer[0] =='s' && buffer[1] == 'p')
-					{
-						// spawn character
-						uint64_t packetNumber = 0;
-						int characterID = 0;
-						float x = 0.0;
-						float y = 0.0;
-						
-						sscanf(buffer + 2, "%llu %d %f %f", &packetNumber, &characterID, &x, &y);
-						
-						if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
-						{
-							triggerIncomingPacketNumber++;
-							
-							GameMessage message;
-							message.type = CHARACTER_SPAWNED_UPDATE_MESSAGE_TYPE;
-							message.spawnedUpdate.characterID = characterID;
-							message.spawnedUpdate.x = x;
-							message.spawnedUpdate.y = y;
-							pushNetworkMessage(&gGameMessagesFromNet, message);
-						}
-						
-						if (packetNumber <= triggerIncomingPacketNumber)
-						{
-							GameMessage ackMessage;
-							ackMessage.type = ACK_MESSAGE_TYPE;
-							ackMessage.packetNumber = packetNumber;
-							pushNetworkMessage(&gGameMessagesToNet, ackMessage);
-						}
-					}
-					else if (buffer[0] == 's' && buffer[1] == 'w')
-					{
-						// shoot weapon
-						uint64_t packetNumber = 0;
-						int characterID = 0;
-						float x = 0.0f;
-						float y = 0.0f;
-						int pointing_direction = 0;
-						
-						sscanf(buffer + 2, "%llu %d %f %f %d", &packetNumber, &characterID, &x, &y, &pointing_direction);
-						
-						if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
-						{
-							triggerIncomingPacketNumber++;
-							
-							GameMessage message;
-							message.type = CHARACTER_FIRED_UPDATE_MESSAGE_TYPE;
-							message.firedUpdate.characterID = characterID;
-							message.firedUpdate.x = x;
-							message.firedUpdate.y = y;
-							message.firedUpdate.direction = pointing_direction;
-							
-							pushNetworkMessage(&gGameMessagesFromNet, message);
-						}
-						
-						if (packetNumber <= triggerIncomingPacketNumber)
-						{
-							GameMessage ackMessage;
-							ackMessage.type = ACK_MESSAGE_TYPE;
-							ackMessage.packetNumber = packetNumber;
-							pushNetworkMessage(&gGameMessagesToNet, ackMessage);
-						}
-					}
-					else if (buffer[0] == 'c' && buffer[1] == 't')
-					{
-						uint64_t packetNumber = 0;
-						int characterID = 0;
-						int tileIndex = 0;
-						
-						sscanf(buffer + 2, "%llu %d %d", &packetNumber, &characterID, &tileIndex);
-						
-						if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM && tileIndex >= 0 && tileIndex < NUMBER_OF_TILES)
-						{
-							triggerIncomingPacketNumber++;
-							
-							GameMessage message;
-							message.type = COLOR_TILE_MESSAGE_TYPE;
-							message.colorTile.characterID = characterID;
-							message.colorTile.tileIndex = tileIndex;
-							
-							pushNetworkMessage(&gGameMessagesFromNet, message);
-						}
-						
-						if (packetNumber <= triggerIncomingPacketNumber)
-						{
-							GameMessage ackMessage;
-							ackMessage.type = ACK_MESSAGE_TYPE;
-							ackMessage.packetNumber = packetNumber;
-							pushNetworkMessage(&gGameMessagesToNet, ackMessage);
-						}
-					}
-					else if (buffer[0] == 't' && buffer[1] == 'f')
-					{
-						uint64_t packetNumber = 0;
-						int tileIndex = 0;
-						SDL_bool dead = SDL_FALSE;
-						
-						sscanf(buffer + 2, "%llu %d %d", &packetNumber, &tileIndex, &dead);
-						
-						if (packetNumber == triggerIncomingPacketNumber + 1 && tileIndex >= 0 && tileIndex < NUMBER_OF_TILES)
-						{
-							triggerIncomingPacketNumber++;
-							
-							GameMessage message;
-							message.type = TILE_FALLING_DOWN_MESSAGE_TYPE;
-							message.fallingTile.tileIndex = tileIndex;
-							message.fallingTile.dead = dead;
-							
-							pushNetworkMessage(&gGameMessagesFromNet, message);
-						}
-						
-						if (packetNumber <= triggerIncomingPacketNumber)
-						{
-							GameMessage ackMessage;
-							ackMessage.type = ACK_MESSAGE_TYPE;
-							ackMessage.packetNumber = packetNumber;
-							pushNetworkMessage(&gGameMessagesToNet, ackMessage);
-						}
-					}
-					else if (buffer[0] == 'r' && buffer[1] == 't')
-					{
-						uint64_t packetNumber = 0;
-						int tileIndex = 0;
-						
-						sscanf(buffer + 2, "%llu %d", &packetNumber, &tileIndex);
-						
-						if (packetNumber == triggerIncomingPacketNumber + 1 && tileIndex >= 0 && tileIndex < NUMBER_OF_TILES)
-						{
-							triggerIncomingPacketNumber++;
-							
-							GameMessage message;
-							message.type = RECOVER_TILE_MESSAGE_TYPE;
-							message.recoverTile.tileIndex = tileIndex;
-							
-							pushNetworkMessage(&gGameMessagesFromNet, message);
-						}
-						
-						if (packetNumber <= triggerIncomingPacketNumber)
-						{
-							GameMessage ackMessage;
-							ackMessage.type = ACK_MESSAGE_TYPE;
-							ackMessage.packetNumber = packetNumber;
-							pushNetworkMessage(&gGameMessagesToNet, ackMessage);
-						}
-					}
-					else if (buffer[0] == 'n' && buffer[1] == 'g')
-					{
-						// new game
-						uint64_t packetNumber = 0;
-						sscanf(buffer + 2, "%llu", &packetNumber);
-						
-						if (packetNumber == triggerIncomingPacketNumber + 1)
-						{
-							triggerIncomingPacketNumber++;
-							
-							GameMessage message;
-							message.type = GAME_RESET_MESSAGE_TYPE;
-							
-							pushNetworkMessage(&gGameMessagesFromNet, message);
-						}
-						
-						if (packetNumber <= triggerIncomingPacketNumber)
-						{
-							GameMessage ackMessage;
-							ackMessage.type = ACK_MESSAGE_TYPE;
-							ackMessage.packetNumber = packetNumber;
-							pushNetworkMessage(&gGameMessagesToNet, ackMessage);
-						}
-					}
-					else if (buffer[0] == 'a' && buffer[1] == 'k')
-					{
-						uint64_t packetNumber = 0;
-						sscanf(buffer + 2, "%llu", &packetNumber);
-						
-						SDL_bool foundAck = SDL_FALSE;
-						uint64_t maxPacketCount = receivedAckPacketCount < receivedAckPacketsCapacity ? receivedAckPacketCount : receivedAckPacketsCapacity;
-						for (uint64_t packetIndex = 0; packetIndex < maxPacketCount; packetIndex++)
-						{
-							if (packetNumber == receivedAckPacketNumbers[packetIndex])
+							if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 							{
-								foundAck = SDL_TRUE;
-								break;
+								triggerIncomingPacketNumber++;
+								
+								GameMessage message;
+								message.type = CHARACTER_KILLED_UPDATE_MESSAGE_TYPE;
+								message.killedUpdate.characterID = characterID;
+								message.killedUpdate.kills = characterKills;
+								pushNetworkMessage(&gGameMessagesFromNet, message);
+							}
+							
+							if (packetNumber <= triggerIncomingPacketNumber)
+							{
+								GameMessage ackMessage;
+								ackMessage.type = ACK_MESSAGE_TYPE;
+								ackMessage.packetNumber = packetNumber;
+								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
 							}
 						}
-						if (!foundAck)
+						else if (buffer[0] =='s' && buffer[1] == 'p')
 						{
-							receivedAckPacketNumbers[receivedAckPacketCount % receivedAckPacketsCapacity] = packetNumber;
-							receivedAckPacketCount++;
+							// spawn character
+							uint64_t packetNumber = 0;
+							int characterID = 0;
+							float x = 0.0;
+							float y = 0.0;
+							
+							sscanf(buffer + 2, "%llu %d %f %f", &packetNumber, &characterID, &x, &y);
+							
+							if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
+							{
+								triggerIncomingPacketNumber++;
+								
+								GameMessage message;
+								message.type = CHARACTER_SPAWNED_UPDATE_MESSAGE_TYPE;
+								message.spawnedUpdate.characterID = characterID;
+								message.spawnedUpdate.x = x;
+								message.spawnedUpdate.y = y;
+								pushNetworkMessage(&gGameMessagesFromNet, message);
+							}
+							
+							if (packetNumber <= triggerIncomingPacketNumber)
+							{
+								GameMessage ackMessage;
+								ackMessage.type = ACK_MESSAGE_TYPE;
+								ackMessage.packetNumber = packetNumber;
+								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+							}
 						}
-					}
-					else if (buffer[0] == 'q' && buffer[1] == 'u')
-					{
-						// quit
-						GameMessage message;
-						message.type = QUIT_MESSAGE_TYPE;
-						pushNetworkMessage(&gGameMessagesFromNet, message);
+						else if (buffer[0] == 's' && buffer[1] == 'w')
+						{
+							// shoot weapon
+							uint64_t packetNumber = 0;
+							int characterID = 0;
+							float x = 0.0f;
+							float y = 0.0f;
+							int pointing_direction = 0;
+							
+							sscanf(buffer + 2, "%llu %d %f %f %d", &packetNumber, &characterID, &x, &y, &pointing_direction);
+							
+							if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
+							{
+								triggerIncomingPacketNumber++;
+								
+								GameMessage message;
+								message.type = CHARACTER_FIRED_UPDATE_MESSAGE_TYPE;
+								message.firedUpdate.characterID = characterID;
+								message.firedUpdate.x = x;
+								message.firedUpdate.y = y;
+								message.firedUpdate.direction = pointing_direction;
+								
+								pushNetworkMessage(&gGameMessagesFromNet, message);
+							}
+							
+							if (packetNumber <= triggerIncomingPacketNumber)
+							{
+								GameMessage ackMessage;
+								ackMessage.type = ACK_MESSAGE_TYPE;
+								ackMessage.packetNumber = packetNumber;
+								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+							}
+						}
+						else if (buffer[0] == 'c' && buffer[1] == 't')
+						{
+							uint64_t packetNumber = 0;
+							int characterID = 0;
+							int tileIndex = 0;
+							
+							sscanf(buffer + 2, "%llu %d %d", &packetNumber, &characterID, &tileIndex);
+							
+							if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM && tileIndex >= 0 && tileIndex < NUMBER_OF_TILES)
+							{
+								triggerIncomingPacketNumber++;
+								
+								GameMessage message;
+								message.type = COLOR_TILE_MESSAGE_TYPE;
+								message.colorTile.characterID = characterID;
+								message.colorTile.tileIndex = tileIndex;
+								
+								pushNetworkMessage(&gGameMessagesFromNet, message);
+							}
+							
+							if (packetNumber <= triggerIncomingPacketNumber)
+							{
+								GameMessage ackMessage;
+								ackMessage.type = ACK_MESSAGE_TYPE;
+								ackMessage.packetNumber = packetNumber;
+								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+							}
+						}
+						else if (buffer[0] == 't' && buffer[1] == 'f')
+						{
+							uint64_t packetNumber = 0;
+							int tileIndex = 0;
+							SDL_bool dead = SDL_FALSE;
+							
+							sscanf(buffer + 2, "%llu %d %d", &packetNumber, &tileIndex, &dead);
+							
+							if (packetNumber == triggerIncomingPacketNumber + 1 && tileIndex >= 0 && tileIndex < NUMBER_OF_TILES)
+							{
+								triggerIncomingPacketNumber++;
+								
+								GameMessage message;
+								message.type = TILE_FALLING_DOWN_MESSAGE_TYPE;
+								message.fallingTile.tileIndex = tileIndex;
+								message.fallingTile.dead = dead;
+								
+								pushNetworkMessage(&gGameMessagesFromNet, message);
+							}
+							
+							if (packetNumber <= triggerIncomingPacketNumber)
+							{
+								GameMessage ackMessage;
+								ackMessage.type = ACK_MESSAGE_TYPE;
+								ackMessage.packetNumber = packetNumber;
+								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+							}
+						}
+						else if (buffer[0] == 'r' && buffer[1] == 't')
+						{
+							uint64_t packetNumber = 0;
+							int tileIndex = 0;
+							
+							sscanf(buffer + 2, "%llu %d", &packetNumber, &tileIndex);
+							
+							if (packetNumber == triggerIncomingPacketNumber + 1 && tileIndex >= 0 && tileIndex < NUMBER_OF_TILES)
+							{
+								triggerIncomingPacketNumber++;
+								
+								GameMessage message;
+								message.type = RECOVER_TILE_MESSAGE_TYPE;
+								message.recoverTile.tileIndex = tileIndex;
+								
+								pushNetworkMessage(&gGameMessagesFromNet, message);
+							}
+							
+							if (packetNumber <= triggerIncomingPacketNumber)
+							{
+								GameMessage ackMessage;
+								ackMessage.type = ACK_MESSAGE_TYPE;
+								ackMessage.packetNumber = packetNumber;
+								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+							}
+						}
+						else if (buffer[0] == 'n' && buffer[1] == 'g')
+						{
+							// new game
+							uint64_t packetNumber = 0;
+							sscanf(buffer + 2, "%llu", &packetNumber);
+							
+							if (packetNumber == triggerIncomingPacketNumber + 1)
+							{
+								triggerIncomingPacketNumber++;
+								
+								GameMessage message;
+								message.type = GAME_RESET_MESSAGE_TYPE;
+								
+								pushNetworkMessage(&gGameMessagesFromNet, message);
+							}
+							
+							if (packetNumber <= triggerIncomingPacketNumber)
+							{
+								GameMessage ackMessage;
+								ackMessage.type = ACK_MESSAGE_TYPE;
+								ackMessage.packetNumber = packetNumber;
+								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+							}
+						}
+						else if (buffer[0] == 'a' && buffer[1] == 'k')
+						{
+							uint64_t packetNumber = 0;
+							sscanf(buffer + 2, "%llu", &packetNumber);
+							
+							SDL_bool foundAck = SDL_FALSE;
+							uint64_t maxPacketCount = receivedAckPacketCount < receivedAckPacketsCapacity ? receivedAckPacketCount : receivedAckPacketsCapacity;
+							for (uint64_t packetIndex = 0; packetIndex < maxPacketCount; packetIndex++)
+							{
+								if (packetNumber == receivedAckPacketNumbers[packetIndex])
+								{
+									foundAck = SDL_TRUE;
+									break;
+								}
+							}
+							if (!foundAck)
+							{
+								receivedAckPacketNumbers[receivedAckPacketCount % receivedAckPacketsCapacity] = packetNumber;
+								receivedAckPacketCount++;
+							}
+						}
+						else if (buffer[0] == 'q' && buffer[1] == 'u')
+						{
+							// quit
+							GameMessage message;
+							message.type = QUIT_MESSAGE_TYPE;
+							pushNetworkMessage(&gGameMessagesFromNet, message);
+							
+							break;
+						}
 						
-						break;
+						buffer += strlen(buffer) + 1;
 					}
 				}
 			}
