@@ -715,53 +715,57 @@ void turnCharacter(Character *character, int direction)
 
 void fireCharacterWeapon(Character *character)
 {
-	if (gGameHasStarted && !character->weap->animationState && character->weap->fired)
+	if (gGameHasStarted)
 	{
-		int tileIndex = getTileIndexLocation((int)character->x, (int)character->y);
-		if (tileIndex < NUMBER_OF_TILES && gTiles[tileIndex].z == TILE_ALIVE_Z)
+		if ((!character->weap->animationState || (gNetworkConnection && gNetworkConnection->type == NETWORK_CLIENT_TYPE)) && character->weap->fired)
 		{
-			if (gNetworkConnection)
+			int tileIndex = getTileIndexLocation((int)character->x, (int)character->y);
+			if (tileIndex < NUMBER_OF_TILES && gTiles[tileIndex].z == TILE_ALIVE_Z)
 			{
-				if (gNetworkConnection->type == NETWORK_SERVER_TYPE)
+				if (gNetworkConnection)
 				{
+					if (gNetworkConnection->type == NETWORK_SERVER_TYPE)
+					{
+						{
+							GameMessage message;
+							message.type = CHARACTER_MOVED_UPDATE_MESSAGE_TYPE;
+							message.movedUpdate.characterID = IDOfCharacter(character);
+							message.movedUpdate.x = character->x;
+							message.movedUpdate.y = character->y;
+							message.movedUpdate.z = character->z;
+							message.movedUpdate.direction = character->direction;
+							message.movedUpdate.pointing_direction = character->pointing_direction;
+							
+							sendToClients(0, &message);
+						}
+						
+						{
+							GameMessage message;
+							message.type = CHARACTER_FIRED_UPDATE_MESSAGE_TYPE;
+							message.firedUpdate.characterID = IDOfCharacter(character);
+							message.firedUpdate.x = character->x;
+							message.firedUpdate.y = character->y;
+							message.firedUpdate.direction = character->pointing_direction;
+							
+							sendToClients(0, &message);
+						}
+					}
+					else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE && gNetworkConnection->character == character)
 					{
 						GameMessage message;
-						message.type = CHARACTER_MOVED_UPDATE_MESSAGE_TYPE;
-						message.movedUpdate.characterID = IDOfCharacter(character);
-						message.movedUpdate.x = character->x;
-						message.movedUpdate.y = character->y;
-						message.movedUpdate.z = character->z;
-						message.movedUpdate.direction = character->direction;
-						message.movedUpdate.pointing_direction = character->pointing_direction;
+						message.type = CHARACTER_FIRED_REQUEST_MESSAGE_TYPE;
 						
-						sendToClients(0, &message);
-					}
-					
-					{
-						GameMessage message;
-						message.type = CHARACTER_FIRED_UPDATE_MESSAGE_TYPE;
-						message.firedUpdate.characterID = IDOfCharacter(character);
-						message.firedUpdate.x = character->x;
-						message.firedUpdate.y = character->y;
-						message.firedUpdate.direction = character->pointing_direction;
-						
-						sendToClients(0, &message);
+						sendToServer(message);
 					}
 				}
-				else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE && gNetworkConnection->character == character)
-				{	
-					GameMessage message;
-					message.type = CHARACTER_FIRED_REQUEST_MESSAGE_TYPE;
-					
-					sendToServer(message);
-				}
+				
+				// make sure character can't move while firing the weapon
+				character->active = SDL_FALSE;
+				
+				character->weap->drawingState = SDL_TRUE;
+				character->weap->animationState = SDL_TRUE;
+				character->animation_timer = 0;
 			}
-			
-			// make sure character can't move while firing the weapon
-			character->active = SDL_FALSE;
-			
-			character->weap->drawingState = SDL_TRUE;
-			character->weap->animationState = SDL_TRUE;
 		}
 	}
 	character->weap->fired = SDL_FALSE;

@@ -1497,7 +1497,7 @@ static void eventLoop(Renderer *renderer)
 		{
 			updateIterations -= ANIMATION_TIMER_INTERVAL;
 			
-			syncNetworkState();
+			syncNetworkState(renderer->window);
 			
 			if (gGameState)
 			{
@@ -1717,7 +1717,7 @@ int main(int argc, char *argv[])
 		// Wait for the thread to finish before we terminate the main thread
 		while (gNetworkConnection != NULL)
 		{
-			syncNetworkState();
+			syncNetworkState(renderer.window);
 			SDL_Delay(10);
 		}
 	}

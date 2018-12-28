@@ -21,6 +21,7 @@
 #include "animation.h"
 #include "game_menus.h"
 #include "utilities.h"
+#include "audio.h"
 
 const Uint16 NETWORK_PORT =				4893;
 
@@ -35,7 +36,7 @@ static SDL_mutex *gCurrentSlotMutex;
 static void pushNetworkMessage(GameMessageArray *messageArray, GameMessage message);
 static void depleteNetworkMessages(GameMessageArray *messageArray);
 
-void syncNetworkState(void)
+void syncNetworkState(SDL_Window *window)
 {
 	if (gNetworkConnection == NULL)
 	{
@@ -107,6 +108,45 @@ void syncNetworkState(void)
 					int characterID = message.firedUpdate.characterID;
 					Character *character = getCharacter(characterID);
 					prepareFiringCharacterWeapon(character);
+					
+					break;
+				}
+				case COLOR_TILE_MESSAGE_TYPE:
+				{
+					int characterID = message.colorTile.characterID;
+					int tileIndex = message.colorTile.tileIndex;
+					Character *character = getCharacter(characterID);
+					
+					gTiles[tileIndex].red = character->weap->red;
+					gTiles[tileIndex].green = character->weap->green;
+					gTiles[tileIndex].blue = character->weap->blue;
+					
+					break;
+				}
+				case TILE_FALLING_DOWN_MESSAGE_TYPE:
+				{
+					int tileIndex = message.fallingTile.tileIndex;
+					if (message.fallingTile.dead)
+					{
+						gTiles[tileIndex].isDead = SDL_TRUE;
+					}
+					else
+					{
+						gTiles[tileIndex].state = SDL_FALSE;
+					}
+					
+					gTiles[tileIndex].z -= OBJECT_FALLING_STEP;
+					
+					if (((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
+					{
+						playTileFallingSound();
+					}
+					
+					break;
+				}
+				case RECOVER_TILE_MESSAGE_TYPE:
+				{
+					recoverDestroyedTile(message.recoverTile.tileIndex);
 					
 					break;
 				}
@@ -407,6 +447,33 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					{
 						char buffer[256];
 						snprintf(buffer, sizeof(buffer) - 1, "pk%llu %d %d", message.packetNumber, message.diedUpdate.characterID, message.diedUpdate.characterLives);
+						
+						sendData(gNetworkConnection->socket, buffer, strlen(buffer), address);
+						
+						break;
+					}
+					case COLOR_TILE_MESSAGE_TYPE:
+					{
+						char buffer[256];
+						snprintf(buffer, sizeof(buffer) - 1, "ct%llu %d %d", message.packetNumber, message.colorTile.characterID, message.colorTile.tileIndex);
+						
+						sendData(gNetworkConnection->socket, buffer, strlen(buffer), address);
+						
+						break;
+					}
+					case TILE_FALLING_DOWN_MESSAGE_TYPE:
+					{
+						char buffer[256];
+						snprintf(buffer, sizeof(buffer) - 1, "tf%llu %d %d", message.packetNumber, message.fallingTile.tileIndex, message.fallingTile.dead);
+						
+						sendData(gNetworkConnection->socket, buffer, strlen(buffer), address);
+						
+						break;
+					}
+					case RECOVER_TILE_MESSAGE_TYPE:
+					{
+						char buffer[256];
+						snprintf(buffer, sizeof(buffer) - 1, "rt%llu %d", message.packetNumber, message.recoverTile.tileIndex);
 						
 						sendData(gNetworkConnection->socket, buffer, strlen(buffer), address);
 						
@@ -905,6 +972,12 @@ int clientNetworkThread(void *context)
 						
 						break;
 					}
+					case COLOR_TILE_MESSAGE_TYPE:
+						break;
+					case TILE_FALLING_DOWN_MESSAGE_TYPE:
+						break;
+					case RECOVER_TILE_MESSAGE_TYPE:
+						break;
 					case CHARACTER_FIRED_UPDATE_MESSAGE_TYPE:
 						break;
 					case NUMBER_OF_PLAYERS_WAITING_FOR_MESSAGE_TYPE:
@@ -1262,6 +1335,88 @@ int clientNetworkThread(void *context)
 						message.firedUpdate.x = x;
 						message.firedUpdate.y = y;
 						message.firedUpdate.direction = pointing_direction;
+						
+						pushNetworkMessage(&gGameMessagesFromNet, message);
+					}
+					
+					if (packetNumber <= triggerIncomingPacketNumber)
+					{
+						GameMessage ackMessage;
+						ackMessage.type = ACK_MESSAGE_TYPE;
+						ackMessage.packetNumber = packetNumber;
+						pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+					}
+				}
+				else if (buffer[0] == 'c' && buffer[1] == 't')
+				{
+					uint64_t packetNumber = 0;
+					int characterID = 0;
+					int tileIndex = 0;
+					
+					sscanf(buffer + 2, "%llu %d %d", &packetNumber, &characterID, &tileIndex);
+					
+					if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM && tileIndex >= 0 && tileIndex < NUMBER_OF_TILES)
+					{
+						triggerIncomingPacketNumber++;
+						
+						GameMessage message;
+						message.type = COLOR_TILE_MESSAGE_TYPE;
+						message.colorTile.characterID = characterID;
+						message.colorTile.tileIndex = tileIndex;
+						
+						pushNetworkMessage(&gGameMessagesFromNet, message);
+					}
+					
+					if (packetNumber <= triggerIncomingPacketNumber)
+					{
+						GameMessage ackMessage;
+						ackMessage.type = ACK_MESSAGE_TYPE;
+						ackMessage.packetNumber = packetNumber;
+						pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+					}
+				}
+				else if (buffer[0] == 't' && buffer[1] == 'f')
+				{
+					uint64_t packetNumber = 0;
+					int tileIndex = 0;
+					SDL_bool dead = SDL_FALSE;
+					
+					sscanf(buffer + 2, "%llu %d %d", &packetNumber, &tileIndex, &dead);
+					
+					if (packetNumber == triggerIncomingPacketNumber + 1 && tileIndex >= 0 && tileIndex < NUMBER_OF_TILES)
+					{
+						triggerIncomingPacketNumber++;
+						
+						GameMessage message;
+						message.type = TILE_FALLING_DOWN_MESSAGE_TYPE;
+						message.fallingTile.tileIndex = tileIndex;
+						message.fallingTile.dead = dead;
+						
+						pushNetworkMessage(&gGameMessagesFromNet, message);
+					}
+					
+					if (packetNumber <= triggerIncomingPacketNumber)
+					{
+						GameMessage ackMessage;
+						ackMessage.type = ACK_MESSAGE_TYPE;
+						ackMessage.packetNumber = packetNumber;
+						pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+					}
+				}
+				else if (buffer[0] == 'r' && buffer[1] == 't')
+				{
+					uint64_t packetNumber = 0;
+					int tileIndex = 0;
+					
+					sscanf(buffer + 2, "%llu %d", &packetNumber, &tileIndex);
+					
+					if (packetNumber == triggerIncomingPacketNumber + 1 && tileIndex >= 0 && tileIndex < NUMBER_OF_TILES)
+					{
+						triggerIncomingPacketNumber++;
+						
+						GameMessage message;
+						message.type = RECOVER_TILE_MESSAGE_TYPE;
+						message.recoverTile.tileIndex = tileIndex;
 						
 						pushNetworkMessage(&gGameMessagesFromNet, message);
 					}

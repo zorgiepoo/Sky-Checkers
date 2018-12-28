@@ -25,8 +25,6 @@
 #include "network.h"
 #include "audio.h"
 
-#define OBJECT_FALLING_STEP 0.2f
-
 #define TILE_FALLING_SPEED 25.4237f
 
 // in seconds
@@ -62,7 +60,7 @@ static double gTimeElapsedAccumulator = 0.0;
 
 /* Functions */
 
-static void colorTile(Tile *tile, Weapon *weap);
+static void colorTile(Tile *tile, Character *character);
 
 static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player);
 static void moveWeapon(Weapon *weapon, double timeDelta);
@@ -195,16 +193,28 @@ void animate(SDL_Window *window, double timeDelta)
 /*
  * Change the color of the tile to the weap's color only if the color of the tile is at its default color and if that the tile's state exists
  */
-static void colorTile(Tile *tile, Weapon *weap)
+static void colorTile(Tile *tile, Character *character)
 {
 	if (tile->state					&&
 		tile->red == tile->d_red	&&
 		tile->blue == tile->d_blue	&&
 		tile->green == tile->d_green)
 	{
+		Weapon *weap = character->weap;
+		
 		tile->red = weap->red;
 		tile->blue = weap->blue;
 		tile->green = weap->green;
+		
+		if (gNetworkConnection && gNetworkConnection->type == NETWORK_SERVER_TYPE)
+		{
+			GameMessage message;
+			message.type = COLOR_TILE_MESSAGE_TYPE;
+			message.colorTile.characterID = IDOfCharacter(character);
+			message.colorTile.tileIndex = tile->index;
+			
+			sendToClients(0, &message);
+		}
 	}
 }
 
@@ -242,7 +252,7 @@ static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player)
 		player->animation_timer++;
 		
 		/* First, color the tiles that are going to be destroyed */
-		if (!player->coloredTiles)
+		if (!player->coloredTiles && (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE))
 		{
 			Tile *currentTile;
 			
@@ -258,28 +268,28 @@ static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player)
 				{
 					while ((currentTile = currentTile->right) != NULL)
 					{
-						colorTile(currentTile, player->weap);
+						colorTile(currentTile, player);
 					}
 				}
 				else if (player->weap->direction == LEFT)
 				{
 					while ((currentTile = currentTile->left) != NULL)
 					{
-						colorTile(currentTile, player->weap);
+						colorTile(currentTile, player);
 					}
 				}
 				else if (player->weap->direction == UP)
 				{
 					while ((currentTile = currentTile->up) != NULL)
 					{
-						colorTile(currentTile, player->weap);
+						colorTile(currentTile, player);
 					}
 				}
 				else if (player->weap->direction == DOWN)
 				{
 					while ((currentTile = currentTile->down) != NULL)
 					{
-						colorTile(currentTile, player->weap);
+						colorTile(currentTile, player);
 					}
 				}
 				
@@ -301,7 +311,7 @@ static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player)
 		
 		static const int RECOVERY_TIME_DELAY_DELTA =	10;
 		
-		if (player->destroyed_tile != NULL)
+		if (player->destroyed_tile != NULL && (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE))
 		{
 			if (player->weap->direction == RIGHT)
 			{
@@ -332,6 +342,12 @@ static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player)
 				{
 					playTileFallingSound();
 				}
+				
+				GameMessage fallingMessage;
+				fallingMessage.type = TILE_FALLING_DOWN_MESSAGE_TYPE;
+				fallingMessage.fallingTile.tileIndex = player->destroyed_tile->index;
+				fallingMessage.fallingTile.dead = SDL_FALSE;
+				sendToClients(0, &fallingMessage);
 				
 				/*
 				 * Each destroyed_tile will get a different recovery_time delay.
@@ -418,6 +434,12 @@ static void firstTileLayerAnimation(SDL_Window *window)
 			{
 				playTileFallingSound();
 			}
+			
+			GameMessage fallingMessage;
+			fallingMessage.type = TILE_FALLING_DOWN_MESSAGE_TYPE;
+			fallingMessage.fallingTile.tileIndex = gTilesLayer[gTileLayerStates[0].deathIndex];
+			fallingMessage.fallingTile.dead = SDL_TRUE;
+			sendToClients(0, &fallingMessage);
 		}
 		
 		gTileLayerStates[0].deathIndex++;
@@ -482,6 +504,12 @@ static void secondTileLayerAnimation(SDL_Window *window)
 			{
 				playTileFallingSound();
 			}
+			
+			GameMessage fallingMessage;
+			fallingMessage.type = TILE_FALLING_DOWN_MESSAGE_TYPE;
+			fallingMessage.fallingTile.tileIndex = gTilesLayer[gTileLayerStates[1].deathIndex];
+			fallingMessage.fallingTile.dead = SDL_TRUE;
+			sendToClients(0, &fallingMessage);
 		}
 		
 		gTileLayerStates[1].deathIndex++;
@@ -510,12 +538,25 @@ static void collapseTiles(double timeDelta)
 	}
 }
 
+void recoverDestroyedTile(int tileIndex)
+{
+	gTiles[tileIndex].red = gTiles[tileIndex].d_red;
+	gTiles[tileIndex].green = gTiles[tileIndex].d_green;
+	gTiles[tileIndex].blue = gTiles[tileIndex].d_blue;
+	gTiles[tileIndex].z = TILE_ALIVE_Z;
+	gTiles[tileIndex].state = SDL_TRUE;
+	gTiles[tileIndex].recovery_timer = 0;
+}
+
 /* To activate a recovery of a tile, set its recover_timer to a value greater than 0 */
 static void recoverDestroyedTiles(void)
 {
-	int tileIndex;
+	if (gNetworkConnection && gNetworkConnection->type == NETWORK_CLIENT_TYPE)
+	{
+		return;
+	}
 	
-	for (tileIndex = 0; tileIndex < NUMBER_OF_TILES; tileIndex++)
+	for (int tileIndex = 0; tileIndex < NUMBER_OF_TILES; tileIndex++)
 	{
 		if (gTiles[tileIndex].recovery_timer > 0)
 		{
@@ -527,12 +568,12 @@ static void recoverDestroyedTiles(void)
 		// it's time to recover!
 		if (gTiles[tileIndex].recovery_timer > TILE_SPAWN_TIME && !gTiles[tileIndex].isDead)
 		{
-			gTiles[tileIndex].red = gTiles[tileIndex].d_red;
-			gTiles[tileIndex].green = gTiles[tileIndex].d_green;
-			gTiles[tileIndex].blue = gTiles[tileIndex].d_blue;
-			gTiles[tileIndex].z = TILE_ALIVE_Z;
-			gTiles[tileIndex].state = SDL_TRUE;
-			gTiles[tileIndex].recovery_timer = 0;
+			recoverDestroyedTile(tileIndex);
+			
+			GameMessage recoverMessage;
+			recoverMessage.type = RECOVER_TILE_MESSAGE_TYPE;
+			recoverMessage.recoverTile.tileIndex = tileIndex;
+			sendToClients(0, &recoverMessage);
 		}
 	}
 }

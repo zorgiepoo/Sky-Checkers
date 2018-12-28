@@ -28,6 +28,7 @@
 
 typedef struct _tile
 {
+	int index;
 	float x;
 	float y;
 	float z;

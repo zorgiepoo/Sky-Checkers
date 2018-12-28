@@ -67,7 +67,10 @@ typedef enum
 	FIRST_DATA_TO_CLIENT_MESSAGE_TYPE = 14,
 	WELCOME_MESSAGE_TO_SERVER_MESSAGE_TYPE = 15,
 	CHARACTER_FIRED_UPDATE_MESSAGE_TYPE = 16,
-	ACK_MESSAGE_TYPE = 17
+	ACK_MESSAGE_TYPE = 17,
+	COLOR_TILE_MESSAGE_TYPE = 18,
+	TILE_FALLING_DOWN_MESSAGE_TYPE = 19,
+	RECOVER_TILE_MESSAGE_TYPE = 20
 } MessageType;
 
 typedef struct
@@ -158,6 +161,23 @@ typedef struct
 
 typedef struct
 {
+	int characterID;
+	int tileIndex;
+} ColorTileMessage;
+
+typedef struct
+{
+	int tileIndex;
+	SDL_bool dead;
+} FallingTileMessage;
+
+typedef struct
+{
+	int tileIndex;
+} RecoverTileMessage;
+
+typedef struct
+{
 	MessageType type;
 	uint64_t packetNumber;
 	int addressIndex;
@@ -175,6 +195,9 @@ typedef struct
 		FirstClientResponse firstClientResponse;
 		FirstDataToClient firstDataToClient;
 		WelcomeMessage weclomeMessage;
+		ColorTileMessage colorTile;
+		FallingTileMessage fallingTile;
+		RecoverTileMessage recoverTile;
 		
 		uint32_t numberOfWaitingPlayers;
 		int32_t gameStartNumber;
@@ -202,7 +225,7 @@ GameMessage *popNetworkMessages(GameMessageArray *messageArray, uint32_t *count)
 void networkInitialization(void);
 void cleanupStateFromNetwork(void);
 
-void syncNetworkState(void);
+void syncNetworkState(SDL_Window *window);
 
 int serverNetworkThread(void *unused);
 int clientNetworkThread(void *context);

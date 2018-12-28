@@ -66,6 +66,7 @@ void loadTiles(void)
 		gTiles[tileIndex].state = SDL_TRUE;
 		gTiles[tileIndex].recovery_timer = 0;
 		gTiles[tileIndex].isDead = SDL_FALSE;
+		gTiles[tileIndex].index = tileIndex;
 	}
 	
 	loadTileLocations();

@@ -23,6 +23,8 @@
 #include "characters.h"
 #include "input.h"
 
+#define OBJECT_FALLING_STEP 0.2f
+
 #define ANIMATION_TIMER_INTERVAL 0.00833 // in seconds
 
 void startAnimation(void);
@@ -32,3 +34,5 @@ void animate(SDL_Window *window, double timeDelta);
 
 void prepareCharactersDeath(Character *player);
 void decideWhetherToMakeAPlayerAWinner(Character *player);
+
+void recoverDestroyedTile(int tileIndex);
