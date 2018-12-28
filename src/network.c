@@ -729,7 +729,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							GameMessage ackMessage;
 							ackMessage.type = ACK_MESSAGE_TYPE;
 							ackMessage.packetNumber = packetNumber;
-							ackMessage.addressIndex = gCurrentSlot;
+							ackMessage.addressIndex = addressIndex;
 							pushNetworkMessage(&gGameMessagesToNet, ackMessage);
 						}
 					}
@@ -1140,14 +1140,14 @@ int clientNetworkThread(void *context)
 						{
 							free(netName);
 						}
-					}
-					
-					if (packetNumber <= triggerIncomingPacketNumber)
-					{
-						GameMessage ackMessage;
-						ackMessage.type = ACK_MESSAGE_TYPE;
-						ackMessage.packetNumber = packetNumber;
-						pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+						
+						if (packetNumber <= triggerIncomingPacketNumber)
+						{
+							GameMessage ackMessage;
+							ackMessage.type = ACK_MESSAGE_TYPE;
+							ackMessage.packetNumber = packetNumber;
+							pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+						}
 					}
 				}
 				else if (buffer[0] == 's' && buffer[1] == 'g')
