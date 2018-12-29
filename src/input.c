@@ -413,7 +413,7 @@ void updateCharacterFromAnyInput(void)
 	
 	Character *character = gNetworkConnection->character;
 	
-	if (!character->active)
+	if (gNetworkConnection->type == NETWORK_SERVER_TYPE && !character->active)
 	{
 		return;
 	}
@@ -425,29 +425,43 @@ void updateCharacterFromAnyInput(void)
 	SDL_bool inputGreenTreeState = gGreenTreeInput.right || gGreenTreeInput.left || gGreenTreeInput.up || gGreenTreeInput.down;
 	SDL_bool inputBlueLightningState = gBlueLightningInput.right || gBlueLightningInput.left || gBlueLightningInput.up || gBlueLightningInput.down;
 	
+	int newDirection;
 	if (inputRedRoverState + inputPinkBubbleGumState + inputGreenTreeState + inputBlueLightningState > 1)
 	{
-		character->direction = NO_DIRECTION;
+		newDirection = NO_DIRECTION;
 	}
 	else if (gRedRoverInput.right || gPinkBubbleGumInput.right || gGreenTreeInput.right || gBlueLightningInput.right)
 	{
-		character->direction = RIGHT;
+		newDirection = RIGHT;
 	}
 	else if (gRedRoverInput.left || gPinkBubbleGumInput.left || gGreenTreeInput.left || gBlueLightningInput.left)
 	{
-		character->direction = LEFT;
+		newDirection = LEFT;
 	}
 	else if (gRedRoverInput.down || gPinkBubbleGumInput.down || gGreenTreeInput.down || gBlueLightningInput.down)
 	{
-		character->direction = DOWN;
+		newDirection = DOWN;
 	}
 	else if (gRedRoverInput.up || gPinkBubbleGumInput.up || gGreenTreeInput.up || gBlueLightningInput.up)
 	{
-		character->direction = UP;
+		newDirection = UP;
 	}
 	else
 	{
-		character->direction = NO_DIRECTION;
+		newDirection = NO_DIRECTION;
+	}
+	
+	if (gNetworkConnection->type == NETWORK_CLIENT_TYPE)
+	{
+		GameMessage message;
+		message.type = MOVEMENT_REQUEST_MESSAGE_TYPE;
+		message.movementRequest.direction = newDirection;
+		
+		sendToServer(message);
+	}
+	else
+	{
+		character->direction = newDirection;
 	}
 }
 

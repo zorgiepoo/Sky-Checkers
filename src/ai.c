@@ -110,7 +110,7 @@ static void directCharacterBasedOnCollisions(Character *character, int currentTi
 	/* The AI should avoid dieing from the gray stones */
 	
 	int tileLocation = getTileIndexLocation((int)character->x, (int)character->y);
-	if (tileLocation < NUMBER_OF_TILES)
+	if (tileLocation >= 0 && tileLocation < NUMBER_OF_TILES)
 	{
 		Tile *tile = &gTiles[tileLocation];
 		// gray color red == 0.31
@@ -158,7 +158,7 @@ static void shootWeaponProjectile(Character *character, int currentTime)
 	
 	int tileIndex = getTileIndexLocation((int)character->x, (int)character->y);
 	
-	if (tileIndex >= NUMBER_OF_TILES)
+	if (tileIndex < 0 || tileIndex >= NUMBER_OF_TILES)
 	{
 		return;
 	}

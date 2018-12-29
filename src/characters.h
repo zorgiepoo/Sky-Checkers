@@ -52,6 +52,11 @@ extern const int NETWORK_NO_STATE;
 extern const int NETWORK_PENDING_STATE;
 extern const int NETWORK_PLAYING_STATE;
 
+
+// If you were to use a stop watch, the time it takes for a character to go from one end
+// of the checkerboard to the other end (vertically) is ~3.50-3.60 seconds
+#define INITIAL_CHARACTER_SPEED	4.51977f
+
 extern int gAIMode;
 extern int gAINetMode;
 
@@ -70,6 +75,9 @@ typedef struct _Character
 	
 	/* The last direction the character is currently going in - used for netcode */
 	int last_direction;
+	
+	/* Speed of character */
+	float speed;
 	
 	/* The direction the character was last pointing towards */
 	int pointing_direction;

@@ -36,10 +36,6 @@ const int BLUE_LIGHTNING =				3;
 const int PINK_BUBBLE_GUM =				4;
 const int WEAPON =						5;
 
-// If you were to use a stop watch, the time it takes for a character to go from one end
-// of the checkerboard to the other end (vertically) is ~3.50-3.60 seconds
-#define CHARACTER_SPEED	4.51977f
-
 const int CHARACTER_HUMAN_STATE =		1;
 const int CHARACTER_AI_STATE =			2;
 
@@ -77,31 +73,15 @@ void loadCharacter(Character *character)
 	{
 		spawnCharacter(character);
 		randomizeCharacterDirection(character);
-		
-		if (gNetworkConnection)
-		{
-			// update movement
-			
-			GameMessage message;
-			message.type = CHARACTER_MOVED_UPDATE_MESSAGE_TYPE;
-			message.movedUpdate.characterID = IDOfCharacter(character);
-			message.movedUpdate.x = character->x;
-			message.movedUpdate.y = character->y;
-			message.movedUpdate.z = character->z;
-			message.movedUpdate.direction = character->direction;
-			message.movedUpdate.pointing_direction = character->pointing_direction;
-			
-			sendToClients(0, &message);
-		}
 	}
 	else if (gNetworkConnection && gNetworkConnection->type == NETWORK_CLIENT_TYPE)
 	{
-		randomizeCharacterDirection(character);
 		character->active = SDL_TRUE;
 		character->z = 2.0f;
 	}
 	
 	character->last_direction = NO_DIRECTION;
+	character->speed = INITIAL_CHARACTER_SPEED;
 	character->recovery_timer = 0;
 	character->animation_timer = 0;
 	character->coloredTiles = SDL_FALSE;
@@ -633,21 +613,9 @@ static void sendCharacterMovement(Character *character)
 			message.movedUpdate.z = character->z;
 			message.movedUpdate.direction = character->direction;
 			message.movedUpdate.pointing_direction = character->pointing_direction;
+			message.movedUpdate.timestamp = SDL_GetTicks();
 			
 			sendToClients(0, &message);
-		}
-		else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE && character == gNetworkConnection->character)
-		{
-			if (character->direction != character->last_direction)
-			{
-				GameMessage message;
-				message.type = MOVEMENT_REQUEST_MESSAGE_TYPE;
-				message.movementRequest.direction = character->direction;
-				
-				sendToServer(message);
-				
-				character->last_direction = character->direction;
-			}
 		}
 	}
 }
@@ -677,28 +645,28 @@ void moveCharacter(Character *character, double timeDelta)
 		{
 			if (characterIsOutOfBounds(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
 			{
-				character->x += CHARACTER_SPEED * timeDelta;
+				character->x += character->speed * timeDelta;
 			}
 		}
 		else if (direction == LEFT)
 		{
 			if (characterIsOutOfBounds(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
 			{
-				character->x -= CHARACTER_SPEED * timeDelta;
+				character->x -= character->speed * timeDelta;
 			}
 		}
 		else if (direction == DOWN)
 		{
 			if (characterIsOutOfBounds(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
 			{
-				character->y -= CHARACTER_SPEED * timeDelta;
+				character->y -= character->speed * timeDelta;
 			}
 		}
 		else if (direction == UP)
 		{
 			if (characterIsOutOfBounds(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
 			{
-				character->y += CHARACTER_SPEED * timeDelta;
+				character->y += character->speed * timeDelta;
 			}
 		}
 	}
@@ -726,35 +694,20 @@ void fireCharacterWeapon(Character *character)
 		if ((!character->weap->animationState || (gNetworkConnection && gNetworkConnection->type == NETWORK_CLIENT_TYPE)) && character->weap->fired)
 		{
 			int tileIndex = getTileIndexLocation((int)character->x, (int)character->y);
-			if (tileIndex < NUMBER_OF_TILES && gTiles[tileIndex].z == TILE_ALIVE_Z)
+			if (tileIndex >= 0 && tileIndex < NUMBER_OF_TILES && gTiles[tileIndex].z == TILE_ALIVE_Z)
 			{
 				if (gNetworkConnection)
 				{
 					if (gNetworkConnection->type == NETWORK_SERVER_TYPE)
 					{
-						{
-							GameMessage message;
-							message.type = CHARACTER_MOVED_UPDATE_MESSAGE_TYPE;
-							message.movedUpdate.characterID = IDOfCharacter(character);
-							message.movedUpdate.x = character->x;
-							message.movedUpdate.y = character->y;
-							message.movedUpdate.z = character->z;
-							message.movedUpdate.direction = character->direction;
-							message.movedUpdate.pointing_direction = character->pointing_direction;
-							
-							sendToClients(0, &message);
-						}
+						GameMessage message;
+						message.type = CHARACTER_FIRED_UPDATE_MESSAGE_TYPE;
+						message.firedUpdate.characterID = IDOfCharacter(character);
+						message.firedUpdate.x = character->x;
+						message.firedUpdate.y = character->y;
+						message.firedUpdate.direction = character->pointing_direction;
 						
-						{
-							GameMessage message;
-							message.type = CHARACTER_FIRED_UPDATE_MESSAGE_TYPE;
-							message.firedUpdate.characterID = IDOfCharacter(character);
-							message.firedUpdate.x = character->x;
-							message.firedUpdate.y = character->y;
-							message.firedUpdate.direction = character->pointing_direction;
-							
-							sendToClients(0, &message);
-						}
+						sendToClients(0, &message);
 					}
 					else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE && gNetworkConnection->character == character)
 					{

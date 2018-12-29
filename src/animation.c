@@ -258,7 +258,7 @@ static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player)
 			
 			// Get the location of where the player fired their weapon
 			int tileLocation = getTileIndexLocation((int)player->weap->initialX, (int)player->weap->initialY);
-			if (tileLocation < NUMBER_OF_TILES)
+			if (tileLocation >= 0 && tileLocation < NUMBER_OF_TILES)
 			{
 				player->player_loc = tileLocation;
 				
@@ -629,7 +629,7 @@ void decideWhetherToMakeAPlayerAWinner(Character *player)
 		{
 			// check if the winner is really about to die, in that case, we'll need to see who is the highest up to determine the winner
 			int winnerTileIndex = getTileIndexLocation((int)winnerCharacter->x, (int)winnerCharacter->y);
-			SDL_bool winnerIsReadyForDeath = (winnerTileIndex < NUMBER_OF_TILES && gTiles[winnerTileIndex].z < TILE_ALIVE_Z && winnerCharacter->z > CHARACTER_TERMINATING_Z && winnerCharacter->lives == 1);
+			SDL_bool winnerIsReadyForDeath = (winnerTileIndex >= 0 && winnerTileIndex < NUMBER_OF_TILES && gTiles[winnerTileIndex].z < TILE_ALIVE_Z && winnerCharacter->z > CHARACTER_TERMINATING_Z && winnerCharacter->lives == 1);
 			if (winnerIsReadyForDeath)
 			{
 				if (winnerCharacter != &gRedRover && gRedRover.z > winnerCharacter->z)
@@ -683,21 +683,14 @@ void prepareCharactersDeath(Character *player)
  */
 static void killCharacter(Input *characterInput, double timeDelta)
 {
-	// client's don't kill characters...
-	// server tells them when to kill!
-	if (gNetworkConnection && gNetworkConnection->type == NETWORK_CLIENT_TYPE)
-	{
-		return;
-	}
-	
 	Character *player = characterFromInput(characterInput);
 	
 	int location = getTileIndexLocation((int)player->x, (int)player->y);
 	
 	// Make the character fall down if the tile is falling down
-	if (location < NUMBER_OF_TILES && gTiles[location].z < TILE_ALIVE_Z && player->z > CHARACTER_TERMINATING_Z)
+	if (location >= 0 && location < NUMBER_OF_TILES && gTiles[location].z < TILE_ALIVE_Z && player->z > CHARACTER_TERMINATING_Z)
 	{
-		if (player->active && !player->weap->animationState)
+		if (player->active && !player->weap->animationState && (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE))
 		{
 			prepareCharactersDeath(player);
 			
@@ -762,20 +755,6 @@ static void killCharacter(Input *characterInput, double timeDelta)
 		
 		player->z -= CHARACTER_FALLING_SPEED * timeDelta;
 		player->recovery_timer = 1;
-		
-		if (gNetworkConnection && gNetworkConnection->type == NETWORK_SERVER_TYPE)
-		{	
-			GameMessage message;
-			message.type = CHARACTER_MOVED_UPDATE_MESSAGE_TYPE;
-			message.movedUpdate.characterID = IDOfCharacter(player);
-			message.movedUpdate.x = player->x;
-			message.movedUpdate.y = player->y;
-			message.movedUpdate.z = player->z;
-			message.movedUpdate.direction = player->direction;
-			message.movedUpdate.pointing_direction = player->pointing_direction;
-			
-			sendToClients(0, &message);
-		}
 	}
 }
 

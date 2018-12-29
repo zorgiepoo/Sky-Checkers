@@ -108,6 +108,7 @@ typedef struct
 	float x, y, z;
 	int direction;
 	int pointing_direction;
+	uint32_t timestamp;
 } CharacterMovedUpdate;
 
 typedef struct
@@ -125,9 +126,6 @@ typedef struct
 typedef struct
 {
 	int slotID;
-	float x, y;
-	int direction;
-	int pointing_direction;
 	int characterLives;
 } FirstServerResponse;
 
@@ -141,15 +139,7 @@ typedef struct
 
 typedef struct
 {
-	char *netName;
-	float x, y, z;
-	int direction;
-	int pointing_direction;
-} CharacterInfo;
-
-typedef struct
-{
-	CharacterInfo characterInfo[4];
+	char *netNames[4];
 	int characterID;
 	int numberOfPlayersToWaitFor;
 } FirstDataToClient;
@@ -226,7 +216,7 @@ GameMessage *popNetworkMessages(GameMessageArray *messageArray, uint32_t *count)
 void networkInitialization(void);
 void cleanupStateFromNetwork(void);
 
-void syncNetworkState(SDL_Window *window);
+void syncNetworkState(SDL_Window *window, float timeDelta);
 
 int serverNetworkThread(void *unused);
 int clientNetworkThread(void *context);

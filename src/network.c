@@ -36,12 +36,20 @@ static SDL_mutex *gCurrentSlotMutex;
 static void pushNetworkMessage(GameMessageArray *messageArray, GameMessage message);
 static void depleteNetworkMessages(GameMessageArray *messageArray);
 
-void syncNetworkState(SDL_Window *window)
+void syncNetworkState(SDL_Window *window, float timeDelta)
 {
 	if (gNetworkConnection == NULL)
 	{
 		return;
 	}
+	
+	static uint32_t lastMovementMessageTime = 0;
+	static uint32_t currentMovementMessageTime = 0;
+	static uint32_t averageIncomingMovementMessageTime = 0;
+	static uint32_t averageIncomingMovementMessageTimes[10] = {0};
+	static uint32_t averageIncomingMovementMessageTimeIndex = 0;
+	
+	SDL_bool recordedFirstMovementTime = SDL_FALSE;
 	
 	uint32_t messagesCount = 0;
 	GameMessage *messagesToRead = popNetworkMessages(&gGameMessagesFromNet, &messagesCount);
@@ -72,6 +80,15 @@ void syncNetworkState(SDL_Window *window)
 					
 					depleteNetworkMessages(&gGameMessagesFromNet);
 					depleteNetworkMessages(&gGameMessagesToNet);
+					
+					lastMovementMessageTime = 0;
+					currentMovementMessageTime = 0;
+					averageIncomingMovementMessageTime = 0;
+					for (uint32_t index = 0; index < sizeof(averageIncomingMovementMessageTimes) / sizeof(*averageIncomingMovementMessageTimes); index++)
+					{
+						averageIncomingMovementMessageTimes[index] = 0;
+					}
+					averageIncomingMovementMessageTimeIndex = 0;
 					
 					if (thread != NULL)
 					{
@@ -174,12 +191,60 @@ void syncNetworkState(SDL_Window *window)
 				}
 				case CHARACTER_MOVED_UPDATE_MESSAGE_TYPE:
 				{
+					if (!recordedFirstMovementTime)
+					{
+						currentMovementMessageTime = SDL_GetTicks();
+
+						if (currentMovementMessageTime == 0)
+						{
+							lastMovementMessageTime = currentMovementMessageTime;
+						}
+						else
+						{
+							uint32_t averageTime = currentMovementMessageTime - lastMovementMessageTime;
+
+							averageIncomingMovementMessageTimes[averageIncomingMovementMessageTimeIndex % sizeof(averageIncomingMovementMessageTimes) / sizeof(*averageIncomingMovementMessageTimes)] = averageTime;
+
+							averageIncomingMovementMessageTimeIndex++;
+
+							averageIncomingMovementMessageTime = 0;
+							uint32_t count = 0;
+
+							for (uint32_t index = 0; index < sizeof(averageIncomingMovementMessageTimes) / sizeof(*averageIncomingMovementMessageTimes); index++)
+							{
+								if (averageIncomingMovementMessageTimes[index] != 0)
+								{
+									averageIncomingMovementMessageTime += averageIncomingMovementMessageTimes[index];
+									count++;
+								}
+							}
+
+							if (count > 0)
+							{
+								averageIncomingMovementMessageTime /= count;
+							}
+							else
+							{
+								averageIncomingMovementMessageTime = 100;
+							}
+
+							lastMovementMessageTime = currentMovementMessageTime;
+						}
+
+						recordedFirstMovementTime = SDL_TRUE;
+					}
+					
 					Character *character = getCharacter(message.movedUpdate.characterID);
-					character->x = message.movedUpdate.x;
-					character->y = message.movedUpdate.y;
-					character->z = message.movedUpdate.z;
+					
+					if (character->z >= 2.0f)
+					{
+						character->x = message.movedUpdate.x;
+						character->y = message.movedUpdate.y;
+						character->z = message.movedUpdate.z;
+					}
 					character->direction = message.movedUpdate.direction;
 					character->pointing_direction = message.movedUpdate.pointing_direction;
+					
 					break;
 				}
 				case CHARACTER_KILLED_UPDATE_MESSAGE_TYPE:
@@ -203,10 +268,6 @@ void syncNetworkState(SDL_Window *window)
 				case FIRST_SERVER_RESPONSE_MESSAGE_TYPE:
 				{
 					int slotID = message.firstServerResponse.slotID;
-					float x = message.firstServerResponse.x;
-					float y = message.firstServerResponse.y;
-					int direction = message.firstServerResponse.direction;
-					int pointing_direction = message.firstServerResponse.pointing_direction;
 					int characterLives = message.firstServerResponse.characterLives;
 					
 					gNetworkConnection->characterLives = characterLives;
@@ -241,12 +302,6 @@ void syncNetworkState(SDL_Window *window)
 					gGreenTree.lives = gNetworkConnection->characterLives;
 					gBlueLightning.lives = gNetworkConnection->characterLives;
 					
-					gNetworkConnection->character->x = x;
-					gNetworkConnection->character->y = y;
-					gNetworkConnection->character->y = 2.0f;
-					gNetworkConnection->character->direction = direction;
-					gNetworkConnection->character->pointing_direction = pointing_direction;
-					
 					break;
 				}
 				case FIRST_CLIENT_RESPONSE_MESSAGE_TYPE:
@@ -264,16 +319,8 @@ void syncNetworkState(SDL_Window *window)
 					
 					for (int characterIndex = RED_ROVER; characterIndex <= PINK_BUBBLE_GUM; characterIndex++)
 					{
-						CharacterInfo *characterInfo = &messageBack.firstDataToClient.characterInfo[characterIndex - 1];
-						
 						Character *character = getCharacter(characterIndex);
-						
-						characterInfo->x = character->x;
-						characterInfo->y = character->y;
-						characterInfo->z = character->z;
-						characterInfo->direction = character->direction;
-						characterInfo->pointing_direction = character->pointing_direction;
-						characterInfo->netName = character->netName;
+						messageBack.firstDataToClient.netNames[characterIndex - 1] = character->netName;
 					}
 					
 					pushNetworkMessage(&gGameMessagesToNet, messageBack);
@@ -321,7 +368,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 	
 	SDL_bool needsToQuit = SDL_FALSE;
 	
-	while (SDL_TRUE)
+	while (!needsToQuit)
 	{
 		uint32_t timeBeforeProcessing = SDL_GetTicks();
 		
@@ -333,20 +380,48 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 			char sendBuffers[3][4096];
 			char *sendBufferPtrs[] = {sendBuffers[0], sendBuffers[1], sendBuffers[2]};
 			
-			for (uint32_t messageIndex = 0; messageIndex < messagesCount && !needsToQuit; messageIndex++)
+			// Only keep one movement message per character per packet
+			uint32_t trackedMovementIndices[3][4] = {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}};
+			for (uint32_t messagesLeft = messagesCount; messagesLeft > 0; messagesLeft--)
+			{
+				GameMessage message = messagesAvailable[messagesLeft - 1];
+				if (message.type == CHARACTER_MOVED_UPDATE_MESSAGE_TYPE)
+				{
+					int addressIndex = message.addressIndex;
+					int characterIndex = message.movedUpdate.characterID - 1;
+					
+					if (trackedMovementIndices[addressIndex][characterIndex] == 0)
+					{
+						trackedMovementIndices[addressIndex][characterIndex] = messagesLeft - 1;
+					}
+					else
+					{
+						messagesAvailable[messagesLeft - 1].addressIndex = -1;
+					}
+				}
+			}
+			
+			for (uint32_t messageIndex = 0; messageIndex < messagesCount; messageIndex++)
 			{
 				GameMessage message = messagesAvailable[messageIndex];
 				int addressIndex = message.addressIndex;
 				struct sockaddr_in *address = (addressIndex == -1) ? NULL :  &gClientAddress[addressIndex];
 				
-				if (message.type != QUIT_MESSAGE_TYPE && message.type != ACK_MESSAGE_TYPE && message.type != FIRST_DATA_TO_CLIENT_MESSAGE_TYPE)
+				if (!needsToQuit && message.type != QUIT_MESSAGE_TYPE && message.type != ACK_MESSAGE_TYPE && message.type != FIRST_DATA_TO_CLIENT_MESSAGE_TYPE)
 				{
 					if (message.packetNumber == 0)
 					{
 						if (message.type == CHARACTER_MOVED_UPDATE_MESSAGE_TYPE)
 						{
-							message.packetNumber = realTimeOutgoingPacketNumbers[addressIndex];
-							realTimeOutgoingPacketNumbers[addressIndex]++;
+							if (addressIndex == -1)
+							{
+								continue;
+							}
+							else
+							{
+								message.packetNumber = realTimeOutgoingPacketNumbers[addressIndex];
+								realTimeOutgoingPacketNumbers[addressIndex]++;
+							}
 						}
 						else
 						{
@@ -380,6 +455,11 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							pushNetworkMessage(&gGameMessagesToNet, message);
 						}
 					}
+				}
+				
+				if (needsToQuit && message.type != QUIT_MESSAGE_TYPE)
+				{
+					continue;
 				}
 				
 				switch (message.type)
@@ -530,7 +610,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case CHARACTER_MOVED_UPDATE_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "mo%llu %d %f %f %f %d %d", message.packetNumber, message.movedUpdate.characterID, message.movedUpdate.x, message.movedUpdate.y, message.movedUpdate.z, message.movedUpdate.direction, message.movedUpdate.pointing_direction);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "mo%llu %d %f %f %f %d %d %u", message.packetNumber, message.movedUpdate.characterID, message.movedUpdate.x, message.movedUpdate.y, message.movedUpdate.z, message.movedUpdate.direction, message.movedUpdate.pointing_direction, message.movedUpdate.timestamp);
 						
 						sendBufferPtrs[addressIndex] += length + 1;
 						
@@ -600,7 +680,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case FIRST_SERVER_RESPONSE_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "sr%llu %d %f %f %d %d %d", message.packetNumber, message.firstServerResponse.slotID, message.firstServerResponse.x, message.firstServerResponse.y, message.firstServerResponse.direction, message.firstServerResponse.pointing_direction, message.firstServerResponse.characterLives);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "sr%llu %d %d", message.packetNumber, message.firstServerResponse.slotID, message.firstServerResponse.characterLives);
 						
 						sendBufferPtrs[addressIndex] += length + 1;
 						
@@ -617,19 +697,13 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					case FIRST_DATA_TO_CLIENT_MESSAGE_TYPE:
 					{
 						int clientCharacterID = message.firstDataToClient.characterID;
-						CharacterInfo *characterInfos = message.firstDataToClient.characterInfo;
-						CharacterInfo *clientCharacterInfo = &characterInfos[clientCharacterID - 1];
 						
-						// send client its spawn info
+						// send client its initial info
 						{
 							GameMessage responseMessage;
 							responseMessage.type = FIRST_SERVER_RESPONSE_MESSAGE_TYPE;
 							responseMessage.packetNumber = 0;
 							responseMessage.firstServerResponse.slotID = clientCharacterID - 1;
-							responseMessage.firstServerResponse.x = clientCharacterInfo->x;
-							responseMessage.firstServerResponse.y = clientCharacterInfo->y;
-							responseMessage.firstServerResponse.direction = clientCharacterInfo->direction;
-							responseMessage.firstServerResponse.pointing_direction = clientCharacterInfo->pointing_direction;
 							responseMessage.firstServerResponse.characterLives = gCharacterLives;
 							
 							responseMessage.addressIndex = message.addressIndex;
@@ -642,7 +716,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							netNameMessage.type = NET_NAME_MESSAGE_TYPE;
 							netNameMessage.packetNumber = 0;
 							netNameMessage.netNameRequest.characterID = clientCharacterID;
-							netNameMessage.netNameRequest.netName = clientCharacterInfo->netName;
+							netNameMessage.netNameRequest.netName = message.firstDataToClient.netNames[clientCharacterID - 1];
 							
 							sendToClients(message.addressIndex + 1, &netNameMessage);
 							
@@ -652,48 +726,18 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							pushNetworkMessage(&gGameMessagesToNet, netNameMessage);
 						}
 						
-						// send client info to all other clients
-						{
-							GameMessage movedMessage;
-							movedMessage.type = CHARACTER_MOVED_UPDATE_MESSAGE_TYPE;
-							movedMessage.movedUpdate.characterID = clientCharacterID;
-							movedMessage.movedUpdate.x = clientCharacterInfo->x;
-							movedMessage.movedUpdate.y = clientCharacterInfo->y;
-							movedMessage.movedUpdate.z = clientCharacterInfo->z;
-							movedMessage.movedUpdate.direction = clientCharacterInfo->direction;
-							movedMessage.movedUpdate.pointing_direction = clientCharacterInfo->pointing_direction;
-							
-							sendToClients(message.addressIndex + 1, &movedMessage);
-						}
-						
 						for (int characterIndex = RED_ROVER; characterIndex <= PINK_BUBBLE_GUM; characterIndex++)
 						{
 							if (characterIndex != clientCharacterID)
 							{
-								CharacterInfo *characterInfo = &characterInfos[characterIndex - 1];
-								
-								{
-									GameMessage movementMessage;
-									movementMessage.type = CHARACTER_MOVED_UPDATE_MESSAGE_TYPE;
-									movementMessage.packetNumber = 0;
-									movementMessage.movedUpdate.characterID = characterIndex;
-									movementMessage.movedUpdate.x = characterInfo->x;
-									movementMessage.movedUpdate.y = characterInfo->y;
-									movementMessage.movedUpdate.z = characterInfo->z;
-									movementMessage.movedUpdate.direction = characterInfo->direction;
-									movementMessage.movedUpdate.pointing_direction = characterInfo->pointing_direction;
-									
-									movementMessage.addressIndex = message.addressIndex;
-									pushNetworkMessage(&gGameMessagesToNet, movementMessage);
-								}
-								
-								if (characterInfo->netName)
+								char *netName = message.firstDataToClient.netNames[characterIndex - 1];
+								if (netName != NULL)
 								{
 									GameMessage netNameMessage;
 									netNameMessage.type = NET_NAME_MESSAGE_TYPE;
 									netNameMessage.packetNumber = 0;
 									netNameMessage.netNameRequest.characterID = characterIndex;
-									netNameMessage.netNameRequest.netName = characterInfo->netName;
+									netNameMessage.netNameRequest.netName = netName;
 									
 									netNameMessage.addressIndex = message.addressIndex;
 									pushNetworkMessage(&gGameMessagesToNet, netNameMessage);
@@ -741,8 +785,6 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 				GameMessage quitMessage;
 				quitMessage.type = QUIT_MESSAGE_TYPE;
 				pushNetworkMessage(&gGameMessagesFromNet, quitMessage);
-				
-				break;
 			}
 		}
 		
@@ -947,13 +989,16 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 			}
 		}
 		
-		uint32_t timeAfterProcessing = SDL_GetTicks();
-		uint32_t deltaProcessingTime = timeAfterProcessing - timeBeforeProcessing;
-		const uint32_t targetDelay = 5;
-		
-		if (deltaProcessingTime < targetDelay)
+		if (!needsToQuit)
 		{
-			SDL_Delay(targetDelay - deltaProcessingTime);
+			uint32_t timeAfterProcessing = SDL_GetTicks();
+			uint32_t deltaProcessingTime = timeAfterProcessing - timeBeforeProcessing;
+			const uint32_t targetDelay = 5;
+			
+			if (deltaProcessingTime < targetDelay)
+			{
+				SDL_Delay(targetDelay - deltaProcessingTime);
+			}
 		}
 	}
 	
@@ -966,8 +1011,6 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 
 int clientNetworkThread(void *context)
 {
-	SDL_bool receivedFirstServerMessage = SDL_FALSE;
-	
 	uint64_t triggerOutgoingPacketNumber = 1;
 	
 	uint64_t triggerIncomingPacketNumber = 0;
@@ -983,11 +1026,11 @@ int clientNetworkThread(void *context)
 	welcomeMessage.weclomeMessage.netName = gUserNameString;
 	sendToServer(welcomeMessage);
 	
-	while (SDL_TRUE)
+	SDL_bool needsToQuit = SDL_FALSE;
+	
+	while (!needsToQuit)
 	{
 		uint32_t timeBeforeProcessing = SDL_GetTicks();
-		
-		SDL_bool needsToQuit = SDL_FALSE;
 		
 		uint32_t messagesCount = 0;
 		GameMessage *messagesAvailable = popNetworkMessages(&gGameMessagesToNet, &messagesCount);
@@ -1198,13 +1241,9 @@ int clientNetworkThread(void *context)
 							{
 								uint64_t packetNumber = 0;
 								int slotID = 0;
-								float x = 0;
-								float y = 0;
-								int direction = NO_DIRECTION;
-								int pointing_direction = NO_DIRECTION;
 								int characterLives = 0;
 								
-								sscanf(buffer, "sr%llu %d %f %f %d %d %d", &packetNumber, &slotID, &x, &y, &direction, &pointing_direction, &characterLives);
+								sscanf(buffer, "sr%llu %d %d", &packetNumber, &slotID, &characterLives);
 								
 								if (packetNumber == triggerIncomingPacketNumber + 1)
 								{
@@ -1213,15 +1252,9 @@ int clientNetworkThread(void *context)
 									GameMessage message;
 									message.type = FIRST_SERVER_RESPONSE_MESSAGE_TYPE;
 									message.firstServerResponse.slotID = slotID;
-									message.firstServerResponse.x = x;
-									message.firstServerResponse.y = y;
-									message.firstServerResponse.direction = direction;
-									message.firstServerResponse.pointing_direction = pointing_direction;
 									message.firstServerResponse.characterLives = characterLives;
 									
 									pushNetworkMessage(&gGameMessagesFromNet, message);
-									
-									receivedFirstServerMessage = SDL_TRUE;
 								}
 								
 								if (packetNumber <= triggerIncomingPacketNumber)
@@ -1344,17 +1377,18 @@ int clientNetworkThread(void *context)
 								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
 							}
 						}
-						else if (receivedFirstServerMessage && buffer[0] == 'm' && buffer[1] == 'o')
+						else if (buffer[0] == 'm' && buffer[1] == 'o')
 						{
 							uint64_t packetNumber = 0;
 							int characterID = 0;
 							int direction = 0;
 							int pointing_direction = 0;
+							uint32_t timestamp = 0;
 							float x = 0.0;
 							float y = 0.0;
 							float z = 0.0;
 							
-							sscanf(buffer + 2, "%llu %d %f %f %f %d %d", &packetNumber, &characterID, &x, &y, &z, &direction, &pointing_direction);
+							sscanf(buffer + 2, "%llu %d %f %f %f %d %d %u", &packetNumber, &characterID, &x, &y, &z, &direction, &pointing_direction, &timestamp);
 							
 							if (packetNumber > realTimeIncomingPacketNumber && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 							{
@@ -1368,6 +1402,7 @@ int clientNetworkThread(void *context)
 								message.movedUpdate.z = z;
 								message.movedUpdate.direction = direction;
 								message.movedUpdate.pointing_direction = pointing_direction;
+								message.movedUpdate.timestamp = timestamp;
 								pushNetworkMessage(&gGameMessagesFromNet, message);
 							}
 						}
@@ -1623,6 +1658,8 @@ int clientNetworkThread(void *context)
 							message.type = QUIT_MESSAGE_TYPE;
 							pushNetworkMessage(&gGameMessagesFromNet, message);
 							
+							needsToQuit = SDL_TRUE;
+							
 							break;
 						}
 						
@@ -1632,13 +1669,16 @@ int clientNetworkThread(void *context)
 			}
 		}
 		
-		uint32_t timeAfterProcessing = SDL_GetTicks();
-		uint32_t deltaProcessingTime = timeAfterProcessing - timeBeforeProcessing;
-		const uint32_t targetDelay = 5;
-		
-		if (deltaProcessingTime < targetDelay)
+		if (!needsToQuit)
 		{
-			SDL_Delay(targetDelay - deltaProcessingTime);
+			uint32_t timeAfterProcessing = SDL_GetTicks();
+			uint32_t deltaProcessingTime = timeAfterProcessing - timeBeforeProcessing;
+			const uint32_t targetDelay = 5;
+			
+			if (deltaProcessingTime < targetDelay)
+			{
+				SDL_Delay(targetDelay - deltaProcessingTime);
+			}
 		}
 	}
 	
