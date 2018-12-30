@@ -57,6 +57,9 @@ extern const int NETWORK_PLAYING_STATE;
 // of the checkerboard to the other end (vertically) is ~3.50-3.60 seconds
 #define INITIAL_CHARACTER_SPEED	4.51977f
 
+#define CHARACTER_ALIVE_Z 2.0f
+#define CHARACTER_IS_ALIVE(character) (fabsf((character)->z - CHARACTER_ALIVE_Z) < 0.001f)
+
 extern int gAIMode;
 extern int gAINetMode;
 

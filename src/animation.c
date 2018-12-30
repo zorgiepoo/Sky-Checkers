@@ -114,16 +114,16 @@ void animate(SDL_Window *window, double timeDelta)
 		
 		// Make sure character is on checkerboard
 		
-		if (gRedRover.z == 2.0)
+		if (CHARACTER_IS_ALIVE(&gRedRover))
 			gRedRover.time_alive++;
 		
-		if (gGreenTree.z == 2.0)
+		if (CHARACTER_IS_ALIVE(&gGreenTree))
 			gGreenTree.time_alive++;
 		
-		if (gPinkBubbleGum.z == 2.0)
+		if (CHARACTER_IS_ALIVE(&gPinkBubbleGum))
 			gPinkBubbleGum.time_alive++;
 		
-		if (gBlueLightning.z == 2.0)
+		if (CHARACTER_IS_ALIVE(&gBlueLightning))
 			gBlueLightning.time_alive++;
 	}
 	
@@ -777,19 +777,6 @@ static void recoverCharacter(Character *player)
 		if (player->lives)
 		{
 			spawnCharacter(player);
-			
-			if (gNetworkConnection && gNetworkConnection->type == NETWORK_SERVER_TYPE)
-			{
-				// tell clients we spawned
-				GameMessage message;
-				message.type = CHARACTER_SPAWNED_UPDATE_MESSAGE_TYPE;
-				message.spawnedUpdate.characterID = IDOfCharacter(player);
-				message.spawnedUpdate.x = player->x;
-				message.spawnedUpdate.y = player->y;
-				
-				sendToClients(0, &message);
-			}
-			
 			player->active = SDL_TRUE;
 		}
 		

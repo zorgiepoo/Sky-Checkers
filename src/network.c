@@ -236,12 +236,24 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					
 					Character *character = getCharacter(message.movedUpdate.characterID);
 					
-					if (character->z >= 2.0f)
+					SDL_bool movedUpdateAlive = CHARACTER_IS_ALIVE(&message.movedUpdate);
+					SDL_bool characterAlive = CHARACTER_IS_ALIVE(character);
+					if (movedUpdateAlive || characterAlive)
 					{
+						if (movedUpdateAlive && !characterAlive)
+						{
+							character->active = SDL_TRUE;
+						}
+						else if (!movedUpdateAlive && characterAlive)
+						{
+							character->active = SDL_FALSE;
+						}
+						
 						character->x = message.movedUpdate.x;
 						character->y = message.movedUpdate.y;
 						character->z = message.movedUpdate.z;
 					}
+					
 					character->direction = message.movedUpdate.direction;
 					character->pointing_direction = message.movedUpdate.pointing_direction;
 					
@@ -251,15 +263,6 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 				{
 					Character *character = getCharacter(message.killedUpdate.characterID);
 					character->kills = message.killedUpdate.kills;
-					break;
-				}
-				case CHARACTER_SPAWNED_UPDATE_MESSAGE_TYPE:
-				{
-					Character *character = getCharacter(message.spawnedUpdate.characterID);
-					character->x = message.spawnedUpdate.x;
-					character->y = message.spawnedUpdate.y;
-					character->z = 2.0f;
-					character->active = SDL_TRUE;
 					break;
 				}
 				case GAME_RESET_MESSAGE_TYPE:
@@ -625,20 +628,6 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					case CHARACTER_KILLED_UPDATE_MESSAGE_TYPE:
 					{
 						int length = snprintf(sendBufferPtrs[addressIndex], 256, "ck%llu %d %d", message.packetNumber, message.killedUpdate.characterID, message.killedUpdate.kills);
-						
-						sendBufferPtrs[addressIndex] += length + 1;
-						
-						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
-						{
-							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
-							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
-						}
-						
-						break;
-					}
-					case CHARACTER_SPAWNED_UPDATE_MESSAGE_TYPE:
-					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "sp%llu %d %f %f", message.packetNumber, message.spawnedUpdate.characterID, message.spawnedUpdate.x, message.spawnedUpdate.y);
 						
 						sendBufferPtrs[addressIndex] += length + 1;
 						
@@ -1167,8 +1156,6 @@ int clientNetworkThread(void *context)
 						break;
 					case CHARACTER_KILLED_UPDATE_MESSAGE_TYPE:
 						break;
-					case CHARACTER_SPAWNED_UPDATE_MESSAGE_TYPE:
-						break;
 					case GAME_RESET_MESSAGE_TYPE:
 						break;
 					case FIRST_SERVER_RESPONSE_MESSAGE_TYPE:
@@ -1450,36 +1437,6 @@ int clientNetworkThread(void *context)
 								message.type = CHARACTER_KILLED_UPDATE_MESSAGE_TYPE;
 								message.killedUpdate.characterID = characterID;
 								message.killedUpdate.kills = characterKills;
-								pushNetworkMessage(&gGameMessagesFromNet, message);
-							}
-							
-							if (packetNumber <= triggerIncomingPacketNumber)
-							{
-								GameMessage ackMessage;
-								ackMessage.type = ACK_MESSAGE_TYPE;
-								ackMessage.packetNumber = packetNumber;
-								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
-							}
-						}
-						else if (buffer[0] =='s' && buffer[1] == 'p')
-						{
-							// spawn character
-							uint64_t packetNumber = 0;
-							int characterID = 0;
-							float x = 0.0;
-							float y = 0.0;
-							
-							sscanf(buffer + 2, "%llu %d %f %f", &packetNumber, &characterID, &x, &y);
-							
-							if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
-							{
-								triggerIncomingPacketNumber++;
-								
-								GameMessage message;
-								message.type = CHARACTER_SPAWNED_UPDATE_MESSAGE_TYPE;
-								message.spawnedUpdate.characterID = characterID;
-								message.spawnedUpdate.x = x;
-								message.spawnedUpdate.y = y;
 								pushNetworkMessage(&gGameMessagesFromNet, message);
 							}
 							

@@ -114,7 +114,7 @@ void performDownAction(Input *input, SDL_Window *window, SDL_Event *event)
 		return;
 	
 	// character needs to be on the checkerboard.
-	if (input->character->z != 2.0)
+	if (!CHARACTER_IS_ALIVE(input->character))
 		return;
 	
 	// check if the input is pressed and set the character's direction value accordingly

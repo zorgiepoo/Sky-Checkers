@@ -77,7 +77,6 @@ void loadCharacter(Character *character)
 	else if (gNetworkConnection && gNetworkConnection->type == NETWORK_CLIENT_TYPE)
 	{
 		character->active = SDL_TRUE;
-		character->z = 2.0f;
 	}
 	
 	character->last_direction = NO_DIRECTION;
@@ -588,7 +587,7 @@ void spawnCharacter(Character *character)
 	
 	character->x = (float)randOne;
 	character->y = (float)randTwo;
-	character->z = 2.0f;
+	character->z = CHARACTER_ALIVE_Z;
 	character->active = SDL_TRUE;
 	character->direction = NO_DIRECTION;
 }

@@ -40,7 +40,7 @@ static void avoidCharacter(Character *character, Character *characterB, int curr
 
 void updateAI(Character *character, int currentTime, double timeDelta)
 {
-	if (character->z != 2.0 || character->state != CHARACTER_AI_STATE || !character->active || !character->lives || (gNetworkConnection && gNetworkConnection->type == NETWORK_CLIENT_TYPE))
+	if (!CHARACTER_IS_ALIVE(character) || character->state != CHARACTER_AI_STATE || !character->active || !character->lives || (gNetworkConnection && gNetworkConnection->type == NETWORK_CLIENT_TYPE))
 		return;
 	
 	if (character->direction == NO_DIRECTION || currentTime > character->ai_timer)
