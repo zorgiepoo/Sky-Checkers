@@ -54,12 +54,39 @@ static void interpolateCharacter(Character *character, CharacterMovement *previo
 		
 		if (character->direction != previousMovement->direction || characterShouldBeAlive != characterAlive)
 		{
+			if (characterShouldBeAlive != characterAlive)
+			{
+				character->x = previousMovement->x;
+				character->y = previousMovement->y;
+				
+				character->xDiscrepancy = 0.0f;
+				character->yDiscrepancy = 0.0f;
+			}
+			else if (character->direction != previousMovement->direction)
+			{
+				// If the character is too far away, warp them back to a known previous movement
+				// Otherwise interpolate the character to compensate for the difference
+				float warpDiscrepancy = 1.5f;
+				if (fabsf(character->x - previousMovement->x) >= warpDiscrepancy || fabsf(character->y - previousMovement->y) >= warpDiscrepancy)
+				{
+					character->x = previousMovement->x;
+					character->y = previousMovement->y;
+					
+					character->xDiscrepancy = 0.0f;
+					character->yDiscrepancy = 0.0f;
+				}
+				else
+				{
+					// Don't interpolate the character if the client has completely stopped
+					character->xDiscrepancy = previousMovement->x - character->x;
+					character->yDiscrepancy = previousMovement->y - character->y;
+				}
+			}
+			
+			character->z = previousMovement->z;
+			
 			character->direction = previousMovement->direction;
 			character->pointing_direction = previousMovement->pointing_direction;
-			
-			character->x = previousMovement->x;
-			character->y = previousMovement->y;
-			character->z = previousMovement->z;
 		}
 	}
 }
@@ -414,6 +441,49 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 						characterMovementIndex--;
 						count--;
 					}
+				}
+			}
+		}
+		
+		// Resolve position discrepanies
+		for (int characterID = RED_ROVER; characterID <= PINK_BUBBLE_GUM; characterID++)
+		{
+			Character *character = getCharacter(characterID);
+			float displacementAdjustment = timeDelta * INITIAL_CHARACTER_SPEED / 64.0f;
+			
+			if (fabsf(character->xDiscrepancy) < displacementAdjustment)
+			{
+				character->xDiscrepancy = 0.0f;
+			}
+			else
+			{
+				if (character->xDiscrepancy > 0.0f)
+				{
+					character->x += displacementAdjustment;
+					character->xDiscrepancy -= displacementAdjustment;
+				}
+				else
+				{
+					character->x -= displacementAdjustment;
+					character->xDiscrepancy += displacementAdjustment;
+				}
+			}
+			
+			if (fabsf(character->yDiscrepancy) < displacementAdjustment)
+			{
+				character->yDiscrepancy = 0.0f;
+			}
+			else
+			{
+				if (character->yDiscrepancy > 0.0f)
+				{
+					character->y += displacementAdjustment;
+					character->yDiscrepancy -= displacementAdjustment;
+				}
+				else
+				{
+					character->y -= displacementAdjustment;
+					character->yDiscrepancy += displacementAdjustment;
 				}
 			}
 		}

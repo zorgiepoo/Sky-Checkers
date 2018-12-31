@@ -79,7 +79,6 @@ void loadCharacter(Character *character)
 		character->active = SDL_TRUE;
 	}
 	
-	character->last_direction = NO_DIRECTION;
 	character->speed = INITIAL_CHARACTER_SPEED;
 	character->recovery_timer = 0;
 	character->animation_timer = 0;
@@ -88,6 +87,9 @@ void loadCharacter(Character *character)
 	character->recovery_time_delay = 71;
 	character->player_loc = -1;
 	character->destroyed_tile = NULL;
+	
+	character->xDiscrepancy = 0.0f;
+	character->yDiscrepancy = 0.0f;
 	
 	character->ai_timer = 0;
 	character->time_alive = 0;

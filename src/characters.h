@@ -76,8 +76,9 @@ typedef struct _Character
 	/* Direction character is currently going in */
 	int direction;
 	
-	/* The last direction the character is currently going in - used for netcode */
-	int last_direction;
+	/* Discrepancy x, y values -- used for netcode */
+	float xDiscrepancy;
+	float yDiscrepancy;
 	
 	/* Speed of character */
 	float speed;
