@@ -68,7 +68,6 @@ typedef struct
 	// Only used by client currently and only readable/writable from main thread
 	CharacterMovement characterMovements[4][CHARACTER_MOVEMENTS_CAPACITY];
 	uint32_t characterMovementCounts[4];
-	SDL_bool initializedCharacterPositions[4];
 } NetworkConnection;
 
 typedef enum
