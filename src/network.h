@@ -29,6 +29,16 @@ extern const Uint16 NETWORK_PORT;
 
 typedef struct
 {
+	float x, y, z;
+	int direction;
+	int pointing_direction;
+	uint32_t ticks;
+} CharacterMovement;
+
+#define CHARACTER_MOVEMENTS_CAPACITY 20
+
+typedef struct
+{
 	// Only writable before threads are created
 	int type;
 	int socket;
@@ -46,6 +56,19 @@ typedef struct
 	// Writable before thread is created or during creation
 	// Only used from main thread
 	SDL_Thread *thread;
+	
+	// Keeping track of client half-ping
+	// Only readable/writable from main thread
+	uint32_t lastMovementMessageTime;
+	uint32_t averageIncomingMovementMessageTime;
+	uint32_t incomingMovementMessageTimes[10];
+	uint32_t incomingMovementMessageTimeIndex;
+	
+	// Keeping track of past character movements
+	// Only used by client currently and only readable/writable from main thread
+	CharacterMovement characterMovements[4][CHARACTER_MOVEMENTS_CAPACITY];
+	uint32_t characterMovementCounts[4];
+	SDL_bool initializedCharacterPositions[4];
 } NetworkConnection;
 
 typedef enum

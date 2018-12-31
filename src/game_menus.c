@@ -376,11 +376,7 @@ void connectToNetworkGameMenuAction(void *context)
 	
 	gNetworkConnection = malloc(sizeof(*gNetworkConnection));
 	memset(gNetworkConnection, 0, sizeof(*gNetworkConnection));
-	
-	gNetworkConnection->thread = NULL;
-	gNetworkConnection->character = NULL;
 	gNetworkConnection->type = NETWORK_CLIENT_TYPE;
-	gNetworkConnection->numberOfPlayersToWaitFor = 0;
 	
 	networkInitialization();
 	

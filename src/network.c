@@ -36,16 +36,6 @@ static SDL_mutex *gCurrentSlotMutex;
 static void pushNetworkMessage(GameMessageArray *messageArray, GameMessage message);
 static void depleteNetworkMessages(GameMessageArray *messageArray);
 
-#define CHARACTER_MOVEMENTS_CAPACITY 60
-
-typedef struct
-{
-	float x, y, z;
-	int direction;
-	int pointing_direction;
-	uint32_t ticks;
-} CharacterMovement;
-
 // previousMovement->ticks <= renderTime < nextMovement->ticks
 static void interpolateCharacter(Character *character, CharacterMovement *previousMovement, CharacterMovement *nextMovement, uint32_t renderTime)
 {
@@ -80,16 +70,8 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 	{
 		return;
 	}
-	
-	static uint32_t lastMovementMessageTime = 0;
-	static uint32_t averageIncomingMovementMessageTime = 0;
-	static uint32_t averageIncomingMovementMessageTimes[10] = {0};
-	static uint32_t averageIncomingMovementMessageTimeIndex = 0;
 
 	SDL_bool recordedFirstMovementTime = SDL_FALSE;
-	
-	static CharacterMovement characterMovements[4][CHARACTER_MOVEMENTS_CAPACITY];
-	static uint32_t characterMovementCounts[4] = {0, 0, 0, 0};
 	
 	uint32_t messagesCount = 0;
 	GameMessage *messagesToRead = popNetworkMessages(&gGameMessagesFromNet, &messagesCount);
@@ -120,17 +102,6 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					
 					depleteNetworkMessages(&gGameMessagesFromNet);
 					depleteNetworkMessages(&gGameMessagesToNet);
-					
-					lastMovementMessageTime = 0;
-					averageIncomingMovementMessageTime = 0;
-					for (uint32_t index = 0; index < sizeof(averageIncomingMovementMessageTimes) / sizeof(*averageIncomingMovementMessageTimes); index++)
-					{
-						averageIncomingMovementMessageTimes[index] = 0;
-					}
-					averageIncomingMovementMessageTimeIndex = 0;
-					
-					memset(characterMovements, 0, sizeof(characterMovements));
-					memset(characterMovementCounts, 0, sizeof(characterMovementCounts));
 					
 					if (thread != NULL)
 					{
@@ -237,49 +208,49 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					
 					if (!recordedFirstMovementTime)
 					{
-						if (lastMovementMessageTime == 0)
+						if (gNetworkConnection->lastMovementMessageTime == 0)
 						{
-							lastMovementMessageTime = currentTicks;
+							gNetworkConnection->lastMovementMessageTime = currentTicks;
 						}
 						else
 						{
-							uint32_t averageTime = currentTicks - lastMovementMessageTime;
+							uint32_t averageTime = currentTicks - gNetworkConnection->lastMovementMessageTime;
 
-							averageIncomingMovementMessageTimes[averageIncomingMovementMessageTimeIndex % sizeof(averageIncomingMovementMessageTimes) / sizeof(*averageIncomingMovementMessageTimes)] = averageTime;
+							gNetworkConnection->incomingMovementMessageTimes[gNetworkConnection->incomingMovementMessageTimeIndex % sizeof(gNetworkConnection->incomingMovementMessageTimes) / sizeof(*gNetworkConnection->incomingMovementMessageTimes)] = averageTime;
 
-							averageIncomingMovementMessageTimeIndex++;
+							gNetworkConnection->incomingMovementMessageTimeIndex++;
 
-							averageIncomingMovementMessageTime = 0;
+							gNetworkConnection->averageIncomingMovementMessageTime = 0;
 							uint32_t count = 0;
 
-							for (uint32_t index = 0; index < sizeof(averageIncomingMovementMessageTimes) / sizeof(*averageIncomingMovementMessageTimes); index++)
+							for (uint32_t index = 0; index < sizeof(gNetworkConnection->incomingMovementMessageTimes) / sizeof(*gNetworkConnection->incomingMovementMessageTimes); index++)
 							{
-								if (averageIncomingMovementMessageTimes[index] != 0)
+								if (gNetworkConnection->incomingMovementMessageTimes[index] != 0)
 								{
-									averageIncomingMovementMessageTime += averageIncomingMovementMessageTimes[index];
+									gNetworkConnection->averageIncomingMovementMessageTime += gNetworkConnection->incomingMovementMessageTimes[index];
 									count++;
 								}
 							}
 
 							if (count > 0)
 							{
-								averageIncomingMovementMessageTime /= count;
+								gNetworkConnection->averageIncomingMovementMessageTime /= count;
 							}
 							else
 							{
-								averageIncomingMovementMessageTime = 0;
+								gNetworkConnection->averageIncomingMovementMessageTime = 0;
 							}
 
-							lastMovementMessageTime = currentTicks;
+							gNetworkConnection->lastMovementMessageTime = currentTicks;
 						}
 
 						recordedFirstMovementTime = SDL_TRUE;
 					}
 					
-					if (currentTicks >= averageIncomingMovementMessageTime)
+					if (!gGameShouldReset && currentTicks >= gNetworkConnection->averageIncomingMovementMessageTime)
 					{
 						SDL_bool shouldSetCharacterPosition = SDL_FALSE;
-						if (averageIncomingMovementMessageTime > 0)
+						if (gNetworkConnection->averageIncomingMovementMessageTime > 0)
 						{
 							CharacterMovement newMovement;
 							newMovement.x = message.movedUpdate.x;
@@ -287,18 +258,18 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 							newMovement.z = message.movedUpdate.z;
 							newMovement.direction = message.movedUpdate.direction;
 							newMovement.pointing_direction = message.movedUpdate.pointing_direction;
-							newMovement.ticks = currentTicks - averageIncomingMovementMessageTime;
+							newMovement.ticks = currentTicks - gNetworkConnection->averageIncomingMovementMessageTime;
 							
 							int characterIndex = message.movedUpdate.characterID - 1;
 							
-							characterMovements[characterIndex][characterMovementCounts[characterIndex] % CHARACTER_MOVEMENTS_CAPACITY] = newMovement;
+							gNetworkConnection->characterMovements[characterIndex][gNetworkConnection->characterMovementCounts[characterIndex] % CHARACTER_MOVEMENTS_CAPACITY] = newMovement;
 							
-							if (characterMovementCounts[characterIndex] == 0)
+							if (gNetworkConnection->characterMovementCounts[characterIndex] == 0)
 							{
 								shouldSetCharacterPosition = SDL_TRUE;
 							}
 							
-							characterMovementCounts[characterIndex]++;
+							gNetworkConnection->characterMovementCounts[characterIndex]++;
 						}
 						else
 						{
@@ -328,6 +299,10 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 				}
 				case GAME_RESET_MESSAGE_TYPE:
 					gGameShouldReset = SDL_TRUE;
+					
+					memset(gNetworkConnection->characterMovements, 0, sizeof(gNetworkConnection->characterMovements));
+					memset(gNetworkConnection->characterMovementCounts, 0, sizeof(gNetworkConnection->characterMovementCounts));
+					
 					break;
 				case FIRST_SERVER_RESPONSE_MESSAGE_TYPE:
 				{
@@ -403,33 +378,34 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 		uint32_t currentTime = SDL_GetTicks();
 		if (currentTime > 0)
 		{
-			uint32_t renderTime = currentTime - averageIncomingMovementMessageTime * 3;
+			uint32_t renderTime = currentTime - gNetworkConnection->averageIncomingMovementMessageTime * 3;
 			for (int characterID = RED_ROVER; characterID <= PINK_BUBBLE_GUM; characterID++)
 			{
 				int characterIndex = characterID - 1;
 
 				// Find the two points that will tell us where the client was 100ms ago?
-				uint32_t initialCount = characterMovementCounts[characterIndex] < CHARACTER_MOVEMENTS_CAPACITY ? characterMovementCounts[characterIndex] : CHARACTER_MOVEMENTS_CAPACITY;
+				uint32_t initialCount = gNetworkConnection->characterMovementCounts[characterIndex] < CHARACTER_MOVEMENTS_CAPACITY ? gNetworkConnection->characterMovementCounts[characterIndex] : CHARACTER_MOVEMENTS_CAPACITY;
 
 				if (initialCount > 0)
 				{
 					uint32_t count = initialCount;
-					uint32_t characterMovementIndex = characterMovementCounts[characterIndex] - 1;
+					uint32_t characterMovementIndex = gNetworkConnection->characterMovementCounts[characterIndex] - 1;
 					uint32_t firstCharacterMovementIndex = characterMovementIndex;
 
 					while (count > 0)
 					{
 						uint32_t wrappedCharacterMovementIndex = characterMovementIndex % CHARACTER_MOVEMENTS_CAPACITY;
 
-						CharacterMovement previousMovement = characterMovements[characterIndex][wrappedCharacterMovementIndex];
+						CharacterMovement previousMovement = gNetworkConnection->characterMovements[characterIndex][wrappedCharacterMovementIndex];
 
 						if (previousMovement.ticks <= renderTime)
 						{
 							if (characterMovementIndex != firstCharacterMovementIndex)
 							{
-								CharacterMovement nextMovement = characterMovements[characterIndex][(characterMovementIndex + 1) % CHARACTER_MOVEMENTS_CAPACITY];
+								CharacterMovement nextMovement = gNetworkConnection->characterMovements[characterIndex][(characterMovementIndex + 1) % CHARACTER_MOVEMENTS_CAPACITY];
 
 								Character *character = getCharacter(characterID);
+								
 								interpolateCharacter(character, &previousMovement, &nextMovement, renderTime);
 							}
 							break;
