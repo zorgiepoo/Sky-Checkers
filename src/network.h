@@ -47,15 +47,16 @@ typedef struct
 	Character *character;
 	uint32_t numberOfPlayersToWaitFor;
 	
+	// Writable before thread is created or during creation
+	// Only used from main thread
+	SDL_Thread *thread;
+	
 	// Below is the stuff only applicable to client
 	
 	// Only writable before client thread is created
 	struct sockaddr_in hostAddress;
 	// Writable & readable from main thread only
 	int characterLives;
-	// Writable before thread is created or during creation
-	// Only used from main thread
-	SDL_Thread *thread;
 	
 	// Keeping track of client half-ping
 	// Only readable/writable from main thread
