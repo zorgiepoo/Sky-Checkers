@@ -308,9 +308,6 @@ static void updateViewport_gl(Renderer *renderer)
 
 void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
 {
-	// VSYNC
-	SDL_GL_SetSwapInterval(vsync);
-	
 	// Buffer sizes
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -335,6 +332,17 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	{
 		fprintf(stderr, "Couldn't make OpenGL context current: %s\n", SDL_GetError());
 		exit(9);
+	}
+	
+	// VSYNC
+	if (vsync)
+	{
+		// Try adaptive vsync first which works best on macOS
+		if (SDL_GL_SetSwapInterval(-1) == -1)
+		{
+			// Fallback to normal VSYNC
+			SDL_GL_SetSwapInterval(1);
+		}
 	}
 	
 #ifndef MAC_OS_X
