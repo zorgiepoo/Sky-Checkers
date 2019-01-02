@@ -63,6 +63,13 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 	
 	SDL_bool createdRenderer = SDL_FALSE;
 	
+	char *forceDisablingFSAAEnvironmentVariable = getenv("FORCE_DISABLE_AA");
+	if (forceDisablingFSAAEnvironmentVariable != NULL && strlen(forceDisablingFSAAEnvironmentVariable) > 0 && (tolower(forceDisablingFSAAEnvironmentVariable[0]) == 'y' || forceDisablingFSAAEnvironmentVariable[0] == '1'))
+	{
+		fsaa = SDL_FALSE;
+		fprintf(stderr, "NOTICE: Force disabling anti-aliasing usage!!\n");
+	}
+	
 #ifdef MAC_OS_X
 	SDL_bool forcingOpenGL = SDL_FALSE;
 	char *forceOpenGLEnvironmentVariable = getenv("FORCE_OPENGL");
