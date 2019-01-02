@@ -378,6 +378,7 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	compileAndLinkShader(&renderer->glPositionTextureShader, glslVersion, "Data/Shaders/texture-position.vsh", "Data/Shaders/texture-position.fsh", SDL_TRUE, "modelViewProjectionMatrix", "color", "textureSample");
 	
 	renderer->ndcType = NDC_TYPE_GL;
+	renderer->usesSDLResizeEvent = SDL_TRUE;
 	
 	renderer->updateViewportPtr = updateViewport_gl;
 	renderer->renderFramePtr = renderFrame_gl;

@@ -32,6 +32,7 @@
 #define MAC_OS_X
 
 #include "SDL2/SDL.h"
+#include "SDL2/SDL_syswm.h"
 #include "SDL2_ttf/SDL_ttf.h"
 #include "SDL2_mixer/SDL_mixer.h"
 

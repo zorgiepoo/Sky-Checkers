@@ -22,40 +22,83 @@
 
 FILE *getUserDataFile(const char *mode)
 {
-	FILE *file = NULL;
-	NSArray *userLibraryPaths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
-	if (userLibraryPaths.count > 0)
+	@autoreleasepool
 	{
-		NSString *userLibraryPath = [userLibraryPaths objectAtIndex:0];
-		NSString *appSupportPath = [userLibraryPath stringByAppendingPathComponent:@"Application Support"];
-		
-		if ([[NSFileManager defaultManager] fileExistsAtPath:appSupportPath])
+		FILE *file = NULL;
+		NSArray *userLibraryPaths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
+		if (userLibraryPaths.count > 0)
 		{
-			NSString *skyCheckersPath = [appSupportPath stringByAppendingPathComponent:@"SkyCheckers"];
+			NSString *userLibraryPath = [userLibraryPaths objectAtIndex:0];
+			NSString *appSupportPath = [userLibraryPath stringByAppendingPathComponent:@"Application Support"];
 			
-			if ([[NSFileManager defaultManager] fileExistsAtPath:skyCheckersPath] || [[NSFileManager defaultManager] createDirectoryAtPath:skyCheckersPath withIntermediateDirectories:NO attributes:nil error:NULL])
+			if ([[NSFileManager defaultManager] fileExistsAtPath:appSupportPath])
 			{
-				file = fopen([[skyCheckersPath stringByAppendingPathComponent:@"user_data.txt"] UTF8String], mode);
+				NSString *skyCheckersPath = [appSupportPath stringByAppendingPathComponent:@"SkyCheckers"];
+				
+				if ([[NSFileManager defaultManager] fileExistsAtPath:skyCheckersPath] || [[NSFileManager defaultManager] createDirectoryAtPath:skyCheckersPath withIntermediateDirectories:NO attributes:nil error:NULL])
+				{
+					file = fopen([[skyCheckersPath stringByAppendingPathComponent:@"user_data.txt"] UTF8String], mode);
+				}
 			}
 		}
+		
+		return file;
 	}
-	
-	return file;
 }
 
 void getDefaultUserName(char *defaultUserName, int maxLength)
 {
-	NSString *fullUsername = NSFullUserName();
-	if (fullUsername)
+	@autoreleasepool
 	{
-		NSUInteger spaceIndex = [fullUsername rangeOfString:@" "].location;
-		if (spaceIndex != NSNotFound)
+		NSString *fullUsername = NSFullUserName();
+		if (fullUsername)
 		{
-			strncpy(defaultUserName, [[fullUsername substringToIndex:spaceIndex] UTF8String], maxLength);
+			NSUInteger spaceIndex = [fullUsername rangeOfString:@" "].location;
+			if (spaceIndex != NSNotFound)
+			{
+				strncpy(defaultUserName, [[fullUsername substringToIndex:spaceIndex] UTF8String], maxLength);
+			}
+			else
+			{
+				strncpy(defaultUserName, [fullUsername UTF8String], maxLength);
+			}
 		}
-		else
-		{
-			strncpy(defaultUserName, [fullUsername UTF8String], maxLength);
-		}
+	}
+}
+
+@interface ZGResizeHandler : NSObject
+{
+@public
+	void (*_resizeHandler)(void *, int32_t, int32_t);
+	void *_context;
+}
+@end
+
+@implementation ZGResizeHandler
+
+- (void)windowDidResizeWithNotification:(NSNotification *)notification
+{
+	NSWindow *window = [notification object];
+	if (window != nil)
+	{
+		CGSize size = window.frame.size;
+		_resizeHandler(_context, (int32_t)size.width, (int32_t)size.height);
+	}
+}
+
+@end
+
+void addResizeHandler(void *window, void (*resizeHandler)(void *, int32_t, int32_t), void *context)
+{
+	@autoreleasepool
+	{
+		static ZGResizeHandler *resizeHandlerInstance;
+		assert(resizeHandlerInstance == nil);
+		
+		resizeHandlerInstance = [[ZGResizeHandler alloc] init];
+		resizeHandlerInstance->_resizeHandler = resizeHandler;
+		resizeHandlerInstance->_context = context;
+		
+		[[NSNotificationCenter defaultCenter] addObserver:resizeHandlerInstance selector:@selector(windowDidResizeWithNotification:) name:NSWindowDidResizeNotification object:(__bridge id)window];
 	}
 }

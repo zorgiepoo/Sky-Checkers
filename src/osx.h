@@ -21,3 +21,5 @@
 
 FILE *getUserDataFile(const char *mode);
 void getDefaultUserName(char *defaultUserName, int maxLength);
+void addResizeHandler(void *window, void (*resizeHandler)(void *, int32_t, int32_t), void *context);
+

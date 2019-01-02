@@ -318,6 +318,7 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		renderer->metalCurrentRenderCommandEncoder = NULL;
 		
 		renderer->ndcType = NDC_TYPE_METAL;
+		renderer->usesSDLResizeEvent = SDL_FALSE;
 		
 		renderer->updateViewportPtr = updateViewport_metal;
 		renderer->renderFramePtr = renderFrame_metal;
