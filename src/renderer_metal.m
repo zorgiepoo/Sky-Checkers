@@ -24,7 +24,7 @@
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
 
-// Don't use MTLPixelFormatDepth16Unorm which doesn't work right on some machines (MBP11,2 / 10.13.6)
+// Don't use MTLPixelFormatDepth16Unorm which doesn't support 10.11 and doesn't work right on some configs (MBP11,2 / 10.13.6, but 10.14.2 works)
 #define DEPTH_STENCIL_PIXEL_FORMAT MTLPixelFormatDepth32Float
 
 static void updateViewport_metal(Renderer *renderer);
