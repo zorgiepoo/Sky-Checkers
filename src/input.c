@@ -457,6 +457,8 @@ void updateCharacterFromAnyInput(void)
 		message.type = MOVEMENT_REQUEST_MESSAGE_TYPE;
 		message.movementRequest.direction = newDirection;
 		
+		setPredictedDirection(character, newDirection);
+		
 		sendToServer(message);
 	}
 	else

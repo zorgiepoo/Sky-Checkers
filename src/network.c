@@ -36,6 +36,12 @@ static SDL_mutex *gCurrentSlotMutex;
 static void pushNetworkMessage(GameMessageArray *messageArray, GameMessage message);
 static void depleteNetworkMessages(GameMessageArray *messageArray);
 
+void setPredictedDirection(Character *character, int direction)
+{
+	character->predictedDirection = direction;
+	character->predictedDirectionTime = SDL_GetTicks() + gNetworkConnection->averageIncomingMovementMessageTime;
+}
+
 // previousMovement->ticks <= renderTime < nextMovement->ticks
 static void interpolateCharacter(Character *character, CharacterMovement *previousMovement, CharacterMovement *nextMovement, uint32_t renderTime)
 {
@@ -52,6 +58,28 @@ static void interpolateCharacter(Character *character, CharacterMovement *previo
 			character->active = SDL_FALSE;
 		}
 		
+		SDL_bool setPredictedDirection = SDL_FALSE;
+		// Alter the previous movement to our prediction
+		if (character->predictedDirectionTime > 0 && character->predictedDirectionTime >= previousMovement->ticks)
+		{
+			previousMovement->direction = character->predictedDirection;
+			if (character->predictedDirection != NO_DIRECTION)
+			{
+				previousMovement->pointing_direction = character->predictedDirection;
+			}
+			else
+			{
+				previousMovement->pointing_direction = character->pointing_direction;
+			}
+			
+			if (character->predictedDirectionTime < nextMovement->ticks)
+			{
+				character->predictedDirectionTime = 0;
+			}
+			
+			setPredictedDirection = SDL_TRUE;
+		}
+		
 		if (character->direction != previousMovement->direction || characterShouldBeAlive != characterAlive)
 		{
 			if (characterShouldBeAlive != characterAlive)
@@ -64,22 +92,30 @@ static void interpolateCharacter(Character *character, CharacterMovement *previo
 			}
 			else if (character->direction != previousMovement->direction)
 			{
-				// If the character is too far away, warp them back to a known previous movement
-				// Otherwise interpolate the character to compensate for the difference
-				float warpDiscrepancy = 1.5f;
-				if (fabsf(character->x - previousMovement->x) >= warpDiscrepancy || fabsf(character->y - previousMovement->y) >= warpDiscrepancy)
+				if (!setPredictedDirection)
 				{
-					character->x = previousMovement->x;
-					character->y = previousMovement->y;
-					
-					character->xDiscrepancy = 0.0f;
-					character->yDiscrepancy = 0.0f;
+					// If the character is too far away, warp them back to a known previous movement
+					// Otherwise interpolate the character to compensate for the difference
+					float warpDiscrepancy = 1.5f;
+					if (fabsf(character->x - previousMovement->x) >= warpDiscrepancy || fabsf(character->y - previousMovement->y) >= warpDiscrepancy)
+					{
+						character->x = previousMovement->x;
+						character->y = previousMovement->y;
+						
+						character->xDiscrepancy = 0.0f;
+						character->yDiscrepancy = 0.0f;
+					}
+					else
+					{
+						// Don't interpolate the character if the client has completely stopped
+						character->xDiscrepancy = previousMovement->x - character->x;
+						character->yDiscrepancy = previousMovement->y - character->y;
+					}
 				}
 				else
 				{
-					// Don't interpolate the character if the client has completely stopped
-					character->xDiscrepancy = previousMovement->x - character->x;
-					character->yDiscrepancy = previousMovement->y - character->y;
+					character->xDiscrepancy = 0.0f;
+					character->yDiscrepancy = 0.0f;
 				}
 			}
 			
@@ -405,7 +441,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 		uint32_t currentTime = SDL_GetTicks();
 		if (currentTime > 0)
 		{
-			uint32_t renderTime = currentTime - gNetworkConnection->averageIncomingMovementMessageTime * 3;
+			uint32_t renderTime = currentTime - (uint32_t)(3 * gNetworkConnection->averageIncomingMovementMessageTime);
 			for (int characterID = RED_ROVER; characterID <= PINK_BUBBLE_GUM; characterID++)
 			{
 				int characterIndex = characterID - 1;

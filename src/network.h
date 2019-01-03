@@ -240,6 +240,8 @@ void cleanupStateFromNetwork(void);
 
 void syncNetworkState(SDL_Window *window, float timeDelta);
 
+void setPredictedDirection(Character *character, int direction);
+
 int serverNetworkThread(void *unused);
 int clientNetworkThread(void *context);
 

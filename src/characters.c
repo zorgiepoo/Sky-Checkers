@@ -90,6 +90,8 @@ void loadCharacter(Character *character)
 	
 	character->xDiscrepancy = 0.0f;
 	character->yDiscrepancy = 0.0f;
+	character->predictedDirectionTime = 0;
+	character->predictedDirection = NO_DIRECTION;
 	
 	character->ai_timer = 0;
 	character->time_alive = 0;

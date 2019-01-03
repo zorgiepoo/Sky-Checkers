@@ -80,6 +80,10 @@ typedef struct _Character
 	float xDiscrepancy;
 	float yDiscrepancy;
 	
+	/* Predicted direction character client uses for netcode */
+	int predictedDirection;
+	uint32_t predictedDirectionTime;
+	
 	/* Speed of character */
 	float speed;
 	
