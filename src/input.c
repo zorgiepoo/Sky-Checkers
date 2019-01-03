@@ -453,13 +453,16 @@ void updateCharacterFromAnyInput(void)
 	
 	if (gNetworkConnection->type == NETWORK_CLIENT_TYPE)
 	{
-		GameMessage message;
-		message.type = MOVEMENT_REQUEST_MESSAGE_TYPE;
-		message.movementRequest.direction = newDirection;
-		
-		setPredictedDirection(character, newDirection);
-		
-		sendToServer(message);
+		if (newDirection != character->direction)
+		{
+			GameMessage message;
+			message.type = MOVEMENT_REQUEST_MESSAGE_TYPE;
+			message.movementRequest.direction = newDirection;
+			
+			setPredictedDirection(character, newDirection);
+			
+			sendToServer(message);
+		}
 	}
 	else
 	{

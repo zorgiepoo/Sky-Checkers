@@ -90,6 +90,7 @@ void loadCharacter(Character *character)
 	
 	character->xDiscrepancy = 0.0f;
 	character->yDiscrepancy = 0.0f;
+	character->movementConsumedCounter = 0;
 	character->predictedDirectionTime = 0;
 	character->predictedDirection = NO_DIRECTION;
 	

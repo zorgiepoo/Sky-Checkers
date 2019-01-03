@@ -80,6 +80,9 @@ typedef struct _Character
 	float xDiscrepancy;
 	float yDiscrepancy;
 	
+	/* The number of movements we have consumed -- used to determine when we should correct a player's position for netcode */
+	int movementConsumedCounter;
+	
 	/* Predicted direction character client uses for netcode */
 	int predictedDirection;
 	uint32_t predictedDirectionTime;

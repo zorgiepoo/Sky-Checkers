@@ -58,7 +58,7 @@ static void interpolateCharacter(Character *character, CharacterMovement *previo
 			character->active = SDL_FALSE;
 		}
 		
-		SDL_bool setPredictedDirection = SDL_FALSE;
+		SDL_bool checkDiscrepancy = SDL_TRUE;
 		// Alter the previous movement to our prediction
 		if (character->predictedDirectionTime > 0 && character->predictedDirectionTime >= previousMovement->ticks)
 		{
@@ -72,31 +72,38 @@ static void interpolateCharacter(Character *character, CharacterMovement *previo
 				previousMovement->pointing_direction = character->pointing_direction;
 			}
 			
+			character->movementConsumedCounter = 0;
+			
 			if (character->predictedDirectionTime < nextMovement->ticks)
 			{
 				character->predictedDirectionTime = 0;
 			}
 			
-			setPredictedDirection = SDL_TRUE;
+			checkDiscrepancy = SDL_FALSE;
 		}
 		
-		if (character->direction != previousMovement->direction || characterShouldBeAlive != characterAlive)
+		if (characterShouldBeAlive != characterAlive)
 		{
-			if (characterShouldBeAlive != characterAlive)
+			character->x = previousMovement->x;
+			character->y = previousMovement->y;
+			
+			character->xDiscrepancy = 0.0f;
+			character->yDiscrepancy = 0.0f;
+		}
+		else
+		{
+			if (checkDiscrepancy)
 			{
-				character->x = previousMovement->x;
-				character->y = previousMovement->y;
+				if (character->direction == previousMovement->direction)
+				{
+					character->movementConsumedCounter++;
+				}
 				
-				character->xDiscrepancy = 0.0f;
-				character->yDiscrepancy = 0.0f;
-			}
-			else if (character->direction != previousMovement->direction)
-			{
-				if (!setPredictedDirection)
+				if (character->movementConsumedCounter >= 4)
 				{
 					// If the character is too far away, warp them back to a known previous movement
 					// Otherwise interpolate the character to compensate for the difference
-					float warpDiscrepancy = 1.5f;
+					float warpDiscrepancy = 3.0f;
 					if (fabsf(character->x - previousMovement->x) >= warpDiscrepancy || fabsf(character->y - previousMovement->y) >= warpDiscrepancy)
 					{
 						character->x = previousMovement->x;
@@ -107,23 +114,27 @@ static void interpolateCharacter(Character *character, CharacterMovement *previo
 					}
 					else
 					{
-						// Don't interpolate the character if the client has completely stopped
 						character->xDiscrepancy = previousMovement->x - character->x;
 						character->yDiscrepancy = previousMovement->y - character->y;
 					}
-				}
-				else
-				{
-					character->xDiscrepancy = 0.0f;
-					character->yDiscrepancy = 0.0f;
+					
+					character->movementConsumedCounter = 0;
 				}
 			}
-			
-			character->z = previousMovement->z;
-			
-			character->direction = previousMovement->direction;
-			character->pointing_direction = previousMovement->pointing_direction;
+			else
+			{
+				character->xDiscrepancy = 0.0f;
+				character->yDiscrepancy = 0.0f;
+			}
 		}
+		
+		if (characterShouldBeAlive != characterAlive)
+		{
+			character->z = previousMovement->z;
+		}
+		
+		character->direction = previousMovement->direction;
+		character->pointing_direction = previousMovement->pointing_direction;
 	}
 }
 
