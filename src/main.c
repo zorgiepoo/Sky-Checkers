@@ -112,7 +112,7 @@ static void initScene(Renderer *renderer)
 {
 	loadSceneryTextures(renderer);
 
-	initTiles();
+	loadTiles();
 
 	initCharacters();
 

@@ -86,7 +86,7 @@ void loadCharacter(Character *character)
 	character->needTileLoc = SDL_TRUE;
 	character->recovery_time_delay = 71;
 	character->player_loc = -1;
-	character->destroyed_tile = NULL;
+	character->destroyedTileIndex = -1;
 	
 	character->xDiscrepancy = 0.0f;
 	character->yDiscrepancy = 0.0f;

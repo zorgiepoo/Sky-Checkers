@@ -133,8 +133,8 @@ typedef struct _Character
 	int recovery_time_delay;
 	// the character's location on the checkerboard
 	int player_loc;
-	// pointer to a destroyed tile that we use to find the other destroyed tiles
-	struct _tile *destroyed_tile;
+	// a destroyed tile location that we use to find the other destroyed tiles
+	int destroyedTileIndex;
 	
 	/* AI */
 	int ai_timer;

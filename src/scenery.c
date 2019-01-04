@@ -26,51 +26,66 @@
 static void loadTileLocations(void);
 static void loadTileColors(void);
 
-static void linkRow(int index);
-static void linkColumn(int index);
-
 static TextureObject gSkyTex;
 
 static TextureObject gTileTexture1;
 static TextureObject gTileTexture2;
 
-void initTiles(void)
-{
-	loadTiles();
-	
-	linkRow(0);
-	linkRow(8);
-	linkRow(16);
-	linkRow(24);
-	linkRow(32);
-	linkRow(40);
-	linkRow(48);
-	linkRow(56);
-	
-	linkColumn(0);
-	linkColumn(1);
-	linkColumn(2);
-	linkColumn(3);
-	linkColumn(4);
-	linkColumn(5);
-	linkColumn(6);
-	linkColumn(7);
-}
-
 void loadTiles(void)
 {
-	int tileIndex;
-	
-	for (tileIndex = 0; tileIndex < NUMBER_OF_TILES; tileIndex++)
+	for (int tileIndex = 0; tileIndex < NUMBER_OF_TILES; tileIndex++)
 	{
 		gTiles[tileIndex].state = SDL_TRUE;
 		gTiles[tileIndex].recovery_timer = 0;
 		gTiles[tileIndex].isDead = SDL_FALSE;
-		gTiles[tileIndex].index = tileIndex;
 	}
 	
 	loadTileLocations();
 	loadTileColors();
+}
+
+int rightTileIndex(int tileIndex)
+{
+	int rightIndex = tileIndex + 1;
+	if (rightIndex < 0 || rightIndex >= NUMBER_OF_TILES || rightIndex % 8 == 0)
+	{
+		return -1;
+	}
+	
+	return rightIndex;
+}
+
+int leftTileIndex(int tileIndex)
+{
+	int leftIndex = tileIndex - 1;
+	if (leftIndex < 0 || leftIndex >= NUMBER_OF_TILES || tileIndex % 8 == 0)
+	{
+		return -1;
+	}
+	
+	return leftIndex;
+}
+
+int upTileIndex(int tileIndex)
+{
+	int upIndex = tileIndex + 8;
+	if (upIndex < 0 || upIndex >= NUMBER_OF_TILES)
+	{
+		return -1;
+	}
+	
+	return upIndex;
+}
+
+int downTileIndex(int tileIndex)
+{
+	int downIndex = tileIndex - 8;
+	if (downIndex < 0 || downIndex >= NUMBER_OF_TILES)
+	{
+		return -1;
+	}
+	
+	return downIndex;
 }
 
 /*
@@ -133,83 +148,16 @@ static void loadTileColors(void)
 }
 
 static void loadTileLocations(void)
-{	
-	int startingTileIndex = 0;
-	float y_loc = 12.5;
-	
-	do
-	{
-		float x_loc = -7.0;
-		Tile *currentTile = &gTiles[startingTileIndex];
-		
-		do
-		{
-			currentTile->x = x_loc;
-			currentTile->y = y_loc;
-			currentTile->z = TILE_ALIVE_Z;
-			
-			x_loc += 2.0;
-		}
-		while ((currentTile = currentTile->right) != NULL); 
-		
-		y_loc += 2.0;
-		startingTileIndex += 8;
-	}
-	while (startingTileIndex < 57);
-}
-
-static void linkRow(int index)
 {
-	// link the rights.
-	int last = index + 7;
-	
-	while (index < last)
+	for (int tileIndex = 0; tileIndex < NUMBER_OF_TILES; tileIndex++)
 	{
-		gTiles[index].right = &gTiles[index + 1];
+		int rowIndex = tileIndex / 8;
+		int columnIndex = tileIndex % 8;
 		
-		index++;
+		gTiles[tileIndex].x = -7.0f + 2.0f * columnIndex;
+		gTiles[tileIndex].y = 12.5f + 2.0f * rowIndex;
+		gTiles[tileIndex].z = TILE_ALIVE_Z;
 	}
-	
-	gTiles[index].right = NULL;
-	
-	// link the lefts.
-	last = index - 7;
-	
-	while (last < index)
-	{
-		gTiles[index].left = &gTiles[index - 1];
-		
-		index--;
-	}
-	
-	gTiles[index].left = NULL;
-}
-
-static void linkColumn(int index)
-{
-	// link the ups.
-	int last = index + (8 * 7);
-	
-	while (index < last)
-	{
-		gTiles[index].up = &gTiles[index + 8];
-		
-		index += 8;
-	}
-	
-	gTiles[index].up = NULL;
-	
-	// link the downs.
-	last = last - (8 * 7);
-	
-	while (last < index)
-	{
-		gTiles[index].down = &gTiles[index - 8];
-		
-		index -= 8;
-	}
-	
-	gTiles[index].down = NULL;
 }
 
 void loadSceneryTextures(Renderer *renderer)

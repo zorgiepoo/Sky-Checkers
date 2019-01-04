@@ -28,14 +28,9 @@
 
 typedef struct _tile
 {
-	int index;
 	float x;
 	float y;
 	float z;
-	struct _tile *right;
-	struct _tile *left;
-	struct _tile *down;
-	struct _tile *up;
 	float red, green, blue;
 	// default colors
 	float d_red, d_green, d_blue;
@@ -48,8 +43,13 @@ typedef struct _tile
 
 Tile gTiles[NUMBER_OF_TILES];
 
-void initTiles(void);
 void loadTiles(void);
+
+// Returns -1 if no such tile is found
+int rightTileIndex(int tileIndex);
+int leftTileIndex(int tileIndex);
+int upTileIndex(int tileIndex);
+int downTileIndex(int tileIndex);
 
 SDL_bool availableTile(float x, float y);
 

@@ -98,7 +98,9 @@ SDL_bool characterIsOutOfBounds(int direction, Character *character)
 	if (gTiles[index].state == SDL_FALSE)
 		return SDL_FALSE;
 	
-	if (direction == LEFT && (gTiles[index].left == NULL || gTiles[index].left->state == SDL_FALSE || gTiles[index].left->isDead || fabs(gTiles[index].left->red - character->weap->red) < 0.00001))
+	int nextTileIndex;
+	
+	if (direction == LEFT && ((nextTileIndex = leftTileIndex(index)) == -1 || gTiles[nextTileIndex].state == SDL_FALSE || gTiles[nextTileIndex].isDead || fabs(gTiles[nextTileIndex].red - character->weap->red) < 0.00001f))
 	{
 		/*
 		 * We know that the current tile's left tile is destroyed, but we only have access to the current tile.
@@ -107,28 +109,28 @@ SDL_bool characterIsOutOfBounds(int direction, Character *character)
 		 * by 7.0
 		 */
 		
-		if (character->x < (gTiles[index].x + 7.0) - 0.7)
+		if (character->x < (gTiles[index].x + 7.0f) - 0.7f)
 			return SDL_FALSE;
 	}
 	
-	else if (direction == RIGHT && (gTiles[index].right == NULL || gTiles[index].right->state == SDL_FALSE || gTiles[index].right->isDead || fabs(gTiles[index].right->red - character->weap->red) < 0.00001))
+	else if (direction == RIGHT && ((nextTileIndex = rightTileIndex(index)) == -1 || gTiles[nextTileIndex].state == SDL_FALSE || gTiles[nextTileIndex].isDead || fabs(gTiles[nextTileIndex].red - character->weap->red) < 0.00001f))
 	{
 		
-		if (character->x > (gTiles[index].x + 7.0) + 0.7)
+		if (character->x > (gTiles[index].x + 7.0f) + 0.7f)
 			return SDL_FALSE;
 	}
 	
-	else if (direction == DOWN && (gTiles[index].down == NULL || gTiles[index].down->state == SDL_FALSE || gTiles[index].down->isDead || fabs(gTiles[index].down->red - character->weap->red) < 0.00001))
+	else if (direction == DOWN && ((nextTileIndex = downTileIndex(index)) == -1 || gTiles[nextTileIndex].state == SDL_FALSE || gTiles[nextTileIndex].isDead || fabs(gTiles[nextTileIndex].red - character->weap->red) < 0.00001f))
 	{
 		
-		if (character->y < ((gTiles[index].y - 18.5) + 6.0) - 0.7)
+		if (character->y < ((gTiles[index].y - 18.5f) + 6.0f) - 0.7f)
 			return SDL_FALSE;
 	}
 	
-	else if (direction == UP && (gTiles[index].up == NULL || gTiles[index].up->state == SDL_FALSE || gTiles[index].up->isDead || fabs(gTiles[index].up->red - character->weap->red) < 0.00001))
+	else if (direction == UP && ((nextTileIndex = upTileIndex(index)) == -1 || gTiles[nextTileIndex].state == SDL_FALSE || gTiles[nextTileIndex].isDead || fabs(gTiles[nextTileIndex].red - character->weap->red) < 0.00001f))
 	{
 		
-		if (character->y > ((gTiles[index].y - 18.5) + 6.0) + 0.7)
+		if (character->y > ((gTiles[index].y - 18.5f) + 6.0f) + 0.7f)
 			return SDL_FALSE;
 	}
 	

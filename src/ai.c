@@ -22,6 +22,7 @@
 #include "collision.h"
 #include "network.h"
 #include "utilities.h"
+#include "scenery.h"
 
 static void setNewDirection(int *direction);
 static void directCharacterBasedOnCollisions(Character *character, int currentTime);
@@ -112,31 +113,34 @@ static void directCharacterBasedOnCollisions(Character *character, int currentTi
 	int tileLocation = getTileIndexLocation((int)character->x, (int)character->y);
 	if (tileLocation >= 0 && tileLocation < NUMBER_OF_TILES)
 	{
-		Tile *tile = &gTiles[tileLocation];
 		// gray color red == 0.31
-		if (fabs(tile->red - 0.31) < 0.00001)
+		if (fabs(gTiles[tileLocation].red - 0.31f) < 0.00001f)
 		{
 			int row = rowOfCharacter(character);
 			int column = columnOfCharacter(character);
 			
 			if (row == 0 || row == 1)
 			{
-				if (tile->up && !tile->up->isDead && tile->up->state)
+				int upTileLocation = upTileIndex(tileLocation);
+				if (upTileLocation != -1 && !gTiles[upTileLocation].isDead && gTiles[upTileLocation].state)
 					character->direction = UP;
 			}
 			else if (row == 7 || row == 6)
 			{
-				if (tile->down && !tile->down->isDead && tile->down->state)
+				int downTileLocation = downTileIndex(tileLocation);
+				if (downTileLocation != -1 && !gTiles[downTileLocation].isDead && gTiles[downTileLocation].state)
 					character->direction = DOWN;
 			}
 			else if (column == 0 || column == 1)
 			{
-				if (tile->right && !tile->right->isDead && tile->right->state)
+				int rightTileLocation = rightTileIndex(tileLocation);
+				if (rightTileLocation != -1 && !gTiles[rightTileLocation].isDead && gTiles[rightTileLocation].state)
 					character->direction = RIGHT;
 			}
 			else if (column == 7 || column == 6)
 			{
-				if (tile->left && !tile->left->isDead && tile->left->state)
+				int leftTileLocation = leftTileIndex(tileLocation);
+				if (leftTileLocation != -1 && !gTiles[leftTileLocation].isDead && gTiles[leftTileLocation].state)
 					character->direction = LEFT;
 			}
 		}

@@ -60,7 +60,7 @@ static double gTimeElapsedAccumulator = 0.0;
 
 /* Functions */
 
-static void colorTile(Tile *tile, Character *character);
+static void colorTile(int tileIndex, Character *character);
 
 static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player);
 static void moveWeapon(Weapon *weapon, double timeDelta);
@@ -193,25 +193,25 @@ void animate(SDL_Window *window, double timeDelta)
 /*
  * Change the color of the tile to the weap's color only if the color of the tile is at its default color and if that the tile's state exists
  */
-static void colorTile(Tile *tile, Character *character)
+static void colorTile(int tileIndex, Character *character)
 {
-	if (tile->state					&&
-		tile->red == tile->d_red	&&
-		tile->blue == tile->d_blue	&&
-		tile->green == tile->d_green)
+	if (gTiles[tileIndex].state					&&
+		gTiles[tileIndex].red == gTiles[tileIndex].d_red	&&
+		gTiles[tileIndex].blue == gTiles[tileIndex].d_blue	&&
+		gTiles[tileIndex].green == gTiles[tileIndex].d_green)
 	{
 		Weapon *weap = character->weap;
 		
-		tile->red = weap->red;
-		tile->blue = weap->blue;
-		tile->green = weap->green;
+		gTiles[tileIndex].red = weap->red;
+		gTiles[tileIndex].blue = weap->blue;
+		gTiles[tileIndex].green = weap->green;
 		
 		if (gNetworkConnection && gNetworkConnection->type == NETWORK_SERVER_TYPE)
 		{
 			GameMessage message;
 			message.type = COLOR_TILE_MESSAGE_TYPE;
 			message.colorTile.characterID = IDOfCharacter(character);
-			message.colorTile.tileIndex = tile->index;
+			message.colorTile.tileIndex = tileIndex;
 			
 			sendToClients(0, &message);
 		}
@@ -254,42 +254,40 @@ static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player)
 		/* First, color the tiles that are going to be destroyed */
 		if (!player->coloredTiles && (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE))
 		{
-			Tile *currentTile;
-			
 			// Get the location of where the player fired their weapon
 			int tileLocation = getTileIndexLocation((int)player->weap->initialX, (int)player->weap->initialY);
 			if (tileLocation >= 0 && tileLocation < NUMBER_OF_TILES)
 			{
 				player->player_loc = tileLocation;
 				
-				currentTile = &gTiles[player->player_loc];
+				int currentTileIndex = tileLocation;
 				
 				if (player->weap->direction == RIGHT)
 				{
-					while ((currentTile = currentTile->right) != NULL)
+					while ((currentTileIndex = rightTileIndex(currentTileIndex)) != -1)
 					{
-						colorTile(currentTile, player);
+						colorTile(currentTileIndex, player);
 					}
 				}
 				else if (player->weap->direction == LEFT)
 				{
-					while ((currentTile = currentTile->left) != NULL)
+					while ((currentTileIndex = leftTileIndex(currentTileIndex)) != -1)
 					{
-						colorTile(currentTile, player);
+						colorTile(currentTileIndex, player);
 					}
 				}
 				else if (player->weap->direction == UP)
 				{
-					while ((currentTile = currentTile->up) != NULL)
+					while ((currentTileIndex = upTileIndex(currentTileIndex)) != -1)
 					{
-						colorTile(currentTile, player);
+						colorTile(currentTileIndex, player);
 					}
 				}
 				else if (player->weap->direction == DOWN)
 				{
-					while ((currentTile = currentTile->down) != NULL)
+					while ((currentTileIndex = downTileIndex(currentTileIndex)) != -1)
 					{
-						colorTile(currentTile, player);
+						colorTile(currentTileIndex, player);
 					}
 				}
 				
@@ -302,7 +300,7 @@ static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player)
 		
 		if (player->needTileLoc && player->animation_timer > BEGIN_DESTROYING_TILES && player->player_loc != -1)
 		{
-			player->destroyed_tile = &gTiles[player->player_loc];
+			player->destroyedTileIndex = player->player_loc;
 			player->needTileLoc = SDL_FALSE;
 			
 			// no need to draw the weapon anymore
@@ -311,32 +309,32 @@ static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player)
 		
 		static const int RECOVERY_TIME_DELAY_DELTA =	10;
 		
-		if (player->destroyed_tile != NULL && (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE))
+		if (player->destroyedTileIndex != -1 && (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE))
 		{
 			if (player->weap->direction == RIGHT)
 			{
-				player->destroyed_tile = player->destroyed_tile->right;
+				player->destroyedTileIndex = rightTileIndex(player->destroyedTileIndex);
 			}
 			else if (player->weap->direction == LEFT)
 			{
-				player->destroyed_tile = player->destroyed_tile->left;
+				player->destroyedTileIndex = leftTileIndex(player->destroyedTileIndex);
 			}
 			else if (player->weap->direction == UP)
 			{
-				player->destroyed_tile = player->destroyed_tile->up;
+				player->destroyedTileIndex = upTileIndex(player->destroyedTileIndex);
 			}
 			else if (player->weap->direction == DOWN)
 			{
-				player->destroyed_tile = player->destroyed_tile->down;
+				player->destroyedTileIndex = downTileIndex(player->destroyedTileIndex);
 			}
 			
-			if (player->destroyed_tile != NULL						&&
-				player->destroyed_tile->red == player->weap->red	&&
-				player->destroyed_tile->blue == player->weap->blue	&&
-				player->destroyed_tile->green == player->weap->green)
+			if (player->destroyedTileIndex != -1						&&
+				gTiles[player->destroyedTileIndex].red == player->weap->red	&&
+				gTiles[player->destroyedTileIndex].blue == player->weap->blue	&&
+				gTiles[player->destroyedTileIndex].green == player->weap->green)
 			{
-				player->destroyed_tile->state = SDL_FALSE;
-				player->destroyed_tile->z -= OBJECT_FALLING_STEP;
+				gTiles[player->destroyedTileIndex].state = SDL_FALSE;
+				gTiles[player->destroyedTileIndex].z -= OBJECT_FALLING_STEP;
 				
 				if (((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 				{
@@ -345,7 +343,7 @@ static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player)
 				
 				GameMessage fallingMessage;
 				fallingMessage.type = TILE_FALLING_DOWN_MESSAGE_TYPE;
-				fallingMessage.fallingTile.tileIndex = player->destroyed_tile->index;
+				fallingMessage.fallingTile.tileIndex = player->destroyedTileIndex;
 				fallingMessage.fallingTile.dead = SDL_FALSE;
 				sendToClients(0, &fallingMessage);
 				
@@ -353,7 +351,7 @@ static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player)
 				 * Each destroyed_tile will get a different recovery_time delay.
 				 * The first tile in the list gets a greater initial recovery_timer value than the second tile in the list, and so on.
 				 */
-				player->destroyed_tile->recovery_timer = player->recovery_time_delay;
+				gTiles[player->destroyedTileIndex].recovery_timer = player->recovery_time_delay;
 				player->recovery_time_delay -= RECOVERY_TIME_DELAY_DELTA;
 			}
 		}
@@ -375,7 +373,7 @@ static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player)
 			
 			player->needTileLoc = SDL_TRUE;
 			player->coloredTiles = SDL_FALSE;
-			player->destroyed_tile = NULL;
+			player->destroyedTileIndex = -1;
 			player->player_loc = -1;
 			/*
 			 * A character can only destroy 7 tiles at once.
