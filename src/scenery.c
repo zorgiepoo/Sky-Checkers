@@ -234,8 +234,8 @@ void drawTiles(Renderer *renderer)
 			
 			// Right
 			1.0f, 1.0f, 1.0f,
-			1.0f, 1.0f, -1.0,
-			1.0f, -1.0f, -1.0,
+			1.0f, 1.0f, -1.0f,
+			1.0f, -1.0f, -1.0f,
 			1.0f, -1.0f, 1.0f,
 			
 			// Front

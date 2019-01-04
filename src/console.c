@@ -172,7 +172,7 @@ static float getConsoleValue(void)
 	// syntax:
 	// scc~: get(arg) object.property
 	
-	float value = 0.0;
+	float value = 0.0f;
 	char result[128];
 	int resultLen;
 	int i;
@@ -393,7 +393,7 @@ static float setConsoleValue(SDL_bool *errorFlag)
 	// scc~: object(arg).property value
 	
 	char input[128];
-	float value = 0;
+	float value = 0.0f;
 	unsigned int i;
 	unsigned int len = 0;
 	SDL_bool valueExists = SDL_FALSE;
@@ -411,7 +411,7 @@ static float setConsoleValue(SDL_bool *errorFlag)
 	if (len == gConsoleStringIndex - 1)
 	{
 		*errorFlag = SDL_TRUE;
-		return 0.0;
+		return 0.0f;
 	}
 	
 	if (valueExists)
@@ -425,7 +425,7 @@ static float setConsoleValue(SDL_bool *errorFlag)
 		// value is the value the user wants to set for the variable name.
 		value = (float)atof(num);
 		
-		if (value == 0.0 && num[0] != '0')
+		if (value == 0.0f && num[0] != '0')
 		{
 			*errorFlag = SDL_TRUE;
 			return value;

@@ -1570,9 +1570,9 @@ int clientNetworkThread(void *context)
 							int direction = 0;
 							int pointing_direction = 0;
 							uint32_t timestamp = 0;
-							float x = 0.0;
-							float y = 0.0;
-							float z = 0.0;
+							float x = 0.0f;
+							float y = 0.0f;
+							float z = 0.0f;
 							
 							sscanf(buffer + 2, "%llu %d %f %f %f %d %d %u", &packetNumber, &characterID, &x, &y, &z, &direction, &pointing_direction, &timestamp);
 							

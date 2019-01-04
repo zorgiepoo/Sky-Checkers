@@ -35,23 +35,23 @@ SDL_bool checkCharacterColl(Character *a, Character *b, int direction)
 		return SDL_TRUE;
 	
 	if (direction == UP && a->y < b->y &&
-		(a->x < b->x + 0.8 && a->x > b->x - 0.8) &&
-		a->y > b->y - 1.0)
+		(a->x < b->x + 0.8f && a->x > b->x - 0.8f) &&
+		a->y > b->y - 1.0f)
 		return SDL_FALSE;
 	
 	if (direction == DOWN && a->y > b->y &&
-		(a->x < b->x + 0.8 && a->x > b->x - 0.8) &&
-		a->y < b->y + 1.0)
+		(a->x < b->x + 0.8f && a->x > b->x - 0.8f) &&
+		a->y < b->y + 1.0f)
 		return SDL_FALSE;
 	
 	if (direction == RIGHT && a->x < b->x &&
-		(a->y < b->y + 0.8 && a->y > b->y - 0.8) &&
-		a->x > b->x - 1.1)
+		(a->y < b->y + 0.8f && a->y > b->y - 0.8f) &&
+		a->x > b->x - 1.1f)
 		return SDL_FALSE;
 	
 	if (direction == LEFT && a->x > b->x &&
-		(a->y < b->y + 0.8 && a->y > b->y - 0.8) &&
-		a->x < b->x + 1.1)
+		(a->y < b->y + 0.8f && a->y > b->y - 0.8f) &&
+		a->x < b->x + 1.1f)
 		return SDL_FALSE;
 	
 	return SDL_TRUE;

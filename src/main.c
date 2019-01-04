@@ -813,7 +813,7 @@ static void drawScoreboardForCharacters(Renderer *renderer, ScoreboardRenderType
 {
 	mat4_t iconModelViewMatrices[] =
 	{
-		m4_translation((vec3_t){-6.0 / 1.25f, 7.0 / 1.25f, -25.0 / 1.25f}),
+		m4_translation((vec3_t){-6.0f / 1.25f, 7.0f / 1.25f, -25.0f / 1.25f}),
 		m4_translation((vec3_t){-2.0f / 1.25f, 7.0f / 1.25f, -25.0f / 1.25f}),
 		m4_translation((vec3_t){2.0f / 1.25f, 7.0f / 1.25f, -25.0f / 1.25f}),
 		m4_translation((vec3_t){6.0f / 1.25f, 7.0f / 1.25f, -25.0f / 1.25f})
@@ -880,7 +880,7 @@ static void drawScene(Renderer *renderer)
 		{
 			color4_t textColor = (color4_t){0.0f, 0.0f, 1.0f, 1.0f};
 			
-			mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0 / 11.2f, 80.0 / 11.2f, -280.0 / 11.2f});
+			mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f / 11.2f, 80.0f / 11.2f, -280.0f / 11.2f});
 			
 			if (gPinkBubbleGum.netState == NETWORK_PENDING_STATE || gRedRover.netState == NETWORK_PENDING_STATE || gGreenTree.netState == NETWORK_PENDING_STATE || gBlueLightning.netState == NETWORK_PENDING_STATE)
 			{
@@ -1034,11 +1034,11 @@ static void drawScene(Renderer *renderer)
 			
 			color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 1.0f};
 
-			drawString(renderer, translationMatrix, textColor, 100.0 / 14.0f, 5.0 / 14.0f, "Click enter to modify a mapping value and input in a button on your joystick. Click Escape to exit out.");
+			drawString(renderer, translationMatrix, textColor, 100.0f / 14.0f, 5.0f / 14.0f, "Click enter to modify a mapping value and input in a button on your joystick. Click Escape to exit out.");
 			
 			mat4_t noticeModelViewMatrix = m4_mul(translationMatrix, m4_translation((vec3_t){0.0f / 14.0f, -20.0f / 14.0f, 0.0f / 14.0f}));
 
-			drawString(renderer, noticeModelViewMatrix, textColor, 50.0 / 16.0f, 5.0 / 16.0f, "(Joysticks only function in-game)");
+			drawString(renderer, noticeModelViewMatrix, textColor, 50.0f / 16.0f, 5.0f / 16.0f, "(Joysticks only function in-game)");
 		}
 
 		else if (isChildBeingDrawn(&gCharacterConfigureKeys[0][1]) /* pinkBubbleGum */	||
@@ -1050,7 +1050,7 @@ static void drawScene(Renderer *renderer)
 			
 			color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 1.0f};
 
-			drawString(renderer, translationMatrix, textColor, 100.0 / 14.0f, 5.0 / 14.0f, "Click enter to modify a mapping value and input in a key. Click Escape to exit out.");
+			drawString(renderer, translationMatrix, textColor, 100.0f / 14.0f, 5.0f / 14.0f, "Click enter to modify a mapping value and input in a key. Click Escape to exit out.");
 		}
 		
 		if (gDrawFPS)

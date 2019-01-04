@@ -853,8 +853,8 @@ void startAnimation(void)
 
 void endAnimation(void)
 {
-	gSecondTimer = 0.0;
-	gLastSecond = 0.0;
+	gSecondTimer = 0.0f;
+	gLastSecond = 0.0f;
 	gTimeElapsedAccumulator = 0.0;
 	
 	gTileLayerStates[0].colorIndex = 0;
