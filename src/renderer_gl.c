@@ -254,7 +254,7 @@ static SDL_bool createOpenGLContext(SDL_Window **window, SDL_GLContext *glContex
 	if (fsaa)
 	{
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, MSAA_SAMPLE_COUNT);
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, MSAA_PREFERRED_SAMPLE_COUNT);
 	}
 	
 	*window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags | SDL_WINDOW_OPENGL);
@@ -271,28 +271,42 @@ static SDL_bool createOpenGLContext(SDL_Window **window, SDL_GLContext *glContex
 		}
 		else
 		{
-			// Try creating SDL window and opengl context again except without anti-aliasing this time
-			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
-			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
-			
+			// Try creating SDL window and opengl context again using secondary sample count
 			if (*window != NULL)
 			{
 				SDL_DestroyWindow(*window);
 			}
 			
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, MSAA_SECONDARY_SAMPLE_COUNT);
+			
 			*window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags | SDL_WINDOW_OPENGL);
 			
-			if (*window == NULL)
+			if (*window == NULL || (*glContext = SDL_GL_CreateContext(*window)) == NULL)
 			{
-				return SDL_FALSE;
-			}
-			
-			*glContext = SDL_GL_CreateContext(*window);
-			if (*glContext == NULL)
-			{
-				SDL_DestroyWindow(*window);
+				if (*window != NULL)
+				{
+					SDL_DestroyWindow(*window);
+				}
 				
-				return SDL_FALSE;
+				// Try creating SDL window and opengl context again except without anti-aliasing
+				SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
+				SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
+				
+				*window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags | SDL_WINDOW_OPENGL);
+				
+				if (*window == NULL)
+				{
+					return SDL_FALSE;
+				}
+				
+				*glContext = SDL_GL_CreateContext(*window);
+				if (*glContext == NULL)
+				{
+					SDL_DestroyWindow(*window);
+					
+					return SDL_FALSE;
+				}
 			}
 		}
 	}
@@ -358,6 +372,16 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	int value;
 	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &value);
 	renderer->fsaa = (value != 0);
+	
+	if (renderer->fsaa)
+	{
+		SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &value);
+		renderer->sampleCount = value;
+	}
+	else
+	{
+		renderer->sampleCount = 0;
+	}
 	
 	value = SDL_GL_GetSwapInterval();
 	renderer->vsync = (value != 0);

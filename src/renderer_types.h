@@ -19,7 +19,8 @@
 
 #pragma once
 
-#define MSAA_SAMPLE_COUNT 4
+#define MSAA_PREFERRED_SAMPLE_COUNT 2
+#define MSAA_SECONDARY_SAMPLE_COUNT 4
 
 typedef enum
 {
@@ -95,6 +96,8 @@ typedef struct _Renderer
 	
 	int32_t windowWidth;
 	int32_t windowHeight;
+	
+	uint32_t sampleCount;
 	
 	SDL_bool vsync;
 	SDL_bool fsaa;

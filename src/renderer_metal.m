@@ -85,7 +85,7 @@ static PipelineOptionIndex rendererOptionsToPipelineOptionIndex(RendererOptions 
 	}
 }
 
-static void createAndStorePipelineState(void **pipelineStates, id<MTLDevice> device, MTLPixelFormat pixelFormat, NSArray<id<MTLFunction>> *shaderFunctions, ShaderFunctionPairIndex shaderPairIndex, PipelineOptionIndex pipelineOptionIndex, SDL_bool fsaa)
+static void createAndStorePipelineState(void **pipelineStates, id<MTLDevice> device, MTLPixelFormat pixelFormat, NSArray<id<MTLFunction>> *shaderFunctions, ShaderFunctionPairIndex shaderPairIndex, PipelineOptionIndex pipelineOptionIndex, SDL_bool fsaa, uint32_t fsaaSampleCount)
 {
 	MTLRenderPipelineDescriptor *pipelineStateDescriptor = [MTLRenderPipelineDescriptor new];
 	pipelineStateDescriptor.vertexFunction = shaderFunctions[shaderPairIndex * 2];
@@ -107,9 +107,9 @@ static void createAndStorePipelineState(void **pipelineStates, id<MTLDevice> dev
 	}
 	
 	pipelineStateDescriptor.depthAttachmentPixelFormat = DEPTH_STENCIL_PIXEL_FORMAT;
-	if (fsaa)
+	if (fsaaSampleCount)
 	{
-		pipelineStateDescriptor.sampleCount = MSAA_SAMPLE_COUNT;
+		pipelineStateDescriptor.sampleCount = fsaaSampleCount;
 	}
 	
 	NSError *pipelineError = nil;
@@ -148,7 +148,7 @@ static void updateViewport_metal(Renderer *renderer)
 		multisampleTextureDescriptor.height = (NSUInteger)renderer->screenHeight;
 		multisampleTextureDescriptor.resourceOptions = MTLResourceStorageModePrivate;
 		multisampleTextureDescriptor.usage = MTLTextureUsageRenderTarget;
-		multisampleTextureDescriptor.sampleCount = MSAA_SAMPLE_COUNT;
+		multisampleTextureDescriptor.sampleCount = renderer->sampleCount;
 		multisampleTextureDescriptor.textureType = MTLTextureType2DMultisample;
 		
 		id<MTLTexture> multisampleTexture = [device newTextureWithDescriptor:multisampleTextureDescriptor];
@@ -190,7 +190,7 @@ static void updateViewport_metal(Renderer *renderer)
 	depthTextureDescriptor.usage = MTLTextureUsageRenderTarget;
 	if (renderer->fsaa)
 	{
-		depthTextureDescriptor.sampleCount = MSAA_SAMPLE_COUNT;
+		depthTextureDescriptor.sampleCount = renderer->sampleCount;
 		depthTextureDescriptor.textureType = MTLTextureType2DMultisample;
 	}
 	
@@ -270,7 +270,30 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		
 		// Update view port
 		
-		renderer->fsaa = (fsaa && [device supportsTextureSampleCount:MSAA_SAMPLE_COUNT]);
+		if (fsaa)
+		{
+			if ([device supportsTextureSampleCount:MSAA_PREFERRED_SAMPLE_COUNT])
+			{
+				renderer->sampleCount = MSAA_PREFERRED_SAMPLE_COUNT;
+				renderer->fsaa = SDL_TRUE;
+			}
+			else if ([device supportsTextureSampleCount:MSAA_SECONDARY_SAMPLE_COUNT])
+			{
+				renderer->sampleCount = MSAA_SECONDARY_SAMPLE_COUNT;
+				renderer->fsaa = SDL_TRUE;
+			}
+			else
+			{
+				renderer->sampleCount = 0;
+				renderer->fsaa = SDL_FALSE;
+			}
+		}
+		else
+		{
+			renderer->sampleCount = 0;
+			renderer->fsaa = SDL_FALSE;
+		}
+		
 		renderer->metalLayer = (void *)CFBridgingRetain(metalLayer);
 		renderer->metalDepthTexture = NULL;
 		renderer->metalDepthTestStencilState = NULL;
@@ -298,18 +321,18 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		
 		// Set up pipelines
 		
-		createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_PAIR_INDEX, PIPELINE_OPTION_NONE_INDEX, renderer->fsaa);
+		createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_PAIR_INDEX, PIPELINE_OPTION_NONE_INDEX, renderer->fsaa, renderer->sampleCount);
 		
 		// Unused pipeline
 		renderer->metalPipelineStates[1] = NULL;
 		
-		createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_PAIR_INDEX, PIPELINE_OPTION_BLENDING_ONE_MINUS_SOURCE_ALPHA_INDEX, renderer->fsaa);
+		createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_PAIR_INDEX, PIPELINE_OPTION_BLENDING_ONE_MINUS_SOURCE_ALPHA_INDEX, renderer->fsaa, renderer->sampleCount);
 		
-		createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_TEXTURE_PAIR_INDEX, PIPELINE_OPTION_NONE_INDEX, renderer->fsaa);
+		createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_TEXTURE_PAIR_INDEX, PIPELINE_OPTION_NONE_INDEX, renderer->fsaa, renderer->sampleCount);
 		
-		createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_TEXTURE_PAIR_INDEX, PIPELINE_OPTION_BLENDING_SOURCE_ALPHA_INDEX, renderer->fsaa);
+		createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_TEXTURE_PAIR_INDEX, PIPELINE_OPTION_BLENDING_SOURCE_ALPHA_INDEX, renderer->fsaa, renderer->sampleCount);
 		
-		createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_TEXTURE_PAIR_INDEX, PIPELINE_OPTION_BLENDING_ONE_MINUS_SOURCE_ALPHA_INDEX, renderer->fsaa);
+		createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_TEXTURE_PAIR_INDEX, PIPELINE_OPTION_BLENDING_ONE_MINUS_SOURCE_ALPHA_INDEX, renderer->fsaa, renderer->sampleCount);
 		
 		// Set up remaining renderer properties
 		
