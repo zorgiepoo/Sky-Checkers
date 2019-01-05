@@ -531,13 +531,11 @@ static void collapseTiles(double timeDelta)
 
 void recoverDestroyedTile(int tileIndex)
 {
-	gTiles[tileIndex].red = gTiles[tileIndex].d_red;
-	gTiles[tileIndex].green = gTiles[tileIndex].d_green;
-	gTiles[tileIndex].blue = gTiles[tileIndex].d_blue;
+	restoreDefaultTileColor(tileIndex);
+	gTiles[tileIndex].coloredID = NO_CHARACTER;
 	gTiles[tileIndex].z = TILE_ALIVE_Z;
 	gTiles[tileIndex].state = SDL_TRUE;
 	gTiles[tileIndex].recovery_timer = 0;
-	gTiles[tileIndex].coloredID = NO_CHARACTER;
 }
 
 /* To activate a recovery of a tile, set its recover_timer to a value greater than 0 */

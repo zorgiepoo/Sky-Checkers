@@ -28,14 +28,12 @@
 
 #define GRAY_STONE_ID 5
 
-typedef struct _tile
+typedef struct
 {
 	float x;
 	float y;
 	float z;
 	float red, green, blue;
-	// default colors
-	float d_red, d_green, d_blue;
 	
 	// ID of character that colored tile or GRAY_STONE_ID
 	int coloredID;
@@ -49,6 +47,8 @@ typedef struct _tile
 Tile gTiles[NUMBER_OF_TILES];
 
 void loadTiles(void);
+
+void restoreDefaultTileColor(int tileIndex);
 
 // Returns -1 if no such tile is found
 int rightTileIndex(int tileIndex);

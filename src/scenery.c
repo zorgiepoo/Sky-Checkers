@@ -23,9 +23,6 @@
 #include "collision.h"
 #include "math_3d.h"
 
-static void loadTileLocations(void);
-static void loadTileColors(void);
-
 static TextureObject gSkyTex;
 
 static TextureObject gTileTexture1;
@@ -39,10 +36,43 @@ void loadTiles(void)
 		gTiles[tileIndex].recovery_timer = 0;
 		gTiles[tileIndex].isDead = SDL_FALSE;
 		gTiles[tileIndex].coloredID = NO_CHARACTER;
+		
+		int rowIndex = tileIndex / 8;
+		int columnIndex = tileIndex % 8;
+		
+		gTiles[tileIndex].x = -7.0f + 2.0f * columnIndex;
+		gTiles[tileIndex].y = 12.5f + 2.0f * rowIndex;
+		gTiles[tileIndex].z = TILE_ALIVE_Z;
+		
+		if ((((tileIndex / 8) % 2) ^ (tileIndex % 2)) != 0)
+		{
+			gTiles[tileIndex].red = 0.8f;
+			gTiles[tileIndex].green = 0.8f;
+			gTiles[tileIndex].blue = 0.8f;
+		}
+		else
+		{
+			gTiles[tileIndex].red = 0.682f;
+			gTiles[tileIndex].green = 0.572f;
+			gTiles[tileIndex].blue = 0.329f;
+		}
 	}
-	
-	loadTileLocations();
-	loadTileColors();
+}
+
+void restoreDefaultTileColor(int tileIndex)
+{
+	if ((((tileIndex / 8) % 2) ^ (tileIndex % 2)) != 0)
+	{
+		gTiles[tileIndex].red = 0.8f;
+		gTiles[tileIndex].green = 0.8f;
+		gTiles[tileIndex].blue = 0.8f;
+	}
+	else
+	{
+		gTiles[tileIndex].red = 0.682f;
+		gTiles[tileIndex].green = 0.572f;
+		gTiles[tileIndex].blue = 0.329f;
+	}
 }
 
 int rightTileIndex(int tileIndex)
@@ -121,44 +151,6 @@ SDL_bool availableTile(float x, float y)
 		return SDL_FALSE;
 	
 	return SDL_TRUE;
-}
-
-static void loadTileColors(void)
-{
-	for (int i = 0; i < NUMBER_OF_TILES; i++)
-	{
-		if ((((i / 8) % 2) ^ (i % 2)) != 0)
-		{
-			gTiles[i].red = 0.8f;
-			gTiles[i].green = 0.8f;
-			gTiles[i].blue = 0.8f;
-			gTiles[i].d_red = 0.8f;
-			gTiles[i].d_green = 0.8f;
-			gTiles[i].d_blue = 0.8f;
-		}
-		else
-		{
-			gTiles[i].red = 0.682f;
-			gTiles[i].green = 0.572f;
-			gTiles[i].blue = 0.329f;
-			gTiles[i].d_red = 0.682f;
-			gTiles[i].d_green = 0.572f;
-			gTiles[i].d_blue = 0.329f;
-		}
-	}
-}
-
-static void loadTileLocations(void)
-{
-	for (int tileIndex = 0; tileIndex < NUMBER_OF_TILES; tileIndex++)
-	{
-		int rowIndex = tileIndex / 8;
-		int columnIndex = tileIndex % 8;
-		
-		gTiles[tileIndex].x = -7.0f + 2.0f * columnIndex;
-		gTiles[tileIndex].y = 12.5f + 2.0f * rowIndex;
-		gTiles[tileIndex].z = TILE_ALIVE_Z;
-	}
 }
 
 void loadSceneryTextures(Renderer *renderer)
