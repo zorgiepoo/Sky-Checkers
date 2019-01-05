@@ -195,16 +195,14 @@ void animate(SDL_Window *window, double timeDelta)
  */
 static void colorTile(int tileIndex, Character *character)
 {
-	if (gTiles[tileIndex].state					&&
-		gTiles[tileIndex].red == gTiles[tileIndex].d_red	&&
-		gTiles[tileIndex].blue == gTiles[tileIndex].d_blue	&&
-		gTiles[tileIndex].green == gTiles[tileIndex].d_green)
+	if (gTiles[tileIndex].state && gTiles[tileIndex].coloredID == NO_CHARACTER)
 	{
 		Weapon *weap = character->weap;
 		
 		gTiles[tileIndex].red = weap->red;
 		gTiles[tileIndex].blue = weap->blue;
 		gTiles[tileIndex].green = weap->green;
+		gTiles[tileIndex].coloredID = IDOfCharacter(character);
 		
 		if (gNetworkConnection && gNetworkConnection->type == NETWORK_SERVER_TYPE)
 		{
@@ -328,10 +326,7 @@ static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player)
 				player->destroyedTileIndex = downTileIndex(player->destroyedTileIndex);
 			}
 			
-			if (player->destroyedTileIndex != -1						&&
-				gTiles[player->destroyedTileIndex].red == player->weap->red	&&
-				gTiles[player->destroyedTileIndex].blue == player->weap->blue	&&
-				gTiles[player->destroyedTileIndex].green == player->weap->green)
+			if (player->destroyedTileIndex != -1 && gTiles[player->destroyedTileIndex].coloredID == IDOfCharacter(player))
 			{
 				gTiles[player->destroyedTileIndex].state = SDL_FALSE;
 				gTiles[player->destroyedTileIndex].z -= OBJECT_FALLING_STEP;
@@ -393,14 +388,13 @@ static void firstTileLayerAnimation(SDL_Window *window)
 	// Color the tiles gray
 	if (gTileLayerStates[0].colorIndex != -1 && gTileLayerStates[0].animationTimer > BEGIN_TILE_LAYER_ANIMATION)
 	{
-		if (gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].red == gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].d_red		&&
-			gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].green == gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].d_green	&&
-			gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].blue == gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].d_blue)
+		if (gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].coloredID == NO_CHARACTER)
 		{
 			// RGB { 0.31, 0.33, 0.36 } == Grayish color
 			gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].red = 0.31f;
 			gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].green = 0.33f;
 			gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].blue = 0.36f;
+			gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].coloredID = GRAY_STONE_ID;
 			
 			if (((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 			{
@@ -463,14 +457,13 @@ static void secondTileLayerAnimation(SDL_Window *window)
 	// Color the tiles gray
 	if (gTileLayerStates[1].colorIndex != -1 && gTileLayerStates[1].animationTimer > BEGIN_TILE_LAYER_ANIMATION)
 	{
-		if (gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].red == gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].d_red		&&
-			gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].green == gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].d_green	&&
-			gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].blue == gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].d_blue)
+		if (gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].coloredID == NO_CHARACTER)
 		{
 			// RGB { 0.31, 0.33, 0.36 } == Grayish color
 			gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].red = 0.31f;
 			gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].green = 0.33f;
 			gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].blue = 0.36f;
+			gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].coloredID = GRAY_STONE_ID;
 			
 			if (((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 			{
@@ -544,6 +537,7 @@ void recoverDestroyedTile(int tileIndex)
 	gTiles[tileIndex].z = TILE_ALIVE_Z;
 	gTiles[tileIndex].state = SDL_TRUE;
 	gTiles[tileIndex].recovery_timer = 0;
+	gTiles[tileIndex].coloredID = NO_CHARACTER;
 }
 
 /* To activate a recovery of a tile, set its recover_timer to a value greater than 0 */
@@ -718,19 +712,19 @@ static void killCharacter(Input *characterInput, double timeDelta)
 			
 			// who killed me?
 			Character *killer = NULL;
-			if (fabs(gTiles[location].red - gRedRover.weap->red) < 0.00001)
+			if (gTiles[location].coloredID == RED_ROVER)
 			{
 				killer = &gRedRover;
 			}
-			else if (fabs(gTiles[location].red - gPinkBubbleGum.weap->red) < 0.00001)
+			else if (gTiles[location].coloredID == PINK_BUBBLE_GUM)
 			{
 				killer = &gPinkBubbleGum;
 			}
-			else if (fabs(gTiles[location].red - gBlueLightning.weap->red) < 0.00001)
+			else if (gTiles[location].coloredID == BLUE_LIGHTNING)
 			{
 				killer = &gBlueLightning;
 			}
-			else if (fabs(gTiles[location].red - gGreenTree.weap->red) < 0.00001)
+			else if (gTiles[location].coloredID == GREEN_TREE)
 			{
 				killer = &gGreenTree;
 			}

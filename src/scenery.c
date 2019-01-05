@@ -38,6 +38,7 @@ void loadTiles(void)
 		gTiles[tileIndex].state = SDL_TRUE;
 		gTiles[tileIndex].recovery_timer = 0;
 		gTiles[tileIndex].isDead = SDL_FALSE;
+		gTiles[tileIndex].coloredID = NO_CHARACTER;
 	}
 	
 	loadTileLocations();
@@ -104,7 +105,7 @@ SDL_bool availableTile(float x, float y)
 	if (gTiles[tile_loc].z < TILE_ALIVE_Z)
 		return SDL_FALSE;
 	
-	if (gTiles[tile_loc].red != gTiles[tile_loc].d_red || gTiles[tile_loc].blue != gTiles[tile_loc].d_blue || gTiles[tile_loc].d_green != gTiles[tile_loc].d_green)
+	if (gTiles[tile_loc].coloredID != NO_CHARACTER)
 		return SDL_FALSE;
 	
 	if (getTileIndexLocation((int)gRedRover.x, (int)gRedRover.y) == tile_loc)

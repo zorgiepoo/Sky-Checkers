@@ -222,6 +222,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					gTiles[tileIndex].red = character->weap->red;
 					gTiles[tileIndex].green = character->weap->green;
 					gTiles[tileIndex].blue = character->weap->blue;
+					gTiles[tileIndex].coloredID = characterID;
 					
 					break;
 				}

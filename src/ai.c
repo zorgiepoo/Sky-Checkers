@@ -114,7 +114,7 @@ static void directCharacterBasedOnCollisions(Character *character, int currentTi
 	if (tileLocation >= 0 && tileLocation < NUMBER_OF_TILES)
 	{
 		// gray color red == 0.31
-		if (fabs(gTiles[tileLocation].red - 0.31f) < 0.00001f)
+		if (gTiles[tileLocation].coloredID == GRAY_STONE_ID)
 		{
 			int row = rowOfCharacter(character);
 			int column = columnOfCharacter(character);
@@ -176,7 +176,7 @@ static void shootWeaponProjectile(Character *character, int currentTime)
 	}
 	
 	// AI should be worrying about escaping from the falling gray stones
-	if (fabs(gTiles[tileIndex].red - 0.31) < 0.00001)
+	if (gTiles[tileIndex].coloredID == GRAY_STONE_ID)
 	{
 		return;
 	}

@@ -100,7 +100,7 @@ SDL_bool characterIsOutOfBounds(int direction, Character *character)
 	
 	int nextTileIndex;
 	
-	if (direction == LEFT && ((nextTileIndex = leftTileIndex(index)) == -1 || gTiles[nextTileIndex].state == SDL_FALSE || gTiles[nextTileIndex].isDead || fabs(gTiles[nextTileIndex].red - character->weap->red) < 0.00001f))
+	if (direction == LEFT && ((nextTileIndex = leftTileIndex(index)) == -1 || !gTiles[nextTileIndex].state || gTiles[nextTileIndex].isDead || gTiles[nextTileIndex].coloredID == IDOfCharacter(character)))
 	{
 		/*
 		 * We know that the current tile's left tile is destroyed, but we only have access to the current tile.
@@ -113,21 +113,21 @@ SDL_bool characterIsOutOfBounds(int direction, Character *character)
 			return SDL_FALSE;
 	}
 	
-	else if (direction == RIGHT && ((nextTileIndex = rightTileIndex(index)) == -1 || gTiles[nextTileIndex].state == SDL_FALSE || gTiles[nextTileIndex].isDead || fabs(gTiles[nextTileIndex].red - character->weap->red) < 0.00001f))
+	else if (direction == RIGHT && ((nextTileIndex = rightTileIndex(index)) == -1 || !gTiles[nextTileIndex].state || gTiles[nextTileIndex].isDead || gTiles[nextTileIndex].coloredID == IDOfCharacter(character)))
 	{
 		
 		if (character->x > (gTiles[index].x + 7.0f) + 0.7f)
 			return SDL_FALSE;
 	}
 	
-	else if (direction == DOWN && ((nextTileIndex = downTileIndex(index)) == -1 || gTiles[nextTileIndex].state == SDL_FALSE || gTiles[nextTileIndex].isDead || fabs(gTiles[nextTileIndex].red - character->weap->red) < 0.00001f))
+	else if (direction == DOWN && ((nextTileIndex = downTileIndex(index)) == -1 || !gTiles[nextTileIndex].state || gTiles[nextTileIndex].isDead || gTiles[nextTileIndex].coloredID == IDOfCharacter(character)))
 	{
 		
 		if (character->y < ((gTiles[index].y - 18.5f) + 6.0f) - 0.7f)
 			return SDL_FALSE;
 	}
 	
-	else if (direction == UP && ((nextTileIndex = upTileIndex(index)) == -1 || gTiles[nextTileIndex].state == SDL_FALSE || gTiles[nextTileIndex].isDead || fabs(gTiles[nextTileIndex].red - character->weap->red) < 0.00001f))
+	else if (direction == UP && ((nextTileIndex = upTileIndex(index)) == -1 || !gTiles[nextTileIndex].state || gTiles[nextTileIndex].isDead || gTiles[nextTileIndex].coloredID == IDOfCharacter(character)))
 	{
 		
 		if (character->y > ((gTiles[index].y - 18.5f) + 6.0f) + 0.7f)

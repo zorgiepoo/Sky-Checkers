@@ -26,6 +26,8 @@
 #define TILE_TERMINATING_Z -105.0f
 #define NUMBER_OF_TILES 64
 
+#define GRAY_STONE_ID 5
+
 typedef struct _tile
 {
 	float x;
@@ -34,6 +36,9 @@ typedef struct _tile
 	float red, green, blue;
 	// default colors
 	float d_red, d_green, d_blue;
+	
+	// ID of character that colored tile or GRAY_STONE_ID
+	int coloredID;
 	
 	SDL_bool state;
 	SDL_bool isDead;
