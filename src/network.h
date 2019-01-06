@@ -37,39 +37,6 @@ typedef struct
 
 #define CHARACTER_MOVEMENTS_CAPACITY 20
 
-typedef struct
-{
-	// Only writable before threads are created
-	int type;
-	int socket;
-	
-	// Writable & readable from main thread only
-	Character *character;
-	uint32_t numberOfPlayersToWaitFor;
-	
-	// Writable before thread is created or during creation
-	// Only used from main thread
-	SDL_Thread *thread;
-	
-	// Below is the stuff only applicable to client
-	
-	// Only writable before client thread is created
-	struct sockaddr_in hostAddress;
-	// Writable & readable from main thread only
-	int characterLives;
-	
-	// Keeping track of client half-ping
-	// Only readable/writable from main thread
-	uint32_t averageIncomingMovementMessageTime;
-	uint32_t incomingMovementMessageTimes[10];
-	uint32_t incomingMovementMessageTimeIndex;
-	
-	// Keeping track of past character movements
-	// Only used by client currently and only readable/writable from main thread
-	CharacterMovement characterMovements[4][CHARACTER_MOVEMENTS_CAPACITY];
-	uint32_t characterMovementCounts[4];
-} NetworkConnection;
-
 typedef enum
 {
 	QUIT_MESSAGE_TYPE = 0,
@@ -194,6 +161,7 @@ typedef struct
 	MessageType type;
 	uint64_t packetNumber;
 	int addressIndex;
+	uint32_t ticks;
 	union
 	{
 		CharacterMovementRequest movementRequest;
@@ -226,6 +194,45 @@ typedef struct
 	uint32_t capacity;
 	SDL_mutex *mutex;
 } GameMessageArray;
+
+typedef struct
+{
+	// Only writable before threads are created
+	int type;
+	int socket;
+	
+	// Writable & readable from main thread only
+	Character *character;
+	uint32_t numberOfPlayersToWaitFor;
+	
+	// Writable before thread is created or during creation
+	// Only used from main thread
+	SDL_Thread *thread;
+	
+	// Below is the stuff only applicable to client
+	
+	// Only writable before client thread is created
+	struct sockaddr_in hostAddress;
+	// Writable & readable from main thread only
+	int characterLives;
+	
+	// Keeping track of client half-ping
+	// Only readable/writable from main thread
+	uint32_t averageIncomingMovementMessageTime;
+	uint32_t incomingMovementMessageTimes[10];
+	uint32_t incomingMovementMessageTimeIndex;
+	
+	// Keeping track of past character movements
+	// Only used by client currently and only readable/writable from main thread
+	CharacterMovement characterMovements[4][CHARACTER_MOVEMENTS_CAPACITY];
+	uint32_t characterMovementCounts[4];
+	
+	// Keeping track of past character trigger messages
+	GameMessage *characterTriggerMessages;
+	uint32_t characterTriggerMessagesCount;
+	uint32_t characterTriggerMessagesCapacity;
+} NetworkConnection;
+
 
 // For the server.. This should be initialized to zero before creating the server thread.
 int gCurrentSlot;

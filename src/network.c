@@ -176,6 +176,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					
 					SDL_Thread *thread = gNetworkConnection->thread;
 					
+					free(gNetworkConnection->characterTriggerMessages);
 					free(gNetworkConnection);
 					gNetworkConnection = NULL;
 					
@@ -200,16 +201,6 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					
 					break;
 				}
-				case CHARACTER_FIRED_UPDATE_MESSAGE_TYPE:
-				{
-					int characterID = message.firedUpdate.characterID;
-					Character *character = getCharacter(characterID);
-					
-					character->pointing_direction = message.firedUpdate.direction;
-					prepareFiringCharacterWeapon(character, message.firedUpdate.x, message.firedUpdate.y);
-					
-					break;
-				}
 				case CHARACTER_FIRED_REQUEST_MESSAGE_TYPE:
 				{
 					int characterID = message.firedUpdate.characterID;
@@ -218,43 +209,48 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					
 					break;
 				}
+				case CHARACTER_FIRED_UPDATE_MESSAGE_TYPE:
+				case TILE_FALLING_DOWN_MESSAGE_TYPE:
+				case RECOVER_TILE_MESSAGE_TYPE:
 				case COLOR_TILE_MESSAGE_TYPE:
 				{
-					int characterID = message.colorTile.characterID;
-					int tileIndex = message.colorTile.tileIndex;
-					Character *character = getCharacter(characterID);
-					
-					gTiles[tileIndex].red = character->weap->red;
-					gTiles[tileIndex].green = character->weap->green;
-					gTiles[tileIndex].blue = character->weap->blue;
-					gTiles[tileIndex].coloredID = characterID;
-					
-					break;
-				}
-				case TILE_FALLING_DOWN_MESSAGE_TYPE:
-				{
-					int tileIndex = message.fallingTile.tileIndex;
-					if (message.fallingTile.dead)
+					if (!gGameShouldReset && gNetworkConnection != NULL)
 					{
-						gTiles[tileIndex].isDead = SDL_TRUE;
+						if (gNetworkConnection->characterTriggerMessages == NULL)
+						{
+							gNetworkConnection->characterTriggerMessagesCapacity = 64;
+							gNetworkConnection->characterTriggerMessagesCount = 0;
+							
+							gNetworkConnection->characterTriggerMessages = malloc(sizeof(*gNetworkConnection->characterTriggerMessages) * gNetworkConnection->characterTriggerMessagesCapacity);
+						}
+						
+						message.ticks = SDL_GetTicks() - gNetworkConnection->averageIncomingMovementMessageTime;
+						
+						SDL_bool foundReusableMessage = SDL_FALSE;
+						for (uint32_t messageIndex = 0; messageIndex < gNetworkConnection->characterTriggerMessagesCount; messageIndex++)
+						{
+							if (gNetworkConnection->characterTriggerMessages[messageIndex].ticks == 0)
+							{
+								// Found a message we can reuse
+								gNetworkConnection->characterTriggerMessages[messageIndex] = message;
+								foundReusableMessage = SDL_TRUE;
+								break;
+							}
+						}
+						
+						if (!foundReusableMessage)
+						{
+							if (gNetworkConnection->characterTriggerMessagesCount >= gNetworkConnection->characterTriggerMessagesCapacity)
+							{
+								gNetworkConnection->characterTriggerMessagesCapacity = (uint32_t)(gNetworkConnection->characterTriggerMessagesCapacity * 1.6f);
+								gNetworkConnection->characterTriggerMessages = realloc(gNetworkConnection->characterTriggerMessages, gNetworkConnection->characterTriggerMessagesCapacity * sizeof(*gNetworkConnection->characterTriggerMessages));
+							}
+							
+							gNetworkConnection->characterTriggerMessages[gNetworkConnection->characterTriggerMessagesCount] = message;
+							
+							gNetworkConnection->characterTriggerMessagesCount++;
+						}
 					}
-					else
-					{
-						gTiles[tileIndex].state = SDL_FALSE;
-					}
-					
-					gTiles[tileIndex].z -= OBJECT_FALLING_STEP;
-					
-					if (((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
-					{
-						playTileFallingSound();
-					}
-					
-					break;
-				}
-				case RECOVER_TILE_MESSAGE_TYPE:
-				{
-					recoverDestroyedTile(message.recoverTile.tileIndex);
 					
 					break;
 				}
@@ -374,6 +370,8 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					memset(gNetworkConnection->characterMovements, 0, sizeof(gNetworkConnection->characterMovements));
 					memset(gNetworkConnection->characterMovementCounts, 0, sizeof(gNetworkConnection->characterMovementCounts));
 					
+					gNetworkConnection->characterTriggerMessagesCount = 0;
+					
 					break;
 				case FIRST_SERVER_RESPONSE_MESSAGE_TYPE:
 				{
@@ -450,6 +448,60 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 		if (currentTime > 0)
 		{
 			uint32_t renderTime = currentTime - (uint32_t)(3 * gNetworkConnection->averageIncomingMovementMessageTime);
+			
+			for (uint32_t triggerMessageIndex = 0; triggerMessageIndex < gNetworkConnection->characterTriggerMessagesCount; triggerMessageIndex++)
+			{
+				GameMessage *message = &gNetworkConnection->characterTriggerMessages[triggerMessageIndex];
+				if (message->ticks != 0 && renderTime >= message->ticks)
+				{
+					if (message->type == CHARACTER_FIRED_UPDATE_MESSAGE_TYPE)
+					{
+						int characterID = message->firedUpdate.characterID;
+						Character *character = getCharacter(characterID);
+						
+						character->pointing_direction = message->firedUpdate.direction;
+						prepareFiringCharacterWeapon(character, message->firedUpdate.x, message->firedUpdate.y);
+					}
+					else if (message->type == COLOR_TILE_MESSAGE_TYPE)
+					{
+						int characterID = message->colorTile.characterID;
+						int tileIndex = message->colorTile.tileIndex;
+						Character *character = getCharacter(characterID);
+						
+						gTiles[tileIndex].red = character->weap->red;
+						gTiles[tileIndex].green = character->weap->green;
+						gTiles[tileIndex].blue = character->weap->blue;
+						gTiles[tileIndex].coloredID = characterID;
+					}
+					else if (message->type == TILE_FALLING_DOWN_MESSAGE_TYPE)
+					{
+						int tileIndex = message->fallingTile.tileIndex;
+						if (message->fallingTile.dead)
+						{
+							gTiles[tileIndex].isDead = SDL_TRUE;
+						}
+						else
+						{
+							gTiles[tileIndex].state = SDL_FALSE;
+						}
+						
+						gTiles[tileIndex].z -= OBJECT_FALLING_STEP;
+						
+						if (((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
+						{
+							playTileFallingSound();
+						}
+					}
+					else if (message->type == RECOVER_TILE_MESSAGE_TYPE)
+					{
+						recoverDestroyedTile(message->recoverTile.tileIndex);
+					}
+					
+					// Mark message as already visited
+					message->ticks = 0;
+				}
+			}
+			
 			for (int characterID = RED_ROVER; characterID <= PINK_BUBBLE_GUM; characterID++)
 			{
 				int characterIndex = characterID - 1;
