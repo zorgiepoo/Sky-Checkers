@@ -36,6 +36,21 @@ static SDL_mutex *gCurrentSlotMutex;
 static void pushNetworkMessage(GameMessageArray *messageArray, GameMessage message);
 static void depleteNetworkMessages(GameMessageArray *messageArray);
 
+static void clearPredictedColors(int characterID)
+{
+	for (int tileIndex = 0; tileIndex < NUMBER_OF_TILES; tileIndex++)
+	{
+		if (gTiles[tileIndex].predictedColorID == characterID)
+		{
+			if (gTiles[tileIndex].coloredID == NO_CHARACTER)
+			{
+				restoreDefaultTileColor(tileIndex);
+			}
+			gTiles[tileIndex].predictedColorID = NO_CHARACTER;
+		}
+	}
+}
+
 void setPredictedDirection(Character *character, int direction)
 {
 	character->predictedDirection = direction;
@@ -275,6 +290,8 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					character->lives = message.diedUpdate.characterLives;
 					
 					prepareCharactersDeath(character);
+					clearPredictedColors(message.diedUpdate.characterID);
+					
 					decideWhetherToMakeAPlayerAWinner(character);
 					break;
 				}
@@ -471,14 +488,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 						
 						if (!clearedPredictedColors && character == gNetworkConnection->character)
 						{
-							for (int tileIndex = 0; tileIndex < NUMBER_OF_TILES; tileIndex++)
-							{
-								if (gTiles[tileIndex].predictedColorID == characterID)
-								{
-									restoreDefaultTileColor(tileIndex);
-									gTiles[tileIndex].predictedColorID = NO_CHARACTER;
-								}
-							}
+							clearPredictedColors(characterID);
 							clearedPredictedColors = SDL_TRUE;
 						}
 						
