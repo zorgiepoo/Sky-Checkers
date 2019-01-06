@@ -708,7 +708,7 @@ void fireCharacterWeapon(Character *character)
 						message.firedUpdate.y = character->y;
 						message.firedUpdate.direction = character->pointing_direction;
 						
-						sendToClients(0, &message);
+						sendToClients(message.firedUpdate.characterID, &message);
 					}
 					else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE && gNetworkConnection->character == character)
 					{
@@ -733,12 +733,6 @@ void fireCharacterWeapon(Character *character)
 
 void prepareFiringCharacterWeapon(Character *character, float x, float y)
 {
-	// If the weapon is already being fired this way, do nothing
-	if (character->weap->animationState && getTileIndexLocation(x, y) == getTileIndexLocation(character->weap->initialX, character->weap->initialY) && character->pointing_direction == character->weap->direction)
-	{
-		return;
-	}
-	
 	// don't bind the z value
 	character->weap->x = x;
 	character->weap->y = y;
