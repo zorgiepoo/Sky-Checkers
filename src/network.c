@@ -60,26 +60,31 @@ static void interpolateCharacter(Character *character, CharacterMovement *previo
 		
 		SDL_bool checkDiscrepancy = SDL_TRUE;
 		// Alter the previous movement to our prediction
-		if (character->predictedDirectionTime > 0 && character->predictedDirectionTime >= previousMovement->ticks)
+		if (character->predictedDirectionTime > 0)
 		{
-			previousMovement->direction = character->predictedDirection;
-			if (character->predictedDirection != NO_DIRECTION)
-			{
-				previousMovement->pointing_direction = character->predictedDirection;
-			}
-			else
-			{
-				previousMovement->pointing_direction = character->pointing_direction;
-			}
+			uint32_t predictionTimeWithErrorMargin = character->predictedDirectionTime + gNetworkConnection->averageIncomingMovementMessageTime * 3;
 			
-			character->movementConsumedCounter = 0;
-			
-			if (character->predictedDirectionTime < nextMovement->ticks)
+			if (predictionTimeWithErrorMargin >= previousMovement->ticks)
 			{
-				character->predictedDirectionTime = 0;
+				previousMovement->direction = character->predictedDirection;
+				if (character->predictedDirection != NO_DIRECTION)
+				{
+					previousMovement->pointing_direction = character->predictedDirection;
+				}
+				else
+				{
+					previousMovement->pointing_direction = character->pointing_direction;
+				}
+				
+				character->movementConsumedCounter = 0;
+				
+				if (predictionTimeWithErrorMargin < nextMovement->ticks)
+				{
+					character->predictedDirectionTime = 0;
+				}
+				
+				checkDiscrepancy = SDL_FALSE;
 			}
-			
-			checkDiscrepancy = SDL_FALSE;
 		}
 		
 		if (characterShouldBeAlive != characterAlive)
