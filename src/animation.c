@@ -77,6 +77,8 @@ static void recoverDestroyedTiles(void);
 static void killCharacter(Input *characterInput, double timeDelta);
 static void recoverCharacter(Character *player);
 
+static void sendPing(void);
+
 void animate(SDL_Window *window, double timeDelta)
 {
 	gSecondTimer += timeDelta;
@@ -167,6 +169,8 @@ void animate(SDL_Window *window, double timeDelta)
 	
 	collapseTiles(timeDelta);
 	
+	sendPing();
+	
 	// Trigger events based on time elapsed
 	gTimeElapsedAccumulator += timeDelta;
 	while (gTimeElapsedAccumulator - ANIMATION_TIME_ELAPSED_INTERVAL >= 0.0)
@@ -187,6 +191,20 @@ void animate(SDL_Window *window, double timeDelta)
 		recoverCharacter(&gBlueLightning);
 		
 		gTimeElapsedAccumulator -= ANIMATION_TIME_ELAPSED_INTERVAL;
+	}
+}
+
+static void sendPing(void)
+{
+	if (gNetworkConnection)
+	{
+		if (gNetworkConnection->type == NETWORK_CLIENT_TYPE)
+		{
+			GameMessage message;
+			message.type = PING_MESSAGE_TYPE;
+			message.pingTimestamp = SDL_GetTicks();
+			sendToServer(message);
+		}
 	}
 }
 

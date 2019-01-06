@@ -60,7 +60,6 @@ typedef struct
 	
 	// Keeping track of client half-ping
 	// Only readable/writable from main thread
-	uint32_t lastMovementMessageTime;
 	uint32_t averageIncomingMovementMessageTime;
 	uint32_t incomingMovementMessageTimes[10];
 	uint32_t incomingMovementMessageTimeIndex;
@@ -92,7 +91,9 @@ typedef enum
 	ACK_MESSAGE_TYPE = 16,
 	COLOR_TILE_MESSAGE_TYPE = 17,
 	TILE_FALLING_DOWN_MESSAGE_TYPE = 18,
-	RECOVER_TILE_MESSAGE_TYPE = 19
+	RECOVER_TILE_MESSAGE_TYPE = 19,
+	PING_MESSAGE_TYPE = 20,
+	PONG_MESSAGE_TYPE = 21
 } MessageType;
 
 typedef struct
@@ -210,6 +211,8 @@ typedef struct
 		ColorTileMessage colorTile;
 		FallingTileMessage fallingTile;
 		RecoverTileMessage recoverTile;
+		uint32_t pingTimestamp;
+		uint32_t pongTimestamp;
 		
 		uint32_t numberOfWaitingPlayers;
 		int32_t gameStartNumber;
