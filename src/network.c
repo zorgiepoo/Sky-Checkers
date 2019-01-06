@@ -449,6 +449,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 		{
 			uint32_t renderTime = currentTime - (uint32_t)(3 * gNetworkConnection->averageIncomingMovementMessageTime);
 			
+			SDL_bool clearedPredictedColors = SDL_FALSE;
 			for (uint32_t triggerMessageIndex = 0; triggerMessageIndex < gNetworkConnection->characterTriggerMessagesCount; triggerMessageIndex++)
 			{
 				GameMessage *message = &gNetworkConnection->characterTriggerMessages[triggerMessageIndex];
@@ -467,6 +468,19 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 						int characterID = message->colorTile.characterID;
 						int tileIndex = message->colorTile.tileIndex;
 						Character *character = getCharacter(characterID);
+						
+						if (!clearedPredictedColors && character == gNetworkConnection->character)
+						{
+							for (int tileIndex = 0; tileIndex < NUMBER_OF_TILES; tileIndex++)
+							{
+								if (gTiles[tileIndex].predictedColorID == characterID)
+								{
+									restoreDefaultTileColor(tileIndex);
+									gTiles[tileIndex].predictedColorID = NO_CHARACTER;
+								}
+							}
+							clearedPredictedColors = SDL_TRUE;
+						}
 						
 						gTiles[tileIndex].red = character->weap->red;
 						gTiles[tileIndex].green = character->weap->green;

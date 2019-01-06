@@ -37,6 +37,8 @@ typedef struct
 	
 	// ID of character that colored tile or GRAY_STONE_ID
 	int coloredID;
+	// Same as above but used by client prediction for netcode
+	int predictedColorID;
 	
 	SDL_bool state;
 	SDL_bool isDead;

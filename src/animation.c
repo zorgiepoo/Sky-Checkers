@@ -220,16 +220,28 @@ static void colorTile(int tileIndex, Character *character)
 		gTiles[tileIndex].red = weap->red;
 		gTiles[tileIndex].blue = weap->blue;
 		gTiles[tileIndex].green = weap->green;
-		gTiles[tileIndex].coloredID = IDOfCharacter(character);
 		
-		if (gNetworkConnection && gNetworkConnection->type == NETWORK_SERVER_TYPE)
+		if (gNetworkConnection != NULL)
 		{
-			GameMessage message;
-			message.type = COLOR_TILE_MESSAGE_TYPE;
-			message.colorTile.characterID = IDOfCharacter(character);
-			message.colorTile.tileIndex = tileIndex;
-			
-			sendToClients(0, &message);
+			if (gNetworkConnection->type == NETWORK_SERVER_TYPE)
+			{
+				gTiles[tileIndex].coloredID = IDOfCharacter(character);
+				
+				GameMessage message;
+				message.type = COLOR_TILE_MESSAGE_TYPE;
+				message.colorTile.characterID = IDOfCharacter(character);
+				message.colorTile.tileIndex = tileIndex;
+				
+				sendToClients(0, &message);
+			}
+			else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE)
+			{
+				gTiles[tileIndex].predictedColorID = IDOfCharacter(character);
+			}
+		}
+		else
+		{
+			gTiles[tileIndex].coloredID = IDOfCharacter(character);
 		}
 	}
 }
@@ -268,7 +280,7 @@ static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player)
 		player->animation_timer++;
 		
 		/* First, color the tiles that are going to be destroyed */
-		if (!player->coloredTiles && (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE))
+		if (!player->coloredTiles)
 		{
 			// Get the location of where the player fired their weapon
 			int tileLocation = getTileIndexLocation((int)player->weap->initialX, (int)player->weap->initialY);

@@ -36,6 +36,7 @@ void loadTiles(void)
 		gTiles[tileIndex].recovery_timer = 0;
 		gTiles[tileIndex].isDead = SDL_FALSE;
 		gTiles[tileIndex].coloredID = NO_CHARACTER;
+		gTiles[tileIndex].predictedColorID = NO_CHARACTER;
 		
 		int rowIndex = tileIndex / 8;
 		int columnIndex = tileIndex % 8;
