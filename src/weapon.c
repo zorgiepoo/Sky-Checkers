@@ -37,7 +37,7 @@ void initWeapon(Weapon *weap)
 
 void drawWeapon(Renderer *renderer, Weapon *weap)
 {
-	if (!weap->drawingState)
+	if (!weap->drawingState || !weap->animationState)
 		return;
 	
 	static BufferArrayObject vertexArrayObject;
