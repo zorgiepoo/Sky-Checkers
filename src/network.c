@@ -104,7 +104,7 @@ static void interpolateCharacter(Character *character, CharacterMovement *previo
 					character->movementConsumedCounter++;
 				}
 				
-				if (character->movementConsumedCounter >= 4)
+				if (character->movementConsumedCounter >= 2)
 				{
 					// If the character is too far away, warp them back to a known previous movement
 					// Otherwise interpolate the character to compensate for the difference
@@ -559,7 +559,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 		for (int characterID = RED_ROVER; characterID <= PINK_BUBBLE_GUM; characterID++)
 		{
 			Character *character = getCharacter(characterID);
-			float displacementAdjustment = timeDelta * INITIAL_CHARACTER_SPEED / 64.0f;
+			float displacementAdjustment = timeDelta * INITIAL_CHARACTER_SPEED / 16.0f;
 			
 			if (fabsf(character->xDiscrepancy) < displacementAdjustment)
 			{
