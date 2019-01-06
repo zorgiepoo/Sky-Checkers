@@ -736,7 +736,13 @@ void fireCharacterWeapon(Character *character)
 
 void prepareFiringCharacterWeapon(Character *character, float x, float y)
 {
-	// don't bind z coordinate value
+	// If the weapon is already being fired this way, do nothing
+	if (character->weap->animationState && getTileIndexLocation(x, y) == getTileIndexLocation(character->weap->initialX, character->weap->initialY) && character->pointing_direction == character->weap->direction)
+	{
+		return;
+	}
+	
+	// don't bind the z value
 	character->weap->x = x;
 	character->weap->y = y;
 	character->weap->initialX = x;
