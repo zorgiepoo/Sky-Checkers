@@ -453,7 +453,7 @@ void updateCharacterFromAnyInput(void)
 	
 	if (gNetworkConnection->type == NETWORK_CLIENT_TYPE)
 	{
-		if (newDirection != character->direction)
+		if (newDirection != character->direction && character->active)
 		{
 			GameMessage message;
 			message.type = MOVEMENT_REQUEST_MESSAGE_TYPE;
