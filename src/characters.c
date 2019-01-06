@@ -626,9 +626,6 @@ static void sendCharacterMovement(Character *character)
 
 void moveCharacter(Character *character, double timeDelta)
 {
-	if (!character->lives)
-		return;
-	
 	if (character->active)
 	{
 		Character *characterB = NULL;
