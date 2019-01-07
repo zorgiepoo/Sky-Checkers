@@ -63,6 +63,7 @@ int gCharacterNetLives =						5;
 // Fullscreen video state.
 static SDL_bool gConsoleActivated =				SDL_FALSE;
 SDL_bool gDrawFPS =								SDL_FALSE;
+SDL_bool gDrawPings = SDL_FALSE;
 
 static int gGameState;
 
@@ -777,6 +778,69 @@ void drawFramesPerSecond(Renderer *renderer)
 	}
 }
 
+static void drawPings(Renderer *renderer)
+{
+	if (gNetworkConnection != NULL)
+	{
+		double currentTime = SDL_GetTicks() / 1000.0;
+		static double lastPingDisplayTime = -1.0;
+		
+		if (gNetworkConnection->type == NETWORK_CLIENT_TYPE)
+		{
+			static char pingString[256] = {0};
+			
+			Character *character = gNetworkConnection->character;
+			
+			if (character != NULL && gNetworkConnection->serverHalfPing != 0)
+			{
+				mat4_t modelViewMatrix = m4_translation((vec3_t){6.48f, 5.48f, -18.0f});
+				
+				if (lastPingDisplayTime < 0.0 || currentTime - lastPingDisplayTime >= 1.0)
+				{
+					snprintf(pingString, sizeof(pingString), "%u", gNetworkConnection->serverHalfPing * 2);
+					
+					lastPingDisplayTime = currentTime;
+				}
+				
+				int length = strlen(pingString);
+				if (length > 0)
+				{
+					drawString(renderer, modelViewMatrix, (color4_t){character->red, character->green, character->blue, 1.0f}, 0.16f * length, 0.5f, pingString);
+				}
+			}
+		}
+		else if (gNetworkConnection->type == NETWORK_SERVER_TYPE)
+		{
+			static char pingStrings[3][256] = {{0}, {0}, {0}};
+			
+			SDL_bool rebuildStrings = (lastPingDisplayTime < 0.0 || currentTime - lastPingDisplayTime >= 1.0);
+			
+			for (uint32_t pingAddressIndex = 0; pingAddressIndex < 3; pingAddressIndex++)
+			{
+				if (gNetworkConnection->clientHalfPings[pingAddressIndex] != 0)
+				{
+					Character *character = getCharacter(pingAddressIndex + 1);
+					
+					mat4_t modelViewMatrix = m4_translation((vec3_t){6.48f, 5.48f - pingAddressIndex * 1.0f, -18.0f});
+					
+					if (rebuildStrings)
+					{
+						snprintf(pingStrings[pingAddressIndex], sizeof(pingStrings[pingAddressIndex]), "%u", gNetworkConnection->clientHalfPings[pingAddressIndex] * 2);
+						
+						lastPingDisplayTime = currentTime;
+					}
+					
+					int length = strlen(pingStrings[pingAddressIndex]);
+					if (length > 0)
+					{
+						drawString(renderer, modelViewMatrix, (color4_t){character->red, character->green, character->blue, 1.0f}, 0.16f * length, 0.5f, pingStrings[pingAddressIndex]);
+					}
+				}
+			}
+		}
+	}
+}
+
 static void drawScoreboardTextForCharacter(Renderer *renderer, Character *character, mat4_t iconModelViewMatrix)
 {
 	color4_t characterColor = (color4_t){character->red, character->green, character->blue, 0.7f};
@@ -1004,6 +1068,12 @@ static void drawScene(Renderer *renderer)
 		{
 			// FPS renders at z = -18.0f
 			drawFramesPerSecond(renderer);
+		}
+		
+		if (gDrawPings)
+		{
+			// Pings render at z = -18.0f
+			drawPings(renderer);
 		}
 	}
 	else /* if (!gGameState) */

@@ -94,6 +94,7 @@ extern SDL_bool gGameShouldReset;
 extern int gGameWinner;
 extern int32_t gGameStartNumber;
 extern SDL_bool gDrawFPS;
+extern SDL_bool gDrawPings;
 
 extern int gCharacterLives;
 extern int gCharacterNetLives;

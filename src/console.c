@@ -437,7 +437,7 @@ static float setConsoleValue(SDL_bool *errorFlag)
 		strcpy(input, gConsoleString);
 		valueExists = SDL_FALSE;
 		
-		if (strcmp(input, "scc~: game_reset") != 0 && strcmp(input, "scc~: fps") != 0)
+		if (strcmp(input, "scc~: game_reset") != 0 && strcmp(input, "scc~: fps") != 0 && strcmp(input, "scc~: ping") != 0)
 		{
 			*errorFlag = SDL_TRUE;
 			return 0.0;
@@ -800,6 +800,18 @@ static float setConsoleValue(SDL_bool *errorFlag)
 		{
 			gDrawFPS = !gDrawFPS;
 			value = gDrawFPS;
+		}
+	}
+	else if (strcmp(input, "scc~: ping") == 0)
+	{
+		if (valueExists)
+		{
+			gDrawPings = (SDL_bool)value;
+		}
+		else
+		{
+			gDrawPings = !gDrawPings;
+			value = gDrawPings;
 		}
 	}
 	
