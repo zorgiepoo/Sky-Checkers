@@ -357,6 +357,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 						{
 							gNetworkConnection->clientHalfPings[message.addressIndex] = 0;
 						}
+
 					}
 					
 					break;
@@ -1205,37 +1206,40 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							// request movement
 							
 							int characterID = characterIDForClientAddress(&address);
-							int addressIndex = characterID - 1;
-							int direction = 0;
-							uint64_t packetNumber = 0;
-							
-							sscanf(buffer + 2, "%llu %d", &packetNumber, &direction);
-							
-							if (packetNumber == triggerIncomingPacketNumbers[addressIndex] + 1)
+							if (characterID != NO_CHARACTER)
 							{
-								triggerIncomingPacketNumbers[addressIndex]++;
+								int addressIndex = characterID - 1;
+								int direction = 0;
+								uint64_t packetNumber = 0;
 								
-								if (direction == LEFT || direction == RIGHT || direction == UP || direction == DOWN || direction == NO_DIRECTION)
+								sscanf(buffer + 2, "%llu %d", &packetNumber, &direction);
+								
+								if (packetNumber == triggerIncomingPacketNumbers[addressIndex] + 1)
 								{
-									if (characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
+									triggerIncomingPacketNumbers[addressIndex]++;
+									
+									if (direction == LEFT || direction == RIGHT || direction == UP || direction == DOWN || direction == NO_DIRECTION)
 									{
-										GameMessage message;
-										message.type = MOVEMENT_REQUEST_MESSAGE_TYPE;
-										message.addressIndex = addressIndex;
-										message.movementRequest.direction = direction;
-										
-										pushNetworkMessage(&gGameMessagesFromNet, message);
+										if (characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
+										{
+											GameMessage message;
+											message.type = MOVEMENT_REQUEST_MESSAGE_TYPE;
+											message.addressIndex = addressIndex;
+											message.movementRequest.direction = direction;
+											
+											pushNetworkMessage(&gGameMessagesFromNet, message);
+										}
 									}
 								}
-							}
-							
-							if (packetNumber <= triggerIncomingPacketNumbers[addressIndex])
-							{
-								GameMessage ackMessage;
-								ackMessage.type = ACK_MESSAGE_TYPE;
-								ackMessage.packetNumber = packetNumber;
-								ackMessage.addressIndex = addressIndex;
-								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+								
+								if (packetNumber <= triggerIncomingPacketNumbers[addressIndex])
+								{
+									GameMessage ackMessage;
+									ackMessage.type = ACK_MESSAGE_TYPE;
+									ackMessage.packetNumber = packetNumber;
+									ackMessage.addressIndex = addressIndex;
+									pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+								}
 							}
 						}
 						
@@ -1246,29 +1250,32 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							sscanf(buffer + 2, "%llu", &packetNumber);
 							
 							int characterID = characterIDForClientAddress(&address);
-							int addressIndex = characterID - 1;
-							
-							if (packetNumber == triggerIncomingPacketNumbers[addressIndex] + 1)
+							if (characterID != NO_CHARACTER)
 							{
-								triggerIncomingPacketNumbers[addressIndex]++;
+								int addressIndex = characterID - 1;
 								
-								if (characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
+								if (packetNumber == triggerIncomingPacketNumbers[addressIndex] + 1)
 								{
-									GameMessage message;
-									message.type = CHARACTER_FIRED_REQUEST_MESSAGE_TYPE;
-									message.firedRequest.characterID = characterID;
+									triggerIncomingPacketNumbers[addressIndex]++;
 									
-									pushNetworkMessage(&gGameMessagesFromNet, message);
+									if (characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
+									{
+										GameMessage message;
+										message.type = CHARACTER_FIRED_REQUEST_MESSAGE_TYPE;
+										message.firedRequest.characterID = characterID;
+										
+										pushNetworkMessage(&gGameMessagesFromNet, message);
+									}
 								}
-							}
-							
-							if (packetNumber <= triggerIncomingPacketNumbers[addressIndex])
-							{
-								GameMessage ackMessage;
-								ackMessage.type = ACK_MESSAGE_TYPE;
-								ackMessage.packetNumber = packetNumber;
-								ackMessage.addressIndex = addressIndex;
-								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+								
+								if (packetNumber <= triggerIncomingPacketNumbers[addressIndex])
+								{
+									GameMessage ackMessage;
+									ackMessage.type = ACK_MESSAGE_TYPE;
+									ackMessage.packetNumber = packetNumber;
+									ackMessage.addressIndex = addressIndex;
+									pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+								}
 							}
 						}
 						
@@ -1277,22 +1284,26 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							uint64_t packetNumber = 0;
 							sscanf(buffer + 2, "%llu", &packetNumber);
 							
-							int addressIndex = characterIDForClientAddress(&address) - 1;
-							
-							SDL_bool foundAck = SDL_FALSE;
-							uint64_t maxPacketCount = receivedAckPacketCount < receivedAckPacketsCapacity ? receivedAckPacketCount : receivedAckPacketsCapacity;
-							for (uint64_t packetIndex = 0; packetIndex < maxPacketCount; packetIndex++)
+							int characterID = characterIDForClientAddress(&address);
+							if (characterID != NO_CHARACTER)
 							{
-								if (packetNumber == receivedAckPacketNumbers[addressIndex][packetIndex])
+								int addressIndex = characterID - 1;
+								
+								SDL_bool foundAck = SDL_FALSE;
+								uint64_t maxPacketCount = receivedAckPacketCount < receivedAckPacketsCapacity ? receivedAckPacketCount : receivedAckPacketsCapacity;
+								for (uint64_t packetIndex = 0; packetIndex < maxPacketCount; packetIndex++)
 								{
-									foundAck = SDL_TRUE;
-									break;
+									if (packetNumber == receivedAckPacketNumbers[addressIndex][packetIndex])
+									{
+										foundAck = SDL_TRUE;
+										break;
+									}
 								}
-							}
-							if (!foundAck)
-							{
-								receivedAckPacketNumbers[addressIndex][receivedAckPacketCount % receivedAckPacketsCapacity] = packetNumber;
-								receivedAckPacketCount++;
+								if (!foundAck)
+								{
+									receivedAckPacketNumbers[addressIndex][receivedAckPacketCount % receivedAckPacketsCapacity] = packetNumber;
+									receivedAckPacketCount++;
+								}
 							}
 						}
 						
@@ -1301,13 +1312,17 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							uint32_t timestamp = 0;
 							sscanf(buffer + 2, "%u", &timestamp);
 							
-							int addressIndex = characterIDForClientAddress(&address) - 1;
-							
-							GameMessage pongMessage;
-							pongMessage.type = PONG_MESSAGE_TYPE;
-							pongMessage.addressIndex = addressIndex;
-							pongMessage.pongTimestamp = timestamp;
-							pushNetworkMessage(&gGameMessagesToNet, pongMessage);
+							int characterID = characterIDForClientAddress(&address);
+							if (characterID != NO_CHARACTER)
+							{
+								int addressIndex = characterID - 1;
+								
+								GameMessage pongMessage;
+								pongMessage.type = PONG_MESSAGE_TYPE;
+								pongMessage.addressIndex = addressIndex;
+								pongMessage.pongTimestamp = timestamp;
+								pushNetworkMessage(&gGameMessagesToNet, pongMessage);
+							}
 						}
 						
 						else if (buffer[0] == 'p' && buffer[1] == 'o')
@@ -1316,13 +1331,17 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							uint32_t timestamp = 0;
 							sscanf(buffer + 2, "%u", &timestamp);
 							
-							int addressIndex = characterIDForClientAddress(&address) - 1;
-							
-							GameMessage message;
-							message.type = PONG_MESSAGE_TYPE;
-							message.addressIndex = addressIndex;
-							message.pongTimestamp = timestamp;
-							pushNetworkMessage(&gGameMessagesFromNet, message);
+							int characterID = characterIDForClientAddress(&address);
+							if (characterID != NO_CHARACTER)
+							{
+								int addressIndex = characterID - 1;
+								
+								GameMessage message;
+								message.type = PONG_MESSAGE_TYPE;
+								message.addressIndex = addressIndex;
+								message.pongTimestamp = timestamp;
+								pushNetworkMessage(&gGameMessagesFromNet, message);
+							}
 						}
 						
 						else if (buffer[0] == 'q' && buffer[1] == 'u')
@@ -1332,7 +1351,10 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							
 							int characterID = characterIDForClientAddress(&address);
 							
-							sendToClients(characterID, &message);
+							if (characterID != NO_CHARACTER)
+							{
+								sendToClients(characterID, &message);
+							}
 						}
 						
 						buffer += strlen(buffer) + 1;
