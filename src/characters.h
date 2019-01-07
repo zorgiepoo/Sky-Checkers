@@ -56,6 +56,7 @@ extern const int NETWORK_PLAYING_STATE;
 // If you were to use a stop watch, the time it takes for a character to go from one end
 // of the checkerboard to the other end (vertically) is ~3.50-3.60 seconds
 #define INITIAL_CHARACTER_SPEED	4.51977f
+#define INITIAL_RECOVERY_TIME_DELAY (71 * 0.0177)
 
 #define CHARACTER_ALIVE_Z 2.0f
 #define CHARACTER_IS_ALIVE(character) (fabsf((character)->z - CHARACTER_ALIVE_Z) < 0.001f)
@@ -122,7 +123,7 @@ typedef struct _Character
 	 */
 	
 	// weapon animation timer
-	int animation_timer;
+	double animation_timer;
 	// character recovery timer
 	int recovery_timer;
 	// flag that tells us if the character 'colored' a tile
@@ -130,7 +131,7 @@ typedef struct _Character
 	// flag to tell us if we need a tile location in order for us to know which tiles to destroy
 	SDL_bool needTileLoc;
 	// recovery time delay for the tiles
-	int recovery_time_delay;
+	double recovery_time_delay;
 	// the character's location on the checkerboard
 	int player_loc;
 	// a destroyed tile location that we use to find the other destroyed tiles

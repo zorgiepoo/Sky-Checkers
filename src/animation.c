@@ -62,7 +62,7 @@ static double gTimeElapsedAccumulator = 0.0;
 
 static void colorTile(int tileIndex, Character *character);
 
-static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player);
+static void animateTilesAndPlayerRecovery(double timeDelta, SDL_Window *window, Character *player);
 static void moveWeapon(Weapon *weapon, double timeDelta);
 
 static void firstTileLayerAnimation(SDL_Window *window);
@@ -72,7 +72,7 @@ static void loadFirstTileAnimationLayer(void);
 static void loadSecondTileAnimationLayer(void);
 
 static void collapseTiles(double timeDelta);
-static void recoverDestroyedTiles(void);
+static void recoverDestroyedTiles(double timeDelta);
 
 static void killCharacter(Input *characterInput, double timeDelta);
 static void recoverCharacter(Character *player);
@@ -169,6 +169,13 @@ void animate(SDL_Window *window, double timeDelta)
 	
 	collapseTiles(timeDelta);
 	
+	animateTilesAndPlayerRecovery(timeDelta, window, &gRedRover);
+	animateTilesAndPlayerRecovery(timeDelta, window, &gGreenTree);
+	animateTilesAndPlayerRecovery(timeDelta, window, &gPinkBubbleGum);
+	animateTilesAndPlayerRecovery(timeDelta, window, &gBlueLightning);
+	
+	recoverDestroyedTiles(timeDelta);
+	
 	sendPing();
 	
 	// Trigger events based on time elapsed
@@ -177,13 +184,6 @@ void animate(SDL_Window *window, double timeDelta)
 	{
 		firstTileLayerAnimation(window);
 		secondTileLayerAnimation(window);
-		
-		animateTilesAndPlayerRecovery(window, &gRedRover);
-		animateTilesAndPlayerRecovery(window, &gGreenTree);
-		animateTilesAndPlayerRecovery(window, &gPinkBubbleGum);
-		animateTilesAndPlayerRecovery(window, &gBlueLightning);
-		
-		recoverDestroyedTiles();
 		
 		recoverCharacter(&gRedRover);
 		recoverCharacter(&gGreenTree);
@@ -269,15 +269,19 @@ static void moveWeapon(Weapon *weapon, double timeDelta)
 	}
 }
 
-static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player)
+#define BEGIN_DESTROYING_TILES ((30 + 1) * ANIMATION_TIME_ELAPSED_INTERVAL)
+#define RECOVERY_TIME_DELAY_DELTA (10 * ANIMATION_TIME_ELAPSED_INTERVAL)
+#define CHARACTER_REGAIN_MOVEMENT (25 * ANIMATION_TIME_ELAPSED_INTERVAL)
+#define END_CHARACTER_ANIMATION ((70 + 1) * ANIMATION_TIME_ELAPSED_INTERVAL)
+static void animateTilesAndPlayerRecovery(double timeDelta, SDL_Window *window, Character *player)
 {
 	if (player->weap->animationState)
 	{
-		if (player->animation_timer == 0 && ((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
+		if (player->animation_timer == 0.0 && ((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 		{
 			playShootingSound();
 		}
-		player->animation_timer++;
+		player->animation_timer += timeDelta;
 		
 		/* First, color the tiles that are going to be destroyed */
 		if (!player->coloredTiles)
@@ -324,9 +328,8 @@ static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player)
 		}
 		
 		/* Then when animation_timer reaches BEGIN_DESTROYING_TILES, decrement the colored tile's z value by TILE_FALLING_SPEED, disable the tile's state, enable the tile's recovery_timer, and give the tile a proper recovery time delay */
-		static const int BEGIN_DESTROYING_TILES =		30;
 		
-		if (player->needTileLoc && player->animation_timer > BEGIN_DESTROYING_TILES && player->player_loc != -1)
+		if (player->needTileLoc && player->animation_timer >= BEGIN_DESTROYING_TILES && player->player_loc != -1)
 		{
 			player->destroyedTileIndex = player->player_loc;
 			player->needTileLoc = SDL_FALSE;
@@ -334,8 +337,6 @@ static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player)
 			// no need to draw the weapon anymore
 			player->weap->drawingState = SDL_FALSE;
 		}
-		
-		static const int RECOVERY_TIME_DELAY_DELTA =	10;
 		
 		if (player->destroyedTileIndex != -1 && (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE))
 		{
@@ -381,17 +382,13 @@ static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player)
 			}
 		}
 		
-		static const int CHARACTER_REGAIN_MOVEMENT = 25;
-		
-		if (player->animation_timer == CHARACTER_REGAIN_MOVEMENT)
+		if (player->animation_timer >= CHARACTER_REGAIN_MOVEMENT && CHARACTER_IS_ALIVE(player))
 		{
 			player->active = SDL_TRUE;
 		}
 		
-		static const int END_CHARACTER_ANIMATION = 70;
-			
 		// end the animation
-		if (player->animation_timer > END_CHARACTER_ANIMATION)
+		if (player->animation_timer >= END_CHARACTER_ANIMATION)
 		{
 			player->weap->animationState = SDL_FALSE;
 			player->animation_timer = 0;
@@ -400,11 +397,8 @@ static void animateTilesAndPlayerRecovery(SDL_Window *window, Character *player)
 			player->coloredTiles = SDL_FALSE;
 			player->destroyedTileIndex = -1;
 			player->player_loc = -1;
-			/*
-			 * A character can only destroy 7 tiles at once.
-			 * Setting the recovery_time_delay to 6 * RECOVERY_TIME_DELAY_DELTA + 1 gaurantees that each tile in the list will be activated -- that is, have a recovery_timer value greater than zero.
-			 */
-			player->recovery_time_delay = (6 * RECOVERY_TIME_DELAY_DELTA) + 1;
+			// A character can only destroy 7 tiles at once.
+			player->recovery_time_delay = INITIAL_RECOVERY_TIME_DELAY;
 		}
 	}
 }
@@ -565,11 +559,12 @@ void recoverDestroyedTile(int tileIndex)
 	gTiles[tileIndex].coloredID = NO_CHARACTER;
 	gTiles[tileIndex].z = TILE_ALIVE_Z;
 	gTiles[tileIndex].state = SDL_TRUE;
-	gTiles[tileIndex].recovery_timer = 0;
+	gTiles[tileIndex].recovery_timer = 0.0;
 }
 
 /* To activate a recovery of a tile, set its recover_timer to a value greater than 0 */
-static void recoverDestroyedTiles(void)
+#define TILE_SPAWN_TIME ((200 + 1) * ANIMATION_TIME_ELAPSED_INTERVAL)
+static void recoverDestroyedTiles(double timeDelta)
 {
 	if (gNetworkConnection && gNetworkConnection->type == NETWORK_CLIENT_TYPE)
 	{
@@ -578,15 +573,13 @@ static void recoverDestroyedTiles(void)
 	
 	for (int tileIndex = 0; tileIndex < NUMBER_OF_TILES; tileIndex++)
 	{
-		if (gTiles[tileIndex].recovery_timer > 0)
+		if (gTiles[tileIndex].recovery_timer > 0.0)
 		{
-			gTiles[tileIndex].recovery_timer++;
+			gTiles[tileIndex].recovery_timer += timeDelta;
 		}
 		
-		static const int TILE_SPAWN_TIME = 200;
-		
 		// it's time to recover!
-		if (gTiles[tileIndex].recovery_timer > TILE_SPAWN_TIME && !gTiles[tileIndex].isDead)
+		if (gTiles[tileIndex].recovery_timer >= TILE_SPAWN_TIME && !gTiles[tileIndex].isDead)
 		{
 			recoverDestroyedTile(tileIndex);
 			

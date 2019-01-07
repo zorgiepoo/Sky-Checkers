@@ -43,7 +43,7 @@ typedef struct
 	SDL_bool state;
 	SDL_bool isDead;
 	
-	int recovery_timer;
+	double recovery_timer;
 } Tile;
 
 Tile gTiles[NUMBER_OF_TILES];

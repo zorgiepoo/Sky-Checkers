@@ -84,7 +84,7 @@ void loadCharacter(Character *character)
 	character->animation_timer = 0;
 	character->coloredTiles = SDL_FALSE;
 	character->needTileLoc = SDL_TRUE;
-	character->recovery_time_delay = 71;
+	character->recovery_time_delay = INITIAL_RECOVERY_TIME_DELAY;
 	character->player_loc = -1;
 	character->destroyedTileIndex = -1;
 	
