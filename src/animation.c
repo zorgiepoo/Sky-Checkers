@@ -198,12 +198,17 @@ static void sendPing(void)
 {
 	if (gNetworkConnection)
 	{
+		GameMessage message;
+		message.type = PING_MESSAGE_TYPE;
+		message.pingTimestamp = SDL_GetTicks();
+		
 		if (gNetworkConnection->type == NETWORK_CLIENT_TYPE)
 		{
-			GameMessage message;
-			message.type = PING_MESSAGE_TYPE;
-			message.pingTimestamp = SDL_GetTicks();
 			sendToServer(message);
+		}
+		else if (gNetworkConnection->type == NETWORK_SERVER_TYPE)
+		{
+			sendToClients(0, &message);
 		}
 	}
 }

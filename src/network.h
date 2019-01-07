@@ -209,28 +209,43 @@ typedef struct
 	// Only used from main thread
 	SDL_Thread *thread;
 	
-	// Below is the stuff only applicable to client
-	
-	// Only writable before client thread is created
-	struct sockaddr_in hostAddress;
-	// Writable & readable from main thread only
-	int characterLives;
-	
-	// Keeping track of half-ping from the server
-	// Only readable/writable from main thread
-	uint32_t serverHalfPing;
-	uint32_t recentServerHalfPings[10];
-	uint32_t recentServerHalfPingIndex;
-	
-	// Keeping track of past character movements
-	// Only used by client currently and only readable/writable from main thread
-	CharacterMovement characterMovements[4][CHARACTER_MOVEMENTS_CAPACITY];
-	uint32_t characterMovementCounts[4];
-	
-	// Keeping track of past character trigger messages, only readable/writable from main thread
-	GameMessage *characterTriggerMessages;
-	uint32_t characterTriggerMessagesCount;
-	uint32_t characterTriggerMessagesCapacity;
+	union
+	{
+		// Client state
+		struct
+		{
+			// Only writable before client thread is created
+			struct sockaddr_in hostAddress;
+			// Writable & readable from main thread only
+			int characterLives;
+			
+			// Keeping track of half-ping from the server
+			// Only readable/writable from main thread
+			uint32_t serverHalfPing;
+			uint32_t recentServerHalfPings[10];
+			uint32_t recentServerHalfPingIndex;
+			
+			// Keeping track of past character movements
+			// Only used by client currently and only readable/writable from main thread
+			CharacterMovement characterMovements[4][CHARACTER_MOVEMENTS_CAPACITY];
+			uint32_t characterMovementCounts[4];
+			
+			// Keeping track of past character trigger messages, only readable/writable from main thread
+			GameMessage *characterTriggerMessages;
+			uint32_t characterTriggerMessagesCount;
+			uint32_t characterTriggerMessagesCapacity;
+		};
+		
+		// Server state
+		struct
+		{
+			// Keeping track of half-ping from clients
+			// Only readable/writable from main thread
+			uint32_t clientHalfPings[3];
+			uint32_t recentClientHalfPings[3][10];
+			uint32_t recentClientHalfPingIndices[3];
+		};
+	};
 } NetworkConnection;
 
 

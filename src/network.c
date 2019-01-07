@@ -300,29 +300,63 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					uint32_t currentTicks = SDL_GetTicks();
 					uint32_t halfPingTime = (uint32_t)((currentTicks - message.pongTimestamp) / 2.0f);
 					
-					gNetworkConnection->recentServerHalfPings[gNetworkConnection->recentServerHalfPingIndex % sizeof(gNetworkConnection->recentServerHalfPings) / sizeof(*gNetworkConnection->recentServerHalfPings)] = halfPingTime;
-					
-					gNetworkConnection->recentServerHalfPingIndex++;
-					
-					gNetworkConnection->serverHalfPing = 0;
-					uint32_t count = 0;
-					
-					for (uint32_t index = 0; index < sizeof(gNetworkConnection->recentServerHalfPings) / sizeof(*gNetworkConnection->recentServerHalfPings); index++)
+					if (gNetworkConnection->type == NETWORK_CLIENT_TYPE)
 					{
-						if (gNetworkConnection->recentServerHalfPings[index] != 0)
+						const size_t capacity = sizeof(gNetworkConnection->recentServerHalfPings) / sizeof(*gNetworkConnection->recentServerHalfPings);
+						
+						gNetworkConnection->recentServerHalfPings[gNetworkConnection->recentServerHalfPingIndex % capacity] = halfPingTime;
+						
+						gNetworkConnection->recentServerHalfPingIndex++;
+						
+						gNetworkConnection->serverHalfPing = 0;
+						uint32_t count = 0;
+						
+						for (uint32_t index = 0; index < capacity; index++)
 						{
-							gNetworkConnection->serverHalfPing += gNetworkConnection->recentServerHalfPings[index];
-							count++;
+							if (gNetworkConnection->recentServerHalfPings[index] != 0)
+							{
+								gNetworkConnection->serverHalfPing += gNetworkConnection->recentServerHalfPings[index];
+								count++;
+							}
+						}
+						
+						if (count > 0)
+						{
+							gNetworkConnection->serverHalfPing /= count;
+						}
+						else
+						{
+							gNetworkConnection->serverHalfPing = 0;
 						}
 					}
-					
-					if (count > 0)
+					else if (gNetworkConnection->type == NETWORK_SERVER_TYPE)
 					{
-						gNetworkConnection->serverHalfPing /= count;
-					}
-					else
-					{
-						gNetworkConnection->serverHalfPing = 0;
+						const size_t capacity = sizeof(gNetworkConnection->recentClientHalfPings[0]) / sizeof(*gNetworkConnection->recentClientHalfPings[0]);
+						
+						gNetworkConnection->recentClientHalfPings[message.addressIndex][gNetworkConnection->recentClientHalfPingIndices[message.addressIndex] % capacity] = halfPingTime;
+						
+						gNetworkConnection->recentClientHalfPingIndices[message.addressIndex]++;
+						
+						gNetworkConnection->clientHalfPings[message.addressIndex] = 0;
+						uint32_t count = 0;
+						
+						for (uint32_t index = 0; index < capacity; index++)
+						{
+							if (gNetworkConnection->recentClientHalfPings[message.addressIndex][index] != 0)
+							{
+								gNetworkConnection->clientHalfPings[message.addressIndex] += gNetworkConnection->recentClientHalfPings[message.addressIndex][index];
+								count++;
+							}
+						}
+						
+						if (count > 0)
+						{
+							gNetworkConnection->clientHalfPings[message.addressIndex] /= count;
+						}
+						else
+						{
+							gNetworkConnection->clientHalfPings[message.addressIndex] = 0;
+						}
 					}
 					
 					break;
@@ -682,7 +716,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 				int addressIndex = message.addressIndex;
 				struct sockaddr_in *address = (addressIndex == -1) ? NULL :  &gClientAddress[addressIndex];
 				
-				if (!needsToQuit && message.type != QUIT_MESSAGE_TYPE && message.type != ACK_MESSAGE_TYPE && message.type != FIRST_DATA_TO_CLIENT_MESSAGE_TYPE && message.type != PONG_MESSAGE_TYPE)
+				if (!needsToQuit && message.type != QUIT_MESSAGE_TYPE && message.type != ACK_MESSAGE_TYPE && message.type != FIRST_DATA_TO_CLIENT_MESSAGE_TYPE && message.type != PING_MESSAGE_TYPE && message.type != PONG_MESSAGE_TYPE)
 				{
 					if (message.packetNumber == 0)
 					{
@@ -740,8 +774,6 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 				switch (message.type)
 				{
 					case WELCOME_MESSAGE_TO_SERVER_MESSAGE_TYPE:
-						break;
-					case PING_MESSAGE_TYPE:
 						break;
 					case QUIT_MESSAGE_TYPE:
 					{
@@ -930,6 +962,20 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					case ACK_MESSAGE_TYPE:
 					{
 						int length = snprintf(sendBufferPtrs[addressIndex], 256, "ak%llu", message.packetNumber);
+						
+						sendBufferPtrs[addressIndex] += length + 1;
+						
+						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
+						{
+							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
+							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
+						}
+						
+						break;
+					}
+					case PING_MESSAGE_TYPE:
+					{
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "pi%u", message.pingTimestamp);
 						
 						sendBufferPtrs[addressIndex] += length + 1;
 						
@@ -1264,6 +1310,21 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							pushNetworkMessage(&gGameMessagesToNet, pongMessage);
 						}
 						
+						else if (buffer[0] == 'p' && buffer[1] == 'o')
+						{
+							// pong message
+							uint32_t timestamp = 0;
+							sscanf(buffer + 2, "%u", &timestamp);
+							
+							int addressIndex = characterIDForClientAddress(&address) - 1;
+							
+							GameMessage message;
+							message.type = PONG_MESSAGE_TYPE;
+							message.addressIndex = addressIndex;
+							message.pongTimestamp = timestamp;
+							pushNetworkMessage(&gGameMessagesFromNet, message);
+						}
+						
 						else if (buffer[0] == 'q' && buffer[1] == 'u')
 						{
 							GameMessage message;
@@ -1333,7 +1394,7 @@ int clientNetworkThread(void *context)
 			for (uint32_t messageIndex = 0; messageIndex < messagesCount && !needsToQuit; messageIndex++)
 			{
 				GameMessage message = messagesAvailable[messageIndex];
-				if (message.type != QUIT_MESSAGE_TYPE && message.type != ACK_MESSAGE_TYPE && message.type != PING_MESSAGE_TYPE)
+				if (message.type != QUIT_MESSAGE_TYPE && message.type != ACK_MESSAGE_TYPE && message.type != PING_MESSAGE_TYPE && message.type != PONG_MESSAGE_TYPE)
 				{
 					if (message.packetNumber == 0)
 					{
@@ -1408,6 +1469,20 @@ int clientNetworkThread(void *context)
 						
 						break;
 					}
+					case PONG_MESSAGE_TYPE:
+					{
+						int length = snprintf(sendBufferPtr, 256, "po%u", message.pongTimestamp);
+						
+						sendBufferPtr += length + 1;
+						
+						if ((size_t)(sendBufferPtr - sendBuffer) >= sizeof(sendBuffer) - 256)
+						{
+							sendData(gNetworkConnection->socket, sendBuffer, (size_t)(sendBufferPtr - sendBuffer), &gNetworkConnection->hostAddress);
+							sendBufferPtr = sendBuffer;
+						}
+						
+						break;
+					}
 					case MOVEMENT_REQUEST_MESSAGE_TYPE:
 					{
 						int length = snprintf(sendBufferPtr, 256, "rm%llu %d", message.packetNumber, message.movementRequest.direction);
@@ -1450,8 +1525,6 @@ int clientNetworkThread(void *context)
 						
 						break;
 					}
-					case PONG_MESSAGE_TYPE:
-						break;
 					case COLOR_TILE_MESSAGE_TYPE:
 						break;
 					case TILE_FALLING_DOWN_MESSAGE_TYPE:
@@ -1925,6 +1998,17 @@ int clientNetworkThread(void *context)
 								receivedAckPacketNumbers[receivedAckPacketCount % receivedAckPacketsCapacity] = packetNumber;
 								receivedAckPacketCount++;
 							}
+						}
+						else if (buffer[0] == 'p' && buffer[1] == 'i')
+						{
+							// ping message
+							uint32_t timestamp = 0;
+							sscanf(buffer + 2, "%u", &timestamp);
+							
+							GameMessage pongMessage;
+							pongMessage.type = PONG_MESSAGE_TYPE;
+							pongMessage.pongTimestamp = timestamp;
+							pushNetworkMessage(&gGameMessagesToNet, pongMessage);
 						}
 						else if (buffer[0] == 'p' && buffer[1] == 'o')
 						{
