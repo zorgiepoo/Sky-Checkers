@@ -216,18 +216,18 @@ typedef struct
 	// Writable & readable from main thread only
 	int characterLives;
 	
-	// Keeping track of client half-ping
+	// Keeping track of half-ping from the server
 	// Only readable/writable from main thread
-	uint32_t averageIncomingMovementMessageTime;
-	uint32_t incomingMovementMessageTimes[10];
-	uint32_t incomingMovementMessageTimeIndex;
+	uint32_t serverHalfPing;
+	uint32_t recentServerHalfPings[10];
+	uint32_t recentServerHalfPingIndex;
 	
 	// Keeping track of past character movements
 	// Only used by client currently and only readable/writable from main thread
 	CharacterMovement characterMovements[4][CHARACTER_MOVEMENTS_CAPACITY];
 	uint32_t characterMovementCounts[4];
 	
-	// Keeping track of past character trigger messages
+	// Keeping track of past character trigger messages, only readable/writable from main thread
 	GameMessage *characterTriggerMessages;
 	uint32_t characterTriggerMessagesCount;
 	uint32_t characterTriggerMessagesCapacity;

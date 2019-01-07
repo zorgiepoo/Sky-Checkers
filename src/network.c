@@ -54,7 +54,7 @@ static void clearPredictedColors(int characterID)
 void setPredictedDirection(Character *character, int direction)
 {
 	character->predictedDirection = direction;
-	character->predictedDirectionTime = SDL_GetTicks() + gNetworkConnection->averageIncomingMovementMessageTime;
+	character->predictedDirectionTime = SDL_GetTicks() + gNetworkConnection->serverHalfPing;
 }
 
 // previousMovement->ticks <= renderTime < nextMovement->ticks
@@ -77,7 +77,7 @@ static void interpolateCharacter(Character *character, CharacterMovement *previo
 		// Alter the previous movement to our prediction
 		if (character->predictedDirectionTime > 0)
 		{
-			uint32_t predictionTimeWithErrorMargin = character->predictedDirectionTime + gNetworkConnection->averageIncomingMovementMessageTime * 3;
+			uint32_t predictionTimeWithErrorMargin = character->predictedDirectionTime + gNetworkConnection->serverHalfPing * 3;
 			
 			if (predictionTimeWithErrorMargin >= previousMovement->ticks)
 			{
@@ -239,7 +239,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 							gNetworkConnection->characterTriggerMessages = malloc(sizeof(*gNetworkConnection->characterTriggerMessages) * gNetworkConnection->characterTriggerMessagesCapacity);
 						}
 						
-						message.ticks = SDL_GetTicks() - gNetworkConnection->averageIncomingMovementMessageTime;
+						message.ticks = SDL_GetTicks() - gNetworkConnection->serverHalfPing;
 						
 						SDL_bool foundReusableMessage = SDL_FALSE;
 						for (uint32_t messageIndex = 0; messageIndex < gNetworkConnection->characterTriggerMessagesCount; messageIndex++)
@@ -300,29 +300,29 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					uint32_t currentTicks = SDL_GetTicks();
 					uint32_t halfPingTime = (uint32_t)((currentTicks - message.pongTimestamp) / 2.0f);
 					
-					gNetworkConnection->incomingMovementMessageTimes[gNetworkConnection->incomingMovementMessageTimeIndex % sizeof(gNetworkConnection->incomingMovementMessageTimes) / sizeof(*gNetworkConnection->incomingMovementMessageTimes)] = halfPingTime;
+					gNetworkConnection->recentServerHalfPings[gNetworkConnection->recentServerHalfPingIndex % sizeof(gNetworkConnection->recentServerHalfPings) / sizeof(*gNetworkConnection->recentServerHalfPings)] = halfPingTime;
 					
-					gNetworkConnection->incomingMovementMessageTimeIndex++;
+					gNetworkConnection->recentServerHalfPingIndex++;
 					
-					gNetworkConnection->averageIncomingMovementMessageTime = 0;
+					gNetworkConnection->serverHalfPing = 0;
 					uint32_t count = 0;
 					
-					for (uint32_t index = 0; index < sizeof(gNetworkConnection->incomingMovementMessageTimes) / sizeof(*gNetworkConnection->incomingMovementMessageTimes); index++)
+					for (uint32_t index = 0; index < sizeof(gNetworkConnection->recentServerHalfPings) / sizeof(*gNetworkConnection->recentServerHalfPings); index++)
 					{
-						if (gNetworkConnection->incomingMovementMessageTimes[index] != 0)
+						if (gNetworkConnection->recentServerHalfPings[index] != 0)
 						{
-							gNetworkConnection->averageIncomingMovementMessageTime += gNetworkConnection->incomingMovementMessageTimes[index];
+							gNetworkConnection->serverHalfPing += gNetworkConnection->recentServerHalfPings[index];
 							count++;
 						}
 					}
 					
 					if (count > 0)
 					{
-						gNetworkConnection->averageIncomingMovementMessageTime /= count;
+						gNetworkConnection->serverHalfPing /= count;
 					}
 					else
 					{
-						gNetworkConnection->averageIncomingMovementMessageTime = 0;
+						gNetworkConnection->serverHalfPing = 0;
 					}
 					
 					break;
@@ -331,10 +331,10 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 				{
 					uint32_t currentTicks = SDL_GetTicks();
 					
-					if (!gGameShouldReset && currentTicks >= gNetworkConnection->averageIncomingMovementMessageTime)
+					if (!gGameShouldReset && currentTicks >= gNetworkConnection->serverHalfPing)
 					{
 						SDL_bool shouldSetCharacterPosition = SDL_FALSE;
-						if (gNetworkConnection->averageIncomingMovementMessageTime > 0)
+						if (gNetworkConnection->serverHalfPing > 0)
 						{
 							CharacterMovement newMovement;
 							newMovement.x = message.movedUpdate.x;
@@ -342,7 +342,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 							newMovement.z = message.movedUpdate.z;
 							newMovement.direction = message.movedUpdate.direction;
 							newMovement.pointing_direction = message.movedUpdate.pointing_direction;
-							newMovement.ticks = currentTicks - gNetworkConnection->averageIncomingMovementMessageTime;
+							newMovement.ticks = currentTicks - gNetworkConnection->serverHalfPing;
 							
 							int characterIndex = message.movedUpdate.characterID - 1;
 							
@@ -464,7 +464,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 		uint32_t currentTime = SDL_GetTicks();
 		if (currentTime > 0)
 		{
-			uint32_t renderTime = currentTime - (uint32_t)(3 * gNetworkConnection->averageIncomingMovementMessageTime);
+			uint32_t renderTime = currentTime - (uint32_t)(3 * gNetworkConnection->serverHalfPing);
 			
 			SDL_bool clearedPredictedColors = SDL_FALSE;
 			for (uint32_t triggerMessageIndex = 0; triggerMessageIndex < gNetworkConnection->characterTriggerMessagesCount; triggerMessageIndex++)
