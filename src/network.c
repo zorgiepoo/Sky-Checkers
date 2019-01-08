@@ -220,7 +220,12 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 				{
 					int characterID = message.firedUpdate.characterID;
 					Character *character = getCharacter(characterID);
-					prepareFiringCharacterWeapon(character, character->x, character->y);
+					
+					uint32_t halfPing = gNetworkConnection->clientHalfPings[message.addressIndex];
+					
+					float compensation = (halfPing > 110 ? 110.0f : (float)halfPing) / 1000.0f;
+					
+					prepareFiringCharacterWeapon(character, character->x, character->y, compensation);
 					
 					break;
 				}
@@ -513,7 +518,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 						Character *character = getCharacter(characterID);
 						
 						character->pointing_direction = message->firedUpdate.direction;
-						prepareFiringCharacterWeapon(character, message->firedUpdate.x, message->firedUpdate.y);
+						prepareFiringCharacterWeapon(character, message->firedUpdate.x, message->firedUpdate.y, 0.0f);
 					}
 					else if (message->type == COLOR_TILE_MESSAGE_TYPE)
 					{
@@ -1262,6 +1267,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 									{
 										GameMessage message;
 										message.type = CHARACTER_FIRED_REQUEST_MESSAGE_TYPE;
+										message.addressIndex = addressIndex;
 										message.firedRequest.characterID = characterID;
 										
 										pushNetworkMessage(&gGameMessagesFromNet, message);

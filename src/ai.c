@@ -230,7 +230,7 @@ static int columnOfCharacter(Character *character)
 
 static void fireAIWeapon(Character *character)
 {
-	prepareFiringCharacterWeapon(character, character->x, character->y);
+	prepareFiringCharacterWeapon(character, character->x, character->y, 0.0f);
 }
 
 static void attackCharacterOnRow(Character *character, Character *characterB, int currentTime)

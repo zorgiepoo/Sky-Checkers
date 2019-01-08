@@ -30,6 +30,8 @@ void initWeapon(Weapon *weap)
 	weap->initialX = 0.0f;
 	weap->initialX = 0.0f;
 	
+	weap->compensation = 0.0f;
+	
 	weap->drawingState = SDL_FALSE;
 	weap->animationState = SDL_FALSE;
 	weap->direction = NO_DIRECTION;

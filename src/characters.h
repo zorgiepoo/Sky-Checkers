@@ -175,4 +175,4 @@ void moveCharacter(Character *character, double timeDelta);
 void turnCharacter(Character *character, int direction);
 
 void fireCharacterWeapon(Character *character);
-void prepareFiringCharacterWeapon(Character *character, float x, float y);
+void prepareFiringCharacterWeapon(Character *character, float x, float y, float compensation);

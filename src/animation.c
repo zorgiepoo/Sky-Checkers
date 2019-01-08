@@ -334,7 +334,7 @@ static void animateTilesAndPlayerRecovery(double timeDelta, SDL_Window *window, 
 		
 		/* Then when animation_timer reaches BEGIN_DESTROYING_TILES, decrement the colored tile's z value by TILE_FALLING_SPEED, disable the tile's state, enable the tile's recovery_timer, and give the tile a proper recovery time delay */
 		
-		if (player->needTileLoc && player->animation_timer >= BEGIN_DESTROYING_TILES && player->player_loc != -1)
+		if (player->needTileLoc && player->animation_timer >= (BEGIN_DESTROYING_TILES - player->weap->compensation) && player->player_loc != -1)
 		{
 			player->destroyedTileIndex = player->player_loc;
 			player->needTileLoc = SDL_FALSE;
@@ -387,13 +387,13 @@ static void animateTilesAndPlayerRecovery(double timeDelta, SDL_Window *window, 
 			}
 		}
 		
-		if (player->animation_timer >= CHARACTER_REGAIN_MOVEMENT && CHARACTER_IS_ALIVE(player))
+		if (player->animation_timer >= (CHARACTER_REGAIN_MOVEMENT - player->weap->compensation) && CHARACTER_IS_ALIVE(player))
 		{
 			player->active = SDL_TRUE;
 		}
 		
 		// end the animation
-		if (player->animation_timer >= END_CHARACTER_ANIMATION)
+		if (player->animation_timer >= (END_CHARACTER_ANIMATION - player->weap->compensation))
 		{
 			player->weap->animationState = SDL_FALSE;
 			player->animation_timer = 0;
