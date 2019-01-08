@@ -706,71 +706,73 @@ static void killCharacter(Input *characterInput, double timeDelta)
 	int location = getTileIndexLocation((int)player->x, (int)player->y);
 	
 	// Make the character fall down if the tile is falling down
-	if (location >= 0 && location < NUMBER_OF_TILES && gTiles[location].z < TILE_ALIVE_Z && player->z > CHARACTER_TERMINATING_Z)
+	if (location >= 0 && location < NUMBER_OF_TILES && gTiles[location].z < TILE_ALIVE_Z && CHARACTER_IS_ALIVE(player) && (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE))
 	{
-		if (player->active && !player->weap->animationState && (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE))
+		prepareCharactersDeath(player);
+		
+		/*
+		 * Make sure to turn the character's inputs off.
+		 * This can lead to a potentional bug if we don't in that when the character is recovered, an input may be automatically invoked, especially when dealing with joysticks
+		 */
+		
+		turnInputOff(characterInput);
+		
+		player->time_alive = 0;
+		
+		player->lives--;
+		player->active = SDL_FALSE;
+		
+		if (gNetworkConnection && gNetworkConnection->type == NETWORK_SERVER_TYPE)
 		{
-			prepareCharactersDeath(player);
+			GameMessage message;
+			message.type = CHARACTER_DIED_UPDATE_MESSAGE_TYPE;
+			message.diedUpdate.characterID = IDOfCharacter(player);
+			message.diedUpdate.characterLives = player->lives;
 			
-			/*
-			 * Make sure to turn the character's inputs off.
-			 * This can lead to a potentional bug if we don't in that when the character is recovered, an input may be automatically invoked, especially when dealing with joysticks
-			 */
-			
-			turnInputOff(characterInput);
-			
-			player->time_alive = 0;
-			
-			player->lives--;
-			player->active = SDL_FALSE;
+			sendToClients(0, &message);
+		}
+		
+		decideWhetherToMakeAPlayerAWinner(player);
+		
+		// who killed me?
+		Character *killer = NULL;
+		if (gTiles[location].coloredID == RED_ROVER)
+		{
+			killer = &gRedRover;
+		}
+		else if (gTiles[location].coloredID == PINK_BUBBLE_GUM)
+		{
+			killer = &gPinkBubbleGum;
+		}
+		else if (gTiles[location].coloredID == BLUE_LIGHTNING)
+		{
+			killer = &gBlueLightning;
+		}
+		else if (gTiles[location].coloredID == GREEN_TREE)
+		{
+			killer = &gGreenTree;
+		}
+		
+		if (killer)
+		{
+			(killer->kills)++;
 			
 			if (gNetworkConnection && gNetworkConnection->type == NETWORK_SERVER_TYPE)
 			{
 				GameMessage message;
-				message.type = CHARACTER_DIED_UPDATE_MESSAGE_TYPE;
-				message.diedUpdate.characterID = IDOfCharacter(player);
-				message.diedUpdate.characterLives = player->lives;
+				message.type = CHARACTER_KILLED_UPDATE_MESSAGE_TYPE;
+				message.killedUpdate.characterID = IDOfCharacter(killer);
+				message.killedUpdate.kills = killer->kills;
 				
 				sendToClients(0, &message);
 			}
-			
-			decideWhetherToMakeAPlayerAWinner(player);
-			
-			// who killed me?
-			Character *killer = NULL;
-			if (gTiles[location].coloredID == RED_ROVER)
-			{
-				killer = &gRedRover;
-			}
-			else if (gTiles[location].coloredID == PINK_BUBBLE_GUM)
-			{
-				killer = &gPinkBubbleGum;
-			}
-			else if (gTiles[location].coloredID == BLUE_LIGHTNING)
-			{
-				killer = &gBlueLightning;
-			}
-			else if (gTiles[location].coloredID == GREEN_TREE)
-			{
-				killer = &gGreenTree;
-			}
-			
-			if (killer)
-			{
-				(killer->kills)++;
-				
-				if (gNetworkConnection && gNetworkConnection->type == NETWORK_SERVER_TYPE)
-				{
-					GameMessage message;
-					message.type = CHARACTER_KILLED_UPDATE_MESSAGE_TYPE;
-					message.killedUpdate.characterID = IDOfCharacter(killer);
-					message.killedUpdate.kills = killer->kills;
-					
-					sendToClients(0, &message);
-				}
-			}
 		}
 		
+		player->z -= OBJECT_FALLING_STEP;
+	}
+	
+	if (!CHARACTER_IS_ALIVE(player) && player->z > CHARACTER_TERMINATING_Z)
+	{
 		player->z -= CHARACTER_FALLING_SPEED * timeDelta;
 		player->recovery_timer = 1;
 	}
