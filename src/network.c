@@ -609,7 +609,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 		for (int characterID = RED_ROVER; characterID <= PINK_BUBBLE_GUM; characterID++)
 		{
 			Character *character = getCharacter(characterID);
-			float displacementAdjustment = timeDelta * INITIAL_CHARACTER_SPEED / 16.0f;
+			float displacementAdjustment = timeDelta * INITIAL_CHARACTER_SPEED / 32.0f;
 			
 			if (fabsf(character->xDiscrepancy) < displacementAdjustment)
 			{
