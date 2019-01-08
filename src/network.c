@@ -229,6 +229,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					
 					break;
 				}
+				case CHARACTER_DIED_UPDATE_MESSAGE_TYPE:
 				case CHARACTER_FIRED_UPDATE_MESSAGE_TYPE:
 				case TILE_FALLING_DOWN_MESSAGE_TYPE:
 				case RECOVER_TILE_MESSAGE_TYPE:
@@ -289,17 +290,6 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 				case GAME_START_NUMBER_UPDATE_MESSAGE_TYPE:
 					gGameStartNumber = message.gameStartNumber;
 					break;
-				case CHARACTER_DIED_UPDATE_MESSAGE_TYPE:
-				{
-					Character *character = getCharacter(message.diedUpdate.characterID);
-					character->lives = message.diedUpdate.characterLives;
-					
-					prepareCharactersDeath(character);
-					clearPredictedColors(message.diedUpdate.characterID);
-					
-					decideWhetherToMakeAPlayerAWinner(character);
-					break;
-				}
 				case PONG_MESSAGE_TYPE:
 				{
 					uint32_t currentTicks = SDL_GetTicks();
@@ -559,6 +549,18 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					else if (message->type == RECOVER_TILE_MESSAGE_TYPE)
 					{
 						recoverDestroyedTile(message->recoverTile.tileIndex);
+					}
+					else if (message->type == CHARACTER_DIED_UPDATE_MESSAGE_TYPE)
+					{
+						Character *character = getCharacter(message->diedUpdate.characterID);
+						character->lives = message->diedUpdate.characterLives;
+						
+						prepareCharactersDeath(character);
+						clearPredictedColors(message->diedUpdate.characterID);
+						
+						decideWhetherToMakeAPlayerAWinner(character);
+						
+						character->z -= OBJECT_FALLING_STEP;
 					}
 					
 					// Mark message as already visited
