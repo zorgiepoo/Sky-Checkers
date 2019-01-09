@@ -23,6 +23,59 @@
 
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
+#import <Cocoa/Cocoa.h>
+
+// This class is mostly copied from SDL's SDL_cocoametalview to fit our own needs
+@interface ZGMetalView : NSView
+@end
+
+@implementation ZGMetalView
+
++ (Class)layerClass
+{
+	return NSClassFromString(@"CAMetalLayer");
+}
+
+- (BOOL)wantsUpdateLayer
+{
+	return YES;
+}
+
+- (CALayer*)makeBackingLayer
+{
+	return [self.class.layerClass layer];
+}
+
+- (instancetype)initWithFrame:(NSRect)frame
+{
+	if ((self = [super initWithFrame:frame]))
+	{
+		self.wantsLayer = YES;
+		self.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+		
+		[self updateDrawableSize];
+	}
+	
+	return self;
+}
+
+- (void)updateDrawableSize
+{
+	CAMetalLayer *metalLayer = (CAMetalLayer *)self.layer;
+	CGSize size = self.bounds.size;
+	CGSize backingSize = [self convertSizeToBacking:size];
+	
+	metalLayer.contentsScale = backingSize.height / size.height;
+	metalLayer.drawableSize = backingSize;
+}
+
+- (void)resizeWithOldSuperviewSize:(NSSize)oldSize
+{
+	[super resizeWithOldSuperviewSize:oldSize];
+	[self updateDrawableSize];
+}
+
+@end
 
 // Don't use MTLPixelFormatDepth16Unorm which doesn't support 10.11 and doesn't work right on some configs (MBP11,2 / 10.13.6, but 10.14.2 works)
 #define DEPTH_STENCIL_PIXEL_FORMAT MTLPixelFormatDepth32Float
@@ -213,7 +266,13 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 			return SDL_FALSE;
 		}
 		
-		SDL_SetHint(SDL_HINT_RENDER_DRIVER, "metal");
+		// TODO: Should I iterate through all the devices and pick the 'best' one?
+		id<MTLDevice> device = MTLCreateSystemDefaultDevice();
+		if (device == nil)
+		{
+			fprintf(stderr, "Error: Failed to create metal device!\n");
+			return SDL_FALSE;
+		}
 		
 		renderer->window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags);
 		
@@ -222,51 +281,35 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 			return SDL_FALSE;
 		}
 		
-		SDL_RendererFlags sdlRenderFlags = vsync ? SDL_RENDERER_PRESENTVSYNC : 0;
-		SDL_Renderer *sdlRenderer = SDL_CreateRenderer(renderer->window, -1, sdlRenderFlags);
-		if (sdlRenderer == NULL)
-		{
-			SDL_DestroyWindow(renderer->window);
-			return SDL_FALSE;
-		}
+		SDL_SysWMinfo systemInfo;
+		SDL_VERSION(&systemInfo.version);
+		SDL_GetWindowWMInfo(renderer->window, &systemInfo);
 		
-		SDL_RendererInfo rendererInfo;
-		if (SDL_GetRendererInfo(sdlRenderer, &rendererInfo) < 0)
-		{
-			SDL_DestroyRenderer(sdlRenderer);
-			SDL_DestroyWindow(renderer->window);
-			return SDL_FALSE;
-		}
+		NSWindow *window = systemInfo.info.cocoa.window;
+		NSView *contentView = window.contentView;
 		
-		if (strcmp(rendererInfo.name, "metal") != 0)
-		{
-			SDL_DestroyRenderer(sdlRenderer);
-			SDL_DestroyWindow(renderer->window);
-			return SDL_FALSE;
-		}
+		// Add our metal view ourselves
+		// Don't create metal layer/view by creating a SDL_Renderer
+		// because it does a bunch of stuff we don't need for SDL's own renderer
+		ZGMetalView *metalView = [[ZGMetalView alloc] initWithFrame:contentView.frame];
+		[contentView addSubview:metalView];
 		
-		CAMetalLayer *metalLayer = (__bridge CAMetalLayer *)(SDL_RenderGetMetalLayer(sdlRenderer));
-		if (metalLayer == nil)
-		{
-			SDL_DestroyRenderer(sdlRenderer);
-			SDL_DestroyWindow(renderer->window);
-			return SDL_FALSE;
-		}
-		
-		SDL_DestroyRenderer(sdlRenderer);
+		CAMetalLayer *metalLayer = (CAMetalLayer *)metalView.layer;
+		metalLayer.device = device;
+		// Don't set framebufferOnly to NO like SDL does for its own renderer.
+		// It does that to support an option (at cost of potential performance) that we don't need.
 		
 		if (@available(macOS 10.13, *))
 		{
-			renderer->vsync = metalLayer.displaySyncEnabled;
+			metalLayer.displaySyncEnabled = vsync;
+			renderer->vsync = vsync;
 		}
 		else
 		{
-			renderer->vsync = vsync;
+			renderer->vsync = SDL_TRUE;
 		}
 		
 		SDL_GetWindowSize(renderer->window, &renderer->windowWidth, &renderer->windowHeight);
-		
-		id<MTLDevice> device = metalLayer.device;
 		
 		// Update view port
 		
