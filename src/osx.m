@@ -18,7 +18,7 @@
  */
 
 #import "osx.h"
-#import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
 
 FILE *getUserDataFile(const char *mode)
 {
@@ -63,42 +63,5 @@ void getDefaultUserName(char *defaultUserName, int maxLength)
 				strncpy(defaultUserName, [fullUsername UTF8String], maxLength);
 			}
 		}
-	}
-}
-
-@interface ZGResizeHandler : NSObject
-{
-@public
-	void (*_resizeHandler)(void *, int32_t, int32_t);
-	void *_context;
-}
-@end
-
-@implementation ZGResizeHandler
-
-- (void)windowDidResizeWithNotification:(NSNotification *)notification
-{
-	NSWindow *window = [notification object];
-	if (window != nil)
-	{
-		CGSize size = window.frame.size;
-		_resizeHandler(_context, (int32_t)size.width, (int32_t)size.height);
-	}
-}
-
-@end
-
-void addResizeHandler(void *window, void (*resizeHandler)(void *, int32_t, int32_t), void *context)
-{
-	@autoreleasepool
-	{
-		static ZGResizeHandler *resizeHandlerInstance;
-		assert(resizeHandlerInstance == nil);
-		
-		resizeHandlerInstance = [[ZGResizeHandler alloc] init];
-		resizeHandlerInstance->_resizeHandler = resizeHandler;
-		resizeHandlerInstance->_context = context;
-		
-		[[NSNotificationCenter defaultCenter] addObserver:resizeHandlerInstance selector:@selector(windowDidResizeWithNotification:) name:NSWindowDidResizeNotification object:(__bridge id)window];
 	}
 }
