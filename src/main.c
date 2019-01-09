@@ -1131,11 +1131,6 @@ static void drawScene(Renderer *renderer)
 	}
 }
 
-static void windowResized(void *context, int32_t width, int32_t height)
-{
-	updateViewport(context, width, height);
-}
-
 static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDrawScene, SDL_bool *quit)
 {
 	SDL_Window *window = renderer->window;
@@ -1504,10 +1499,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 			}
 			else if (event->window.event == SDL_WINDOWEVENT_RESIZED)
 			{
-				if (renderer->usesSDLResizeEvent)
-				{
-					windowResized(renderer, event->window.data1, event->window.data2);
-				}
+				updateViewport(renderer, event->window.data1, event->window.data2);
 			}
 			break;
 		case SDL_QUIT:
@@ -1740,19 +1732,6 @@ int main(int argc, char *argv[])
 	
 	Renderer renderer;
 	createRenderer(&renderer, windowWidth, windowHeight, videoFlags, vsync, fsaa);
-	
-#ifdef MAC_OS_X
-	// The metal renderer particularly requires not using SDL's resize window event handler
-	// This is because when transistioning from/to fullscreen, SDL defers sending resize events,
-	// which can cause noticable glitches on some Macs and causes the Metal validator to complain.
-	if (!renderer.usesSDLResizeEvent)
-	{
-		SDL_SysWMinfo systemInfo;
-		SDL_VERSION(&systemInfo.version);
-		SDL_GetWindowWMInfo(renderer.window, &systemInfo);
-		addResizeHandler(systemInfo.info.cocoa.window, windowResized, &renderer);
-	}
-#endif
 	
 	if (!initFont(&renderer))
 	{

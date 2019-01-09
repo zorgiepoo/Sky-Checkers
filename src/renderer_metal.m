@@ -19,63 +19,15 @@
 
 #import "renderer_metal.h"
 
+// Note: the metal renderer, just like others, should avoid depending on any matrix operations
+// Updating the projection matrix uses renderer_projection.h
+
 #include "metal_indices.h"
+#include "renderer_projection.h"
 
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
 #import <Cocoa/Cocoa.h>
-
-// This class is mostly copied from SDL's SDL_cocoametalview to fit our own needs
-@interface ZGMetalView : NSView
-@end
-
-@implementation ZGMetalView
-
-+ (Class)layerClass
-{
-	return NSClassFromString(@"CAMetalLayer");
-}
-
-- (BOOL)wantsUpdateLayer
-{
-	return YES;
-}
-
-- (CALayer*)makeBackingLayer
-{
-	return [self.class.layerClass layer];
-}
-
-- (instancetype)initWithFrame:(NSRect)frame
-{
-	if ((self = [super initWithFrame:frame]))
-	{
-		self.wantsLayer = YES;
-		self.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
-		
-		[self updateDrawableSize];
-	}
-	
-	return self;
-}
-
-- (void)updateDrawableSize
-{
-	CAMetalLayer *metalLayer = (CAMetalLayer *)self.layer;
-	CGSize size = self.bounds.size;
-	CGSize backingSize = [self convertSizeToBacking:size];
-	
-	metalLayer.contentsScale = backingSize.height / size.height;
-	metalLayer.drawableSize = backingSize;
-}
-
-- (void)resizeWithOldSuperviewSize:(NSSize)oldSize
-{
-	[super resizeWithOldSuperviewSize:oldSize];
-	[self updateDrawableSize];
-}
-
-@end
 
 // Don't use MTLPixelFormatDepth16Unorm which doesn't support 10.11 and doesn't work right on some configs (MBP11,2 / 10.13.6, but 10.14.2 works)
 #define DEPTH_STENCIL_PIXEL_FORMAT MTLPixelFormatDepth32Float
@@ -101,6 +53,65 @@ void drawVerticesFromIndices_metal(Renderer *renderer, float *modelViewProjectio
 void drawTextureWithVertices_metal(Renderer *renderer, float *modelViewProjectionMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options);
 
 void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, float *modelViewProjectionMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
+
+// This class is mostly copied from SDL's SDL_cocoametalview to fit our own needs
+@interface ZGMetalView : NSView
+@end
+
+@implementation ZGMetalView
+{
+	Renderer *_renderer;
+}
+
++ (Class)layerClass
+{
+	return NSClassFromString(@"CAMetalLayer");
+}
+
+- (instancetype)initWithFrame:(NSRect)frame renderer:(Renderer *)renderer
+{
+	if ((self = [super initWithFrame:frame]))
+	{
+		self.wantsLayer = YES;
+		self.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+		
+		_renderer = renderer;
+		
+		[self updateDrawableSize];
+	}
+	
+	return self;
+}
+
+- (BOOL)wantsUpdateLayer
+{
+	return YES;
+}
+
+- (CALayer*)makeBackingLayer
+{
+	return [self.class.layerClass layer];
+}
+
+- (void)updateDrawableSize
+{
+	CAMetalLayer *metalLayer = (CAMetalLayer *)self.layer;
+	CGSize size = self.bounds.size;
+	CGSize backingSize = [self convertSizeToBacking:size];
+	
+	metalLayer.contentsScale = backingSize.height / size.height;
+	metalLayer.drawableSize = backingSize;
+}
+
+- (void)resizeWithOldSuperviewSize:(NSSize)oldSize
+{
+	[super resizeWithOldSuperviewSize:oldSize];
+	[self updateDrawableSize];
+	
+	updateViewport_metal(_renderer);
+}
+
+@end
 
 // If this changes, make sure to change MAX_PIPELINE_COUNT
 typedef enum
@@ -251,6 +262,8 @@ static void updateViewport_metal(Renderer *renderer)
 	
 	renderer->metalDepthTexture = (void *)CFBridgingRetain(depthTexture);
 	renderer->metalDepthTestStencilState = (void *)CFBridgingRetain(depthStencilState);
+	
+	updateProjectionMatrix(renderer);
 }
 
 SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
@@ -291,7 +304,7 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		// Add our metal view ourselves
 		// Don't create metal layer/view by creating a SDL_Renderer
 		// because it does a bunch of stuff we don't need for SDL's own renderer
-		ZGMetalView *metalView = [[ZGMetalView alloc] initWithFrame:contentView.frame];
+		ZGMetalView *metalView = [[ZGMetalView alloc] initWithFrame:contentView.frame renderer:renderer];
 		[contentView addSubview:metalView];
 		
 		CAMetalLayer *metalLayer = (CAMetalLayer *)metalView.layer;
@@ -341,6 +354,7 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		renderer->metalDepthTexture = NULL;
 		renderer->metalDepthTestStencilState = NULL;
 		renderer->metalMultisampleTexture = NULL;
+		renderer->ndcType = NDC_TYPE_METAL;
 		updateViewport_metal(renderer);
 		
 		// Compile our shader function pairs
@@ -383,10 +397,7 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		renderer->metalCommandQueue = (void *)CFBridgingRetain(queue);
 		renderer->metalCurrentRenderCommandEncoder = NULL;
 		
-		renderer->ndcType = NDC_TYPE_METAL;
-		renderer->usesSDLResizeEvent = SDL_FALSE;
-		
-		renderer->updateViewportPtr = updateViewport_metal;
+		renderer->updateViewportPtr = NULL;
 		renderer->renderFramePtr = renderFrame_metal;
 		renderer->textureFromPixelDataPtr = textureFromPixelData_metal;
 		renderer->deleteTexturePtr = deleteTexture_metal;

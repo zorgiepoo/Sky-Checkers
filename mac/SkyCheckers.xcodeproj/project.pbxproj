@@ -19,6 +19,7 @@
 		721B0029204A4861005AF984 /* SDL2_mixer.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 721B0027204A4855005AF984 /* SDL2_mixer.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		721B002A204A4861005AF984 /* SDL2_ttf.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 721B0025204A482D005AF984 /* SDL2_ttf.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		721B002C204A4861005AF984 /* SDL2.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 721B0021204A47C1005AF984 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		7272B29E21E5CBEB00C305D3 /* renderer_projection.c in Sources */ = {isa = PBXBuildFile; fileRef = 7272B29D21E5CBEB00C305D3 /* renderer_projection.c */; };
 		72A14F3121A71C6900606E14 /* renderer.c in Sources */ = {isa = PBXBuildFile; fileRef = 72A14F2F21A71C6700606E14 /* renderer.c */; };
 		770FFA0810B8F465009FD46A /* osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 770FFA0710B8F465009FD46A /* osx.m */; };
 		771B6CA010BE60320014884B /* sc_icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 771B6C9F10BE60320014884B /* sc_icon.icns */; };
@@ -76,6 +77,8 @@
 		721B0021204A47C1005AF984 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = Frameworks/SDL2.framework; sourceTree = "<group>"; };
 		721B0025204A482D005AF984 /* SDL2_ttf.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_ttf.framework; path = Frameworks/SDL2_ttf.framework; sourceTree = "<group>"; };
 		721B0027204A4855005AF984 /* SDL2_mixer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_mixer.framework; path = Frameworks/SDL2_mixer.framework; sourceTree = "<group>"; };
+		7272B29C21E5CBEB00C305D3 /* renderer_projection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = renderer_projection.h; path = ../src/renderer_projection.h; sourceTree = "<group>"; };
+		7272B29D21E5CBEB00C305D3 /* renderer_projection.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = renderer_projection.c; path = ../src/renderer_projection.c; sourceTree = "<group>"; };
 		72A14F1721A5E26200606E14 /* math_3d.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = math_3d.h; path = ../src/math_3d.h; sourceTree = "<group>"; };
 		72A14F2F21A71C6700606E14 /* renderer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = renderer.c; path = ../src/renderer.c; sourceTree = "<group>"; };
 		72A14F3021A71C6800606E14 /* renderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = renderer.h; path = ../src/renderer.h; sourceTree = "<group>"; };
@@ -214,6 +217,8 @@
 				721A007821AB96C60099D093 /* metal_indices.h */,
 				721A006F21AA7B420099D093 /* renderer_metal.h */,
 				721A007021AA7B420099D093 /* renderer_metal.m */,
+				7272B29C21E5CBEB00C305D3 /* renderer_projection.h */,
+				7272B29D21E5CBEB00C305D3 /* renderer_projection.c */,
 				721A007621AB11CC0099D093 /* shaders.metal */,
 				774A450C0B2BF1FC000C04D9 /* utilities.h */,
 				774A450D0B2BF1FC000C04D9 /* utilities.c */,
@@ -322,6 +327,7 @@
 				721A006E21AA763B0099D093 /* renderer_gl.c in Sources */,
 				77CCC2AF0BA4D36B007F9F3A /* console.c in Sources */,
 				774F33D90BB48A9A00884B83 /* menu.c in Sources */,
+				7272B29E21E5CBEB00C305D3 /* renderer_projection.c in Sources */,
 				721A007721AB11CD0099D093 /* shaders.metal in Sources */,
 				77C7A4FC0CFD292600295420 /* game_menus.c in Sources */,
 				778FA7910D0656FA002A3C26 /* ai.c in Sources */,

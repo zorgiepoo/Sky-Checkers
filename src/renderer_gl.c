@@ -19,6 +19,10 @@
 
 #include "renderer_gl.h"
 
+// Note: the GL renderer, just like others, should avoid depending on any matrix operations
+// Updating the projection matrix uses renderer_projection.h
+
+#include "renderer_projection.h"
 #include "utilities.h"
 
 #ifdef WINDOWS
@@ -318,6 +322,8 @@ static void updateViewport_gl(Renderer *renderer)
 	SDL_GL_GetDrawableSize(renderer->window, &renderer->screenWidth, &renderer->screenHeight);
 	
 	glViewport(0, 0, renderer->screenWidth, renderer->screenHeight);
+	
+	updateProjectionMatrix(renderer);
 }
 
 void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
@@ -387,7 +393,7 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	renderer->vsync = (value != 0);
 	
 	SDL_GetWindowSize(renderer->window, &renderer->windowWidth, &renderer->windowHeight);
-	
+	renderer->ndcType = NDC_TYPE_GL;
 	updateViewport_gl(renderer);
 	
 	// OpenGL Initialization
@@ -405,9 +411,6 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	compileAndLinkShader(&renderer->glPositionShader, glslVersion, "Data/Shaders/position.vsh", "Data/Shaders/position.fsh", SDL_FALSE, "modelViewProjectionMatrix", "color", NULL);
 	
 	compileAndLinkShader(&renderer->glPositionTextureShader, glslVersion, "Data/Shaders/texture-position.vsh", "Data/Shaders/texture-position.fsh", SDL_TRUE, "modelViewProjectionMatrix", "color", "textureSample");
-	
-	renderer->ndcType = NDC_TYPE_GL;
-	renderer->usesSDLResizeEvent = SDL_TRUE;
 	
 	renderer->updateViewportPtr = updateViewport_gl;
 	renderer->renderFramePtr = renderFrame_gl;

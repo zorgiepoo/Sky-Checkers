@@ -102,8 +102,6 @@ typedef struct _Renderer
 	SDL_bool vsync;
 	SDL_bool fsaa;
 	
-	SDL_bool usesSDLResizeEvent;
-	
 	enum
 	{
 		NDC_TYPE_GL,

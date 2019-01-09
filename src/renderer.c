@@ -25,34 +25,6 @@
 #include "utilities.h"
 #endif
 
-static void updateProjectionMatrix(Renderer *renderer)
-{
-	// The aspect ratio is not quite correct, which is a mistake I made a long time ago that is too troubling to fix properly
-	mat4_t glProjectionMatrix = m4_perspective(45.0f, (float)(renderer->screenWidth / renderer->screenHeight), 10.0f, 300.0f);
-	
-	switch (renderer->ndcType)
-	{
-		case NDC_TYPE_GL:
-			memcpy(renderer->projectionMatrix, glProjectionMatrix.m, sizeof(glProjectionMatrix.m));
-			break;
-		case NDC_TYPE_METAL:
-		{
-			// https://metashapes.com/blog/opengl-metal-projection-matrix-problem/
-			mat4_t metalProjectionAdjustMatrix =
-			mat4(
-				 1.0f, 0.0f, 0.0f, 0.0f,
-				 0.0f, 1.0f, 0.0f, 0.0f,
-				 0.0f, 0.0f, 0.5f, 0.5f,
-				 0.0f, 0.0f, 0.0f, 1.0f
-				 );
-			mat4_t finalProjectionMatrix = m4_mul(metalProjectionAdjustMatrix, glProjectionMatrix);
-			memcpy(renderer->projectionMatrix, finalProjectionMatrix.m, sizeof(finalProjectionMatrix.m));
-			
-			break;
-		}
-	}
-}
-
 void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
 {
 #ifndef MAC_OS_X
@@ -104,8 +76,6 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 		createdRenderer = SDL_TRUE;
 	}
 	
-	updateProjectionMatrix(renderer);
-	
 #ifndef _DEBUG
 	SDL_ShowCursor(SDL_DISABLE);
 #endif
@@ -116,9 +86,12 @@ void updateViewport(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 	renderer->windowWidth = windowWidth;
 	renderer->windowHeight = windowHeight;
 	
-	renderer->updateViewportPtr(renderer);
-	
-	updateProjectionMatrix(renderer);
+	// If updateViewportPtr is not NULL, then resizing the window is tied to
+	// resizing the view for this specific renderer
+	if (renderer->updateViewportPtr != NULL)
+	{
+		renderer->updateViewportPtr(renderer);
+	}
 }
 
 void renderFrame(Renderer *renderer, void (*drawFunc)(Renderer *))
