@@ -25,8 +25,6 @@
 
 const Uint16 NETWORK_PORT =				4893;
 
-#define MAX_NETWORK_BUFFER	256
-
 NetworkConnection *gNetworkConnection = NULL;
 
 struct sockaddr_in gClientAddress[3];
@@ -1408,6 +1406,8 @@ int clientNetworkThread(void *context)
 	welcomeMessage.weclomeMessage.netName = gUserNameString;
 	sendToServer(welcomeMessage);
 	
+	uint32_t lastPongReceivedTimestamp = SDL_GetTicks();
+	
 	SDL_bool needsToQuit = SDL_FALSE;
 	
 	while (!needsToQuit)
@@ -1606,6 +1606,16 @@ int clientNetworkThread(void *context)
 			}
 		}
 		
+		// 4 seconds is a long time without hearing back from server
+		if (SDL_GetTicks() - lastPongReceivedTimestamp >= 4000)
+		{
+			GameMessage message;
+			message.type = QUIT_MESSAGE_TYPE;
+			pushNetworkMessage(&gGameMessagesFromNet, message);
+			
+			needsToQuit = SDL_TRUE;
+		}
+		
 		while (!needsToQuit)
 		{
 			fd_set socketSet;
@@ -1642,6 +1652,8 @@ int clientNetworkThread(void *context)
 								GameMessage message;
 								message.type = QUIT_MESSAGE_TYPE;
 								pushNetworkMessage(&gGameMessagesFromNet, message);
+								
+								needsToQuit = SDL_TRUE;
 								
 								break;
 							}
@@ -2050,6 +2062,8 @@ int clientNetworkThread(void *context)
 							message.type = PONG_MESSAGE_TYPE;
 							message.pongTimestamp = timestamp;
 							pushNetworkMessage(&gGameMessagesFromNet, message);
+							
+							lastPongReceivedTimestamp = SDL_GetTicks();
 						}
 						else if (buffer[0] == 'q' && buffer[1] == 'u')
 						{
