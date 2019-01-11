@@ -258,7 +258,7 @@ static SDL_bool createOpenGLContext(SDL_Window **window, SDL_GLContext *glContex
 	if (fsaa)
 	{
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, MSAA_PREFERRED_SAMPLE_COUNT);
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, MSAA_PREFERRED_RETINA_SAMPLE_COUNT);
 	}
 	
 	*window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags | SDL_WINDOW_OPENGL);
@@ -275,42 +275,28 @@ static SDL_bool createOpenGLContext(SDL_Window **window, SDL_GLContext *glContex
 		}
 		else
 		{
-			// Try creating SDL window and opengl context again using secondary sample count
 			if (*window != NULL)
 			{
 				SDL_DestroyWindow(*window);
 			}
 			
-			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, MSAA_SECONDARY_SAMPLE_COUNT);
+			// Try creating SDL window and opengl context again except without anti-aliasing
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 			
 			*window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags | SDL_WINDOW_OPENGL);
 			
-			if (*window == NULL || (*glContext = SDL_GL_CreateContext(*window)) == NULL)
+			if (*window == NULL)
 			{
-				if (*window != NULL)
-				{
-					SDL_DestroyWindow(*window);
-				}
+				return SDL_FALSE;
+			}
+			
+			*glContext = SDL_GL_CreateContext(*window);
+			if (*glContext == NULL)
+			{
+				SDL_DestroyWindow(*window);
 				
-				// Try creating SDL window and opengl context again except without anti-aliasing
-				SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
-				SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
-				
-				*window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags | SDL_WINDOW_OPENGL);
-				
-				if (*window == NULL)
-				{
-					return SDL_FALSE;
-				}
-				
-				*glContext = SDL_GL_CreateContext(*window);
-				if (*glContext == NULL)
-				{
-					SDL_DestroyWindow(*window);
-					
-					return SDL_FALSE;
-				}
+				return SDL_FALSE;
 			}
 		}
 	}

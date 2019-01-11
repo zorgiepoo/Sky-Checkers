@@ -328,20 +328,28 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		
 		if (fsaa)
 		{
-			if ([device supportsTextureSampleCount:MSAA_PREFERRED_SAMPLE_COUNT])
+			if (metalLayer.contentsScale >= 2.0)
 			{
-				renderer->sampleCount = MSAA_PREFERRED_SAMPLE_COUNT;
-				renderer->fsaa = SDL_TRUE;
-			}
-			else if ([device supportsTextureSampleCount:MSAA_SECONDARY_SAMPLE_COUNT])
-			{
-				renderer->sampleCount = MSAA_SECONDARY_SAMPLE_COUNT;
-				renderer->fsaa = SDL_TRUE;
+				if ([device supportsTextureSampleCount:MSAA_PREFERRED_RETINA_SAMPLE_COUNT])
+				{
+					renderer->sampleCount = MSAA_PREFERRED_RETINA_SAMPLE_COUNT;
+					renderer->fsaa = SDL_TRUE;
+				}
+				else
+				{
+					// No AA is good enough in this case for retina displays
+					renderer->sampleCount = 0;
+					renderer->fsaa = SDL_FALSE;
+				}
 			}
 			else
 			{
-				renderer->sampleCount = 0;
-				renderer->fsaa = SDL_FALSE;
+				// All devices should support this according to the documentation
+				if ([device supportsTextureSampleCount:MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT])
+				{
+					renderer->sampleCount = MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT;
+					renderer->fsaa = SDL_TRUE;
+				}
 			}
 		}
 		else
