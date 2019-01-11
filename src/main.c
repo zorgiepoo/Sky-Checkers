@@ -1001,7 +1001,7 @@ static void drawScene(Renderer *renderer)
 		{
 			if (gConsoleActivated)
 			{
-				// Console text at z = -24.0f
+				// Console text at z = -23.0f
 				drawConsoleText(renderer);
 			}
 			

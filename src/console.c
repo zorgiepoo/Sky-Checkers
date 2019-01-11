@@ -135,7 +135,7 @@ void drawConsoleText(Renderer *renderer)
 	size_t length = strlen(gConsoleString);
 	if (length > 0)
 	{
-		mat4_t modelViewMatrix = m4_translation((vec3_t){-9.3f, 9.13f, -24.0f});
+		mat4_t modelViewMatrix = m4_translation((vec3_t){-8.94f, 8.778f, -23.0f});
 		
 		drawStringLeftAligned(renderer, modelViewMatrix, (color4_t){1.0f, 0.0f, 0.0f, 0.7f}, 0.00333f, gConsoleString);
 	}
