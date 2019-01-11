@@ -697,6 +697,8 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 			
 			// Only keep one movement message per character per packet
 			uint32_t trackedMovementIndices[3][4] = {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}};
+			// Only keep one ping message per character per packet
+			uint32_t trackedPingIndices[3] = {0, 0, 0};
 			for (uint32_t messagesLeft = messagesCount; messagesLeft > 0; messagesLeft--)
 			{
 				GameMessage message = messagesAvailable[messagesLeft - 1];
@@ -708,6 +710,19 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					if (trackedMovementIndices[addressIndex][characterIndex] == 0)
 					{
 						trackedMovementIndices[addressIndex][characterIndex] = messagesLeft - 1;
+					}
+					else
+					{
+						messagesAvailable[messagesLeft - 1].addressIndex = -1;
+					}
+				}
+				else if (message.type == PING_MESSAGE_TYPE)
+				{
+					int addressIndex = message.addressIndex;
+					
+					if (trackedPingIndices[addressIndex] == 0)
+					{
+						trackedPingIndices[addressIndex] = messagesLeft - 1;
 					}
 					else
 					{
@@ -981,14 +996,17 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case PING_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "pi%u", message.pingTimestamp);
-						
-						sendBufferPtrs[addressIndex] += length + 1;
-						
-						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
+						if (address != NULL)
 						{
-							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
-							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
+							int length = snprintf(sendBufferPtrs[addressIndex], 256, "pi%u", message.pingTimestamp);
+							
+							sendBufferPtrs[addressIndex] += length + 1;
+							
+							if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
+							{
+								sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
+								sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
+							}
 						}
 						
 						break;
@@ -1421,6 +1439,20 @@ int clientNetworkThread(void *context)
 			char sendBuffer[4096];
 			char *sendBufferPtr = sendBuffer;
 			
+			uint32_t lastPingIndex = 0;
+			for (uint32_t messagesLeft = messagesCount; messagesLeft > 0; messagesLeft--)
+			{
+				GameMessage message = messagesAvailable[messagesLeft - 1];
+				if (message.type == PING_MESSAGE_TYPE)
+				{
+					if (lastPingIndex == 0)
+					{
+						lastPingIndex = messagesLeft - 1;
+						break;
+					}
+				}
+			}
+			
 			for (uint32_t messageIndex = 0; messageIndex < messagesCount && !needsToQuit; messageIndex++)
 			{
 				GameMessage message = messagesAvailable[messageIndex];
@@ -1487,14 +1519,17 @@ int clientNetworkThread(void *context)
 					}
 					case PING_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtr, 256, "pi%u", message.pingTimestamp);
-						
-						sendBufferPtr += length + 1;
-						
-						if ((size_t)(sendBufferPtr - sendBuffer) >= sizeof(sendBuffer) - 256)
+						if (lastPingIndex == messageIndex)
 						{
-							sendData(gNetworkConnection->socket, sendBuffer, (size_t)(sendBufferPtr - sendBuffer), &gNetworkConnection->hostAddress);
-							sendBufferPtr = sendBuffer;
+							int length = snprintf(sendBufferPtr, 256, "pi%u", message.pingTimestamp);
+							
+							sendBufferPtr += length + 1;
+							
+							if ((size_t)(sendBufferPtr - sendBuffer) >= sizeof(sendBuffer) - 256)
+							{
+								sendData(gNetworkConnection->socket, sendBuffer, (size_t)(sendBufferPtr - sendBuffer), &gNetworkConnection->hostAddress);
+								sendBufferPtr = sendBuffer;
+							}
 						}
 						
 						break;
