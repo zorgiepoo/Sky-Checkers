@@ -679,20 +679,7 @@ void decideWhetherToMakeAPlayerAWinner(Character *player)
 }
 
 void prepareCharactersDeath(Character *player)
-{
-	if (gNetworkConnection && gNetworkConnection->type == NETWORK_CLIENT_TYPE)
-	{
-		/*
-		 * Make sure to turn everyone's inputs off in a networked game for clients.
-		 * This can lead to a potentional bug if we don't in that when the character is recovered, an input may be automatically invoked, especially when dealing with joysticks
-		 */
-		
-		turnInputOff(&gRedRoverInput);
-		turnInputOff(&gBlueLightningInput);
-		turnInputOff(&gGreenTreeInput);
-		turnInputOff(&gPinkBubbleGumInput);
-	}
-	
+{	
 	player->active = SDL_FALSE;
 }
 
@@ -709,13 +696,6 @@ static void killCharacter(Input *characterInput, double timeDelta)
 	if (location >= 0 && location < NUMBER_OF_TILES && gTiles[location].z < TILE_ALIVE_Z && CHARACTER_IS_ALIVE(player) && (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE))
 	{
 		prepareCharactersDeath(player);
-		
-		/*
-		 * Make sure to turn the character's inputs off.
-		 * This can lead to a potentional bug if we don't in that when the character is recovered, an input may be automatically invoked, especially when dealing with joysticks
-		 */
-		
-		turnInputOff(characterInput);
 		
 		player->time_alive = 0;
 		

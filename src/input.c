@@ -526,12 +526,3 @@ void turnOffDirectionsExcept(Input *input, int direction)
 		input->down = SDL_FALSE;
 	}
 }
-
-void turnInputOff(Input *input)
-{
-	input->weap = SDL_FALSE;
-	input->right = SDL_FALSE;
-	input->left = SDL_FALSE;
-	input->down = SDL_FALSE;
-	input->up = SDL_FALSE;
-}
