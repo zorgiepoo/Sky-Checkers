@@ -73,7 +73,7 @@ SDL_bool checkCharacterCollision(int direction, Character *characterA, Character
  * Checks if the character will be out of bounds of the checkerboard if it moves within the given direction.
  * Returns SDL_FALSE if character can't move, otherwise returns SDL_TRUE
  */
-SDL_bool characterIsOutOfBounds(int direction, Character *character)
+SDL_bool characterCanMove(int direction, Character *character)
 {	
 	int x;
 	int y;
@@ -90,13 +90,6 @@ SDL_bool characterIsOutOfBounds(int direction, Character *character)
 	{
 		return SDL_FALSE;
 	}
-	
-	/*
-	 * First, check if they're on a tile of which's state is SDL_FALSE
-	 * If so, then return SDL_FALSE
-	 */
-	if (gTiles[index].state == SDL_FALSE)
-		return SDL_FALSE;
 	
 	int nextTileIndex;
 	

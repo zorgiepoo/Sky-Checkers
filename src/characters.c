@@ -644,28 +644,28 @@ void moveCharacter(Character *character, double timeDelta)
 		// Test which direction the character is moving in, then move the character in that direction if it won't collide with anything
 		if (direction == RIGHT)
 		{
-			if (characterIsOutOfBounds(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
+			if (characterCanMove(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
 			{
 				character->x += character->speed * timeDelta;
 			}
 		}
 		else if (direction == LEFT)
 		{
-			if (characterIsOutOfBounds(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
+			if (characterCanMove(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
 			{
 				character->x -= character->speed * timeDelta;
 			}
 		}
 		else if (direction == DOWN)
 		{
-			if (characterIsOutOfBounds(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
+			if (characterCanMove(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
 			{
 				character->y -= character->speed * timeDelta;
 			}
 		}
 		else if (direction == UP)
 		{
-			if (characterIsOutOfBounds(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
+			if (characterCanMove(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
 			{
 				character->y += character->speed * timeDelta;
 			}

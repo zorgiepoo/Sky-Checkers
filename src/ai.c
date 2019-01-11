@@ -98,7 +98,7 @@ static void directCharacterBasedOnCollisions(Character *character, int currentTi
 	
 	getOtherCharacters(character, &characterB, &characterC, &characterD);
 	
-	if (!characterIsOutOfBounds(character->direction, character))
+	if (!characterCanMove(character->direction, character))
 	{
 		setNewDirection(&character->direction);
 		character->ai_timer = currentTime + (mt_random() % 2) + 1;

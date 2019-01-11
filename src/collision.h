@@ -22,7 +22,7 @@
 #include "maincore.h"
 #include "characters.h"
 
-SDL_bool characterIsOutOfBounds(int direction, Character *character);
+SDL_bool characterCanMove(int direction, Character *character);
 int getTileIndexLocation(int x, int y);
 
 SDL_bool checkCharacterColl(Character *a, Character *b, int direction);
