@@ -121,7 +121,6 @@ typedef struct
 
 typedef struct
 {
-	struct sockaddr_in clientAddress;
 	char *netName;
 	int slotID;
 	int numberOfPlayersToWaitFor;
