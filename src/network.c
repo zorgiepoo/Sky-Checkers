@@ -653,6 +653,12 @@ static void sendData(int socket, void *data, size_t size, struct sockaddr_in *ad
 	sendto(socket, data, size, 0, (struct sockaddr *)address, sizeof(*address));
 }
 
+static ssize_t receiveData(int socket, void *buffer, size_t length, struct sockaddr_in *address)
+{
+	socklen_t addressLength = sizeof(*address);
+	return recvfrom(socket, buffer, length, 0, (struct sockaddr *)address, &addressLength);
+}
+
 static int characterIDForClientAddress(struct sockaddr_in *address)
 {
 	for (int clientIndex = 0; clientIndex < gCurrentSlot; clientIndex++)
@@ -1151,13 +1157,11 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 			{
 				char packetBuffer[4096];
 				struct sockaddr_in address;
-				unsigned int addressLength = sizeof(address);
-				int numberOfBytes = 0;
-				
-				if ((numberOfBytes = recvfrom(gNetworkConnection->socket, packetBuffer, sizeof(packetBuffer), 0, (struct sockaddr *)&address, &addressLength)) == -1)
+				int numberOfBytes;
+				if ((numberOfBytes = receiveData(gNetworkConnection->socket, packetBuffer, sizeof(packetBuffer), &address)) == -1)
 				{
 					// Ignore it and continue on
-					fprintf(stderr, "recvfrom() actually returned -1\n");
+					fprintf(stderr, "receiveData() actually returned -1\n");
 				}
 				else
 				{
@@ -1665,13 +1669,11 @@ int clientNetworkThread(void *context)
 			}
 			else
 			{
-				int numberOfBytes = 0;
 				char packetBuffer[4096];
-				unsigned int addressLength = sizeof(gNetworkConnection->hostAddress);
-				
-				if ((numberOfBytes = recvfrom(gNetworkConnection->socket, packetBuffer, sizeof(packetBuffer), 0, (struct sockaddr *)&gNetworkConnection->hostAddress, &addressLength)) == -1)
+				int numberOfBytes;
+				if ((numberOfBytes = receiveData(gNetworkConnection->socket, packetBuffer, sizeof(packetBuffer), &gNetworkConnection->hostAddress)) == -1)
 				{
-					fprintf(stderr, "recvfrom() actually returned -1\n");
+					fprintf(stderr, "receiveData() actually returned -1\n");
 				}
 				else
 				{
