@@ -27,8 +27,6 @@ const Uint16 NETWORK_PORT =				4893;
 
 NetworkConnection *gNetworkConnection = NULL;
 
-struct sockaddr_in gClientAddress[3];
-
 static SDL_mutex *gCurrentSlotMutex;
 
 static void pushNetworkMessage(GameMessageArray *messageArray, GameMessage message);
@@ -659,7 +657,7 @@ static int characterIDForClientAddress(struct sockaddr_in *address)
 {
 	for (int clientIndex = 0; clientIndex < gCurrentSlot; clientIndex++)
 	{
-		if (memcmp(address, &gClientAddress[clientIndex], sizeof(*address)) == 0)
+		if (memcmp(address, &gNetworkConnection->clientAddresses[clientIndex], sizeof(*address)) == 0)
 		{
 			return clientIndex + 1;
 		}
@@ -735,7 +733,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 			{
 				GameMessage message = messagesAvailable[messageIndex];
 				int addressIndex = message.addressIndex;
-				struct sockaddr_in *address = (addressIndex == -1) ? NULL :  &gClientAddress[addressIndex];
+				struct sockaddr_in *address = (addressIndex == -1) ? NULL : &gNetworkConnection->clientAddresses[addressIndex];
 				
 				if (!needsToQuit && message.type != QUIT_MESSAGE_TYPE && message.type != ACK_MESSAGE_TYPE && message.type != FIRST_DATA_TO_CLIENT_MESSAGE_TYPE && message.type != PING_MESSAGE_TYPE && message.type != PONG_MESSAGE_TYPE)
 				{
@@ -1121,7 +1119,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 			{
 				if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) > 0)
 				{
-					sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), &gClientAddress[addressIndex]);
+					sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), &gNetworkConnection->clientAddresses[addressIndex]);
 				}
 			}
 			
@@ -1184,7 +1182,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 									// yes
 									// sr == server response
 									addressIndex = gCurrentSlot;
-									gClientAddress[addressIndex] = address;
+									gNetworkConnection->clientAddresses[addressIndex] = address;
 									triggerIncomingPacketNumbers[addressIndex]++;
 									
 									SDL_LockMutex(gCurrentSlotMutex);

@@ -239,6 +239,8 @@ typedef struct
 		// Server state
 		struct
 		{
+			// Only readable/writable from server thread
+			struct sockaddr_in clientAddresses[3];
 			// Keeping track of half-ping from clients
 			// Only readable/writable from main thread
 			uint32_t clientHalfPings[3];
