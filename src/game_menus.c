@@ -172,7 +172,7 @@ void drawNetworkServerPlayMenu(Renderer *renderer, color4_t preferredColor)
 		drawString(renderer, translationMatrix, textColor, 30.0f / 14.0f, 5.0f / 14.0f, "(UDP port used is "NETWORK_PORT")");
 	}
 	
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.43f, 0.00f, -20.00f});	
+	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.43f, 1.07f, -20.00f});
 	drawString(renderer, modelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Start Game");
 }
 
@@ -292,8 +292,8 @@ void networkServerPlayMenuAction(void *context)
 
 void drawNetworkServerNumberOfPlayersMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t numberPlayersModelViewMatrix = m4_translation((vec3_t){-1.43f, -1.07f, -20.00f});	
-	drawStringf(renderer, numberPlayersModelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Net-Players: %i", gNumberOfNetHumans);
+	mat4_t numberPlayersModelViewMatrix = m4_translation((vec3_t){-1.43f, 0.0f, -20.00f});
+	drawStringf(renderer, numberPlayersModelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Net-Players: %d", gNumberOfNetHumans);
 	
 	if (gDrawArrowsForNumberOfNetHumansFlag)
 	{
@@ -308,7 +308,7 @@ void networkServerNumberOfPlayersMenuAction(void *context)
 
 void drawNetworkServerAIModeMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t botModeModelViewMatrix = m4_translation((vec3_t){-1.43f, -2.14f, -20.00f});	
+	mat4_t botModeModelViewMatrix = m4_translation((vec3_t){-1.43f, -1.07f, -20.00f});
 	if (gAINetMode == AI_EASY_MODE)
 		drawString(renderer, botModeModelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Bot Mode: Easy");
 	
@@ -330,7 +330,7 @@ void networkServerAIModeMenuAction(void *context)
 
 void drawNetworkServerPlayerLivesMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t playerLivesModelViewMatrix = m4_translation((vec3_t){-1.43f, -3.21f, -20.00f});	
+	mat4_t playerLivesModelViewMatrix = m4_translation((vec3_t){-1.43f, -2.14f, -20.00f});	
 	drawStringf(renderer, playerLivesModelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Player Lives: %i", gCharacterNetLives);
 	
 	if (gDrawArrowsForNetPlayerLivesFlag)
