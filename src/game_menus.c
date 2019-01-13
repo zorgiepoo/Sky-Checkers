@@ -166,6 +166,12 @@ void networkServerMenuAction(void *context)
 
 void drawNetworkServerPlayMenu(Renderer *renderer, color4_t preferredColor)
 {
+	{
+		mat4_t translationMatrix = m4_translation((vec3_t){-1.0f / 14.0f, 50.0f / 14.0f, -280.0f / 14.0f});
+		color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 1.0f};
+		drawString(renderer, translationMatrix, textColor, 30.0f / 14.0f, 5.0f / 14.0f, "(UDP port used is "NETWORK_PORT")");
+	}
+	
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.43f, 0.00f, -20.00f});	
 	drawString(renderer, modelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Start Game");
 }
