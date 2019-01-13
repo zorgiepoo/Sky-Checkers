@@ -116,11 +116,15 @@ void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, float *modelVi
 - (void)viewDidChangeBackingProperties
 {
 	[super viewDidChangeBackingProperties];
-	[self updateDrawableSize];
 	
-	if (_renderer->metalCreatedInitialPipelines && _renderer->metalWantsFsaa)
+	if (_renderer->metalCreatedInitialPipelines)
 	{
-		createPipelines(_renderer);
+		[self updateDrawableSize];
+		
+		if (_renderer->metalWantsFsaa)
+		{
+			createPipelines(_renderer);
+		}
 		updateViewport_metal(_renderer);
 	}
 }
