@@ -52,7 +52,7 @@ SDL_bool gNetworkUserNameFieldIsActive =		SDL_FALSE;
 // Variable that holds a keyCode for configuring keys (see convertKeyCodeToString() and menu configuration implementations)
 static char gKeyCode[64];
 
-char gServerAddressString[MAX_SERVER_ADDRESS_SIZE] = "127.0.0.1";
+char gServerAddressString[MAX_SERVER_ADDRESS_SIZE] = "localhost";
 int gServerAddressStringIndex = 9;
 
 char gUserNameString[MAX_USER_NAME_SIZE] = "Borg";
