@@ -1010,37 +1010,22 @@ static void drawScene(Renderer *renderer)
 			
 			// Renders winning/losing text at z = -20.0f
 			mat4_t winLoseModelViewMatrix = m4_translation((vec3_t){70.0f / 14.0f, 100.0f / 14.0f, -280.0f / 14.0f});
-			color4_t textColor = (color4_t){0.66f, 0.66f, 0.66f, 0.8f};
 			
-			if (gNetworkConnection)
+			if (gGameWinner == RED_ROVER)
 			{
-				if (gGameWinner == IDOfCharacter(gNetworkConnection->character))
-				{
-					drawString(renderer, winLoseModelViewMatrix, textColor, 20.0f / 14.0f, 10.0f / 14.0f, "You win!");
-				}
-				else
-				{
-					drawString(renderer, winLoseModelViewMatrix, textColor, 20.0f / 14.0f, 10.0f / 14.0f, "You lose!");
-				}
+				drawStringScaled(renderer, winLoseModelViewMatrix, (color4_t){gRedRover.red, gRedRover.green, gRedRover.blue, 1.0f}, 0.0027f, "Red Rover wins!");
 			}
-			else
+			else if (gGameWinner == GREEN_TREE)
 			{
-				if (gGameWinner == RED_ROVER)
-				{
-					drawStringScaled(renderer, winLoseModelViewMatrix, (color4_t){gRedRover.red, gRedRover.green, gRedRover.blue, 1.0f}, 0.0027f, "Red Rover wins!");
-				}
-				else if (gGameWinner == GREEN_TREE)
-				{
-					drawStringScaled(renderer, winLoseModelViewMatrix, (color4_t){gGreenTree.red, gGreenTree.green, gGreenTree.blue, 1.0f}, 0.0027f, "Green Tree wins!");
-				}
-				else if (gGameWinner == PINK_BUBBLE_GUM)
-				{
-					drawStringScaled(renderer, winLoseModelViewMatrix, (color4_t){gPinkBubbleGum.red, gPinkBubbleGum.green, gPinkBubbleGum.blue, 1.0f}, 0.0027f, "Pink Bubblegum wins!");
-				}
-				else if (gGameWinner == BLUE_LIGHTNING)
-				{
-					drawStringScaled(renderer, winLoseModelViewMatrix, (color4_t){gBlueLightning.red, gBlueLightning.green, gBlueLightning.blue, 1.0f}, 0.0027f, "Blue Lightning wins!");
-				}
+				drawStringScaled(renderer, winLoseModelViewMatrix, (color4_t){gGreenTree.red, gGreenTree.green, gGreenTree.blue, 1.0f}, 0.0027f, "Green Tree wins!");
+			}
+			else if (gGameWinner == PINK_BUBBLE_GUM)
+			{
+				drawStringScaled(renderer, winLoseModelViewMatrix, (color4_t){gPinkBubbleGum.red, gPinkBubbleGum.green, gPinkBubbleGum.blue, 1.0f}, 0.0027f, "Pink Bubblegum wins!");
+			}
+			else if (gGameWinner == BLUE_LIGHTNING)
+			{
+				drawStringScaled(renderer, winLoseModelViewMatrix, (color4_t){gBlueLightning.red, gBlueLightning.green, gBlueLightning.blue, 1.0f}, 0.0027f, "Blue Lightning wins!");
 			}
 			
 			// Character scores on scoreboard at z = -20.0f
