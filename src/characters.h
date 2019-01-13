@@ -27,30 +27,30 @@
 
 #define CHARACTER_TERMINATING_Z -70.0f
 
-extern const int NO_DIRECTION;
-extern const int RIGHT;
-extern const int LEFT;
-extern const int UP;
-extern const int DOWN;
+#define NO_DIRECTION 0
+#define RIGHT 1
+#define LEFT 2
+#define UP 3
+#define DOWN 4
 
-extern const int NO_CHARACTER;
-extern const int RED_ROVER;
-extern const int GREEN_TREE;
-extern const int BLUE_LIGHTNING;
-extern const int PINK_BUBBLE_GUM;
+#define NO_CHARACTER 0
+#define RED_ROVER 1
+#define GREEN_TREE 2
+#define BLUE_LIGHTNING 3
+#define PINK_BUBBLE_GUM 4
 // added because of configureJoyStick()
-extern const int WEAPON;
+#define WEAPON 5
 
-extern const int CHARACTER_HUMAN_STATE;
-extern const int CHARACTER_AI_STATE;
+#define CHARACTER_HUMAN_STATE 1
+#define CHARACTER_AI_STATE 2
 
-extern const int AI_EASY_MODE;
-extern const int AI_MEDIUM_MODE;
-extern const int AI_HARD_MODE;
+#define AI_EASY_MODE 5
+#define AI_MEDIUM_MODE 3
+#define AI_HARD_MODE 1
 
-extern const int NETWORK_NO_STATE;
-extern const int NETWORK_PENDING_STATE;
-extern const int NETWORK_PLAYING_STATE;
+#define NETWORK_NO_STATE 0
+#define NETWORK_PENDING_STATE 5
+#define NETWORK_PLAYING_STATE 6
 
 
 // If you were to use a stop watch, the time it takes for a character to go from one end

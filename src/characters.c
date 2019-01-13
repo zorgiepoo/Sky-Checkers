@@ -23,30 +23,6 @@
 #include "network.h"
 #include "utilities.h"
 
-const int NO_DIRECTION =				0;
-const int RIGHT =						1;
-const int LEFT =						2;
-const int UP =							3;
-const int DOWN =						4;
-
-const int NO_CHARACTER =				0;
-const int RED_ROVER =					1;
-const int GREEN_TREE =					2;
-const int BLUE_LIGHTNING =				3;
-const int PINK_BUBBLE_GUM =				4;
-const int WEAPON =						5;
-
-const int CHARACTER_HUMAN_STATE =		1;
-const int CHARACTER_AI_STATE =			2;
-
-const int AI_EASY_MODE =				5;
-const int AI_MEDIUM_MODE =				3;
-const int AI_HARD_MODE =				1;
-
-const int NETWORK_NO_STATE =			0;
-const int NETWORK_PENDING_STATE =		5;
-const int NETWORK_PLAYING_STATE =		6;
-
 int gAIMode;
 int gAINetMode = 5; // AI_EASY_MODE
 
