@@ -32,6 +32,8 @@
 // Don't use MTLPixelFormatDepth16Unorm which doesn't support 10.11 and doesn't work right on some configs (MBP11,2 / 10.13.6, but 10.14.2 works)
 #define DEPTH_STENCIL_PIXEL_FORMAT MTLPixelFormatDepth32Float
 
+static void createPipelines(Renderer *renderer);
+
 static void updateViewport_metal(Renderer *renderer);
 
 void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *));
@@ -88,7 +90,7 @@ void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, float *modelVi
 	return YES;
 }
 
-- (CALayer*)makeBackingLayer
+- (CALayer *)makeBackingLayer
 {
 	return [self.class.layerClass layer];
 }
@@ -109,6 +111,18 @@ void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, float *modelVi
 	[self updateDrawableSize];
 	
 	updateViewport_metal(_renderer);
+}
+
+- (void)viewDidChangeBackingProperties
+{
+	[super viewDidChangeBackingProperties];
+	[self updateDrawableSize];
+	
+	if (_renderer->metalCreatedInitialPipelines && _renderer->metalWantsFsaa)
+	{
+		createPipelines(_renderer);
+		updateViewport_metal(_renderer);
+	}
 }
 
 @end
@@ -185,7 +199,12 @@ static void createAndStorePipelineState(void **pipelineStates, id<MTLDevice> dev
 		SDL_Quit();
 	}
 	
-	pipelineStates[pipelineIndex(shaderPairIndex, pipelineOptionIndex)] = (void *)CFBridgingRetain(pipelineState);
+	uint8_t index = pipelineIndex(shaderPairIndex, pipelineOptionIndex);
+	if (pipelineStates[index] != NULL)
+	{
+		CFRelease(pipelineStates[index]);
+	}
+	pipelineStates[index] = (void *)CFBridgingRetain(pipelineState);
 }
 
 static void updateViewport_metal(Renderer *renderer)
@@ -266,6 +285,91 @@ static void updateViewport_metal(Renderer *renderer)
 	updateProjectionMatrix(renderer);
 }
 
+static void createPipelines(Renderer *renderer)
+{
+	CAMetalLayer *metalLayer = (__bridge CAMetalLayer *)(renderer->metalLayer);
+	id<MTLDevice> device = metalLayer.device;
+	
+	// Prepare setting up AA
+	if (renderer->metalWantsFsaa)
+	{
+		if (metalLayer.contentsScale >= 2.0)
+		{
+			if ([device supportsTextureSampleCount:MSAA_PREFERRED_RETINA_SAMPLE_COUNT])
+			{
+				renderer->sampleCount = MSAA_PREFERRED_RETINA_SAMPLE_COUNT;
+				renderer->fsaa = SDL_TRUE;
+			}
+			else
+			{
+				// No AA is good enough in this case for retina displays
+				renderer->sampleCount = 0;
+				renderer->fsaa = SDL_FALSE;
+			}
+		}
+		else
+		{
+			// All devices should support this according to the documentation
+			if ([device supportsTextureSampleCount:MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT])
+			{
+				renderer->sampleCount = MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT;
+				renderer->fsaa = SDL_TRUE;
+			}
+		}
+	}
+	else
+	{
+		renderer->sampleCount = 0;
+		renderer->fsaa = SDL_FALSE;
+	}
+	
+	NSArray<id<MTLFunction>> *shaderFunctions;
+	if (renderer->metalShaderFunctions == NULL)
+	{
+		// Compile our shader function pairs
+		
+		id<MTLLibrary> defaultLibrary = [device newDefaultLibrary];
+		if (defaultLibrary == nil)
+		{
+			fprintf(stderr, "Failed to find default metal library\n");
+			SDL_Quit();
+		}
+		
+		NSArray<NSString *> *shaderFunctionNames = @[@"positionVertexShader", @"positionFragmentShader", @"texturePositionVertexShader", @"texturePositionFragmentShader"];
+		
+		NSMutableArray<id<MTLFunction>> *mutableShaderFunctions = [[NSMutableArray alloc] init];
+		
+		for (NSString *shaderName in shaderFunctionNames)
+		{
+			id<MTLFunction> function = [defaultLibrary newFunctionWithName:shaderName];
+			[mutableShaderFunctions addObject:function];
+		}
+		
+		shaderFunctions = [mutableShaderFunctions copy];
+		renderer->metalShaderFunctions = (void *)CFBridgingRetain(shaderFunctions);
+	}
+	else
+	{
+		shaderFunctions = (__bridge NSArray *)renderer->metalShaderFunctions;
+	}
+	
+	// Set up pipelines
+	
+	createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_PAIR_INDEX, PIPELINE_OPTION_NONE_INDEX, renderer->fsaa, renderer->sampleCount);
+	
+	// renderer->metalPipelineStates[1] is unused
+	
+	createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_PAIR_INDEX, PIPELINE_OPTION_BLENDING_ONE_MINUS_SOURCE_ALPHA_INDEX, renderer->fsaa, renderer->sampleCount);
+	
+	createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_TEXTURE_PAIR_INDEX, PIPELINE_OPTION_NONE_INDEX, renderer->fsaa, renderer->sampleCount);
+	
+	createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_TEXTURE_PAIR_INDEX, PIPELINE_OPTION_BLENDING_SOURCE_ALPHA_INDEX, renderer->fsaa, renderer->sampleCount);
+	
+	createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_TEXTURE_PAIR_INDEX, PIPELINE_OPTION_BLENDING_ONE_MINUS_SOURCE_ALPHA_INDEX, renderer->fsaa, renderer->sampleCount);
+	
+	renderer->metalCreatedInitialPipelines = SDL_TRUE;
+}
+
 SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
 {
 	@autoreleasepool
@@ -278,6 +382,13 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		{
 			return SDL_FALSE;
 		}
+		
+		renderer->metalLayer = NULL;
+		renderer->metalCreatedInitialPipelines = SDL_FALSE;
+		renderer->metalDepthTexture = NULL;
+		renderer->metalDepthTestStencilState = NULL;
+		renderer->metalMultisampleTexture = NULL;
+		renderer->metalShaderFunctions = NULL;
 		
 		// TODO: Should I iterate through all the devices and pick the 'best' one?
 		id<MTLDevice> device = MTLCreateSystemDefaultDevice();
@@ -322,82 +433,16 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 			renderer->vsync = SDL_TRUE;
 		}
 		
-		SDL_GetWindowSize(renderer->window, &renderer->windowWidth, &renderer->windowHeight);
+		// Create pipelines
+		renderer->metalWantsFsaa = fsaa;
+		renderer->metalLayer = (void *)CFBridgingRetain(metalLayer);
+		memset(renderer->metalPipelineStates, 0, sizeof(renderer->metalPipelineStates));
+		createPipelines(renderer);
 		
 		// Update view port
-		
-		if (fsaa)
-		{
-			if (metalLayer.contentsScale >= 2.0)
-			{
-				if ([device supportsTextureSampleCount:MSAA_PREFERRED_RETINA_SAMPLE_COUNT])
-				{
-					renderer->sampleCount = MSAA_PREFERRED_RETINA_SAMPLE_COUNT;
-					renderer->fsaa = SDL_TRUE;
-				}
-				else
-				{
-					// No AA is good enough in this case for retina displays
-					renderer->sampleCount = 0;
-					renderer->fsaa = SDL_FALSE;
-				}
-			}
-			else
-			{
-				// All devices should support this according to the documentation
-				if ([device supportsTextureSampleCount:MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT])
-				{
-					renderer->sampleCount = MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT;
-					renderer->fsaa = SDL_TRUE;
-				}
-			}
-		}
-		else
-		{
-			renderer->sampleCount = 0;
-			renderer->fsaa = SDL_FALSE;
-		}
-		
-		renderer->metalLayer = (void *)CFBridgingRetain(metalLayer);
-		renderer->metalDepthTexture = NULL;
-		renderer->metalDepthTestStencilState = NULL;
-		renderer->metalMultisampleTexture = NULL;
 		renderer->ndcType = NDC_TYPE_METAL;
+		SDL_GetWindowSize(renderer->window, &renderer->windowWidth, &renderer->windowHeight);
 		updateViewport_metal(renderer);
-		
-		// Compile our shader function pairs
-		
-		id<MTLLibrary> defaultLibrary = [device newDefaultLibrary];
-		if (defaultLibrary == nil)
-		{
-			fprintf(stderr, "Failed to find default metal library\n");
-			SDL_Quit();
-		}
-		
-		NSArray<NSString *> *shaderFunctionNames = @[@"positionVertexShader", @"positionFragmentShader", @"texturePositionVertexShader", @"texturePositionFragmentShader"];
-		
-		NSMutableArray<id<MTLFunction>> *shaderFunctions = [[NSMutableArray alloc] init];
-		
-		for (NSString *shaderName in shaderFunctionNames)
-		{
-			id<MTLFunction> function = [defaultLibrary newFunctionWithName:shaderName];
-			[shaderFunctions addObject:function];
-		}
-		
-		// Set up pipelines
-		
-		createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_PAIR_INDEX, PIPELINE_OPTION_NONE_INDEX, renderer->fsaa, renderer->sampleCount);
-		
-		// Unused pipeline
-		renderer->metalPipelineStates[1] = NULL;
-		
-		createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_PAIR_INDEX, PIPELINE_OPTION_BLENDING_ONE_MINUS_SOURCE_ALPHA_INDEX, renderer->fsaa, renderer->sampleCount);
-		
-		createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_TEXTURE_PAIR_INDEX, PIPELINE_OPTION_NONE_INDEX, renderer->fsaa, renderer->sampleCount);
-		
-		createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_TEXTURE_PAIR_INDEX, PIPELINE_OPTION_BLENDING_SOURCE_ALPHA_INDEX, renderer->fsaa, renderer->sampleCount);
-		
-		createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_TEXTURE_PAIR_INDEX, PIPELINE_OPTION_BLENDING_ONE_MINUS_SOURCE_ALPHA_INDEX, renderer->fsaa, renderer->sampleCount);
 		
 		// Set up remaining renderer properties
 		

@@ -127,6 +127,9 @@ typedef struct _Renderer
 			void *metalMultisampleTexture;
 			void *metalDepthTestStencilState;
 			void *metalPipelineStates[MAX_PIPELINE_COUNT];
+			void *metalShaderFunctions;
+			SDL_bool metalWantsFsaa;
+			SDL_bool metalCreatedInitialPipelines;
 		};
 	};
 	
