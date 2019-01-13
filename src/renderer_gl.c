@@ -84,7 +84,12 @@ static SDL_bool compileShader(GLuint *shader, uint16_t glslVersion, GLenum type,
 	fseek(sourceFile, 0, SEEK_SET);
 	
 	GLchar *source = (GLchar *)malloc(fileSize);
-	fread(source, fileSize, 1, sourceFile);
+	if (fread(source, fileSize, 1, sourceFile) < 1)
+	{
+		fprintf(stderr, "Failed to fread entire contents of shader: %s\n", filepath);
+		fclose(sourceFile);
+		return SDL_FALSE;
+	}
 	
 	fclose(sourceFile);
 	
