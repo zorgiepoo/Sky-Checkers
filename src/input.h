@@ -37,12 +37,15 @@ typedef struct
 {
 	Character *character;
 	
-	// Are the direction keys of the character held down or not?
-	SDL_bool right;
-	SDL_bool left;
-	SDL_bool up;
-	SDL_bool down;
+	// Is the weapon button being held down?
 	SDL_bool weap;
+	
+	// The time a particular direction started to be held down
+	// Zero if they're not held down
+	uint32_t right_ticks;
+	uint32_t left_ticks;
+	uint32_t up_ticks;
+	uint32_t down_ticks;
 	
 	// right, left, up, down ids - their assigned keyboard keys.
 	unsigned r_id;
@@ -95,4 +98,3 @@ void performUpAction(Input *input, SDL_Window *window, SDL_Event *event);
 
 void updateCharacterFromInput(Input *input);
 void updateCharacterFromAnyInput(void);
-void turnOffDirectionsExcept(Input *input, int direction);

@@ -33,12 +33,14 @@ Input gGreenTreeInput;
 Input gPinkBubbleGumInput;
 Input gBlueLightningInput;
 
+static void turnOffDirectionsExcept(Input *input, int direction);
+
 void initInput(Input *input, int right, int left, int up, int down, int weapon)
 {
-	input->right = SDL_FALSE;
-	input->left = SDL_FALSE;
-	input->up = SDL_FALSE;
-	input->down = SDL_FALSE;
+	input->right_ticks = 0;
+	input->left_ticks = 0;
+	input->up_ticks = 0;
+	input->down_ticks = 0;
 	input->weap = SDL_FALSE;
 	
 	input->u_id = 0;
@@ -129,28 +131,24 @@ void performDownAction(Input *input, SDL_Window *window, SDL_Event *event)
 			}
 		}
 		
-		else if (!input->right && event->key.keysym.scancode == input->r_id)
+		else if (input->right_ticks == 0 && event->key.keysym.scancode == input->r_id)
 		{
-			input->right = SDL_TRUE;
-			turnOffDirectionsExcept(input, RIGHT);
+			input->right_ticks = SDL_GetTicks();
 		}
 	
-		else if (!input->left && event->key.keysym.scancode == input->l_id)
+		else if (input->left_ticks == 0 && event->key.keysym.scancode == input->l_id)
 		{
-			input->left = SDL_TRUE;
-			turnOffDirectionsExcept(input, LEFT);
+			input->left_ticks = SDL_GetTicks();
 		}
 	
-		else if (!input->up && event->key.keysym.scancode == input->u_id)
+		else if (input->up_ticks == 0 && event->key.keysym.scancode == input->u_id)
 		{
-			input->up = SDL_TRUE;
-			turnOffDirectionsExcept(input, UP);
+			input->up_ticks = SDL_GetTicks();
 		}
 	
-		else if (!input->down && event->key.keysym.scancode == input->d_id)
+		else if (input->down_ticks == 0 && event->key.keysym.scancode == input->d_id)
 		{
-			input->down = SDL_TRUE;
-			turnOffDirectionsExcept(input, DOWN);
+			input->down_ticks = SDL_GetTicks();
 		}
 	}
 	
@@ -164,19 +162,19 @@ void performDownAction(Input *input, SDL_Window *window, SDL_Event *event)
 			if (input->ujs_id > 32000)
 			{
 				if (event->jaxis.value > 32000)
-					input->up = SDL_TRUE;
+					input->up_ticks = SDL_GetTicks();
 				else
-					input->up = SDL_FALSE;
+					input->up_ticks = 0;
 			}
 			else if (input->ujs_id < -32000)
 			{
 				if (event->jaxis.value < -32000)
-					input->up = SDL_TRUE;
+					input->up_ticks = SDL_GetTicks();
 				else
-					input->up = SDL_FALSE;
+					input->up_ticks = 0;
 			}
 			
-			if (input->up)
+			if (input->up_ticks != 0)
 			{
 				turnOffDirectionsExcept(input, UP);
 			}
@@ -187,19 +185,19 @@ void performDownAction(Input *input, SDL_Window *window, SDL_Event *event)
 			if (input->djs_id > 32000)
 			{
 				if (event->jaxis.value > 32000)
-					input->down = SDL_TRUE;
+					input->down_ticks = SDL_GetTicks();
 				else
-					input->down = SDL_FALSE;
+					input->down_ticks = 0;
 			}
 			else if (input->djs_id < -32000)
 			{
 				if (event->jaxis.value < -32000)
-					input->down = SDL_TRUE;
+					input->down_ticks = SDL_GetTicks();
 				else
-					input->down = SDL_FALSE;
+					input->down_ticks = 0;
 			}
 			
-			if (input->down)
+			if (input->down_ticks != 0)
 			{
 				turnOffDirectionsExcept(input, DOWN);
 			}
@@ -210,19 +208,19 @@ void performDownAction(Input *input, SDL_Window *window, SDL_Event *event)
 			if (input->rjs_id > 32000)
 			{
 				if (event->jaxis.value > 32000)
-					input->right = SDL_TRUE;
+					input->right_ticks = SDL_GetTicks();
 				else
-					input->right = SDL_FALSE;
+					input->right_ticks = 0;
 			}
 			else if (input->rjs_id < -32000)
 			{
 				if (event->jaxis.value < -32000)
-					input->right = SDL_TRUE;
+					input->right_ticks = SDL_GetTicks();
 				else
-					input->right = SDL_FALSE;
+					input->right_ticks = 0;
 			}
 			
-			if (input->right)
+			if (input->right_ticks == 0)
 			{
 				turnOffDirectionsExcept(input, RIGHT);
 			}
@@ -233,19 +231,19 @@ void performDownAction(Input *input, SDL_Window *window, SDL_Event *event)
 			if (input->ljs_id > 32000)
 			{
 				if (event->jaxis.value > 32000)
-					input->left = SDL_TRUE;
+					input->left_ticks = SDL_GetTicks();
 				else
-					input->left = SDL_FALSE;
+					input->left_ticks = 0;
 			}
 			else if (input->ljs_id < -32000)
 			{
 				if (event->jaxis.value < -32000)
-					input->left = SDL_TRUE;
+					input->left_ticks = SDL_GetTicks();
 				else
-					input->left = SDL_FALSE;
+					input->left_ticks = 0;
 			}
 			
-			if (input->left)
+			if (input->left_ticks != 0)
 			{
 				turnOffDirectionsExcept(input, LEFT);
 			}
@@ -285,31 +283,27 @@ void performDownAction(Input *input, SDL_Window *window, SDL_Event *event)
 		}
 		
 		else if (event->jbutton.which == input->joy_up_id && event->jbutton.button == input->ujs_id && input->ujs_axis_id == JOY_AXIS_NONE &&
-				 !input->right && !input->left && !input->down)
+				 input->right_ticks == 0 && input->left_ticks == 0 && input->down_ticks == 0)
 		{
-			input->up = SDL_TRUE;
-			turnOffDirectionsExcept(input, UP);
+			input->up_ticks = SDL_GetTicks();
 		}
 		
 		else if (event->jbutton.which == input->joy_down_id && event->jbutton.button == input->djs_id && input->djs_axis_id == JOY_AXIS_NONE &&
-				 !input->right && !input->left && !input->up)
+				 input->right_ticks == 0 && input->left_ticks == 0 && input->up_ticks == 0)
 		{
-			input->down = SDL_TRUE;
-			turnOffDirectionsExcept(input, DOWN);
+			input->down_ticks = SDL_GetTicks();
 		}
 		
 		else if (event->jbutton.which == input->joy_left_id && event->jbutton.button == input->ljs_id && input->ljs_axis_id == JOY_AXIS_NONE &&
-				 !input->right && !input->down && !input->up)
+				 input->right_ticks == 0 && input->down_ticks == 0 && input->up_ticks == 0)
 		{
-			input->left = SDL_TRUE;
-			turnOffDirectionsExcept(input, LEFT);
+			input->left_ticks = SDL_GetTicks();
 		}
 		
 		else if (event->jbutton.which == input->joy_right_id && event->jbutton.button == input->rjs_id && input->rjs_axis_id == JOY_AXIS_NONE &&
-				 !input->left && !input->down && !input->up)
+				 input->left_ticks == 0 && input->down_ticks == 0 && input->up_ticks == 0)
 		{
-			input->right = SDL_TRUE;
-			turnOffDirectionsExcept(input, RIGHT);
+			input->right_ticks = SDL_GetTicks();
 		}
 	}
 }
@@ -325,27 +319,27 @@ void performUpAction(Input *input, SDL_Window *window, SDL_Event *event)
 	
 	if (event->type == SDL_KEYUP)
 	{
-		if (!input->right && !input->left && !input->down && !input->up && !input->weap)
+		if (input->right_ticks == 0 && input->left_ticks == 0 && input->down_ticks == 0 && input->up_ticks == 0 && !input->weap)
 			return;
 	
 		if (event->key.keysym.scancode == input->r_id)
 		{
-			input->right = SDL_FALSE;
+			input->right_ticks = 0;
 		}
 	
 		else if (event->key.keysym.scancode == input->l_id)
 		{
-			input->left = SDL_FALSE;
+			input->left_ticks = 0;
 		}
 	
 		else if (event->key.keysym.scancode == input->u_id)
 		{
-			input->up = SDL_FALSE;
+			input->up_ticks = 0;
 		}
 	
 		else if (event->key.keysym.scancode == input->d_id)
 		{
-			input->down = SDL_FALSE;
+			input->down_ticks = 0;
 		}
 		
 		else if (event->key.keysym.scancode == input->weap_id)
@@ -359,24 +353,24 @@ void performUpAction(Input *input, SDL_Window *window, SDL_Event *event)
 	}
 	else if (event->type == SDL_JOYBUTTONUP)
 	{
-		if (input->up && event->jbutton.which == input->joy_up_id && event->jbutton.button == input->ujs_id && input->ujs_axis_id == JOY_AXIS_NONE)
+		if (input->up_ticks != 0 && event->jbutton.which == input->joy_up_id && event->jbutton.button == input->ujs_id && input->ujs_axis_id == JOY_AXIS_NONE)
 		{
-			input->up = SDL_FALSE;
+			input->up_ticks = 0;
 		}
 		
-		else if (input->down && event->jbutton.which == input->joy_down_id && event->jbutton.button == input->djs_id && input->djs_axis_id == JOY_AXIS_NONE)
+		else if (input->down_ticks != 0 && event->jbutton.which == input->joy_down_id && event->jbutton.button == input->djs_id && input->djs_axis_id == JOY_AXIS_NONE)
 		{
-			input->down = SDL_FALSE;
+			input->down_ticks = 0;
 		}
 		
-		else if (input->left && event->jbutton.which == input->joy_left_id && event->jbutton.button == input->ljs_id && input->ljs_axis_id == JOY_AXIS_NONE)
+		else if (input->left_ticks != 0 && event->jbutton.which == input->joy_left_id && event->jbutton.button == input->ljs_id && input->ljs_axis_id == JOY_AXIS_NONE)
 		{
-			input->left = SDL_FALSE;
+			input->left_ticks = 0;
 		}
 		
-		else if (input->right && event->jbutton.which == input->joy_right_id && event->jbutton.button == input->rjs_id && input->rjs_axis_id == JOY_AXIS_NONE)
+		else if (input->right_ticks != 0 && event->jbutton.which == input->joy_right_id && event->jbutton.button == input->rjs_id && input->rjs_axis_id == JOY_AXIS_NONE)
 		{
-			input->right = SDL_FALSE;
+			input->right_ticks = 0;
 		}
 		
 		else if (input->weap && event->jbutton.which == input->joy_weap_id && event->jbutton.button == input->weapjs_id && input->weapjs_axis_id == JOY_AXIS_NONE &&
@@ -404,6 +398,35 @@ void performUpAction(Input *input, SDL_Window *window, SDL_Event *event)
 	}
 }
 
+static uint32_t maxValue(uint32_t value, uint32_t value2)
+{
+	return (value > value2) ? value : value2;
+}
+
+static int bestDirectionFromInputTicks(uint32_t right_ticks, uint32_t left_ticks, uint32_t up_ticks, uint32_t down_ticks)
+{
+	uint32_t scores[] = {right_ticks, left_ticks, up_ticks, down_ticks};
+	uint32_t maxScore = 0;
+	uint8_t maxScoreIndex = 0;
+	for (uint8_t scoreIndex = 0; scoreIndex < sizeof(scores) / sizeof(scores[0]); scoreIndex++)
+	{
+		if (scores[scoreIndex] > maxScore)
+		{
+			maxScore = scores[scoreIndex];
+			maxScoreIndex = scoreIndex;
+		}
+	}
+	
+	if (maxScore == 0)
+	{
+		return NO_DIRECTION;
+	}
+	else
+	{
+		return maxScoreIndex + 1;
+	}
+}
+
 void updateCharacterFromAnyInput(void)
 {
 	if (!gNetworkConnection || !gNetworkConnection->character)
@@ -418,38 +441,17 @@ void updateCharacterFromAnyInput(void)
 		return;
 	}
 	
-	// Any input will move the character if it's a network game, however, only one input can be active at a time
+	// Any input will move the character if it's a network game
 	
-	SDL_bool inputRedRoverState = gRedRoverInput.right || gRedRoverInput.left || gRedRoverInput.up || gRedRoverInput.down;
-	SDL_bool inputPinkBubbleGumState = gPinkBubbleGumInput.right || gPinkBubbleGumInput.left || gPinkBubbleGumInput.up || gPinkBubbleGumInput.down;
-	SDL_bool inputGreenTreeState = gGreenTreeInput.right || gGreenTreeInput.left || gGreenTreeInput.up || gGreenTreeInput.down;
-	SDL_bool inputBlueLightningState = gBlueLightningInput.right || gBlueLightningInput.left || gBlueLightningInput.up || gBlueLightningInput.down;
+	uint32_t rightTicks = maxValue(maxValue(maxValue(gRedRoverInput.right_ticks, gPinkBubbleGumInput.right_ticks), gGreenTreeInput.right_ticks), gBlueLightningInput.right_ticks);
 	
-	int newDirection;
-	if (inputRedRoverState + inputPinkBubbleGumState + inputGreenTreeState + inputBlueLightningState > 1)
-	{
-		newDirection = NO_DIRECTION;
-	}
-	else if (gRedRoverInput.right || gPinkBubbleGumInput.right || gGreenTreeInput.right || gBlueLightningInput.right)
-	{
-		newDirection = RIGHT;
-	}
-	else if (gRedRoverInput.left || gPinkBubbleGumInput.left || gGreenTreeInput.left || gBlueLightningInput.left)
-	{
-		newDirection = LEFT;
-	}
-	else if (gRedRoverInput.down || gPinkBubbleGumInput.down || gGreenTreeInput.down || gBlueLightningInput.down)
-	{
-		newDirection = DOWN;
-	}
-	else if (gRedRoverInput.up || gPinkBubbleGumInput.up || gGreenTreeInput.up || gBlueLightningInput.up)
-	{
-		newDirection = UP;
-	}
-	else
-	{
-		newDirection = NO_DIRECTION;
-	}
+	uint32_t leftTicks = maxValue(maxValue(maxValue(gRedRoverInput.left_ticks, gPinkBubbleGumInput.left_ticks), gGreenTreeInput.left_ticks), gBlueLightningInput.left_ticks);
+	
+	uint32_t upTicks = maxValue(maxValue(maxValue(gRedRoverInput.up_ticks, gPinkBubbleGumInput.up_ticks), gGreenTreeInput.up_ticks), gBlueLightningInput.up_ticks);
+	
+	uint32_t downTicks = maxValue(maxValue(maxValue(gRedRoverInput.down_ticks, gPinkBubbleGumInput.down_ticks), gGreenTreeInput.down_ticks), gBlueLightningInput.down_ticks);
+	
+	int newDirection = bestDirectionFromInputTicks(rightTicks, leftTicks, upTicks, downTicks);
 	
 	if (gNetworkConnection->type == NETWORK_CLIENT_TYPE)
 	{
@@ -458,9 +460,9 @@ void updateCharacterFromAnyInput(void)
 			GameMessage message;
 			message.type = MOVEMENT_REQUEST_MESSAGE_TYPE;
 			message.movementRequest.direction = newDirection;
-			
+
 			setPredictedDirection(character, newDirection);
-			
+
 			sendToServer(message);
 		}
 	}
@@ -482,47 +484,28 @@ void updateCharacterFromInput(Input *input)
 		return;
 	}
 	
-	if (input->right)
-	{
-		input->character->direction = RIGHT;
-	}
-	else if (input->left)
-	{
-		input->character->direction = LEFT;
-	}
-	else if (input->up)
-	{
-		input->character->direction = UP;
-	}
-	else if (input->down)
-	{
-		input->character->direction = DOWN;
-	}
-	else
-	{
-		input->character->direction = NO_DIRECTION;
-	}
+	input->character->direction = bestDirectionFromInputTicks(input->right_ticks, input->left_ticks, input->up_ticks, input->down_ticks);
 }
 
-void turnOffDirectionsExcept(Input *input, int direction)
+static void turnOffDirectionsExcept(Input *input, int direction)
 {
 	if (direction != RIGHT)
 	{
-		input->right = SDL_FALSE;
+		input->right_ticks = 0;
 	}
 	
 	if (direction != LEFT)
 	{
-		input->left = SDL_FALSE;
+		input->left_ticks = 0;
 	}
 	
 	if (direction != UP)
 	{
-		input->up = SDL_FALSE;
+		input->up_ticks = 0;
 	}
 	
 	if (direction != DOWN)
 	{
-		input->down = SDL_FALSE;
+		input->down_ticks = 0;
 	}
 }
