@@ -362,6 +362,14 @@ void drawNetworkAddressFieldMenu(Renderer *renderer, color4_t preferredColor)
 		
 		drawStringLeftAligned(renderer, hostModelViewMatrix, color, 0.0024f, gServerAddressString);
 	}
+	else if (gNetworkAddressFieldIsActive)
+	{
+		mat4_t translationMatrix = m4_translation((vec3_t){-1.0f / 14.0f, 50.0f / 14.0f, -280.0f / 14.0f});
+		
+		color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 1.0f};
+		
+		drawString(renderer, translationMatrix, textColor, 60.0f / 14.0f, 5.0f / 14.0f, "(Feel free to paste in the host address!)");
+	}
 }
 
 void networkAddressFieldMenuAction(void *context)
