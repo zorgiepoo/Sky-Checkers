@@ -1131,14 +1131,55 @@ static void drawScene(Renderer *renderer)
 	}
 }
 
+static void writeTextInput(const char *text, uint8_t maxSize)
+{
+	if (gConsoleActivated || gNetworkAddressFieldIsActive || gNetworkUserNameFieldIsActive)
+	{
+		for (uint8_t textIndex = 0; textIndex < maxSize; textIndex++)
+		{
+			if (text[textIndex] == 0x0 || text[textIndex] == 0x1 || text[textIndex] == '`' || text[textIndex] == '~')
+			{
+				break;
+			}
+			
+			if (gConsoleActivated)
+			{
+				writeConsoleText((Uint8)text[textIndex]);
+			}
+			else if (gNetworkAddressFieldIsActive)
+			{
+				writeNetworkAddressText((Uint8)text[textIndex]);
+			}
+			else if (gNetworkUserNameFieldIsActive)
+			{
+				writeNetworkUserNameText((Uint8)text[textIndex]);
+			}
+		}
+	}
+}
+
 static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDrawScene, SDL_bool *quit)
 {
 	SDL_Window *window = renderer->window;
 	
+#ifdef MAC_OS_X
+	SDL_Keymod metaMod = (KMOD_LGUI | KMOD_RGUI);
+#else
+	SDL_Keymod metaMod = (KMOD_LCTRL | KMOD_RCTRL);
+#endif
+	
 	switch (event->type)
 	{
 		case SDL_KEYDOWN:
-			if (!gConsoleActivated && gGameState && gGameWinner != NO_CHARACTER &&
+			if (SDL_GetKeyFromScancode(event->key.keysym.scancode) == SDLK_v && (event->key.keysym.mod & metaMod) != 0 && SDL_HasClipboardText())
+			{
+				char *clipboardText = SDL_GetClipboardText();
+				if (clipboardText != NULL)
+				{
+					writeTextInput(clipboardText, 128);
+				}
+			}
+			else if (!gConsoleActivated && gGameState && gGameWinner != NO_CHARACTER &&
 				(event->key.keysym.scancode == gPinkBubbleGumInput.weap_id || event->key.keysym.scancode == gRedRoverInput.weap_id ||
 				 event->key.keysym.scancode == gBlueLightningInput.weap_id || event->key.keysym.scancode == gGreenTreeInput.weap_id ||
 				event->key.keysym.scancode == SDL_SCANCODE_RETURN || event->key.keysym.scancode == SDL_SCANCODE_KP_ENTER))
@@ -1431,31 +1472,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 				}
 			}
 		case SDL_TEXTINPUT:
-			if (gConsoleActivated || gNetworkAddressFieldIsActive || gNetworkUserNameFieldIsActive)
-			{
-				char *text = event->text.text;
-				for (uint8_t textIndex = 0; textIndex < SDL_TEXTINPUTEVENT_TEXT_SIZE; textIndex++)
-				{
-					if (text[textIndex] == 0x0 || text[textIndex] == 0x1 || text[textIndex] == '`' || text[textIndex] == '~')
-					{
-						break;
-					}
-					
-					if (gConsoleActivated)
-					{
-						writeConsoleText((Uint8)text[textIndex]);
-					}
-					else if (gNetworkAddressFieldIsActive)
-					{
-						writeNetworkAddressText((Uint8)text[textIndex]);
-					}
-					else if (gNetworkUserNameFieldIsActive)
-					{
-						writeNetworkUserNameText((Uint8)text[textIndex]);
-					}
-				}
-			}
-			
+			writeTextInput(event->text.text, SDL_TEXTINPUTEVENT_TEXT_SIZE);
 			break;
 
 		case SDL_JOYBUTTONDOWN:
