@@ -30,6 +30,8 @@ static SDL_mutex *gCurrentSlotMutex;
 static void pushNetworkMessage(GameMessageArray *messageArray, GameMessage message);
 static void depleteNetworkMessages(GameMessageArray *messageArray);
 
+static void cleanupStateFromNetwork(void);
+
 static void clearPredictedColors(int characterID)
 {
 	for (int tileIndex = 0; tileIndex < NUMBER_OF_TILES; tileIndex++)
@@ -179,9 +181,8 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					cleanupStateFromNetwork();
 					
 					closeSocket(gNetworkConnection->socket);
-#ifdef WINDOWS
-					WSACleanup();
-#endif
+					
+					deinitializeNetwork();
 					
 					SDL_Thread *thread = gNetworkConnection->thread;
 					
@@ -1409,9 +1410,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 		}
 	}
 	
-#ifdef WINDOWS
-	WSACleanup();
-#endif
+	deinitializeNetwork();
 	
 	return 0;
 }
@@ -2232,7 +2231,7 @@ GameMessage *popNetworkMessages(GameMessageArray *messageArray, uint32_t *count)
 	return newMessages;
 }
 
-void networkInitialization(void)
+void initializeNetwork(void)
 {
 #ifdef WINDOWS
 	WSADATA wsaData;
@@ -2241,6 +2240,13 @@ void networkInitialization(void)
 	{
 		fprintf(stderr, "WSAStartup failed.\n");
     }
+#endif
+}
+
+void deinitializeNetwork(void)
+{
+#ifdef WINDOWS
+	WSACleanup();
 #endif
 }
 
@@ -2255,7 +2261,7 @@ static void cleanUpNetName(Character *character)
 }
 
 // Not to be called on network threads
-void cleanupStateFromNetwork(void)
+static void cleanupStateFromNetwork(void)
 {
 	restoreAllBackupStates();
 	

@@ -271,8 +271,8 @@ extern NetworkConnection *gNetworkConnection;
 void initializeNetworkBuffers(void);
 GameMessage *popNetworkMessages(GameMessageArray *messageArray, uint32_t *count);
 
-void networkInitialization(void);
-void cleanupStateFromNetwork(void);
+void initializeNetwork(void);
+void deinitializeNetwork(void);
 
 void syncNetworkState(SDL_Window *window, float timeDelta);
 

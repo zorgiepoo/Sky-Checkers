@@ -178,7 +178,7 @@ void networkServerPlayMenuAction(void *context)
 		return;
 	}
 	
-	networkInitialization();
+	initializeNetwork();
 	
 	gNetworkConnection = malloc(sizeof(*gNetworkConnection));
 	memset(gNetworkConnection, 0, sizeof(*gNetworkConnection));
@@ -198,6 +198,8 @@ void networkServerPlayMenuAction(void *context)
 		
 		free(gNetworkConnection);
 		gNetworkConnection = NULL;
+		
+		deinitializeNetwork();
 		
 		return;
 	}
@@ -235,6 +237,8 @@ void networkServerPlayMenuAction(void *context)
 		
 		free(gNetworkConnection);
 		gNetworkConnection = NULL;
+		
+		deinitializeNetwork();
 		
 		return;
 	}
@@ -399,7 +403,7 @@ void connectToNetworkGameMenuAction(void *context)
 		return;
 	}
 	
-	networkInitialization();
+	initializeNetwork();
 	
 	gNetworkConnection = malloc(sizeof(*gNetworkConnection));
 	memset(gNetworkConnection, 0, sizeof(*gNetworkConnection));
@@ -420,6 +424,8 @@ void connectToNetworkGameMenuAction(void *context)
 		
 		free(gNetworkConnection);
 		gNetworkConnection = NULL;
+		
+		deinitializeNetwork();
 		
 		return;
 	}
@@ -450,6 +456,8 @@ void connectToNetworkGameMenuAction(void *context)
 		
 		free(gNetworkConnection);
 		gNetworkConnection = NULL;
+		
+		deinitializeNetwork();
 		
 		return;
 	}
