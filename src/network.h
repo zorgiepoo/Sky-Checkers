@@ -194,6 +194,16 @@ typedef struct
 	SDL_mutex *mutex;
 } GameMessageArray;
 
+// Use a union to avoid violating strict aliasing
+// instead of casting to sockaddr_storage
+typedef union
+{
+	struct sockaddr sa;
+	struct sockaddr_in sa_in;
+	struct sockaddr_in6 sa_in6;
+	struct sockaddr_storage storage;
+} SocketAddress;
+
 typedef struct
 {
 	// Only writable before threads are created
@@ -214,7 +224,7 @@ typedef struct
 		struct
 		{
 			// Only writable before client thread is created
-			struct sockaddr_in hostAddress;
+			SocketAddress hostAddress;
 			// Writable & readable from main thread only
 			int characterLives;
 			
@@ -239,7 +249,7 @@ typedef struct
 		struct
 		{
 			// Only readable/writable from server thread
-			struct sockaddr_in clientAddresses[3];
+			SocketAddress clientAddresses[3];
 			// Keeping track of half-ping from clients
 			// Only readable/writable from main thread
 			uint32_t clientHalfPings[3];

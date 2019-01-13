@@ -411,10 +411,10 @@ void connectToNetworkGameMenuAction(void *context)
 	}
 	
 	// set address
-	gNetworkConnection->hostAddress.sin_family = AF_INET;
-	gNetworkConnection->hostAddress.sin_port = htons(NETWORK_PORT);
-	gNetworkConnection->hostAddress.sin_addr = *((struct in_addr *)host_entry->h_addr);
-	memset(gNetworkConnection->hostAddress.sin_zero, '\0', sizeof(gNetworkConnection->hostAddress.sin_zero));
+	gNetworkConnection->hostAddress.sa_in.sin_family = AF_INET;
+	gNetworkConnection->hostAddress.sa_in.sin_port = htons(NETWORK_PORT);
+	gNetworkConnection->hostAddress.sa_in.sin_addr = *((struct in_addr *)host_entry->h_addr);
+	memset(gNetworkConnection->hostAddress.sa_in.sin_zero, '\0', sizeof(gNetworkConnection->hostAddress.sa_in.sin_zero));
 	
 	gNetworkConnection->thread = SDL_CreateThread(clientNetworkThread, "client-thread", context);
 }

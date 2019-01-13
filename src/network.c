@@ -648,18 +648,26 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 	}
 }
 
-static void sendData(int socket, void *data, size_t size, struct sockaddr_in *address)
+static void sendData(int socket, void *data, size_t size, SocketAddress *address)
 {
-	sendto(socket, data, size, 0, (struct sockaddr *)address, sizeof(*address));
+	if (address->sa.sa_family == AF_INET)
+	{
+		sendto(socket, data, size, 0, &address->sa, sizeof(address->sa_in));
+	}
+	else if (address->sa.sa_family == AF_INET6)
+	{
+		sendto(socket, data, size, 0, &address->sa, sizeof(address->sa_in6));
+	}
 }
 
-static ssize_t receiveData(int socket, void *buffer, size_t length, struct sockaddr_in *address)
+static ssize_t receiveData(int socket, void *buffer, size_t length, SocketAddress *address)
 {
+	memset(address, 0, sizeof(*address));
 	socklen_t addressLength = sizeof(*address);
-	return recvfrom(socket, buffer, length, 0, (struct sockaddr *)address, &addressLength);
+	return recvfrom(socket, buffer, length, 0, &address->sa, &addressLength);
 }
 
-static int characterIDForClientAddress(struct sockaddr_in *address)
+static int characterIDForClientAddress(SocketAddress *address)
 {
 	for (int clientIndex = 0; clientIndex < gCurrentSlot; clientIndex++)
 	{
@@ -739,7 +747,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 			{
 				GameMessage message = messagesAvailable[messageIndex];
 				int addressIndex = message.addressIndex;
-				struct sockaddr_in *address = (addressIndex == -1) ? NULL : &gNetworkConnection->clientAddresses[addressIndex];
+				SocketAddress *address = (addressIndex == -1) ? NULL : &gNetworkConnection->clientAddresses[addressIndex];
 				
 				if (!needsToQuit && message.type != QUIT_MESSAGE_TYPE && message.type != ACK_MESSAGE_TYPE && message.type != FIRST_DATA_TO_CLIENT_MESSAGE_TYPE && message.type != PING_MESSAGE_TYPE && message.type != PONG_MESSAGE_TYPE)
 				{
@@ -1156,7 +1164,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 			else
 			{
 				char packetBuffer[4096];
-				struct sockaddr_in address;
+				SocketAddress address;
 				int numberOfBytes;
 				if ((numberOfBytes = receiveData(gNetworkConnection->socket, packetBuffer, sizeof(packetBuffer), &address)) == -1)
 				{
