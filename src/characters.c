@@ -622,28 +622,28 @@ void moveCharacter(Character *character, double timeDelta)
 		{
 			if (characterCanMove(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
 			{
-				character->x += character->speed * timeDelta;
+				character->x += character->speed * (float)timeDelta;
 			}
 		}
 		else if (direction == LEFT)
 		{
 			if (characterCanMove(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
 			{
-				character->x -= character->speed * timeDelta;
+				character->x -= character->speed * (float)timeDelta;
 			}
 		}
 		else if (direction == DOWN)
 		{
 			if (characterCanMove(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
 			{
-				character->y -= character->speed * timeDelta;
+				character->y -= character->speed * (float)timeDelta;
 			}
 		}
 		else if (direction == UP)
 		{
 			if (characterCanMove(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
 			{
-				character->y += character->speed * timeDelta;
+				character->y += character->speed * (float)timeDelta;
 			}
 		}
 	}

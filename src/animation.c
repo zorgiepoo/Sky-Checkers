@@ -81,7 +81,7 @@ static void sendPing(void);
 
 void animate(SDL_Window *window, double timeDelta)
 {
-	gSecondTimer += timeDelta;
+	gSecondTimer += (float)timeDelta;
 	
 	// Update gSecondTimer and change gLastSecond
 	if ((int)gLastSecond != (int)gSecondTimer)
@@ -257,19 +257,19 @@ static void moveWeapon(Weapon *weapon, double timeDelta)
 	{
 		if (weapon->direction == RIGHT)
 		{
-			weapon->x += WEAPON_PROJECTILE_SPEED * timeDelta;
+			weapon->x += WEAPON_PROJECTILE_SPEED * (float)timeDelta;
 		}
 		else if (weapon->direction == LEFT)
 		{
-			weapon->x -= WEAPON_PROJECTILE_SPEED * timeDelta;
+			weapon->x -= WEAPON_PROJECTILE_SPEED * (float)timeDelta;
 		}
 		else if (weapon->direction == UP)
 		{
-			weapon->y += WEAPON_PROJECTILE_SPEED * timeDelta;
+			weapon->y += WEAPON_PROJECTILE_SPEED * (float)timeDelta;
 		}
 		else if (weapon->direction == DOWN)
 		{
-			weapon->y -= WEAPON_PROJECTILE_SPEED * timeDelta;
+			weapon->y -= WEAPON_PROJECTILE_SPEED * (float)timeDelta;
 		}
 	}
 }
@@ -553,7 +553,7 @@ static void collapseTiles(double timeDelta)
 	{
 		if (gTiles[tileIndex].z < TILE_ALIVE_Z && gTiles[tileIndex].z >= TILE_TERMINATING_Z)
 		{
-			gTiles[tileIndex].z -= TILE_FALLING_SPEED * timeDelta;
+			gTiles[tileIndex].z -= TILE_FALLING_SPEED * (float)timeDelta;
 		}
 	}
 }
@@ -753,7 +753,7 @@ static void killCharacter(Input *characterInput, double timeDelta)
 	
 	if (!CHARACTER_IS_ALIVE(player) && player->z > CHARACTER_TERMINATING_Z)
 	{
-		player->z -= CHARACTER_FALLING_SPEED * timeDelta;
+		player->z -= CHARACTER_FALLING_SPEED * (float)timeDelta;
 		player->recovery_timer = 1;
 	}
 }
