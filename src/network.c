@@ -824,7 +824,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						break;
 					case CHARACTER_FIRED_UPDATE_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "sw%llu %d %f %f %d", message.packetNumber, message.firedUpdate.characterID, message.firedUpdate.x, message.firedUpdate.y, message.firedUpdate.direction);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "sw%"PRIu64" %d %f %f %d", message.packetNumber, message.firedUpdate.characterID, message.firedUpdate.x, message.firedUpdate.y, message.firedUpdate.direction);
 						
 						sendBufferPtrs[addressIndex] += length + 1;
 						
@@ -840,7 +840,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						break;
 					case NUMBER_OF_PLAYERS_WAITING_FOR_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "nw%llu %d", message.packetNumber, message.numberOfWaitingPlayers);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "nw%"PRIu64" %d", message.packetNumber, message.numberOfWaitingPlayers);
 						
 						sendBufferPtrs[addressIndex] += length + 1;
 						
@@ -854,7 +854,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case NET_NAME_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "nn%llu %d %s", message.packetNumber, message.netNameRequest.characterID, message.netNameRequest.netName);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "nn%"PRIu64" %d %s", message.packetNumber, message.netNameRequest.characterID, message.netNameRequest.netName);
 						
 						sendBufferPtrs[addressIndex] += length + 1;
 						
@@ -868,7 +868,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case START_GAME_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "sg%llu", message.packetNumber);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "sg%"PRIu64"", message.packetNumber);
 						
 						sendBufferPtrs[addressIndex] += length + 1;
 						
@@ -882,7 +882,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case GAME_START_NUMBER_UPDATE_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "gs%llu %d", message.packetNumber, message.gameStartNumber);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "gs%"PRIu64" %d", message.packetNumber, message.gameStartNumber);
 						
 						sendBufferPtrs[addressIndex] += length + 1;
 						
@@ -896,7 +896,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case CHARACTER_DIED_UPDATE_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "pk%llu %d %d", message.packetNumber, message.diedUpdate.characterID, message.diedUpdate.characterLives);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "pk%"PRIu64" %d %d", message.packetNumber, message.diedUpdate.characterID, message.diedUpdate.characterLives);
 						
 						sendBufferPtrs[addressIndex] += length + 1;
 						
@@ -910,7 +910,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case COLOR_TILE_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "ct%llu %d %d", message.packetNumber, message.colorTile.characterID, message.colorTile.tileIndex);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "ct%"PRIu64" %d %d", message.packetNumber, message.colorTile.characterID, message.colorTile.tileIndex);
 						
 						sendBufferPtrs[addressIndex] += length + 1;
 						
@@ -924,7 +924,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case TILE_FALLING_DOWN_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "tf%llu %d %d", message.packetNumber, message.fallingTile.tileIndex, message.fallingTile.dead);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "tf%"PRIu64" %d %d", message.packetNumber, message.fallingTile.tileIndex, message.fallingTile.dead);
 						
 						sendBufferPtrs[addressIndex] += length + 1;
 						
@@ -938,7 +938,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case RECOVER_TILE_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "rt%llu %d", message.packetNumber, message.recoverTile.tileIndex);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "rt%"PRIu64" %d", message.packetNumber, message.recoverTile.tileIndex);
 						
 						sendBufferPtrs[addressIndex] += length + 1;
 						
@@ -952,7 +952,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case CHARACTER_MOVED_UPDATE_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "mo%llu %d %f %f %f %d %d %u", message.packetNumber, message.movedUpdate.characterID, message.movedUpdate.x, message.movedUpdate.y, message.movedUpdate.z, message.movedUpdate.direction, message.movedUpdate.pointing_direction, message.movedUpdate.timestamp);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "mo%"PRIu64" %d %f %f %f %d %d %u", message.packetNumber, message.movedUpdate.characterID, message.movedUpdate.x, message.movedUpdate.y, message.movedUpdate.z, message.movedUpdate.direction, message.movedUpdate.pointing_direction, message.movedUpdate.timestamp);
 						
 						sendBufferPtrs[addressIndex] += length + 1;
 						
@@ -966,7 +966,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case CHARACTER_KILLED_UPDATE_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "ck%llu %d %d", message.packetNumber, message.killedUpdate.characterID, message.killedUpdate.kills);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "ck%"PRIu64" %d %d", message.packetNumber, message.killedUpdate.characterID, message.killedUpdate.kills);
 						
 						sendBufferPtrs[addressIndex] += length + 1;
 						
@@ -980,7 +980,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case GAME_RESET_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], sizeof(sendBufferPtrs[addressIndex]) - 1, "ng%llu", message.packetNumber);
+						int length = snprintf(sendBufferPtrs[addressIndex], sizeof(sendBufferPtrs[addressIndex]) - 1, "ng%"PRIu64"", message.packetNumber);
 						
 						sendBufferPtrs[addressIndex] += length + 1;
 						
@@ -994,7 +994,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case ACK_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "ak%llu", message.packetNumber);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "ak%"PRIu64"", message.packetNumber);
 						
 						sendBufferPtrs[addressIndex] += length + 1;
 						
@@ -1039,7 +1039,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case FIRST_SERVER_RESPONSE_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "sr%llu %d %d", message.packetNumber, message.firstServerResponse.slotID, message.firstServerResponse.characterLives);
+						int length = snprintf(sendBufferPtrs[addressIndex], 256, "sr%"PRIu64" %d %d", message.packetNumber, message.firstServerResponse.slotID, message.firstServerResponse.characterLives);
 						
 						sendBufferPtrs[addressIndex] += length + 1;
 						
@@ -1183,7 +1183,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							memset(netName, 0, MAX_USER_NAME_SIZE);
 							
 							uint64_t packetNumber = 0;
-							sscanf(buffer + 2, "%llu %s", &packetNumber, netName);
+							sscanf(buffer + 2, "%"PRIu64" %s", &packetNumber, netName);
 							
 							int existingCharacterID = characterIDForClientAddress(&address);
 							if ((packetNumber == 1 && existingCharacterID == NO_CHARACTER && numberOfPlayersToWaitFor > 0) || (packetNumber == 1 && existingCharacterID != NO_CHARACTER))
@@ -1245,7 +1245,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 								int direction = 0;
 								uint64_t packetNumber = 0;
 								
-								sscanf(buffer + 2, "%llu %d", &packetNumber, &direction);
+								sscanf(buffer + 2, "%"PRIu64" %d", &packetNumber, &direction);
 								
 								if (packetNumber == triggerIncomingPacketNumbers[addressIndex] + 1)
 								{
@@ -1280,7 +1280,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						{
 							// shoot weapon
 							uint64_t packetNumber = 0;
-							sscanf(buffer + 2, "%llu", &packetNumber);
+							sscanf(buffer + 2, "%"PRIu64"", &packetNumber);
 							
 							int characterID = characterIDForClientAddress(&address);
 							if (characterID != NO_CHARACTER)
@@ -1316,7 +1316,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						else if (buffer[0] == 'a' && buffer[1] == 'k')
 						{
 							uint64_t packetNumber = 0;
-							sscanf(buffer + 2, "%llu", &packetNumber);
+							sscanf(buffer + 2, "%"PRIu64"", &packetNumber);
 							
 							int characterID = characterIDForClientAddress(&address);
 							if (characterID != NO_CHARACTER)
@@ -1503,7 +1503,7 @@ int clientNetworkThread(void *context)
 				{
 					case WELCOME_MESSAGE_TO_SERVER_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtr, 256, "cp%llu %s", message.packetNumber, gUserNameString);
+						int length = snprintf(sendBufferPtr, 256, "cp%"PRIu64" %s", message.packetNumber, gUserNameString);
 						
 						sendBufferPtr += length + 1;
 						
@@ -1558,7 +1558,7 @@ int clientNetworkThread(void *context)
 					}
 					case MOVEMENT_REQUEST_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtr, 256, "rm%llu %d", message.packetNumber, message.movementRequest.direction);
+						int length = snprintf(sendBufferPtr, 256, "rm%"PRIu64" %d", message.packetNumber, message.movementRequest.direction);
 						
 						sendBufferPtr += length + 1;
 						
@@ -1572,7 +1572,7 @@ int clientNetworkThread(void *context)
 					}
 					case CHARACTER_FIRED_REQUEST_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtr, 256, "sw%llu", message.packetNumber);
+						int length = snprintf(sendBufferPtr, 256, "sw%"PRIu64"", message.packetNumber);
 						
 						sendBufferPtr += length + 1;
 						
@@ -1586,7 +1586,7 @@ int clientNetworkThread(void *context)
 					}
 					case ACK_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtr, 256, "ak%llu", message.packetNumber);
+						int length = snprintf(sendBufferPtr, 256, "ak%"PRIu64"", message.packetNumber);
 						
 						sendBufferPtr += length + 1;
 						
@@ -1704,7 +1704,7 @@ int clientNetworkThread(void *context)
 								int slotID = 0;
 								int characterLives = 0;
 								
-								sscanf(buffer, "sr%llu %d %d", &packetNumber, &slotID, &characterLives);
+								sscanf(buffer, "sr%"PRIu64" %d %d", &packetNumber, &slotID, &characterLives);
 								
 								if (packetNumber == triggerIncomingPacketNumber + 1)
 								{
@@ -1731,7 +1731,7 @@ int clientNetworkThread(void *context)
 						{
 							uint64_t packetNumber = 0;
 							int numberOfWaitingPlayers = 0;
-							sscanf(buffer + 2, "%llu %d", &packetNumber, &numberOfWaitingPlayers);
+							sscanf(buffer + 2, "%"PRIu64" %d", &packetNumber, &numberOfWaitingPlayers);
 							
 							if (packetNumber == triggerIncomingPacketNumber + 1 && numberOfWaitingPlayers >= 0 && numberOfWaitingPlayers < 4)
 							{
@@ -1760,7 +1760,7 @@ int clientNetworkThread(void *context)
 							if (netName != NULL)
 							{
 								memset(netName, 0, MAX_USER_NAME_SIZE);
-								sscanf(buffer + 2, "%llu %d %s", &packetNumber, &characterID, netName);
+								sscanf(buffer + 2, "%"PRIu64" %d %s", &packetNumber, &characterID, netName);
 								
 								if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 								{
@@ -1790,7 +1790,7 @@ int clientNetworkThread(void *context)
 						{
 							// start game
 							uint64_t packetNumber = 0;
-							sscanf(buffer + 2, "%llu", &packetNumber);
+							sscanf(buffer + 2, "%"PRIu64"", &packetNumber);
 							
 							if (packetNumber == triggerIncomingPacketNumber + 1)
 							{
@@ -1813,7 +1813,7 @@ int clientNetworkThread(void *context)
 						{
 							uint64_t packetNumber = 0;
 							int gameStartNumber;
-							sscanf(buffer + 2, "%llu %d", &packetNumber, &gameStartNumber);
+							sscanf(buffer + 2, "%"PRIu64" %d", &packetNumber, &gameStartNumber);
 							
 							if (packetNumber == triggerIncomingPacketNumber + 1)
 							{
@@ -1849,7 +1849,7 @@ int clientNetworkThread(void *context)
 							float y = 0.0f;
 							float z = 0.0f;
 							
-							sscanf(buffer + 2, "%llu %d %f %f %f %d %d %u", &packetNumber, &characterID, &x, &y, &z, &direction, &pointing_direction, &timestamp);
+							sscanf(buffer + 2, "%"PRIu64" %d %f %f %f %d %d %u", &packetNumber, &characterID, &x, &y, &z, &direction, &pointing_direction, &timestamp);
 							
 							if (packetNumber > realTimeIncomingPacketNumber && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 							{
@@ -1874,7 +1874,7 @@ int clientNetworkThread(void *context)
 							uint64_t packetNumber = 0;
 							int characterID = 0;
 							int characterLives = 0;
-							sscanf(buffer + 2, "%llu %d %d", &packetNumber, &characterID, &characterLives);
+							sscanf(buffer + 2, "%"PRIu64" %d %d", &packetNumber, &characterID, &characterLives);
 							
 							if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 							{
@@ -1901,7 +1901,7 @@ int clientNetworkThread(void *context)
 							uint64_t packetNumber = 0;
 							int characterID = 0;
 							int characterKills = 0;
-							sscanf(buffer + 2, "%llu %d %d", &packetNumber, &characterID, &characterKills);
+							sscanf(buffer + 2, "%"PRIu64" %d %d", &packetNumber, &characterID, &characterKills);
 							
 							if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 							{
@@ -1931,7 +1931,7 @@ int clientNetworkThread(void *context)
 							float y = 0.0f;
 							int pointing_direction = 0;
 							
-							sscanf(buffer + 2, "%llu %d %f %f %d", &packetNumber, &characterID, &x, &y, &pointing_direction);
+							sscanf(buffer + 2, "%"PRIu64" %d %f %f %d", &packetNumber, &characterID, &x, &y, &pointing_direction);
 							
 							if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 							{
@@ -1961,7 +1961,7 @@ int clientNetworkThread(void *context)
 							int characterID = 0;
 							int tileIndex = 0;
 							
-							sscanf(buffer + 2, "%llu %d %d", &packetNumber, &characterID, &tileIndex);
+							sscanf(buffer + 2, "%"PRIu64" %d %d", &packetNumber, &characterID, &tileIndex);
 							
 							if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM && tileIndex >= 0 && tileIndex < NUMBER_OF_TILES)
 							{
@@ -1989,7 +1989,7 @@ int clientNetworkThread(void *context)
 							int tileIndex = 0;
 							SDL_bool dead = SDL_FALSE;
 							
-							sscanf(buffer + 2, "%llu %d %d", &packetNumber, &tileIndex, &dead);
+							sscanf(buffer + 2, "%"PRIu64" %d %d", &packetNumber, &tileIndex, &dead);
 							
 							if (packetNumber == triggerIncomingPacketNumber + 1 && tileIndex >= 0 && tileIndex < NUMBER_OF_TILES)
 							{
@@ -2016,7 +2016,7 @@ int clientNetworkThread(void *context)
 							uint64_t packetNumber = 0;
 							int tileIndex = 0;
 							
-							sscanf(buffer + 2, "%llu %d", &packetNumber, &tileIndex);
+							sscanf(buffer + 2, "%"PRIu64" %d", &packetNumber, &tileIndex);
 							
 							if (packetNumber == triggerIncomingPacketNumber + 1 && tileIndex >= 0 && tileIndex < NUMBER_OF_TILES)
 							{
@@ -2041,7 +2041,7 @@ int clientNetworkThread(void *context)
 						{
 							// new game
 							uint64_t packetNumber = 0;
-							sscanf(buffer + 2, "%llu", &packetNumber);
+							sscanf(buffer + 2, "%"PRIu64"", &packetNumber);
 							
 							if (packetNumber == triggerIncomingPacketNumber + 1)
 							{
@@ -2064,7 +2064,7 @@ int clientNetworkThread(void *context)
 						else if (buffer[0] == 'a' && buffer[1] == 'k')
 						{
 							uint64_t packetNumber = 0;
-							sscanf(buffer + 2, "%llu", &packetNumber);
+							sscanf(buffer + 2, "%"PRIu64"", &packetNumber);
 							
 							SDL_bool foundAck = SDL_FALSE;
 							uint64_t maxPacketCount = receivedAckPacketCount < receivedAckPacketsCapacity ? receivedAckPacketCount : receivedAckPacketsCapacity;
