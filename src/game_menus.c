@@ -228,7 +228,7 @@ void networkServerPlayMenuAction(void *context)
 		if (bind(gNetworkConnection->socket, serverInfo->ai_addr, serverInfo->ai_addrlen) == -1)
 		{
 			perror("server: bind");
-			close(gNetworkConnection->socket);
+			closeSocket(gNetworkConnection->socket);
 			continue;
 		}
 		

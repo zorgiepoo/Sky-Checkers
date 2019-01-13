@@ -75,6 +75,9 @@
     <ClInclude Include="..\src\renderer_gl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\renderer_projection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\ai.c">
@@ -129,6 +132,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\renderer_gl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\renderer_projection.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -23,6 +23,8 @@
 #include "utilities.h"
 #include "audio.h"
 
+#include <inttypes.h>
+
 NetworkConnection *gNetworkConnection = NULL;
 
 static SDL_mutex *gCurrentSlotMutex;
@@ -660,7 +662,12 @@ static void sendData(int socket, void *data, size_t size, SocketAddress *address
 	}
 }
 
-static ssize_t receiveData(int socket, void *buffer, size_t length, SocketAddress *address)
+#ifdef WINDOWS
+static int
+#else
+static ssize_t
+#endif
+receiveData(int socket, void *buffer, size_t length, SocketAddress *address)
 {
 	memset(address, 0, sizeof(*address));
 	socklen_t addressLength = sizeof(*address);
