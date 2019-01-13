@@ -76,9 +76,7 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 		createdRenderer = SDL_TRUE;
 	}
 	
-#ifndef _DEBUG
 	SDL_ShowCursor(SDL_DISABLE);
-#endif
 }
 
 void updateViewport(Renderer *renderer, int32_t windowWidth, int32_t windowHeight)
