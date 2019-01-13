@@ -283,10 +283,6 @@ void networkServerPlayMenuAction(void *context)
 	gBlueLightningInput.character = gNetworkConnection->character;
 	gGreenTreeInput.character = gNetworkConnection->character;
 	
-	// make sure we are at main menu
-	changeMenu(LEFT);
-	changeMenu(LEFT);
-	
 	gNetworkConnection->thread = SDL_CreateThread(serverNetworkThread, "server-thread", &gNetworkConnection->numberOfPlayersToWaitFor);
 }
 
@@ -330,7 +326,7 @@ void networkServerAIModeMenuAction(void *context)
 
 void drawNetworkServerPlayerLivesMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t playerLivesModelViewMatrix = m4_translation((vec3_t){-1.43f, -2.14f, -20.00f});	
+	mat4_t playerLivesModelViewMatrix = m4_translation((vec3_t){-1.43f, -2.14f, -20.00f});
 	drawStringf(renderer, playerLivesModelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Player Lives: %i", gCharacterNetLives);
 	
 	if (gDrawArrowsForNetPlayerLivesFlag)
