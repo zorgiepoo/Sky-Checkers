@@ -351,7 +351,7 @@ void networkClientMenuAction(void *context)
 
 void drawNetworkAddressFieldMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t hostLabelModelViewMatrix = m4_translation((vec3_t){-2.86f, 0.00f, -20.00f});	
+	mat4_t hostLabelModelViewMatrix = m4_translation((vec3_t){-3.86f, 0.00f, -20.00f});
 	drawString(renderer, hostLabelModelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Host Address:");
 	
 	color4_t color = gNetworkAddressFieldIsActive ? (color4_t){0.0f, 0.0f, 0.8f, 1.0f} : preferredColor;
@@ -391,7 +391,7 @@ void performNetworkAddressBackspace(void)
 
 void drawConnectToNetworkGameMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-3.21f, -1.07f, -20.00f});	
+	mat4_t modelViewMatrix = m4_translation((vec3_t){-4.21f, -1.07f, -20.00f});	
 	drawString(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Connect");
 }
 
