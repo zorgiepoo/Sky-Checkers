@@ -1987,7 +1987,7 @@ int clientNetworkThread(void *context)
 						{
 							uint64_t packetNumber = 0;
 							int tileIndex = 0;
-							SDL_bool dead = SDL_FALSE;
+							int dead = 0;
 							
 							sscanf(buffer + 2, "%"PRIu64" %d %d", &packetNumber, &tileIndex, &dead);
 							
@@ -1998,7 +1998,7 @@ int clientNetworkThread(void *context)
 								GameMessage message;
 								message.type = TILE_FALLING_DOWN_MESSAGE_TYPE;
 								message.fallingTile.tileIndex = tileIndex;
-								message.fallingTile.dead = dead;
+								message.fallingTile.dead = (dead != 0);
 								
 								pushNetworkMessage(&gGameMessagesFromNet, message);
 							}
