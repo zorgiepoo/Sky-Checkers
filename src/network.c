@@ -23,8 +23,6 @@
 #include "utilities.h"
 #include "audio.h"
 
-const Uint16 NETWORK_PORT =				4893;
-
 NetworkConnection *gNetworkConnection = NULL;
 
 static SDL_mutex *gCurrentSlotMutex;

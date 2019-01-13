@@ -25,7 +25,7 @@
 #define NETWORK_SERVER_TYPE 1
 #define NETWORK_CLIENT_TYPE 2
 
-extern const Uint16 NETWORK_PORT;
+#define NETWORK_PORT "4893"
 
 typedef struct
 {

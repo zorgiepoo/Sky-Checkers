@@ -183,12 +183,18 @@ void networkServerPlayMenuAction(void *context)
 	gNetworkConnection = malloc(sizeof(*gNetworkConnection));
 	memset(gNetworkConnection, 0, sizeof(*gNetworkConnection));
 	
-	// open socket
-	gNetworkConnection->socket = socket(AF_INET, SOCK_DGRAM, 0);
+	struct addrinfo hints;
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_DGRAM;
+	hints.ai_flags = AI_PASSIVE;
 	
-	if (gNetworkConnection->socket == -1)
+	struct addrinfo *serverInfoList;
+	
+	int getaddrinfoError;
+	if ((getaddrinfoError = getaddrinfo(NULL, NETWORK_PORT, &hints, &serverInfoList)) != 0)
 	{
-		perror("socket");
+		fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(getaddrinfoError));
 		
 		free(gNetworkConnection);
 		gNetworkConnection = NULL;
@@ -196,25 +202,44 @@ void networkServerPlayMenuAction(void *context)
 		return;
 	}
 	
-	struct sockaddr_in address;
-	
-	// set address
-	address.sin_family = AF_INET;
-    address.sin_port = htons(NETWORK_PORT);
-    address.sin_addr.s_addr = INADDR_ANY;
-    memset(address.sin_zero, '\0', sizeof(address.sin_zero));
-	
-	// bind
-	if (bind(gNetworkConnection->socket, (struct sockaddr *)&address, sizeof(address)) == -1)
+	struct addrinfo *serverInfo;
+	for (serverInfo = serverInfoList; serverInfo != NULL; serverInfo = serverInfo->ai_next)
 	{
-        perror("bind");
+		if (serverInfo->ai_family != AF_INET && serverInfo->ai_family != AF_INET6)
+		{
+			continue;
+		}
 		
-		closeSocket(gNetworkConnection->socket);
+		gNetworkConnection->socket = socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
+		if (gNetworkConnection->socket == -1)
+		{
+			perror("server: socket");
+			continue;
+		}
+		
+		if (bind(gNetworkConnection->socket, serverInfo->ai_addr, serverInfo->ai_addrlen) == -1)
+		{
+			perror("server: bind");
+			close(gNetworkConnection->socket);
+			continue;
+		}
+		
+		break;
+	}
+	
+	if (serverInfo == NULL)
+	{
+		fprintf(stderr, "Failed to create binding socket for server.\n");
+		
+		freeaddrinfo(serverInfoList);
+		
 		free(gNetworkConnection);
 		gNetworkConnection = NULL;
 		
 		return;
-    }
+	}
+	
+	freeaddrinfo(serverInfoList);
 	
 	gPinkBubbleGum.backup_state = gPinkBubbleGum.state;
 	gRedRover.backup_state = gRedRover.state;
@@ -412,7 +437,7 @@ void connectToNetworkGameMenuAction(void *context)
 	
 	// set address
 	gNetworkConnection->hostAddress.sa_in.sin_family = AF_INET;
-	gNetworkConnection->hostAddress.sa_in.sin_port = htons(NETWORK_PORT);
+	gNetworkConnection->hostAddress.sa_in.sin_port = htons(4893);
 	gNetworkConnection->hostAddress.sa_in.sin_addr = *((struct in_addr *)host_entry->h_addr);
 	memset(gNetworkConnection->hostAddress.sa_in.sin_zero, '\0', sizeof(gNetworkConnection->hostAddress.sa_in.sin_zero));
 	
