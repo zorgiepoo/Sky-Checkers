@@ -648,6 +648,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 
 static void sendData(int socket, void *data, size_t size, SocketAddress *address)
 {
+	// Don't use sa_len to get the size because it could not be portable
 	if (address->sa.sa_family == AF_INET)
 	{
 		sendto(socket, data, size, 0, &address->sa, sizeof(address->sa_in));

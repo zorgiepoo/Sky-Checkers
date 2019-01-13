@@ -399,18 +399,24 @@ void connectToNetworkGameMenuAction(void *context)
 		return;
 	}
 	
+	networkInitialization();
+	
 	gNetworkConnection = malloc(sizeof(*gNetworkConnection));
 	memset(gNetworkConnection, 0, sizeof(*gNetworkConnection));
 	gNetworkConnection->type = NETWORK_CLIENT_TYPE;
 	
-	networkInitialization();
+	struct addrinfo hints;
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_DGRAM;
+	hints.ai_flags = AI_PASSIVE;
 	
-	// open socket
-	gNetworkConnection->socket = socket(AF_INET, SOCK_DGRAM, 0);
+	struct addrinfo *serverInfoList;
 	
-	if (gNetworkConnection->socket == -1)
+	int getaddrinfoError;
+	if ((getaddrinfoError = getaddrinfo(gServerAddressString, NETWORK_PORT, &hints, &serverInfoList)) != 0)
 	{
-		perror("socket");
+		fprintf(stderr, "getaddrinfo client error: %s\n", gai_strerror(getaddrinfoError));
 		
 		free(gNetworkConnection);
 		gNetworkConnection = NULL;
@@ -418,28 +424,39 @@ void connectToNetworkGameMenuAction(void *context)
 		return;
 	}
 	
-	struct hostent *host_entry = gethostbyname(gServerAddressString);
-	
-	if (host_entry == NULL)
+	struct addrinfo *serverInfo;
+	for (serverInfo = serverInfoList; serverInfo != NULL; serverInfo = serverInfo->ai_next)
 	{
-#ifndef WINDOWS
-		herror("gethostbyname");
-#else
-		fprintf(stderr, "host_entry windows error\n");
-#endif
+		if (serverInfo->ai_family != AF_INET && serverInfo->ai_family != AF_INET6)
+		{
+			continue;
+		}
 		
-		closeSocket(gNetworkConnection->socket);
+		gNetworkConnection->socket = socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
+		if (gNetworkConnection->socket == -1)
+		{
+			perror("client: socket");
+			continue;
+		}
+		
+		break;
+	}
+	
+	if (serverInfo == NULL)
+	{
+		fprintf(stderr, "Failed to create connecting socket for client.\n");
+		
+		freeaddrinfo(serverInfoList);
+		
 		free(gNetworkConnection);
 		gNetworkConnection = NULL;
 		
 		return;
 	}
 	
-	// set address
-	gNetworkConnection->hostAddress.sa_in.sin_family = AF_INET;
-	gNetworkConnection->hostAddress.sa_in.sin_port = htons(4893);
-	gNetworkConnection->hostAddress.sa_in.sin_addr = *((struct in_addr *)host_entry->h_addr);
-	memset(gNetworkConnection->hostAddress.sa_in.sin_zero, '\0', sizeof(gNetworkConnection->hostAddress.sa_in.sin_zero));
+	memcpy(&gNetworkConnection->hostAddress.storage, serverInfo->ai_addr, serverInfo->ai_addrlen);
+	
+	freeaddrinfo(serverInfoList);
 	
 	gNetworkConnection->thread = SDL_CreateThread(clientNetworkThread, "client-thread", context);
 }
