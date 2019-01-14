@@ -28,6 +28,7 @@
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
 #import <Cocoa/Cocoa.h>
+#import "osx.h"
 
 // Don't use MTLPixelFormatDepth16Unorm which doesn't support 10.11 and doesn't work right on some configs (MBP11,2 / 10.13.6, but 10.14.2 works)
 #define DEPTH_STENCIL_PIXEL_FORMAT MTLPixelFormatDepth32Float
@@ -116,11 +117,11 @@ void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, float *modelVi
 - (void)viewDidChangeBackingProperties
 {
 	[super viewDidChangeBackingProperties];
-	
+
 	if (_renderer->metalCreatedInitialPipelines)
 	{
 		[self updateDrawableSize];
-		
+
 		if (_renderer->metalWantsFsaa)
 		{
 			createPipelines(_renderer);
@@ -374,7 +375,7 @@ static void createPipelines(Renderer *renderer)
 	renderer->metalCreatedInitialPipelines = SDL_TRUE;
 }
 
-SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
+SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, SDL_bool fullscreen, SDL_bool vsync, SDL_bool fsaa)
 {
 	@autoreleasepool
 	{
@@ -393,6 +394,8 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		renderer->metalDepthTestStencilState = NULL;
 		renderer->metalMultisampleTexture = NULL;
 		renderer->metalShaderFunctions = NULL;
+		renderer->macosInFullscreenLaunchTransition = SDL_FALSE;
+		renderer->fullscreen = SDL_FALSE;
 		
 		// TODO: Should I iterate through all the devices and pick the 'best' one?
 		id<MTLDevice> device = MTLCreateSystemDefaultDevice();
@@ -402,6 +405,7 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 			return SDL_FALSE;
 		}
 		
+		uint32_t videoFlags = SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE;
 		renderer->window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags);
 		
 		if (renderer->window == NULL)
@@ -465,6 +469,13 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		renderer->drawVerticesFromIndicesPtr = drawVerticesFromIndices_metal;
 		renderer->drawTextureWithVerticesPtr = drawTextureWithVertices_metal;
 		renderer->drawTextureWithVerticesFromIndicesPtr = drawTextureWithVerticesFromIndices_metal;
+		
+		// Register for full screen notifications
+		registerForNativeFullscreenEvents((__bridge void *)window, renderer);
+		if (fullscreen)
+		{
+			toggleNativeFullscreenOnLaunch();
+		}
 	}
 	
 	return SDL_TRUE;
@@ -472,6 +483,11 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 
 void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *))
 {
+	if (renderer->macosInFullscreenLaunchTransition)
+	{
+		return;
+	}
+
 	@autoreleasepool
 	{
 		CAMetalLayer *metalLayer = (__bridge CAMetalLayer *)(renderer->metalLayer);

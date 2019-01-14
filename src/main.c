@@ -45,16 +45,17 @@ int32_t gGameStartNumber;
 int gGameWinner;
 
 // Console flag indicating if we can use the console
-SDL_bool gConsoleFlag =							SDL_FALSE;
+SDL_bool gConsoleFlag = SDL_FALSE;
 
 // audio flags
-SDL_bool gAudioEffectsFlag =					SDL_TRUE;
-SDL_bool gAudioMusicFlag =						SDL_TRUE;
+SDL_bool gAudioEffectsFlag = SDL_TRUE;
+SDL_bool gAudioMusicFlag = SDL_TRUE;
 
 // video flags
-SDL_bool gFpsFlag =								SDL_FALSE;
+SDL_bool gFpsFlag = SDL_FALSE;
+SDL_bool gFullscreenFlag = SDL_FALSE;
 
-SDL_bool gValidDefaults =						SDL_FALSE;
+SDL_bool gValidDefaults = SDL_FALSE;
 
 // Lives
 int gCharacterLives =							5;
@@ -484,7 +485,8 @@ static void readDefaults(void)
 	if (fscanf(fp, "FSAA flag: %i\n", &aaFlag) < 1) goto cleanup;
 
 	int fullscreenFlag = 0;
-	if (fscanf(fp, "Fullscreen flag: %i\n", &fullscreenFlag) < 1) goto cleanup;
+	if (fscanf(fp, "Fullscreen flag: %d\n", &fullscreenFlag) < 1) goto cleanup;
+	gFullscreenFlag = (fullscreenFlag != 0);
 
 	if (fscanf(fp, "Number of lives: %i\n", &gCharacterLives) < 1) goto cleanup;
 	if (gCharacterLives > MAX_CHARACTER_LIVES)
@@ -599,7 +601,7 @@ static void writeDefaults(Renderer *renderer)
 	fprintf(fp, "vsync flag: %i\n", renderer->vsync);
 	fprintf(fp, "fps flag: %i\n", gFpsFlag);
 	fprintf(fp, "FSAA flag: %i\n", renderer->fsaa);
-	fprintf(fp, "Fullscreen flag: %i\n", 1);
+	fprintf(fp, "Fullscreen flag: %i\n", renderer->fullscreen);
 
 	fprintf(fp, "\n");
 
@@ -1690,40 +1692,13 @@ int main(int argc, char *argv[])
 	};
 
 	readDefaults();
-	
-	SDL_bool fullscreen;
-#ifdef _PROFILING
-	fullscreen = SDL_FALSE;
-#elif _DEBUG
-	fullscreen = SDL_FALSE;
-#else
-	fullscreen = SDL_TRUE;
-#endif
-	
-	char *fullscreenEnvironmentVariable = getenv("FULLSCREEN");
-	if (fullscreenEnvironmentVariable != NULL && strlen(fullscreenEnvironmentVariable) > 0 && (tolower(fullscreenEnvironmentVariable[0]) == 'y' || fullscreenEnvironmentVariable[0] == '1'))
-	{
-		fullscreen = SDL_TRUE;
-	}
 
 	// Create renderer
-	uint32_t videoFlags = SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE;
-	
 	int32_t windowWidth;
 	int32_t windowHeight;
-
-	if (fullscreen)
-	{
-		videoFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-		
-		windowWidth = 0;
-		windowHeight = 0;
-	}
-	else
-	{
-		windowWidth = 800;
-		windowHeight = 500;
-	}
+	
+	windowWidth = 800;
+	windowHeight = 500;
 	
 #ifdef _PROFILING
 	SDL_bool vsync = SDL_FALSE;
@@ -1733,7 +1708,7 @@ int main(int argc, char *argv[])
 	SDL_bool fsaa = SDL_TRUE;
 	
 	Renderer renderer;
-	createRenderer(&renderer, windowWidth, windowHeight, videoFlags, vsync, fsaa);
+	createRenderer(&renderer, windowWidth, windowHeight, gFullscreenFlag, vsync, fsaa);
 	
 	if (!initFont(&renderer))
 	{

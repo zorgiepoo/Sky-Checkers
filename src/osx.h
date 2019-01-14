@@ -18,6 +18,10 @@
  */
 
 #include <stdio.h>
+#include "renderer_types.h"
 
 FILE *getUserDataFile(const char *mode);
 void getDefaultUserName(char *defaultUserName, int maxLength);
+
+void registerForNativeFullscreenEvents(void *window, Renderer *renderer);
+void toggleNativeFullscreenOnLaunch(void);

@@ -18,7 +18,7 @@
  */
 
 #import "osx.h"
-#import <Foundation/Foundation.h>
+#import <Cocoa/Cocoa.h>
 
 FILE *getUserDataFile(const char *mode)
 {
@@ -64,4 +64,65 @@ void getDefaultUserName(char *defaultUserName, int maxLength)
 			}
 		}
 	}
+}
+
+@interface ZGFullscreenHandler : NSObject
+{
+@public
+	Renderer *_renderer;
+	NSWindow *_window;
+}
+@end
+
+@implementation ZGFullscreenHandler
+
+- (void)windowWillEnterFullScreen:(NSNotification *)notification
+{
+	_renderer->macosInFullscreenLaunchTransition = SDL_TRUE;
+}
+
+- (void)windowDidEnterFullScreen:(NSNotification *)notification
+{
+	if (_renderer->macosInFullscreenLaunchTransition)
+	{
+		// We only care about the full screen transistion that may occur on launch
+		NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+		[center removeObserver:self name:NSWindowWillEnterFullScreenNotification object:nil];
+	}
+	
+	_renderer->macosInFullscreenLaunchTransition = SDL_FALSE;
+	_renderer->fullscreen = SDL_TRUE;
+}
+
+- (void)windowDidExitFullScreen:(NSNotification *)notification
+{
+	_renderer->fullscreen = SDL_FALSE;
+}
+
+@end
+
+static ZGFullscreenHandler *gFullscreenHandler;
+
+void registerForNativeFullscreenEvents(void *windowReference, Renderer *renderer)
+{
+	NSWindow *window = (__bridge NSWindow *)windowReference;
+	
+	assert(gFullscreenHandler == nil);
+	gFullscreenHandler = [[ZGFullscreenHandler alloc] init];
+	gFullscreenHandler->_renderer = renderer;
+	gFullscreenHandler->_window = window;
+	
+	// Register for full screen notifications
+	NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+	[notificationCenter addObserver:gFullscreenHandler selector:@selector(windowDidEnterFullScreen:) name:NSWindowDidEnterFullScreenNotification object:window];
+	[notificationCenter addObserver:gFullscreenHandler selector:@selector(windowDidExitFullScreen:) name:NSWindowDidExitFullScreenNotification object:window];
+}
+
+void toggleNativeFullscreenOnLaunch(void)
+{
+	// Make window go fullscreen on launch
+	NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+	[notificationCenter addObserver:gFullscreenHandler selector:@selector(windowWillEnterFullScreen:) name:NSWindowWillEnterFullScreenNotification object:gFullscreenHandler->_window];
+	
+	[gFullscreenHandler->_window toggleFullScreen:nil];
 }

@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include "maincore.h"
+
 #define MSAA_PREFERRED_RETINA_SAMPLE_COUNT 2
 #define MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT 4
 
@@ -48,7 +50,9 @@ typedef struct
 {
 	union
 	{
+#ifdef MAC_OS_X
 		void *metalObject;
+#endif
 		uint32_t glObject;
 	};
 } BufferObject;
@@ -57,11 +61,13 @@ typedef struct
 {
 	union
 	{
+#ifdef MAC_OS_X
 		struct
 		{
 			void *metalObject;
 			uint32_t metalVerticesSize;
 		};
+#endif
 		uint32_t glObject;
 	};
 } BufferArrayObject;
@@ -70,7 +76,9 @@ typedef struct
 {
 	union
 	{
+#ifdef MAC_OS_X
 		void *metalObject;
+#endif
 		uint32_t glObject;
 	};
 } TextureObject;
@@ -99,13 +107,16 @@ typedef struct _Renderer
 	
 	uint32_t sampleCount;
 	
+	SDL_bool fullscreen;
 	SDL_bool vsync;
 	SDL_bool fsaa;
 	
 	enum
 	{
-		NDC_TYPE_GL,
-		NDC_TYPE_METAL
+		NDC_TYPE_GL
+#ifdef MAC_OS_X
+		,NDC_TYPE_METAL
+#endif
 	} ndcType;
 	
 	union
@@ -117,6 +128,7 @@ typedef struct _Renderer
 			Shader_gl glPositionShader;
 		};
 		
+#ifdef MAC_OS_X
 		// Private metal data
 		struct
 		{
@@ -131,7 +143,12 @@ typedef struct _Renderer
 			SDL_bool metalWantsFsaa;
 			SDL_bool metalCreatedInitialPipelines;
 		};
+#endif
 	};
+	
+#ifdef MAC_OS_X
+	SDL_bool macosInFullscreenLaunchTransition;
+#endif
 	
 	// Private function pointers
 	void (*updateViewportPtr)(struct _Renderer *);

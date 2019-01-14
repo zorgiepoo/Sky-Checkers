@@ -25,8 +25,10 @@
 #include "utilities.h"
 #endif
 
-void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool vsync, SDL_bool fsaa)
+void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, SDL_bool fullscreen, SDL_bool vsync, SDL_bool fsaa)
 {
+	SDL_ShowCursor(SDL_DISABLE);
+	
 #ifndef MAC_OS_X
 	const char *windowTitle = "SkyCheckers";
 #else
@@ -55,7 +57,7 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 	if (!forcingOpenGL)
 	{
 		// Metal
-		createdRenderer = createRenderer_metal(renderer, windowTitle, windowWidth, windowHeight, videoFlags, vsync, fsaa);
+		createdRenderer = createRenderer_metal(renderer, windowTitle, windowWidth, windowHeight, fullscreen, vsync, fsaa);
 #ifdef _DEBUG
 		if (!createdRenderer)
 		{
@@ -72,11 +74,9 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 	// OpenGL
 	if (!createdRenderer)
 	{
-		createRenderer_gl(renderer, windowTitle, windowWidth, windowHeight, videoFlags, vsync, fsaa);
+		createRenderer_gl(renderer, windowTitle, windowWidth, windowHeight, fullscreen, vsync, fsaa);
 		createdRenderer = SDL_TRUE;
 	}
-	
-	SDL_ShowCursor(SDL_DISABLE);
 }
 
 void updateViewport(Renderer *renderer, int32_t windowWidth, int32_t windowHeight)
