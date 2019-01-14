@@ -1189,7 +1189,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 	switch (event->type)
 	{
 		case SDL_KEYDOWN:
-			if (SDL_GetKeyFromScancode(event->key.keysym.scancode) == SDLK_v && (event->key.keysym.mod & metaMod) != 0 && SDL_HasClipboardText())
+			if (event->key.keysym.sym == SDLK_v && (event->key.keysym.mod & metaMod) != 0 && SDL_HasClipboardText())
 			{
 				char *clipboardText = SDL_GetClipboardText();
 				if (clipboardText != NULL)
@@ -1197,6 +1197,26 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 					writeTextInput(clipboardText, 128);
 				}
 			}
+#ifndef MAC_OS_X
+			else if (event->key.keysym.sym == SDLK_RETURN && (event->key.keysym.mod & metaMod) != 0)
+			{
+				uint32_t windowFlags = SDL_GetWindowFlags(renderer->window);
+				if ((windowFlags & (SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN)) == 0)
+				{
+					if (SDL_SetWindowFullscreen(renderer->window, SDL_WINDOW_FULLSCREEN_DESKTOP) != 0)
+					{
+						fprintf(stderr, "Failed to set fullscreen because: %s\n", SDL_GetError());
+					}
+				}
+				else
+				{
+					if (SDL_SetWindowFullscreen(renderer->window, 0) != 0)
+					{
+						fprintf(stderr, "Failed to escape fullscreen because: %s\n", SDL_GetError());
+					}
+				}
+			}
+#endif
 			else if (!gConsoleActivated && gGameState && gGameWinner != NO_CHARACTER &&
 				(event->key.keysym.scancode == gPinkBubbleGumInput.weap_id || event->key.keysym.scancode == gRedRoverInput.weap_id ||
 				 event->key.keysym.scancode == gBlueLightningInput.weap_id || event->key.keysym.scancode == gGreenTreeInput.weap_id ||
@@ -1214,8 +1234,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 					gGameShouldReset = SDL_TRUE;
 				}
 			}
-
-			if (event->key.keysym.scancode == SDL_SCANCODE_RETURN || event->key.keysym.scancode == SDL_SCANCODE_KP_ENTER)
+			else if (event->key.keysym.sym == SDLK_RETURN || event->key.keysym.sym == SDLK_KP_ENTER)
 			{
 				if (gCurrentMenu == gConfigureLivesMenu)
 				{
@@ -1534,7 +1553,18 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 			}
 			else if (event->window.event == SDL_WINDOWEVENT_RESIZED)
 			{
-				updateViewport(renderer, event->window.data1, event->window.data2);
+#ifndef MAC_OS_X
+				if ((SDL_GetWindowFlags(renderer->window) & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)) == 0 && !renderer->fullscreen)
+#else
+				// macOS uses fullscreen toggling independent of SDL's flags
+				if (!renderer->macosInFullscreenTransition && !renderer->fullscreen)
+#endif
+				{
+					renderer->windowWidth = event->window.data1;
+					renderer->windowHeight = event->window.data2;
+				}
+				
+				updateViewport(renderer);
 			}
 			break;
 		case SDL_QUIT:
@@ -1547,7 +1577,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 	 * Make sure the user isn't trying to toggle fullscreen.
 	 * Other actions, such as changing menus are dealt before here
 	 */
-	if (!((event->key.keysym.sym == SDLK_f || event->key.keysym.sym == SDLK_RETURN) && (((SDL_GetModState() & KMOD_LGUI) != 0) || ((SDL_GetModState() & KMOD_RGUI) != 0) || ((SDL_GetModState() & KMOD_LALT) != 0) || ((SDL_GetModState() & KMOD_RALT) != 0))) &&
+	if (!(event->key.keysym.sym == SDLK_RETURN && (SDL_GetModState() & metaMod) != 0) &&
 		gGameState && (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP || event->type == SDL_JOYBUTTONDOWN || event->type == SDL_JOYBUTTONUP || event->type == SDL_JOYAXISMOTION))
 	{
 		if (!gConsoleActivated)

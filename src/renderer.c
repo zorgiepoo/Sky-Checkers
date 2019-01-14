@@ -79,19 +79,8 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 	}
 }
 
-void updateViewport(Renderer *renderer, int32_t windowWidth, int32_t windowHeight)
-{
-	// macos uses fullscreen toggling independent of SDL's flags
-#ifndef MAC_OS_X
-	if ((SDL_GetWindowFlags(renderer->window) & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)) == 0 && !renderer->fullscreen)
-#else
-	if (!renderer->macosInFullscreenTransition && !renderer->fullscreen)
-#endif
-	{
-		renderer->windowWidth = windowWidth;
-		renderer->windowHeight = windowHeight;
-	}
-	
+void updateViewport(Renderer *renderer)
+{	
 	// If updateViewportPtr is not NULL, then resizing the window is tied to
 	// resizing the view for this specific renderer
 	if (renderer->updateViewportPtr != NULL)
