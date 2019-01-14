@@ -483,10 +483,16 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 
 void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *))
 {
-	if (renderer->macosInFullscreenTransition && renderer->metalIgnoreFirstFullscreenTransition)
+	if (renderer->metalIgnoreFirstFullscreenTransition)
 	{
-		renderer->metalIgnoreFirstFullscreenTransition = SDL_FALSE;
-		return;
+		if (renderer->fullscreen)
+		{
+			renderer->metalIgnoreFirstFullscreenTransition = SDL_FALSE;
+		}
+		else
+		{
+			return;
+		}
 	}
 
 	@autoreleasepool
