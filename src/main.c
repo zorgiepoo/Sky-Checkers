@@ -52,8 +52,12 @@ SDL_bool gAudioEffectsFlag = SDL_TRUE;
 SDL_bool gAudioMusicFlag = SDL_TRUE;
 
 // video flags
-SDL_bool gFpsFlag = SDL_FALSE;
-SDL_bool gFullscreenFlag = SDL_FALSE;
+static SDL_bool gFpsFlag = SDL_FALSE;
+static SDL_bool gFullscreenFlag = SDL_FALSE;
+static SDL_bool gVsyncFlag = SDL_TRUE;
+static SDL_bool gFsaaFlag = SDL_TRUE;
+static int32_t gWindowWidth;
+static int32_t gWindowHeight;
 
 SDL_bool gValidDefaults = SDL_FALSE;
 
@@ -152,14 +156,6 @@ static void initScene(Renderer *renderer)
 			initInput(&gPinkBubbleGumInput, SDL_SCANCODE_RIGHT, SDL_SCANCODE_LEFT, SDL_SCANCODE_UP, SDL_SCANCODE_DOWN, SDL_SCANCODE_SPACE);
 		}
 	}
-
-#ifdef _DEBUG
-	gConsoleFlag = SDL_TRUE;
-#endif
-	
-#ifdef _PROFILING
-	gConsoleFlag = SDL_TRUE;
-#endif
 
 	gRedRoverInput.character = &gRedRover;
 	gGreenTreeInput.character = &gGreenTree;
@@ -469,24 +465,60 @@ static void readDefaults(void)
 	gConsoleFlag = (consoleFlag != 0);
 
 	// video defaults
-	int screenWidth = 0;
-	if (fscanf(fp, "screen width: %i\n", &screenWidth) < 1) goto cleanup;
+	int windowWidth = 0;
+	if (fscanf(fp, "screen width: %i\n", &windowWidth) < 1) goto cleanup;
 	
-	int screenHeight = 0;
-	if (fscanf(fp, "screen height: %i\n", &screenHeight) < 1) goto cleanup;
+	int windowHeight = 0;
+	if (fscanf(fp, "screen height: %i\n", &windowHeight) < 1) goto cleanup;
+	
+	if (defaultsVersion < 2 || windowWidth <= 0 || windowHeight <= 0)
+	{
+		gWindowWidth = 800;
+		gWindowHeight = 500;
+	}
+	else
+	{
+		gWindowWidth = windowWidth;
+		gWindowHeight = windowHeight;
+	}
 	
 	int vsyncFlag = 0;
 	if (fscanf(fp, "vsync flag: %i\n", &vsyncFlag) < 1) goto cleanup;
+	
+	if (defaultsVersion < 2)
+	{
+		gVsyncFlag = (vsyncFlag != 0);
+	}
+	else
+	{
+		gVsyncFlag = SDL_TRUE;
+	}
 	
 	int fpsFlag = 0;
 	if (fscanf(fp, "fps flag: %i\n", &fpsFlag) < 1) goto cleanup;
 	
 	int aaFlag = 0;
 	if (fscanf(fp, "FSAA flag: %i\n", &aaFlag) < 1) goto cleanup;
+	
+	if (defaultsVersion < 2)
+	{
+		gFsaaFlag = SDL_TRUE;
+	}
+	else
+	{
+		gFsaaFlag = (aaFlag != 0);
+	}
 
 	int fullscreenFlag = 0;
 	if (fscanf(fp, "Fullscreen flag: %d\n", &fullscreenFlag) < 1) goto cleanup;
-	gFullscreenFlag = (fullscreenFlag != 0);
+	if (defaultsVersion < 2)
+	{
+		gFullscreenFlag = SDL_FALSE;
+	}
+	else
+	{
+		gFullscreenFlag = (fullscreenFlag != 0);
+	}
 
 	if (fscanf(fp, "Number of lives: %i\n", &gCharacterLives) < 1) goto cleanup;
 	if (gCharacterLives > MAX_CHARACTER_LIVES)
@@ -590,17 +622,16 @@ static void writeDefaults(Renderer *renderer)
 	}
 
 	// conole flag default
-#ifdef _DEBUG
-	gConsoleFlag = SDL_FALSE;
-#endif
 	fprintf(fp, "Console flag: %i\n\n", gConsoleFlag);
 
 	// video defaults
 	fprintf(fp, "screen width: %i\n", renderer->windowWidth);
 	fprintf(fp, "screen height: %i\n", renderer->windowHeight);
-	fprintf(fp, "vsync flag: %i\n", renderer->vsync);
+	
+	fprintf(fp, "vsync flag: %i\n", gVsyncFlag);
+	
 	fprintf(fp, "fps flag: %i\n", gFpsFlag);
-	fprintf(fp, "FSAA flag: %i\n", renderer->fsaa);
+	fprintf(fp, "FSAA flag: %i\n", gFsaaFlag);
 	fprintf(fp, "Fullscreen flag: %i\n", renderer->fullscreen);
 
 	fprintf(fp, "\n");
@@ -1694,21 +1725,14 @@ int main(int argc, char *argv[])
 	readDefaults();
 
 	// Create renderer
-	int32_t windowWidth;
-	int32_t windowHeight;
-	
-	windowWidth = 800;
-	windowHeight = 500;
-	
 #ifdef _PROFILING
 	SDL_bool vsync = SDL_FALSE;
 #else
-	SDL_bool vsync = SDL_TRUE;
+	SDL_bool vsync = gVsyncFlag;
 #endif
-	SDL_bool fsaa = SDL_TRUE;
 	
 	Renderer renderer;
-	createRenderer(&renderer, windowWidth, windowHeight, gFullscreenFlag, vsync, fsaa);
+	createRenderer(&renderer, gWindowWidth, gWindowHeight, gFullscreenFlag, vsync, gFsaaFlag);
 	
 	if (!initFont(&renderer))
 	{
