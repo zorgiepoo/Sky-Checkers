@@ -217,8 +217,8 @@ static void updateViewport_metal(Renderer *renderer)
 	CAMetalLayer *metalLayer = (__bridge CAMetalLayer *)(renderer->metalLayer);
 	
 	CGSize drawableSize = metalLayer.drawableSize;
-	renderer->screenWidth = (int32_t)drawableSize.width;
-	renderer->screenHeight = (int32_t)drawableSize.height;
+	renderer->drawableWidth = (int32_t)drawableSize.width;
+	renderer->drawableHeight = (int32_t)drawableSize.height;
 	
 	// Configure Anti Aliasing
 	
@@ -232,8 +232,8 @@ static void updateViewport_metal(Renderer *renderer)
 	{
 		MTLTextureDescriptor *multisampleTextureDescriptor = [MTLTextureDescriptor new];
 		multisampleTextureDescriptor.pixelFormat = metalLayer.pixelFormat;
-		multisampleTextureDescriptor.width = (NSUInteger)renderer->screenWidth;
-		multisampleTextureDescriptor.height = (NSUInteger)renderer->screenHeight;
+		multisampleTextureDescriptor.width = (NSUInteger)renderer->drawableWidth;
+		multisampleTextureDescriptor.height = (NSUInteger)renderer->drawableHeight;
 		multisampleTextureDescriptor.resourceOptions = MTLResourceStorageModePrivate;
 		multisampleTextureDescriptor.usage = MTLTextureUsageRenderTarget;
 		multisampleTextureDescriptor.sampleCount = renderer->sampleCount;
@@ -272,8 +272,8 @@ static void updateViewport_metal(Renderer *renderer)
 	
 	MTLTextureDescriptor *depthTextureDescriptor = [MTLTextureDescriptor new];
 	depthTextureDescriptor.pixelFormat = DEPTH_STENCIL_PIXEL_FORMAT;
-	depthTextureDescriptor.width = (NSUInteger)renderer->screenWidth;
-	depthTextureDescriptor.height = (NSUInteger)renderer->screenHeight;
+	depthTextureDescriptor.width = (NSUInteger)renderer->drawableWidth;
+	depthTextureDescriptor.height = (NSUInteger)renderer->drawableHeight;
 	depthTextureDescriptor.resourceOptions = MTLResourceStorageModePrivate;
 	depthTextureDescriptor.usage = MTLTextureUsageRenderTarget;
 	if (renderer->fsaa)
@@ -531,7 +531,7 @@ void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *))
 			id<MTLCommandBuffer> commandBuffer = [queue commandBuffer];
 			id<MTLRenderCommandEncoder> renderCommandEncoder = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
 			
-			[renderCommandEncoder setViewport:(MTLViewport){0.0, 0.0, (double)renderer->screenWidth, (double)renderer->screenHeight, -1.0, 1.0 }];
+			[renderCommandEncoder setViewport:(MTLViewport){0.0, 0.0, (double)renderer->drawableWidth, (double)renderer->drawableHeight, -1.0, 1.0 }];
 			renderer->metalCurrentRenderCommandEncoder = (__bridge void *)(renderCommandEncoder);
 			
 			drawFunc(renderer);

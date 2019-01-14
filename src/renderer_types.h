@@ -99,9 +99,11 @@ typedef struct _Renderer
 	SDL_Window *window;
 	float projectionMatrix[16];
 	
-	int32_t screenWidth;
-	int32_t screenHeight;
+	// Width and height of drawable in pixels
+	int32_t drawableWidth;
+	int32_t drawableHeight;
 	
+	// Used for keeping track of width/height in points of window when not in fullscreen
 	int32_t windowWidth;
 	int32_t windowHeight;
 	

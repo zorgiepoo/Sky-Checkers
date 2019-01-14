@@ -312,9 +312,9 @@ static SDL_bool createOpenGLContext(SDL_Window **window, SDL_GLContext *glContex
 
 static void updateViewport_gl(Renderer *renderer)
 {
-	SDL_GL_GetDrawableSize(renderer->window, &renderer->screenWidth, &renderer->screenHeight);
+	SDL_GL_GetDrawableSize(renderer->window, &renderer->drawableWidth, &renderer->drawableHeight);
 	
-	glViewport(0, 0, renderer->screenWidth, renderer->screenHeight);
+	glViewport(0, 0, renderer->drawableWidth, renderer->drawableHeight);
 	
 	updateProjectionMatrix(renderer);
 }

@@ -23,7 +23,7 @@
 void updateProjectionMatrix(Renderer *renderer)
 {
 	// The aspect ratio is not quite correct, which is a mistake I made a long time ago that is too troubling to fix properly
-	mat4_t glProjectionMatrix = m4_perspective(45.0f, (float)(renderer->screenWidth / renderer->screenHeight), 10.0f, 300.0f);
+	mat4_t glProjectionMatrix = m4_perspective(45.0f, (float)(renderer->drawableWidth / renderer->drawableHeight), 10.0f, 300.0f);
 	
 	switch (renderer->ndcType)
 	{
