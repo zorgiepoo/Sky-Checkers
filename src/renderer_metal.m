@@ -388,13 +388,17 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 			return SDL_FALSE;
 		}
 		
+		renderer->windowWidth = windowWidth;
+		renderer->windowHeight = windowHeight;
+		
 		renderer->metalLayer = NULL;
 		renderer->metalCreatedInitialPipelines = SDL_FALSE;
 		renderer->metalDepthTexture = NULL;
 		renderer->metalDepthTestStencilState = NULL;
 		renderer->metalMultisampleTexture = NULL;
 		renderer->metalShaderFunctions = NULL;
-		renderer->macosInFullscreenLaunchTransition = SDL_FALSE;
+		renderer->macosInFullscreenTransition = SDL_FALSE;
+		renderer->metalIgnoreFirstFullscreenTransition = SDL_FALSE;
 		renderer->fullscreen = SDL_FALSE;
 		
 		// TODO: Should I iterate through all the devices and pick the 'best' one?
@@ -449,7 +453,6 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		
 		// Update view port
 		renderer->ndcType = NDC_TYPE_METAL;
-		SDL_GetWindowSize(renderer->window, &renderer->windowWidth, &renderer->windowHeight);
 		updateViewport_metal(renderer);
 		
 		// Set up remaining renderer properties
@@ -471,11 +474,8 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		renderer->drawTextureWithVerticesFromIndicesPtr = drawTextureWithVerticesFromIndices_metal;
 		
 		// Register for full screen notifications
-		registerForNativeFullscreenEvents((__bridge void *)window, renderer);
-		if (fullscreen)
-		{
-			toggleNativeFullscreenOnLaunch();
-		}
+		renderer->metalIgnoreFirstFullscreenTransition = fullscreen;
+		registerForNativeFullscreenEvents((__bridge void *)window, renderer, fullscreen);
 	}
 	
 	return SDL_TRUE;
@@ -483,8 +483,9 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 
 void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *))
 {
-	if (renderer->macosInFullscreenLaunchTransition)
+	if (renderer->macosInFullscreenTransition && renderer->metalIgnoreFirstFullscreenTransition)
 	{
+		renderer->metalIgnoreFirstFullscreenTransition = SDL_FALSE;
 		return;
 	}
 

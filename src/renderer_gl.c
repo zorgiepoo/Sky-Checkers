@@ -321,6 +321,9 @@ static void updateViewport_gl(Renderer *renderer)
 
 void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, SDL_bool fullscreen, SDL_bool vsync, SDL_bool fsaa)
 {
+	renderer->windowWidth = windowWidth;
+	renderer->windowHeight = windowHeight;
+	
 	uint32_t videoFlags = SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE;
 #ifndef MAC_OS_X
 	if (fullscreen)
@@ -329,7 +332,7 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	}
 	renderer->fullscreen = fullscreen;
 #else
-	renderer->macosInFullscreenLaunchTransition = SDL_FALSE;
+	renderer->macosInFullscreenTransition = SDL_FALSE;
 #endif
 	
 	// Buffer sizes
@@ -396,7 +399,6 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	value = SDL_GL_GetSwapInterval();
 	renderer->vsync = (value != 0);
 	
-	SDL_GetWindowSize(renderer->window, &renderer->windowWidth, &renderer->windowHeight);
 	renderer->ndcType = NDC_TYPE_GL;
 	updateViewport_gl(renderer);
 	
@@ -434,11 +436,7 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	SDL_VERSION(&systemInfo.version);
 	SDL_GetWindowWMInfo(renderer->window, &systemInfo);
 	
-	registerForNativeFullscreenEvents((void *)systemInfo.info.cocoa.window, renderer);
-	if (fullscreen)
-	{
-		toggleNativeFullscreenOnLaunch();
-	}
+	registerForNativeFullscreenEvents((void *)systemInfo.info.cocoa.window, renderer, fullscreen);
 #endif
 }
 

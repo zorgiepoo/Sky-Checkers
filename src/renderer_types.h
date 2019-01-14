@@ -142,12 +142,13 @@ typedef struct _Renderer
 			void *metalShaderFunctions;
 			SDL_bool metalWantsFsaa;
 			SDL_bool metalCreatedInitialPipelines;
+			SDL_bool metalIgnoreFirstFullscreenTransition;
 		};
 #endif
 	};
 	
 #ifdef MAC_OS_X
-	SDL_bool macosInFullscreenLaunchTransition;
+	SDL_bool macosInFullscreenTransition;
 #endif
 	
 	// Private function pointers
