@@ -56,8 +56,8 @@ static SDL_bool gFpsFlag = SDL_FALSE;
 static SDL_bool gFullscreenFlag = SDL_FALSE;
 static SDL_bool gVsyncFlag = SDL_TRUE;
 static SDL_bool gFsaaFlag = SDL_TRUE;
-static int32_t gWindowWidth;
-static int32_t gWindowHeight;
+static int32_t gWindowWidth = 800;
+static int32_t gWindowHeight = 500;
 
 SDL_bool gValidDefaults = SDL_FALSE;
 
