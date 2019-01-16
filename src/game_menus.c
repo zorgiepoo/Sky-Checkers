@@ -476,7 +476,10 @@ void connectToNetworkGameMenuAction(void *context)
 	
 	freeaddrinfo(serverInfoList);
 	
-	gNetworkConnection->thread = SDL_CreateThread(clientNetworkThread, "client-thread", context);
+	GameState *gameState = context;
+	*gameState = GAME_STATE_CONNECTING;
+	
+	gNetworkConnection->thread = SDL_CreateThread(clientNetworkThread, "client-thread", NULL);
 }
 
 void drawGameOptionsMenu(Renderer *renderer, color4_t preferredColor)

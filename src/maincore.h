@@ -87,6 +87,13 @@
 
 /* Game Globals */
 
+typedef enum
+{
+	GAME_STATE_OFF = 0,
+	GAME_STATE_ON = 1,
+	GAME_STATE_CONNECTING = 2
+} GameState;
+
 void initGame(void);
 void endGame(void);
 

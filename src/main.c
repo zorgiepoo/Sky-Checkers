@@ -33,9 +33,6 @@
 #define MATH_3D_IMPLEMENTATION
 #include "math_3d.h"
 
-static const int GAME_STATE_OFF =				0;
-static const int GAME_STATE_ON =				1;
-
 // in seconds
 static const int NEW_GAME_WILL_BEGIN_DELAY =	3;
 
@@ -70,7 +67,7 @@ static SDL_bool gConsoleActivated =				SDL_FALSE;
 SDL_bool gDrawFPS =								SDL_FALSE;
 SDL_bool gDrawPings = SDL_FALSE;
 
-static int gGameState;
+static GameState gGameState;
 
 #define MAX_CHARACTER_LIVES 10
 
@@ -931,7 +928,7 @@ static void drawScoreboardForCharacters(Renderer *renderer, ScoreboardRenderType
 
 static void drawScene(Renderer *renderer)
 {
-	if (gGameState)
+	if (gGameState == GAME_STATE_ON)
 	{
 		// Render opaque objects first
 		
@@ -1094,7 +1091,7 @@ static void drawScene(Renderer *renderer)
 			drawPings(renderer);
 		}
 	}
-	else /* if (!gGameState) */
+	else /* if (gGameState != GAME_STATE_ON) */
 	{
 		// The game title and menu's should be up front the most
 		// The black box should be behind the title and menu's
@@ -1110,35 +1107,46 @@ static void drawScene(Renderer *renderer)
 		mat4_t gameTitleModelViewMatrix = m4_translation((vec3_t){-0.2f, 5.4f, -20.0f});
 		drawStringScaled(renderer, gameTitleModelViewMatrix, (color4_t){0.3f, 0.2f, 1.0f, 0.4f}, 0.00592f, "Sky Checkers");
 		
-		// Menus render at z = -20.0f
-		drawMenus(renderer);
-
-		if (isChildBeingDrawn(&gJoyStickConfig[0][1]) /* pinkBubbleGumConfigRightJoyStick */	||
-			isChildBeingDrawn(&gJoyStickConfig[1][1]) /* redRoverConfigRightJoyStick */			||
-			isChildBeingDrawn(&gJoyStickConfig[2][1]) /* greenTreeRightgJoyStickConfig */		||
-			isChildBeingDrawn(&gJoyStickConfig[3][1]) /* blueLightningConfigJoyStick */)
+		if (gGameState == GAME_STATE_CONNECTING)
 		{
-			mat4_t translationMatrix = m4_translation((vec3_t){-1.0f / 14.0f, 50.0f / 14.0f, -280.0f / 14.0f});
-			
+			// Rendering connecting to server at z = -20.0f
+			mat4_t translationMatrix = m4_translation((vec3_t){-1.0f / 14.0f, 15.0f / 14.0f, -280.0f / 14.0f});
 			color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 1.0f};
-
-			drawString(renderer, translationMatrix, textColor, 100.0f / 14.0f, 5.0f / 14.0f, "Click enter to modify a mapping value and input in a button on your joystick. Click Escape to exit out.");
 			
-			mat4_t noticeModelViewMatrix = m4_mul(translationMatrix, m4_translation((vec3_t){0.0f / 14.0f, -20.0f / 14.0f, 0.0f / 14.0f}));
-
-			drawString(renderer, noticeModelViewMatrix, textColor, 50.0f / 16.0f, 5.0f / 16.0f, "(Joysticks only function in-game)");
+			drawString(renderer, translationMatrix, textColor, 50.0f / 14.0f, 5.0f / 14.0f, "Connecting to server...");
 		}
-
-		else if (isChildBeingDrawn(&gCharacterConfigureKeys[0][1]) /* pinkBubbleGum */	||
-				 isChildBeingDrawn(&gCharacterConfigureKeys[1][1]) /* redRover */		||
-				 isChildBeingDrawn(&gCharacterConfigureKeys[2][1]) /* greenTree */		||
-				 isChildBeingDrawn(&gCharacterConfigureKeys[3][1]) /* blueLightning */)
+		else /* if (gGameState == GAME_STATE_OFF) */
 		{
-			mat4_t translationMatrix = m4_translation((vec3_t){-1.0f / 14.0f, 50.0f / 14.0f, -280.0f / 14.0f});
+			// Menus render at z = -20.0f
+			drawMenus(renderer);
 			
-			color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 1.0f};
-
-			drawString(renderer, translationMatrix, textColor, 100.0f / 14.0f, 5.0f / 14.0f, "Click enter to modify a mapping value and input in a key. Click Escape to exit out.");
+			if (isChildBeingDrawn(&gJoyStickConfig[0][1]) /* pinkBubbleGumConfigRightJoyStick */	||
+				isChildBeingDrawn(&gJoyStickConfig[1][1]) /* redRoverConfigRightJoyStick */			||
+				isChildBeingDrawn(&gJoyStickConfig[2][1]) /* greenTreeRightgJoyStickConfig */		||
+				isChildBeingDrawn(&gJoyStickConfig[3][1]) /* blueLightningConfigJoyStick */)
+			{
+				mat4_t translationMatrix = m4_translation((vec3_t){-1.0f / 14.0f, 50.0f / 14.0f, -280.0f / 14.0f});
+				
+				color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 1.0f};
+				
+				drawString(renderer, translationMatrix, textColor, 100.0f / 14.0f, 5.0f / 14.0f, "Click enter to modify a mapping value and input in a button on your joystick. Click Escape to exit out.");
+				
+				mat4_t noticeModelViewMatrix = m4_mul(translationMatrix, m4_translation((vec3_t){0.0f / 14.0f, -20.0f / 14.0f, 0.0f / 14.0f}));
+				
+				drawString(renderer, noticeModelViewMatrix, textColor, 50.0f / 16.0f, 5.0f / 16.0f, "(Joysticks only function in-game)");
+			}
+			
+			else if (isChildBeingDrawn(&gCharacterConfigureKeys[0][1]) /* pinkBubbleGum */	||
+					 isChildBeingDrawn(&gCharacterConfigureKeys[1][1]) /* redRover */		||
+					 isChildBeingDrawn(&gCharacterConfigureKeys[2][1]) /* greenTree */		||
+					 isChildBeingDrawn(&gCharacterConfigureKeys[3][1]) /* blueLightning */)
+			{
+				mat4_t translationMatrix = m4_translation((vec3_t){-1.0f / 14.0f, 50.0f / 14.0f, -280.0f / 14.0f});
+				
+				color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 1.0f};
+				
+				drawString(renderer, translationMatrix, textColor, 100.0f / 14.0f, 5.0f / 14.0f, "Click enter to modify a mapping value and input in a key. Click Escape to exit out.");
+			}
 		}
 		
 		if (gDrawFPS)
@@ -1217,7 +1225,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 				}
 			}
 #endif
-			else if (!gConsoleActivated && gGameState && gGameWinner != NO_CHARACTER &&
+			else if (!gConsoleActivated && gGameState == GAME_STATE_ON && gGameWinner != NO_CHARACTER &&
 				(event->key.keysym.scancode == gPinkBubbleGumInput.weap_id || event->key.keysym.scancode == gRedRoverInput.weap_id ||
 				 event->key.keysym.scancode == gBlueLightningInput.weap_id || event->key.keysym.scancode == gGreenTreeInput.weap_id ||
 				event->key.keysym.scancode == SDL_SCANCODE_RETURN || event->key.keysym.scancode == SDL_SCANCODE_KP_ENTER))
@@ -1254,9 +1262,9 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 					}
 				}
 
-				else if (!gGameState)
+				else if (gGameState == GAME_STATE_OFF)
 				{
-					invokeMenu(window);
+					invokeMenu(&gGameState);
 				}
 
 				else if (gConsoleActivated)
@@ -1321,7 +1329,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 					}
 				}
 
-				else if (!gGameState)
+				else if (gGameState == GAME_STATE_OFF)
 				{
 					changeMenu(DOWN);
 
@@ -1395,7 +1403,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 					}
 				}
 
-				else if (!gGameState)
+				else if (gGameState == GAME_STATE_OFF)
 				{
 					changeMenu(UP);
 
@@ -1418,7 +1426,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 
 			else if (event->key.keysym.scancode == SDL_SCANCODE_ESCAPE)
 			{
-				if (!gGameState)
+				if (gGameState == GAME_STATE_OFF)
 				{
 					if (gNetworkAddressFieldIsActive)
 					{
@@ -1449,7 +1457,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 						changeMenu(LEFT);
 					}
 				}
-				else /* if (gGameState) */
+				else if (gGameState == GAME_STATE_ON)
 				{
 					if (!gConsoleActivated)
 					{
@@ -1478,7 +1486,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 				}
 			}
 
-			else if (event->key.keysym.sym == SDLK_BACKQUOTE && gGameState)
+			else if (event->key.keysym.sym == SDLK_BACKQUOTE && gGameState == GAME_STATE_ON)
 			{
 				if (gConsoleFlag)
 				{
@@ -1514,7 +1522,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 
 		case SDL_JOYBUTTONDOWN:
 		case SDL_JOYAXISMOTION:
-			if (gGameState && gGameWinner != NO_CHARACTER && ((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) &&
+			if (gGameState == GAME_STATE_ON && gGameWinner != NO_CHARACTER && ((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) &&
 				(event->jbutton.button == gPinkBubbleGumInput.weapjs_id || event->jbutton.button == gRedRoverInput.weapjs_id ||
 				event->jbutton.button == gBlueLightningInput.weapjs_id || event->jbutton.button == gGreenTreeInput.weapjs_id ||
 				event->jaxis.axis == gPinkBubbleGumInput.weapjs_axis_id || event->jaxis.axis == gRedRoverInput.weapjs_id ||
@@ -1578,7 +1586,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 	 * Other actions, such as changing menus are dealt before here
 	 */
 	if (!(event->key.keysym.sym == SDLK_RETURN && (SDL_GetModState() & metaMod) != 0) &&
-		gGameState && (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP || event->type == SDL_JOYBUTTONDOWN || event->type == SDL_JOYBUTTONUP || event->type == SDL_JOYAXISMOTION))
+		gGameState == GAME_STATE_ON && (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP || event->type == SDL_JOYBUTTONDOWN || event->type == SDL_JOYBUTTONUP || event->type == SDL_JOYAXISMOTION))
 	{
 		if (!gConsoleActivated)
 		{
@@ -1634,7 +1642,7 @@ static void eventLoop(Renderer *renderer)
 			
 			syncNetworkState(renderer->window, (float)ANIMATION_TIMER_INTERVAL);
 			
-			if (gGameState)
+			if (gGameState == GAME_STATE_ON)
 			{
 				animate(renderer->window, ANIMATION_TIMER_INTERVAL);
 			}
