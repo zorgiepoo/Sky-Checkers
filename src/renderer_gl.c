@@ -332,6 +332,7 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	}
 	renderer->fullscreen = fullscreen;
 #else
+	renderer->fullscreen = SDL_FALSE;
 	renderer->macosInFullscreenTransition = SDL_FALSE;
 #endif
 	
