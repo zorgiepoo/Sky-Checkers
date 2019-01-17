@@ -104,21 +104,8 @@ Character *characterFromInput(Input *characterInput)
 	return NULL;
 }
 
-void performDownAction(Input *input, SDL_Window *window, SDL_Event *event)
+void performDownAction(Input *input, SDL_Event *event)
 {
-	// this is a check for joysticks, mainly
-	if ((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) == 0)
-	{
-		return;
-	}
-	// character needs to be living
-	if (!input->character->lives)
-		return;
-	
-	// character needs to be on the checkerboard.
-	if (!CHARACTER_IS_ALIVE(input->character))
-		return;
-	
 	// check if the input is pressed and set the character's direction value accordingly
 	
 	if (event->type == SDL_KEYDOWN)
@@ -173,10 +160,9 @@ void performDownAction(Input *input, SDL_Window *window, SDL_Event *event)
 				else
 					input->up_ticks = 0;
 			}
-			
-			if (input->up_ticks != 0)
+			else
 			{
-				turnOffDirectionsExcept(input, UP);
+				input->up_ticks = 0;
 			}
 		}
 		
@@ -196,10 +182,9 @@ void performDownAction(Input *input, SDL_Window *window, SDL_Event *event)
 				else
 					input->down_ticks = 0;
 			}
-			
-			if (input->down_ticks != 0)
+			else
 			{
-				turnOffDirectionsExcept(input, DOWN);
+				input->down_ticks = 0;
 			}
 		}
 		
@@ -219,10 +204,9 @@ void performDownAction(Input *input, SDL_Window *window, SDL_Event *event)
 				else
 					input->right_ticks = 0;
 			}
-			
-			if (input->right_ticks == 0)
+			else
 			{
-				turnOffDirectionsExcept(input, RIGHT);
+				input->right_ticks = 0;
 			}
 		}
 		
@@ -242,10 +226,9 @@ void performDownAction(Input *input, SDL_Window *window, SDL_Event *event)
 				else
 					input->left_ticks = 0;
 			}
-			
-			if (input->left_ticks != 0)
+			else
 			{
-				turnOffDirectionsExcept(input, LEFT);
+				input->left_ticks = 0;
 			}
 		}
 		
@@ -308,13 +291,8 @@ void performDownAction(Input *input, SDL_Window *window, SDL_Event *event)
 	}
 }
 
-void performUpAction(Input *input, SDL_Window *window, SDL_Event *event)
+void performUpAction(Input *input, SDL_Event *event)
 {
-	if ((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) == 0)
-	{
-		return;
-	}
-	
 	// If the user releases the key, we turn off the character's direction value.
 	
 	if (event->type == SDL_KEYUP)
@@ -485,27 +463,4 @@ void updateCharacterFromInput(Input *input)
 	}
 	
 	input->character->direction = bestDirectionFromInputTicks(input->right_ticks, input->left_ticks, input->up_ticks, input->down_ticks);
-}
-
-static void turnOffDirectionsExcept(Input *input, int direction)
-{
-	if (direction != RIGHT)
-	{
-		input->right_ticks = 0;
-	}
-	
-	if (direction != LEFT)
-	{
-		input->left_ticks = 0;
-	}
-	
-	if (direction != UP)
-	{
-		input->up_ticks = 0;
-	}
-	
-	if (direction != DOWN)
-	{
-		input->down_ticks = 0;
-	}
 }

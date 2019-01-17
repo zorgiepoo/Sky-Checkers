@@ -1590,16 +1590,16 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 	{
 		if (!gConsoleActivated)
 		{
-			performDownAction(&gRedRoverInput, window, event);
-			performDownAction(&gGreenTreeInput, window, event);
-			performDownAction(&gPinkBubbleGumInput, window, event);
-			performDownAction(&gBlueLightningInput, window, event);
+			performDownAction(&gRedRoverInput, event);
+			performDownAction(&gGreenTreeInput, event);
+			performDownAction(&gPinkBubbleGumInput, event);
+			performDownAction(&gBlueLightningInput, event);
 		}
 
-		performUpAction(&gRedRoverInput, window, event);
-		performUpAction(&gGreenTreeInput, window, event);
-		performUpAction(&gPinkBubbleGumInput, window, event);
-		performUpAction(&gBlueLightningInput, window, event);
+		performUpAction(&gRedRoverInput, event);
+		performUpAction(&gGreenTreeInput, event);
+		performUpAction(&gPinkBubbleGumInput, event);
+		performUpAction(&gBlueLightningInput, event);
 	}
 }
 
