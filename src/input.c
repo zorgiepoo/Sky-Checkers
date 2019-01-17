@@ -120,22 +120,22 @@ void performDownAction(Input *input, SDL_Event *event)
 		
 		else if (input->right_ticks == 0 && event->key.keysym.scancode == input->r_id)
 		{
-			input->right_ticks = SDL_GetTicks();
+			input->right_ticks = event->key.timestamp;
 		}
 	
 		else if (input->left_ticks == 0 && event->key.keysym.scancode == input->l_id)
 		{
-			input->left_ticks = SDL_GetTicks();
+			input->left_ticks = event->key.timestamp;
 		}
 	
 		else if (input->up_ticks == 0 && event->key.keysym.scancode == input->u_id)
 		{
-			input->up_ticks = SDL_GetTicks();
+			input->up_ticks = event->key.timestamp;
 		}
 	
 		else if (input->down_ticks == 0 && event->key.keysym.scancode == input->d_id)
 		{
-			input->down_ticks = SDL_GetTicks();
+			input->down_ticks = event->key.timestamp;
 		}
 	}
 	
@@ -149,14 +149,14 @@ void performDownAction(Input *input, SDL_Event *event)
 			if (input->ujs_id > 32000)
 			{
 				if (event->jaxis.value > 32000)
-					input->up_ticks = SDL_GetTicks();
+					input->up_ticks = event->key.timestamp;
 				else
 					input->up_ticks = 0;
 			}
 			else if (input->ujs_id < -32000)
 			{
 				if (event->jaxis.value < -32000)
-					input->up_ticks = SDL_GetTicks();
+					input->up_ticks = event->key.timestamp;
 				else
 					input->up_ticks = 0;
 			}
@@ -171,14 +171,14 @@ void performDownAction(Input *input, SDL_Event *event)
 			if (input->djs_id > 32000)
 			{
 				if (event->jaxis.value > 32000)
-					input->down_ticks = SDL_GetTicks();
+					input->down_ticks = event->key.timestamp;
 				else
 					input->down_ticks = 0;
 			}
 			else if (input->djs_id < -32000)
 			{
 				if (event->jaxis.value < -32000)
-					input->down_ticks = SDL_GetTicks();
+					input->down_ticks = event->key.timestamp;
 				else
 					input->down_ticks = 0;
 			}
@@ -193,14 +193,14 @@ void performDownAction(Input *input, SDL_Event *event)
 			if (input->rjs_id > 32000)
 			{
 				if (event->jaxis.value > 32000)
-					input->right_ticks = SDL_GetTicks();
+					input->right_ticks = event->key.timestamp;
 				else
 					input->right_ticks = 0;
 			}
 			else if (input->rjs_id < -32000)
 			{
 				if (event->jaxis.value < -32000)
-					input->right_ticks = SDL_GetTicks();
+					input->right_ticks = event->key.timestamp;
 				else
 					input->right_ticks = 0;
 			}
@@ -215,14 +215,14 @@ void performDownAction(Input *input, SDL_Event *event)
 			if (input->ljs_id > 32000)
 			{
 				if (event->jaxis.value > 32000)
-					input->left_ticks = SDL_GetTicks();
+					input->left_ticks = event->key.timestamp;
 				else
 					input->left_ticks = 0;
 			}
 			else if (input->ljs_id < -32000)
 			{
 				if (event->jaxis.value < -32000)
-					input->left_ticks = SDL_GetTicks();
+					input->left_ticks = event->key.timestamp;
 				else
 					input->left_ticks = 0;
 			}
@@ -268,25 +268,25 @@ void performDownAction(Input *input, SDL_Event *event)
 		else if (event->jbutton.which == input->joy_up_id && event->jbutton.button == input->ujs_id && input->ujs_axis_id == JOY_AXIS_NONE &&
 				 input->right_ticks == 0 && input->left_ticks == 0 && input->down_ticks == 0)
 		{
-			input->up_ticks = SDL_GetTicks();
+			input->up_ticks = event->key.timestamp;
 		}
 		
 		else if (event->jbutton.which == input->joy_down_id && event->jbutton.button == input->djs_id && input->djs_axis_id == JOY_AXIS_NONE &&
 				 input->right_ticks == 0 && input->left_ticks == 0 && input->up_ticks == 0)
 		{
-			input->down_ticks = SDL_GetTicks();
+			input->down_ticks = event->key.timestamp;
 		}
 		
 		else if (event->jbutton.which == input->joy_left_id && event->jbutton.button == input->ljs_id && input->ljs_axis_id == JOY_AXIS_NONE &&
 				 input->right_ticks == 0 && input->down_ticks == 0 && input->up_ticks == 0)
 		{
-			input->left_ticks = SDL_GetTicks();
+			input->left_ticks = event->key.timestamp;
 		}
 		
 		else if (event->jbutton.which == input->joy_right_id && event->jbutton.button == input->rjs_id && input->rjs_axis_id == JOY_AXIS_NONE &&
 				 input->left_ticks == 0 && input->down_ticks == 0 && input->up_ticks == 0)
 		{
-			input->right_ticks = SDL_GetTicks();
+			input->right_ticks = event->key.timestamp;
 		}
 	}
 }
