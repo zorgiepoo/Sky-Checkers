@@ -20,20 +20,10 @@
 #include "input.h"
 #include "network.h"
 
-const unsigned JOY_NONE =		8001;
-const unsigned JOY_UP =			8002;
-const unsigned JOY_RIGHT =		8003;
-const unsigned JOY_DOWN =		8004;
-const unsigned JOY_LEFT =		8005;
-const unsigned JOY_AXIS_NONE =	100;
-const unsigned JOY_INVALID_ID =	-1;
-
 Input gRedRoverInput;
 Input gGreenTreeInput;
 Input gPinkBubbleGumInput;
 Input gBlueLightningInput;
-
-static void turnOffDirectionsExcept(Input *input, int direction);
 
 void initInput(Input *input, int right, int left, int up, int down, int weapon)
 {
@@ -42,6 +32,8 @@ void initInput(Input *input, int right, int left, int up, int down, int weapon)
 	input->up_ticks = 0;
 	input->down_ticks = 0;
 	input->weap = SDL_FALSE;
+	
+	input->priority = 0;
 	
 	input->u_id = 0;
 	input->d_id = 0;
@@ -146,89 +138,145 @@ void performDownAction(Input *input, SDL_Event *event)
 		
 		if (input->joy_up_id == event->jaxis.which && input->ujs_axis_id == event->jaxis.axis)
 		{
+			fprintf(stderr, "up: %d\n", event->jaxis.value);
 			if (input->ujs_id > 32000)
 			{
 				if (event->jaxis.value > 32000)
+				{
 					input->up_ticks = event->key.timestamp;
+					input->priority |= 1 << 0;
+				}
 				else
+				{
 					input->up_ticks = 0;
+					input->priority &= ~(1 << 0);
+				}
 			}
 			else if (input->ujs_id < -32000)
 			{
 				if (event->jaxis.value < -32000)
+				{
 					input->up_ticks = event->key.timestamp;
+					input->priority |= 1 << 0;
+				}
 				else
+				{
 					input->up_ticks = 0;
+					input->priority &= ~(1 << 0);
+				}
 			}
 			else
 			{
 				input->up_ticks = 0;
+				input->priority &= ~(1 << 0);
 			}
 		}
 		
 		if (input->joy_down_id == event->jaxis.which && input->djs_axis_id == event->jaxis.axis)
 		{
+			fprintf(stderr, "down: %d\n", event->jaxis.value);
 			if (input->djs_id > 32000)
 			{
 				if (event->jaxis.value > 32000)
+				{
 					input->down_ticks = event->key.timestamp;
+					input->priority |= 1 << 1;
+				}
 				else
+				{
 					input->down_ticks = 0;
+					input->priority &= ~(1 << 1);
+				}
 			}
 			else if (input->djs_id < -32000)
 			{
 				if (event->jaxis.value < -32000)
+				{
 					input->down_ticks = event->key.timestamp;
+					input->priority |= 1 << 1;
+				}
 				else
+				{
 					input->down_ticks = 0;
+					input->priority &= ~(1 << 1);
+				}
 			}
 			else
 			{
 				input->down_ticks = 0;
+				input->priority &= ~(1 << 1);
 			}
 		}
 		
 		if (input->joy_right_id == event->jaxis.which && input->rjs_axis_id == event->jaxis.axis)
 		{
+			fprintf(stderr, "right: %d\n", event->jaxis.value);
 			if (input->rjs_id > 32000)
 			{
 				if (event->jaxis.value > 32000)
+				{
 					input->right_ticks = event->key.timestamp;
+					input->priority |= 1 << 2;
+				}
 				else
+				{
 					input->right_ticks = 0;
+					input->priority &= ~(1 << 2);
+				}
 			}
 			else if (input->rjs_id < -32000)
 			{
 				if (event->jaxis.value < -32000)
+				{
 					input->right_ticks = event->key.timestamp;
+					input->priority |= 1 << 2;
+				}
 				else
+				{
 					input->right_ticks = 0;
+					input->priority &= ~(1 << 2);
+				}
 			}
 			else
 			{
 				input->right_ticks = 0;
+				input->priority &= ~(1 << 2);
 			}
 		}
 		
 		if (input->joy_left_id == event->jaxis.which && input->ljs_axis_id == event->jaxis.axis)
 		{
+			fprintf(stderr, "left: %d\n", event->jaxis.value);
 			if (input->ljs_id > 32000)
 			{
 				if (event->jaxis.value > 32000)
+				{
 					input->left_ticks = event->key.timestamp;
+					input->priority |= 1 << 3;
+				}
 				else
+				{
 					input->left_ticks = 0;
+					input->priority &= ~(1 << 3);
+				}
 			}
 			else if (input->ljs_id < -32000)
 			{
 				if (event->jaxis.value < -32000)
+				{
 					input->left_ticks = event->key.timestamp;
+					input->priority |= 1 << 3;
+				}
 				else
+				{
 					input->left_ticks = 0;
+					input->priority &= ~(1 << 3);
+				}
 			}
 			else
 			{
 				input->left_ticks = 0;
+				input->priority &= ~(1 << 3);
 			}
 		}
 		
@@ -240,7 +288,9 @@ void performDownAction(Input *input, SDL_Event *event)
 				if (event->jaxis.value > 32000)
 				{
 					if (gGameHasStarted)
+					{
 						input->weap = SDL_TRUE;
+					}
 				}
 			}
 			else if (input->weapjs_id < -32000)
@@ -248,7 +298,9 @@ void performDownAction(Input *input, SDL_Event *event)
 				if (event->jaxis.value < -32000)
 				{
 					if (gGameHasStarted)
+					{
 						input->weap = SDL_TRUE;
+					}
 				}
 			}
 		}
@@ -381,28 +433,28 @@ static uint32_t maxValue(uint32_t value, uint32_t value2)
 	return (value > value2) ? value : value2;
 }
 
-static int bestDirectionFromInputTicks(uint32_t right_ticks, uint32_t left_ticks, uint32_t up_ticks, uint32_t down_ticks)
+static int bestDirectionFromInputTicks(SDL_bool preferMaxValue, uint32_t right_ticks, uint32_t left_ticks, uint32_t up_ticks, uint32_t down_ticks)
 {
-	uint32_t scores[] = {right_ticks, left_ticks, up_ticks, down_ticks};
-	uint32_t maxScore = 0;
-	uint8_t maxScoreIndex = 0;
-	for (uint8_t scoreIndex = 0; scoreIndex < sizeof(scores) / sizeof(scores[0]); scoreIndex++)
-	{
-		if (scores[scoreIndex] > maxScore)
-		{
-			maxScore = scores[scoreIndex];
-			maxScoreIndex = scoreIndex;
-		}
-	}
-	
-	if (maxScore == 0)
+	if (right_ticks == 0 && left_ticks == 0 && up_ticks == 0 && down_ticks == 0)
 	{
 		return NO_DIRECTION;
 	}
-	else
+	
+	uint32_t scores[] = {right_ticks, left_ticks, up_ticks, down_ticks};
+	
+	uint32_t bestScore = preferMaxValue ? 0 : UINT32_MAX;
+	uint8_t bestScoreIndex = 0;
+	
+	for (uint8_t scoreIndex = 0; scoreIndex < sizeof(scores) / sizeof(scores[0]); scoreIndex++)
 	{
-		return maxScoreIndex + 1;
+		if ((preferMaxValue && scores[scoreIndex] > bestScore) || (!preferMaxValue && scores[scoreIndex] != 0 && scores[scoreIndex] < bestScore))
+		{
+			bestScore = scores[scoreIndex];
+			bestScoreIndex = scoreIndex;
+		}
 	}
+	
+	return bestScoreIndex + 1;
 }
 
 void updateCharacterFromAnyInput(void)
@@ -429,7 +481,9 @@ void updateCharacterFromAnyInput(void)
 	
 	uint32_t downTicks = maxValue(maxValue(maxValue(gRedRoverInput.down_ticks, gPinkBubbleGumInput.down_ticks), gGreenTreeInput.down_ticks), gBlueLightningInput.down_ticks);
 	
-	int newDirection = bestDirectionFromInputTicks(rightTicks, leftTicks, upTicks, downTicks);
+	uint8_t priority = gRedRoverInput.priority | gPinkBubbleGumInput.priority | gGreenTreeInput.priority | gBlueLightningInput.priority;
+	
+	int newDirection = bestDirectionFromInputTicks(priority == 0, rightTicks, leftTicks, upTicks, downTicks);
 	
 	if (gNetworkConnection->type == NETWORK_CLIENT_TYPE)
 	{
@@ -462,5 +516,5 @@ void updateCharacterFromInput(Input *input)
 		return;
 	}
 	
-	input->character->direction = bestDirectionFromInputTicks(input->right_ticks, input->left_ticks, input->up_ticks, input->down_ticks);
+	input->character->direction = bestDirectionFromInputTicks(input->priority == 0, input->right_ticks, input->left_ticks, input->up_ticks, input->down_ticks);
 }

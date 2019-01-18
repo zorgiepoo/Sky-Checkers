@@ -22,13 +22,13 @@
 #include "maincore.h"
 #include "characters.h"
 
-extern const unsigned JOY_NONE;
-extern const unsigned JOY_UP;
-extern const unsigned JOY_RIGHT;
-extern const unsigned JOY_DOWN;
-extern const unsigned JOY_LEFT;
-extern const unsigned JOY_AXIS_NONE;
-extern const unsigned JOY_INVALID_ID;
+#define JOY_NONE	8001
+#define JOY_UP		8002
+#define JOY_RIGHT	8003
+#define JOY_DOWN	8004
+#define JOY_LEFT	8005
+#define JOY_AXIS_NONE	100
+#define JOY_INVALID_ID	-1
 
 #define MAX_JOY_DESCRIPTION_BUFFER_LENGTH 128
 
@@ -40,6 +40,12 @@ typedef struct
 	// Is the weapon button being held down?
 	SDL_bool weap;
 	
+	// This is a bitmask for a lack of a better name.
+	// Normally zero which means we pick the direction with latest timestamp
+	// If non-zero, one or more of the directional inputs was triggered via a joystick analog type input
+	// ..which means we pick the direction with the smallest timestamp
+	uint8_t priority;
+	
 	// The time a particular direction started to be held down
 	// Zero if they're not held down
 	uint32_t right_ticks;
@@ -48,12 +54,12 @@ typedef struct
 	uint32_t down_ticks;
 	
 	// right, left, up, down ids - their assigned keyboard keys.
-	unsigned r_id;
-	unsigned l_id;
-	unsigned u_id;
-	unsigned d_id;
+	unsigned int r_id;
+	unsigned int l_id;
+	unsigned int u_id;
+	unsigned int d_id;
 	// and the weapon id.
-	unsigned weap_id;
+	unsigned int weap_id;
 	
 	// joy stick ids.
 	int rjs_id;
@@ -62,14 +68,14 @@ typedef struct
 	int djs_id;
 	int weapjs_id;
 	
-	// joy stick axis ids
-	unsigned rjs_axis_id;
-	unsigned ljs_axis_id;
-	unsigned ujs_axis_id;
-	unsigned djs_axis_id;
-	unsigned weapjs_axis_id;
+	// joy stick axis ids (x, y)
+	unsigned int rjs_axis_id;
+	unsigned int ljs_axis_id;
+	unsigned int ujs_axis_id;
+	unsigned int djs_axis_id;
+	unsigned int weapjs_axis_id;
 	
-	// other joy stick ids. (Used for multiple amount of joysticks on the system and to indicate which joystick the input has)
+	// joystick instance ids which tell us what joystick is being triggered
 	int joy_right_id;
 	int joy_left_id;
 	int joy_down_id;
