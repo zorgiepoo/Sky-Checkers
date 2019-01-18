@@ -317,26 +317,22 @@ void performDownAction(Input *input, SDL_Event *event)
 				input->weap = SDL_TRUE;
 		}
 		
-		else if (event->jbutton.which == input->joy_up_id && event->jbutton.button == input->ujs_id && input->ujs_axis_id == JOY_AXIS_NONE &&
-				 input->right_ticks == 0 && input->left_ticks == 0 && input->down_ticks == 0)
+		else if (event->jbutton.which == input->joy_up_id && event->jbutton.button == input->ujs_id && input->ujs_axis_id == JOY_AXIS_NONE)
 		{
 			input->up_ticks = event->key.timestamp;
 		}
 		
-		else if (event->jbutton.which == input->joy_down_id && event->jbutton.button == input->djs_id && input->djs_axis_id == JOY_AXIS_NONE &&
-				 input->right_ticks == 0 && input->left_ticks == 0 && input->up_ticks == 0)
+		else if (event->jbutton.which == input->joy_down_id && event->jbutton.button == input->djs_id && input->djs_axis_id == JOY_AXIS_NONE)
 		{
 			input->down_ticks = event->key.timestamp;
 		}
 		
-		else if (event->jbutton.which == input->joy_left_id && event->jbutton.button == input->ljs_id && input->ljs_axis_id == JOY_AXIS_NONE &&
-				 input->right_ticks == 0 && input->down_ticks == 0 && input->up_ticks == 0)
+		else if (event->jbutton.which == input->joy_left_id && event->jbutton.button == input->ljs_id && input->ljs_axis_id == JOY_AXIS_NONE)
 		{
 			input->left_ticks = event->key.timestamp;
 		}
 		
-		else if (event->jbutton.which == input->joy_right_id && event->jbutton.button == input->rjs_id && input->rjs_axis_id == JOY_AXIS_NONE &&
-				 input->left_ticks == 0 && input->down_ticks == 0 && input->up_ticks == 0)
+		else if (event->jbutton.which == input->joy_right_id && event->jbutton.button == input->rjs_id && input->rjs_axis_id == JOY_AXIS_NONE)
 		{
 			input->right_ticks = event->key.timestamp;
 		}
