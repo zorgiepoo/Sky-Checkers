@@ -2058,7 +2058,7 @@ unsigned getJoyStickTrigger(Sint16 *value, Uint8 *axis, int *joy_id)
 					
 					return trigger;
 					
-					case SDL_JOYAXISMOTION:
+				case SDL_JOYAXISMOTION:
 					
 					// check for invalid value
 					if (!(( event.jaxis.value < -VALID_ANALOG_MAGNITUDE ) || (event.jaxis.value > VALID_ANALOG_MAGNITUDE )))
