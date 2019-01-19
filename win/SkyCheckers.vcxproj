@@ -142,17 +142,7 @@ xcopy /y /d "$(ProjectDir)SDL2_ttf-2.0.14\lib\x86\LICENSE.freetype.txt" "$(OutDi
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y /d "$(ProjectDir)glew-2.1.0\bin\Release\Win32\glew32.dll" "$(OutDir)"
-xcopy /y /d "$(ProjectDir)glew-2.1.0\LICENSE.glew.txt" "$(OutDir)"
-xcopy /y /d "$(ProjectDir)SDL2-2.0.9\lib\x86\SDL2.dll" "$(OutDir)"
-xcopy /y /d "$(ProjectDir)SDL2_mixer-2.0.4\lib\x86\SDL2_mixer.dll" "$(OutDir)"
-xcopy /y /d "$(ProjectDir)SDL2_mixer-2.0.4\lib\x86\libogg-0.dll" "$(OutDir)"
-xcopy /y /d "$(ProjectDir)SDL2_mixer-2.0.4\lib\x86\libvorbis-0.dll" "$(OutDir)"
-xcopy /y /d "$(ProjectDir)SDL2_mixer-2.0.4\lib\x86\libvorbisfile-3.dll" "$(OutDir)"
-xcopy /y /d "$(ProjectDir)SDL2_mixer-2.0.4\lib\x86\LICENSE.ogg-vorbis.txt" "$(OutDir)"
-xcopy /y /d "$(ProjectDir)SDL2_ttf-2.0.14\lib\x86\SDL2_ttf.dll" "$(OutDir)"
-xcopy /y /d "$(ProjectDir)SDL2_ttf-2.0.14\lib\x86\libfreetype-6.dll" "$(OutDir)"
-xcopy /y /d "$(ProjectDir)SDL2_ttf-2.0.14\lib\x86\LICENSE.freetype.txt" "$(OutDir)"</Command>
+      <Command>"$(ProjectDir)\copydlls.bat" "$(ProjectDir)" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
