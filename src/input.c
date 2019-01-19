@@ -140,9 +140,9 @@ void performDownAction(Input *input, SDL_Event *event)
 		if (input->joy_up_id == event->jaxis.which && input->ujs_axis_id == event->jaxis.axis)
 		{
 			fprintf(stderr, "up: %d\n", event->jaxis.value);
-			if (input->ujs_id > 32000)
+			if (input->ujs_id > VALID_ANALOG_MAGNITUDE)
 			{
-				if (event->jaxis.value > 32000)
+				if (event->jaxis.value > VALID_ANALOG_MAGNITUDE)
 				{
 					input->up_ticks = event->key.timestamp;
 					input->priority |= 1 << 0;
@@ -153,9 +153,9 @@ void performDownAction(Input *input, SDL_Event *event)
 					input->priority &= ~(1 << 0);
 				}
 			}
-			else if (input->ujs_id < -32000)
+			else if (input->ujs_id < -VALID_ANALOG_MAGNITUDE)
 			{
-				if (event->jaxis.value < -32000)
+				if (event->jaxis.value < -VALID_ANALOG_MAGNITUDE)
 				{
 					input->up_ticks = event->key.timestamp;
 					input->priority |= 1 << 0;
@@ -176,9 +176,9 @@ void performDownAction(Input *input, SDL_Event *event)
 		if (input->joy_down_id == event->jaxis.which && input->djs_axis_id == event->jaxis.axis)
 		{
 			fprintf(stderr, "down: %d\n", event->jaxis.value);
-			if (input->djs_id > 32000)
+			if (input->djs_id > VALID_ANALOG_MAGNITUDE)
 			{
-				if (event->jaxis.value > 32000)
+				if (event->jaxis.value > VALID_ANALOG_MAGNITUDE)
 				{
 					input->down_ticks = event->key.timestamp;
 					input->priority |= 1 << 1;
@@ -189,9 +189,9 @@ void performDownAction(Input *input, SDL_Event *event)
 					input->priority &= ~(1 << 1);
 				}
 			}
-			else if (input->djs_id < -32000)
+			else if (input->djs_id < -VALID_ANALOG_MAGNITUDE)
 			{
-				if (event->jaxis.value < -32000)
+				if (event->jaxis.value < -VALID_ANALOG_MAGNITUDE)
 				{
 					input->down_ticks = event->key.timestamp;
 					input->priority |= 1 << 1;
@@ -212,9 +212,9 @@ void performDownAction(Input *input, SDL_Event *event)
 		if (input->joy_right_id == event->jaxis.which && input->rjs_axis_id == event->jaxis.axis)
 		{
 			fprintf(stderr, "right: %d\n", event->jaxis.value);
-			if (input->rjs_id > 32000)
+			if (input->rjs_id > VALID_ANALOG_MAGNITUDE)
 			{
-				if (event->jaxis.value > 32000)
+				if (event->jaxis.value > VALID_ANALOG_MAGNITUDE)
 				{
 					input->right_ticks = event->key.timestamp;
 					input->priority |= 1 << 2;
@@ -225,9 +225,9 @@ void performDownAction(Input *input, SDL_Event *event)
 					input->priority &= ~(1 << 2);
 				}
 			}
-			else if (input->rjs_id < -32000)
+			else if (input->rjs_id < -VALID_ANALOG_MAGNITUDE)
 			{
-				if (event->jaxis.value < -32000)
+				if (event->jaxis.value < -VALID_ANALOG_MAGNITUDE)
 				{
 					input->right_ticks = event->key.timestamp;
 					input->priority |= 1 << 2;
@@ -248,9 +248,9 @@ void performDownAction(Input *input, SDL_Event *event)
 		if (input->joy_left_id == event->jaxis.which && input->ljs_axis_id == event->jaxis.axis)
 		{
 			fprintf(stderr, "left: %d\n", event->jaxis.value);
-			if (input->ljs_id > 32000)
+			if (input->ljs_id > VALID_ANALOG_MAGNITUDE)
 			{
-				if (event->jaxis.value > 32000)
+				if (event->jaxis.value > VALID_ANALOG_MAGNITUDE)
 				{
 					input->left_ticks = event->key.timestamp;
 					input->priority |= 1 << 3;
@@ -261,9 +261,9 @@ void performDownAction(Input *input, SDL_Event *event)
 					input->priority &= ~(1 << 3);
 				}
 			}
-			else if (input->ljs_id < -32000)
+			else if (input->ljs_id < -VALID_ANALOG_MAGNITUDE)
 			{
-				if (event->jaxis.value < -32000)
+				if (event->jaxis.value < -VALID_ANALOG_MAGNITUDE)
 				{
 					input->left_ticks = event->key.timestamp;
 					input->priority |= 1 << 3;
@@ -284,9 +284,9 @@ void performDownAction(Input *input, SDL_Event *event)
 		if (!input->character->weap->animationState && event->jaxis.axis == input->weapjs_axis_id && event->jaxis.which == input->joy_weap_id)
 		{
 			
-			if (input->weapjs_id > 32000)
+			if (input->weapjs_id > VALID_ANALOG_MAGNITUDE)
 			{
-				if (event->jaxis.value > 32000)
+				if (event->jaxis.value > VALID_ANALOG_MAGNITUDE)
 				{
 					if (gGameHasStarted)
 					{
@@ -294,9 +294,9 @@ void performDownAction(Input *input, SDL_Event *event)
 					}
 				}
 			}
-			else if (input->weapjs_id < -32000)
+			else if (input->weapjs_id < -VALID_ANALOG_MAGNITUDE)
 			{
-				if (event->jaxis.value < -32000)
+				if (event->jaxis.value < -VALID_ANALOG_MAGNITUDE)
 				{
 					if (gGameHasStarted)
 					{

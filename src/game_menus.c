@@ -2061,7 +2061,7 @@ unsigned getJoyStickTrigger(Sint16 *value, Uint8 *axis, int *joy_id)
 					case SDL_JOYAXISMOTION:
 					
 					// check for invalid value
-					if (!(( event.jaxis.value < -32000 ) || (event.jaxis.value > 32000 )))
+					if (!(( event.jaxis.value < -VALID_ANALOG_MAGNITUDE ) || (event.jaxis.value > VALID_ANALOG_MAGNITUDE )))
 					{
 						fprintf(stderr, "Invalid value: %d with axis: %d\n", event.jaxis.value, event.jaxis.axis);
 						break;
@@ -2070,9 +2070,9 @@ unsigned getJoyStickTrigger(Sint16 *value, Uint8 *axis, int *joy_id)
 					// x axis
 					if (event.jaxis.axis == 0)
 					{
-						if (event.jaxis.value > 32000)
+						if (event.jaxis.value > VALID_ANALOG_MAGNITUDE)
 							trigger = JOY_RIGHT;
-						else if (event.jaxis.value < -32000)
+						else if (event.jaxis.value < -VALID_ANALOG_MAGNITUDE)
 							trigger = JOY_LEFT;
 					}
 					// y axis

@@ -32,6 +32,9 @@
 
 #define MAX_JOY_DESCRIPTION_BUFFER_LENGTH 128
 
+// This dictates what the analog deadzone is. Max is 32767
+#define VALID_ANALOG_MAGNITUDE 8100
+
 /* Keyboard input structure used for a character*/
 typedef struct
 {
