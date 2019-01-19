@@ -18,6 +18,7 @@
  */
 
 #include "input.h"
+#include <stdint.h>
 #include "network.h"
 
 Input gRedRoverInput;
