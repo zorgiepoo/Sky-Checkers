@@ -437,7 +437,7 @@ static void readDefaults(void)
 		gUserNameStringIndex = strlen(gUserNameString);
 	#endif
 
-	FILE *fp = getUserDataFile("r");
+	FILE *fp = getUserDataFile("rb");
 
 	if (fp == NULL)
 	{
@@ -610,7 +610,7 @@ cleanup:
 
 static void writeDefaults(Renderer *renderer)
 {
-	FILE *fp = getUserDataFile("w");
+	FILE *fp = getUserDataFile("wb");
 
 	if (fp == NULL)
 	{
