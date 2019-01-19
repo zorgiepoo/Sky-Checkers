@@ -139,7 +139,6 @@ void performDownAction(Input *input, SDL_Event *event)
 		
 		if (input->joy_up_id == event->jaxis.which && input->ujs_axis_id == event->jaxis.axis)
 		{
-			fprintf(stderr, "up: %d\n", event->jaxis.value);
 			if (input->ujs_id > VALID_ANALOG_MAGNITUDE)
 			{
 				if (event->jaxis.value > VALID_ANALOG_MAGNITUDE)
@@ -175,7 +174,6 @@ void performDownAction(Input *input, SDL_Event *event)
 		
 		if (input->joy_down_id == event->jaxis.which && input->djs_axis_id == event->jaxis.axis)
 		{
-			fprintf(stderr, "down: %d\n", event->jaxis.value);
 			if (input->djs_id > VALID_ANALOG_MAGNITUDE)
 			{
 				if (event->jaxis.value > VALID_ANALOG_MAGNITUDE)
@@ -211,7 +209,6 @@ void performDownAction(Input *input, SDL_Event *event)
 		
 		if (input->joy_right_id == event->jaxis.which && input->rjs_axis_id == event->jaxis.axis)
 		{
-			fprintf(stderr, "right: %d\n", event->jaxis.value);
 			if (input->rjs_id > VALID_ANALOG_MAGNITUDE)
 			{
 				if (event->jaxis.value > VALID_ANALOG_MAGNITUDE)
@@ -247,7 +244,6 @@ void performDownAction(Input *input, SDL_Event *event)
 		
 		if (input->joy_left_id == event->jaxis.which && input->ljs_axis_id == event->jaxis.axis)
 		{
-			fprintf(stderr, "left: %d\n", event->jaxis.value);
 			if (input->ljs_id > VALID_ANALOG_MAGNITUDE)
 			{
 				if (event->jaxis.value > VALID_ANALOG_MAGNITUDE)
