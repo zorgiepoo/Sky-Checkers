@@ -700,6 +700,10 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 	size_t receivedAckPacketsCapacity = sizeof(receivedAckPacketNumbers[0]) / sizeof(*receivedAckPacketNumbers[0]);
 	uint64_t receivedAckPacketCount = 0;
 	
+	GameMessage cachedAheadMessages[3][256];
+	size_t cachedAheadMessagesCapacity = sizeof(cachedAheadMessages[0]) / sizeof(*cachedAheadMessages[0]);
+	uint64_t cachedAheadMessagesCounts[3] = {0, 0, 0};
+	
 	SDL_bool needsToQuit = SDL_FALSE;
 	
 	while (!needsToQuit)
@@ -1154,6 +1158,33 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 			}
 		}
 		
+		for (uint32_t addressIndex = 0; addressIndex < 3; addressIndex++)
+		{
+			uint64_t maxCacheCount = cachedAheadMessagesCounts[addressIndex] > cachedAheadMessagesCapacity ? cachedAheadMessagesCapacity : cachedAheadMessagesCounts[addressIndex];
+			
+			SDL_bool foundMessageToPlay;
+			do
+			{
+				foundMessageToPlay = SDL_FALSE;
+				
+				for (uint64_t cachedMessageIndex = 0; cachedMessageIndex < maxCacheCount; cachedMessageIndex++)
+				{
+					if (triggerIncomingPacketNumbers[addressIndex] + 1 == cachedAheadMessages[addressIndex][cachedMessageIndex].packetNumber)
+					{
+						fprintf(stderr, "Played cached message from client %d packet %d\n", addressIndex, triggerIncomingPacketNumbers[addressIndex] + 1);
+						
+						pushNetworkMessage(&gGameMessagesFromNet, cachedAheadMessages[addressIndex][cachedMessageIndex]);
+						
+						cachedAheadMessages[addressIndex][cachedMessageIndex].packetNumber = 0;
+						triggerIncomingPacketNumbers[addressIndex]++;
+						
+						foundMessageToPlay = SDL_TRUE;
+					}
+				}
+			}
+			while (foundMessageToPlay);
+		}
+		
 		while (!needsToQuit)
 		{
 			fd_set socketSet;
@@ -1246,7 +1277,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							// request movement
 							
 							int characterID = characterIDForClientAddress(&address);
-							if (characterID != NO_CHARACTER)
+							if (characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 							{
 								int addressIndex = characterID - 1;
 								int direction = 0;
@@ -1254,25 +1285,63 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 								
 								sscanf(buffer + 2, "%"PRIu64" %d", &packetNumber, &direction);
 								
+								SDL_bool canAckBack = SDL_TRUE;
+								
+								GameMessage message;
+								message.packetNumber = packetNumber;
+								message.type = MOVEMENT_REQUEST_MESSAGE_TYPE;
+								message.addressIndex = addressIndex;
+								message.movementRequest.direction = direction;
+								
 								if (packetNumber == triggerIncomingPacketNumbers[addressIndex] + 1)
 								{
 									triggerIncomingPacketNumbers[addressIndex]++;
 									
 									if (direction == LEFT || direction == RIGHT || direction == UP || direction == DOWN || direction == NO_DIRECTION)
 									{
-										if (characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
+										pushNetworkMessage(&gGameMessagesFromNet, message);
+									}
+								}
+								else if (packetNumber > triggerIncomingPacketNumbers[addressIndex] + 1)
+								{
+									uint64_t maxCacheCount = cachedAheadMessagesCounts[addressIndex] > cachedAheadMessagesCapacity ? cachedAheadMessagesCapacity : cachedAheadMessagesCounts[addressIndex];
+									
+									uint64_t freeCacheIndex = 0;
+									SDL_bool foundFreeCacheIndex = SDL_FALSE;
+									SDL_bool cachedMessage = SDL_FALSE;
+									for (uint64_t cachedMessageIndex = 0; cachedMessageIndex < maxCacheCount; cachedMessageIndex++)
+									{
+										if (cachedAheadMessages[addressIndex][cachedMessageIndex].packetNumber == packetNumber)
 										{
-											GameMessage message;
-											message.type = MOVEMENT_REQUEST_MESSAGE_TYPE;
-											message.addressIndex = addressIndex;
-											message.movementRequest.direction = direction;
-											
-											pushNetworkMessage(&gGameMessagesFromNet, message);
+											cachedMessage = SDL_TRUE;
+											break;
+										}
+										else if (cachedAheadMessages[addressIndex][cachedMessageIndex].packetNumber == 0)
+										{
+											foundFreeCacheIndex = SDL_TRUE;
+											freeCacheIndex = cachedMessageIndex;
+										}
+									}
+									
+									if (!cachedMessage)
+									{
+										if (foundFreeCacheIndex)
+										{
+											cachedAheadMessages[addressIndex][freeCacheIndex] = message;
+										}
+										else if (cachedAheadMessagesCounts[addressIndex] < cachedAheadMessagesCapacity)
+										{
+											cachedAheadMessages[addressIndex][cachedAheadMessagesCounts[addressIndex] % cachedAheadMessagesCapacity] = message;
+											cachedAheadMessagesCounts[addressIndex]++;
+										}
+										else if (!foundFreeCacheIndex)
+										{
+											canAckBack = SDL_FALSE;
 										}
 									}
 								}
 								
-								if (packetNumber <= triggerIncomingPacketNumbers[addressIndex])
+								if (canAckBack)
 								{
 									GameMessage ackMessage;
 									ackMessage.type = ACK_MESSAGE_TYPE;
@@ -1290,26 +1359,64 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							sscanf(buffer + 2, "%"PRIu64"", &packetNumber);
 							
 							int characterID = characterIDForClientAddress(&address);
-							if (characterID != NO_CHARACTER)
+							if (characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 							{
 								int addressIndex = characterID - 1;
+								
+								GameMessage message;
+								message.packetNumber = packetNumber;
+								message.type = CHARACTER_FIRED_REQUEST_MESSAGE_TYPE;
+								message.addressIndex = addressIndex;
+								message.firedRequest.characterID = characterID;
+								
+								SDL_bool canAckBack = SDL_TRUE;
 								
 								if (packetNumber == triggerIncomingPacketNumbers[addressIndex] + 1)
 								{
 									triggerIncomingPacketNumbers[addressIndex]++;
 									
-									if (characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
+									pushNetworkMessage(&gGameMessagesFromNet, message);
+								}
+								else if (packetNumber > triggerIncomingPacketNumbers[addressIndex] + 1)
+								{
+									uint64_t maxCacheCount = cachedAheadMessagesCounts[addressIndex] > cachedAheadMessagesCapacity ? cachedAheadMessagesCapacity : cachedAheadMessagesCounts[addressIndex];
+									
+									uint64_t freeCacheIndex = 0;
+									SDL_bool foundFreeCacheIndex = SDL_FALSE;
+									SDL_bool cachedMessage = SDL_FALSE;
+									for (uint64_t cachedMessageIndex = 0; cachedMessageIndex < maxCacheCount; cachedMessageIndex++)
 									{
-										GameMessage message;
-										message.type = CHARACTER_FIRED_REQUEST_MESSAGE_TYPE;
-										message.addressIndex = addressIndex;
-										message.firedRequest.characterID = characterID;
-										
-										pushNetworkMessage(&gGameMessagesFromNet, message);
+										if (cachedAheadMessages[addressIndex][cachedMessageIndex].packetNumber == packetNumber)
+										{
+											cachedMessage = SDL_TRUE;
+											break;
+										}
+										else if (cachedAheadMessages[addressIndex][cachedMessageIndex].packetNumber == 0)
+										{
+											foundFreeCacheIndex = SDL_TRUE;
+											freeCacheIndex = cachedMessageIndex;
+										}
+									}
+									
+									if (!cachedMessage)
+									{
+										if (foundFreeCacheIndex)
+										{
+											cachedAheadMessages[addressIndex][freeCacheIndex] = message;
+										}
+										else if (cachedAheadMessagesCounts[addressIndex] < cachedAheadMessagesCapacity)
+										{
+											cachedAheadMessages[addressIndex][cachedAheadMessagesCounts[addressIndex] % cachedAheadMessagesCapacity] = message;
+											cachedAheadMessagesCounts[addressIndex]++;
+										}
+										else if (!foundFreeCacheIndex)
+										{
+											canAckBack = SDL_FALSE;
+										}
 									}
 								}
 								
-								if (packetNumber <= triggerIncomingPacketNumbers[addressIndex])
+								if (canAckBack)
 								{
 									GameMessage ackMessage;
 									ackMessage.type = ACK_MESSAGE_TYPE;
