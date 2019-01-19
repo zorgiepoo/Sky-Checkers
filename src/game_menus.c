@@ -518,7 +518,7 @@ void configureKeysMenuAction(void *context)
 void drawJoySticksConfigureMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -1.07f, -20.00f});	
-	drawString(renderer, modelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Configure Joy Sticks");
+	drawString(renderer, modelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Configure Controllers");
 }
 
 void joySticksConfigureMenuAction(void *context)
