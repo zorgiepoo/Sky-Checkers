@@ -677,7 +677,7 @@ void fireCharacterWeapon(Character *character)
 {
 	if (gGameHasStarted)
 	{
-		if ((!character->weap->animationState || (gNetworkConnection && gNetworkConnection->type == NETWORK_CLIENT_TYPE)) && character->weap->fired)
+		if ((!character->weap->animationState || (gNetworkConnection && gNetworkConnection->type == NETWORK_CLIENT_TYPE)) && character->weap->fired && CHARACTER_IS_ALIVE(character))
 		{
 			int tileIndex = getTileIndexLocation((int)character->x, (int)character->y);
 			if (tileIndex >= 0 && tileIndex < NUMBER_OF_TILES && gTiles[tileIndex].z == TILE_ALIVE_Z)
