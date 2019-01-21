@@ -2393,6 +2393,8 @@ static void cleanupStateFromNetwork(void)
 	cleanUpNetName(&gRedRover);
 	cleanUpNetName(&gGreenTree);
 	cleanUpNetName(&gBlueLightning);
+	
+	resetCharacterWins();
 }
 
 void sendToClients(int exception, GameMessage *message)

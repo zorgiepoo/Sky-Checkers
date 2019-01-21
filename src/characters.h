@@ -148,6 +148,7 @@ extern Character gPinkBubbleGum;
 extern Character gBlueLightning;
 
 void initCharacters(void);
+void resetCharacterWins(void);
 void loadCharacter(Character *character);
 
 void restoreAllBackupStates(void);

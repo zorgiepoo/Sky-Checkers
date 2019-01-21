@@ -1461,6 +1461,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 				{
 					if (!gConsoleActivated)
 					{
+						resetCharacterWins();
 						endGame();
 
 						if (gNetworkConnection)

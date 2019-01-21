@@ -74,7 +74,14 @@ void loadCharacter(Character *character)
 	character->time_alive = 0;
 	
 	character->kills = 0;
-	character->wins = 0;
+}
+
+void resetCharacterWins(void)
+{
+	gRedRover.wins = 0;
+	gPinkBubbleGum.wins = 0;
+	gGreenTree.wins = 0;
+	gBlueLightning.wins = 0;
 }
 
 void initCharacters(void)
@@ -134,6 +141,8 @@ void initCharacters(void)
 	gBlueLightning.red = 0.3f;
 	gBlueLightning.green = 0.5f;
 	gBlueLightning.blue = 0.6f;
+	
+	resetCharacterWins();
 }
 
 static void restoreCharacterBackupState(Character *character)
