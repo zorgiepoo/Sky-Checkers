@@ -293,7 +293,7 @@ void drawNetworkServerNumberOfPlayersMenu(Renderer *renderer, color4_t preferred
 	
 	if (gDrawArrowsForNumberOfNetHumansFlag)
 	{
-		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){0.35f / 1.25f, -1.3f / 1.25f, -25.0f / 1.25f}));
+		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){0.35f / 1.25f, 0.1f / 1.25f, -25.0f / 1.25f}));
 	}
 }
 
@@ -316,7 +316,7 @@ void drawNetworkServerAIModeMenu(Renderer *renderer, color4_t preferredColor)
 	
 	if (gDrawArrowsForAIModeFlag)
 	{
-		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){0.35f / 1.25f, -2.7f / 1.25f, -25.0f / 1.25f}));
+		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){0.35f / 1.25f, -1.3f / 1.25f, -25.0f / 1.25f}));
 	}
 }
 
@@ -331,7 +331,7 @@ void drawNetworkServerPlayerLivesMenu(Renderer *renderer, color4_t preferredColo
 	
 	if (gDrawArrowsForNetPlayerLivesFlag)
 	{
-		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){0.35f / 1.25f, -4.0f / 1.25f, -25.0f / 1.25f}));
+		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){0.35f / 1.25f, -2.6f / 1.25f, -25.0f / 1.25f}));
 	}
 }
 
