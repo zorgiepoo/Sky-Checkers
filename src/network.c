@@ -1171,8 +1171,6 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 				{
 					if (triggerIncomingPacketNumbers[addressIndex] + 1 == cachedAheadMessages[addressIndex][cachedMessageIndex].packetNumber)
 					{
-						fprintf(stderr, "Played cached message from client %d packet %d\n", addressIndex, triggerIncomingPacketNumbers[addressIndex] + 1);
-						
 						pushNetworkMessage(&gGameMessagesFromNet, cachedAheadMessages[addressIndex][cachedMessageIndex]);
 						
 						cachedAheadMessages[addressIndex][cachedMessageIndex].packetNumber = 0;
