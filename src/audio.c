@@ -33,7 +33,7 @@ static Mix_Music *gGameMusic = NULL;
 
 SDL_bool initAudio(void)
 {
-	SDL_bool success = Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, AUDIO_S16SYS, 2, 4096) == 0;
+	SDL_bool success = Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, AUDIO_S16SYS, 2, 1024) == 0;
 	if (success)
 	{
 		Mix_VolumeMusic(MUSIC_VOLUME);
