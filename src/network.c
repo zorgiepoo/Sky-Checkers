@@ -1170,58 +1170,62 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						if (messageTag[0] == 'c' && messageTag[1] == 'p')
 						{
 							uint64_t packetNumber = 0;
-							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
 							
-							char *netName = calloc(MAX_USER_NAME_SIZE, 1);
-							strncpy(netName, buffer, MAX_USER_NAME_SIZE - 1);
-							buffer += MAX_USER_NAME_SIZE;
-							
-							int existingCharacterID = characterIDForClientAddress(&address);
-							if ((packetNumber == 1 && existingCharacterID == NO_CHARACTER && numberOfPlayersToWaitFor > 0) || (packetNumber == 1 && existingCharacterID != NO_CHARACTER))
+							if (buffer + sizeof(packetNumber) + MAX_USER_NAME_SIZE <= packetBuffer + numberOfBytes)
 							{
-								int addressIndex;
-								if (existingCharacterID == NO_CHARACTER)
-								{
-									// yes
-									// sr == server response
-									addressIndex = gCurrentSlot;
-									gNetworkConnection->clientAddresses[addressIndex] = address;
-									triggerIncomingPacketNumbers[addressIndex]++;
-									
-									SDL_LockMutex(gCurrentSlotMutex);
-									gCurrentSlot++;
-									SDL_UnlockMutex(gCurrentSlotMutex);
-									
-									numberOfPlayersToWaitFor--;
-									
-									GameMessage message;
-									message.type = FIRST_CLIENT_RESPONSE_MESSAGE_TYPE;
-									message.addressIndex = gCurrentSlot - 1;
-									message.firstClientResponse.netName = netName;
-									message.firstClientResponse.numberOfPlayersToWaitFor = numberOfPlayersToWaitFor;
-									message.firstClientResponse.slotID = gCurrentSlot;
-									
-									pushNetworkMessage(&gGameMessagesFromNet, message);
-								}
-								else
-								{
-									addressIndex = existingCharacterID - 1;
-								}
+								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
 								
-								if (packetNumber <= triggerIncomingPacketNumbers[addressIndex])
+								char *netName = calloc(MAX_USER_NAME_SIZE, 1);
+								strncpy(netName, buffer, MAX_USER_NAME_SIZE - 1);
+								buffer += MAX_USER_NAME_SIZE;
+								
+								int existingCharacterID = characterIDForClientAddress(&address);
+								if ((packetNumber == 1 && existingCharacterID == NO_CHARACTER && numberOfPlayersToWaitFor > 0) || (packetNumber == 1 && existingCharacterID != NO_CHARACTER))
 								{
-									GameMessage ackMessage;
-									ackMessage.type = ACK_MESSAGE_TYPE;
-									ackMessage.packetNumber = packetNumber;
-									ackMessage.addressIndex = addressIndex;
-									pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+									int addressIndex;
+									if (existingCharacterID == NO_CHARACTER)
+									{
+										// yes
+										// sr == server response
+										addressIndex = gCurrentSlot;
+										gNetworkConnection->clientAddresses[addressIndex] = address;
+										triggerIncomingPacketNumbers[addressIndex]++;
+										
+										SDL_LockMutex(gCurrentSlotMutex);
+										gCurrentSlot++;
+										SDL_UnlockMutex(gCurrentSlotMutex);
+										
+										numberOfPlayersToWaitFor--;
+										
+										GameMessage message;
+										message.type = FIRST_CLIENT_RESPONSE_MESSAGE_TYPE;
+										message.addressIndex = gCurrentSlot - 1;
+										message.firstClientResponse.netName = netName;
+										message.firstClientResponse.numberOfPlayersToWaitFor = numberOfPlayersToWaitFor;
+										message.firstClientResponse.slotID = gCurrentSlot;
+										
+										pushNetworkMessage(&gGameMessagesFromNet, message);
+									}
+									else
+									{
+										addressIndex = existingCharacterID - 1;
+									}
+									
+									if (packetNumber <= triggerIncomingPacketNumbers[addressIndex])
+									{
+										GameMessage ackMessage;
+										ackMessage.type = ACK_MESSAGE_TYPE;
+										ackMessage.packetNumber = packetNumber;
+										ackMessage.addressIndex = addressIndex;
+										pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+									}
 								}
-							}
-							else if (existingCharacterID == NO_CHARACTER)
-							{
-								// no
-								// sn == server no rejection response
-								sendData(gNetworkConnection->socket, "sn", NET_MESSAGE_TAG_SIZE, &address);
+								else if (existingCharacterID == NO_CHARACTER)
+								{
+									// no
+									// sn == server no rejection response
+									sendData(gNetworkConnection->socket, "sn", NET_MESSAGE_TAG_SIZE, &address);
+								}
 							}
 						}
 						
@@ -1231,36 +1235,39 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							int characterID = characterIDForClientAddress(&address);
 							if (characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 							{
-								int32_t addressIndex = characterID - 1;
 								int32_t direction = 0;
 								uint64_t packetNumber = 0;
-								
-								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
-								ADVANCE_RECEIVE_BUFFER(&buffer, direction);
-								
-								GameMessage message;
-								message.packetNumber = packetNumber;
-								message.type = MOVEMENT_REQUEST_MESSAGE_TYPE;
-								message.addressIndex = addressIndex;
-								message.movementRequest.direction = direction;
-								
-								if (packetNumber == triggerIncomingPacketNumbers[addressIndex] + 1)
+								if (buffer + sizeof(packetNumber) + sizeof(direction) <= packetBuffer + numberOfBytes)
 								{
-									triggerIncomingPacketNumbers[addressIndex]++;
+									int32_t addressIndex = characterID - 1;
 									
-									if (direction == LEFT || direction == RIGHT || direction == UP || direction == DOWN || direction == NO_DIRECTION)
+									ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+									ADVANCE_RECEIVE_BUFFER(&buffer, direction);
+									
+									GameMessage message;
+									message.packetNumber = packetNumber;
+									message.type = MOVEMENT_REQUEST_MESSAGE_TYPE;
+									message.addressIndex = addressIndex;
+									message.movementRequest.direction = direction;
+									
+									if (packetNumber == triggerIncomingPacketNumbers[addressIndex] + 1)
 									{
-										pushNetworkMessage(&gGameMessagesFromNet, message);
+										triggerIncomingPacketNumbers[addressIndex]++;
+										
+										if (direction == LEFT || direction == RIGHT || direction == UP || direction == DOWN || direction == NO_DIRECTION)
+										{
+											pushNetworkMessage(&gGameMessagesFromNet, message);
+										}
 									}
-								}
-								
-								if (packetNumber <= triggerIncomingPacketNumbers[addressIndex])
-								{
-									GameMessage ackMessage;
-									ackMessage.type = ACK_MESSAGE_TYPE;
-									ackMessage.packetNumber = packetNumber;
-									ackMessage.addressIndex = addressIndex;
-									pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+									
+									if (packetNumber <= triggerIncomingPacketNumbers[addressIndex])
+									{
+										GameMessage ackMessage;
+										ackMessage.type = ACK_MESSAGE_TYPE;
+										ackMessage.packetNumber = packetNumber;
+										ackMessage.addressIndex = addressIndex;
+										pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+									}
 								}
 							}
 						}
@@ -1269,33 +1276,36 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						{
 							// shoot weapon
 							uint64_t packetNumber = 0;
-							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
-							
-							int characterID = characterIDForClientAddress(&address);
-							if (characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
+							if (buffer + sizeof(packetNumber) <= packetBuffer + numberOfBytes)
 							{
-								int addressIndex = characterID - 1;
+								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
 								
-								GameMessage message;
-								message.packetNumber = packetNumber;
-								message.type = CHARACTER_FIRED_REQUEST_MESSAGE_TYPE;
-								message.addressIndex = addressIndex;
-								message.firedRequest.characterID = characterID;
-								
-								if (packetNumber == triggerIncomingPacketNumbers[addressIndex] + 1)
+								int characterID = characterIDForClientAddress(&address);
+								if (characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 								{
-									triggerIncomingPacketNumbers[addressIndex]++;
+									int addressIndex = characterID - 1;
 									
-									pushNetworkMessage(&gGameMessagesFromNet, message);
-								}
-								
-								if (packetNumber <= triggerIncomingPacketNumbers[addressIndex])
-								{
-									GameMessage ackMessage;
-									ackMessage.type = ACK_MESSAGE_TYPE;
-									ackMessage.packetNumber = packetNumber;
-									ackMessage.addressIndex = addressIndex;
-									pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+									GameMessage message;
+									message.packetNumber = packetNumber;
+									message.type = CHARACTER_FIRED_REQUEST_MESSAGE_TYPE;
+									message.addressIndex = addressIndex;
+									message.firedRequest.characterID = characterID;
+									
+									if (packetNumber == triggerIncomingPacketNumbers[addressIndex] + 1)
+									{
+										triggerIncomingPacketNumbers[addressIndex]++;
+										
+										pushNetworkMessage(&gGameMessagesFromNet, message);
+									}
+									
+									if (packetNumber <= triggerIncomingPacketNumbers[addressIndex])
+									{
+										GameMessage ackMessage;
+										ackMessage.type = ACK_MESSAGE_TYPE;
+										ackMessage.packetNumber = packetNumber;
+										ackMessage.addressIndex = addressIndex;
+										pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+									}
 								}
 							}
 						}
@@ -1303,27 +1313,30 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						else if (messageTag[0] == 'a' && messageTag[1] == 'k')
 						{
 							uint64_t packetNumber = 0;
-							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
-							
-							int characterID = characterIDForClientAddress(&address);
-							if (characterID != NO_CHARACTER)
+							if (buffer + sizeof(packetNumber) <= packetBuffer + numberOfBytes)
 							{
-								int addressIndex = characterID - 1;
+								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
 								
-								SDL_bool foundAck = SDL_FALSE;
-								uint64_t maxPacketCount = receivedAckPacketCount < receivedAckPacketsCapacity ? receivedAckPacketCount : receivedAckPacketsCapacity;
-								for (uint64_t packetIndex = 0; packetIndex < maxPacketCount; packetIndex++)
+								int characterID = characterIDForClientAddress(&address);
+								if (characterID != NO_CHARACTER)
 								{
-									if (packetNumber == receivedAckPacketNumbers[addressIndex][packetIndex])
+									int addressIndex = characterID - 1;
+									
+									SDL_bool foundAck = SDL_FALSE;
+									uint64_t maxPacketCount = receivedAckPacketCount < receivedAckPacketsCapacity ? receivedAckPacketCount : receivedAckPacketsCapacity;
+									for (uint64_t packetIndex = 0; packetIndex < maxPacketCount; packetIndex++)
 									{
-										foundAck = SDL_TRUE;
-										break;
+										if (packetNumber == receivedAckPacketNumbers[addressIndex][packetIndex])
+										{
+											foundAck = SDL_TRUE;
+											break;
+										}
 									}
-								}
-								if (!foundAck)
-								{
-									receivedAckPacketNumbers[addressIndex][receivedAckPacketCount % receivedAckPacketsCapacity] = packetNumber;
-									receivedAckPacketCount++;
+									if (!foundAck)
+									{
+										receivedAckPacketNumbers[addressIndex][receivedAckPacketCount % receivedAckPacketsCapacity] = packetNumber;
+										receivedAckPacketCount++;
+									}
 								}
 							}
 						}
@@ -1331,18 +1344,21 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						else if (messageTag[0] == 'p' && messageTag[1] == 'i')
 						{
 							uint32_t timestamp = 0;
-							ADVANCE_RECEIVE_BUFFER(&buffer, timestamp);
-							
-							int characterID = characterIDForClientAddress(&address);
-							if (characterID != NO_CHARACTER)
+							if (buffer + sizeof(timestamp) <= packetBuffer + numberOfBytes)
 							{
-								int addressIndex = characterID - 1;
+								ADVANCE_RECEIVE_BUFFER(&buffer, timestamp);
 								
-								GameMessage pongMessage;
-								pongMessage.type = PONG_MESSAGE_TYPE;
-								pongMessage.addressIndex = addressIndex;
-								pongMessage.pongTimestamp = timestamp;
-								pushNetworkMessage(&gGameMessagesToNet, pongMessage);
+								int characterID = characterIDForClientAddress(&address);
+								if (characterID != NO_CHARACTER)
+								{
+									int addressIndex = characterID - 1;
+									
+									GameMessage pongMessage;
+									pongMessage.type = PONG_MESSAGE_TYPE;
+									pongMessage.addressIndex = addressIndex;
+									pongMessage.pongTimestamp = timestamp;
+									pushNetworkMessage(&gGameMessagesToNet, pongMessage);
+								}
 							}
 						}
 						
@@ -1350,18 +1366,21 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						{
 							// pong message
 							uint32_t timestamp = 0;
-							ADVANCE_RECEIVE_BUFFER(&buffer, timestamp);
-							
-							int characterID = characterIDForClientAddress(&address);
-							if (characterID != NO_CHARACTER)
+							if (buffer + sizeof(timestamp) <= packetBuffer + numberOfBytes)
 							{
-								int addressIndex = characterID - 1;
+								ADVANCE_RECEIVE_BUFFER(&buffer, timestamp);
 								
-								GameMessage message;
-								message.type = PONG_MESSAGE_TYPE;
-								message.addressIndex = addressIndex;
-								message.pongTimestamp = timestamp;
-								pushNetworkMessage(&gGameMessagesFromNet, message);
+								int characterID = characterIDForClientAddress(&address);
+								if (characterID != NO_CHARACTER)
+								{
+									int addressIndex = characterID - 1;
+									
+									GameMessage message;
+									message.type = PONG_MESSAGE_TYPE;
+									message.addressIndex = addressIndex;
+									message.pongTimestamp = timestamp;
+									pushNetworkMessage(&gGameMessagesFromNet, message);
+								}
 							}
 						}
 						
@@ -1660,83 +1679,22 @@ int clientNetworkThread(void *context)
 							int32_t slotID = 0;
 							int32_t characterLives = 0;
 							
-							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
-							ADVANCE_RECEIVE_BUFFER(&buffer, slotID);
-							ADVANCE_RECEIVE_BUFFER(&buffer, characterLives);
-							
-							if (packetNumber == triggerIncomingPacketNumber + 1)
-							{
-								triggerIncomingPacketNumber++;
-								
-								GameMessage message;
-								message.type = FIRST_SERVER_RESPONSE_MESSAGE_TYPE;
-								message.firstServerResponse.slotID = slotID;
-								message.firstServerResponse.characterLives = characterLives;
-								
-								pushNetworkMessage(&gGameMessagesFromNet, message);
-							}
-							
-							if (packetNumber <= triggerIncomingPacketNumber)
-							{
-								GameMessage ackMessage;
-								ackMessage.type = ACK_MESSAGE_TYPE;
-								ackMessage.packetNumber = packetNumber;
-								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
-							}
-						}
-						else if (messageTag[0] == 'n' && messageTag[1] == 'w')
-						{
-							uint64_t packetNumber = 0;
-							int32_t numberOfWaitingPlayers = 0;
-							
-							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
-							ADVANCE_RECEIVE_BUFFER(&buffer, numberOfWaitingPlayers);
-							
-							if (packetNumber == triggerIncomingPacketNumber + 1 && numberOfWaitingPlayers >= 0 && numberOfWaitingPlayers < 4)
-							{
-								triggerIncomingPacketNumber++;
-								
-								GameMessage message;
-								message.type = NUMBER_OF_PLAYERS_WAITING_FOR_MESSAGE_TYPE;
-								message.numberOfWaitingPlayers = numberOfWaitingPlayers;
-								pushNetworkMessage(&gGameMessagesFromNet, message);
-							}
-							
-							if (packetNumber <= triggerIncomingPacketNumber)
-							{
-								GameMessage ackMessage;
-								ackMessage.type = ACK_MESSAGE_TYPE;
-								ackMessage.packetNumber = packetNumber;
-								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
-							}
-						}
-						else if (messageTag[0] == 'n' && messageTag[1] == 'n')
-						{
-							// net name
-							uint64_t packetNumber = 0;
-							int32_t characterID = 0;
-							char *netName = calloc(MAX_USER_NAME_SIZE, 1);
-							if (netName != NULL)
+							if (buffer + sizeof(packetNumber) + sizeof(slotID) + sizeof(characterLives) <= packetBuffer + numberOfBytes)
 							{
 								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
-								ADVANCE_RECEIVE_BUFFER(&buffer, characterID);
+								ADVANCE_RECEIVE_BUFFER(&buffer, slotID);
+								ADVANCE_RECEIVE_BUFFER(&buffer, characterLives);
 								
-								strncpy(netName, buffer, MAX_USER_NAME_SIZE - 1);
-								buffer += MAX_USER_NAME_SIZE;
-								
-								if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
+								if (packetNumber == triggerIncomingPacketNumber + 1)
 								{
 									triggerIncomingPacketNumber++;
 									
 									GameMessage message;
-									message.type = NET_NAME_MESSAGE_TYPE;
-									message.netNameRequest.characterID = characterID;
-									message.netNameRequest.netName = netName;
+									message.type = FIRST_SERVER_RESPONSE_MESSAGE_TYPE;
+									message.firstServerResponse.slotID = slotID;
+									message.firstServerResponse.characterLives = characterLives;
+									
 									pushNetworkMessage(&gGameMessagesFromNet, message);
-								}
-								else
-								{
-									free(netName);
 								}
 								
 								if (packetNumber <= triggerIncomingPacketNumber)
@@ -1748,27 +1706,101 @@ int clientNetworkThread(void *context)
 								}
 							}
 						}
+						else if (messageTag[0] == 'n' && messageTag[1] == 'w')
+						{
+							uint64_t packetNumber = 0;
+							int32_t numberOfWaitingPlayers = 0;
+							
+							if (buffer + sizeof(packetNumber) + sizeof(numberOfWaitingPlayers) <= packetBuffer + numberOfBytes)
+							{
+								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+								ADVANCE_RECEIVE_BUFFER(&buffer, numberOfWaitingPlayers);
+								
+								if (packetNumber == triggerIncomingPacketNumber + 1 && numberOfWaitingPlayers >= 0 && numberOfWaitingPlayers < 4)
+								{
+									triggerIncomingPacketNumber++;
+									
+									GameMessage message;
+									message.type = NUMBER_OF_PLAYERS_WAITING_FOR_MESSAGE_TYPE;
+									message.numberOfWaitingPlayers = numberOfWaitingPlayers;
+									pushNetworkMessage(&gGameMessagesFromNet, message);
+								}
+								
+								if (packetNumber <= triggerIncomingPacketNumber)
+								{
+									GameMessage ackMessage;
+									ackMessage.type = ACK_MESSAGE_TYPE;
+									ackMessage.packetNumber = packetNumber;
+									pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+								}
+							}
+						}
+						else if (messageTag[0] == 'n' && messageTag[1] == 'n')
+						{
+							// net name
+							uint64_t packetNumber = 0;
+							int32_t characterID = 0;
+							
+							if (buffer + sizeof(packetNumber) + sizeof(characterID) <= packetBuffer + numberOfBytes)
+							{
+								char *netName = calloc(MAX_USER_NAME_SIZE, 1);
+								if (netName != NULL)
+								{
+									ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+									ADVANCE_RECEIVE_BUFFER(&buffer, characterID);
+									
+									strncpy(netName, buffer, MAX_USER_NAME_SIZE - 1);
+									buffer += MAX_USER_NAME_SIZE;
+									
+									if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
+									{
+										triggerIncomingPacketNumber++;
+										
+										GameMessage message;
+										message.type = NET_NAME_MESSAGE_TYPE;
+										message.netNameRequest.characterID = characterID;
+										message.netNameRequest.netName = netName;
+										pushNetworkMessage(&gGameMessagesFromNet, message);
+									}
+									else
+									{
+										free(netName);
+									}
+									
+									if (packetNumber <= triggerIncomingPacketNumber)
+									{
+										GameMessage ackMessage;
+										ackMessage.type = ACK_MESSAGE_TYPE;
+										ackMessage.packetNumber = packetNumber;
+										pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+									}
+								}
+							}
+						}
 						else if (messageTag[0] == 's' && messageTag[1] == 'g')
 						{
 							// start game
 							uint64_t packetNumber = 0;
 							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
 							
-							if (packetNumber == triggerIncomingPacketNumber + 1)
+							if (buffer + sizeof(packetNumber) <= packetBuffer + numberOfBytes)
 							{
-								triggerIncomingPacketNumber++;
+								if (packetNumber == triggerIncomingPacketNumber + 1)
+								{
+									triggerIncomingPacketNumber++;
+									
+									GameMessage message;
+									message.type = START_GAME_MESSAGE_TYPE;
+									pushNetworkMessage(&gGameMessagesFromNet, message);
+								}
 								
-								GameMessage message;
-								message.type = START_GAME_MESSAGE_TYPE;
-								pushNetworkMessage(&gGameMessagesFromNet, message);
-							}
-							
-							if (packetNumber <= triggerIncomingPacketNumber)
-							{
-								GameMessage ackMessage;
-								ackMessage.type = ACK_MESSAGE_TYPE;
-								ackMessage.packetNumber = packetNumber;
-								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+								if (packetNumber <= triggerIncomingPacketNumber)
+								{
+									GameMessage ackMessage;
+									ackMessage.type = ACK_MESSAGE_TYPE;
+									ackMessage.packetNumber = packetNumber;
+									pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+								}
 							}
 						}
 						else if (messageTag[0] == 'g' && messageTag[1] == 's')
@@ -1776,30 +1808,33 @@ int clientNetworkThread(void *context)
 							uint64_t packetNumber = 0;
 							int32_t gameStartNumber = 0;
 							
-							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
-							ADVANCE_RECEIVE_BUFFER(&buffer, gameStartNumber);
-							
-							if (packetNumber == triggerIncomingPacketNumber + 1)
+							if (buffer + sizeof(packetNumber) + sizeof(gameStartNumber) <= packetBuffer + numberOfBytes)
 							{
-								triggerIncomingPacketNumber++;
+								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+								ADVANCE_RECEIVE_BUFFER(&buffer, gameStartNumber);
 								
-								GameMessage message;
-								message.type = GAME_START_NUMBER_UPDATE_MESSAGE_TYPE;
-								message.gameStartNumber = gameStartNumber;
-								pushNetworkMessage(&gGameMessagesFromNet, message);
+								if (packetNumber == triggerIncomingPacketNumber + 1)
+								{
+									triggerIncomingPacketNumber++;
+									
+									GameMessage message;
+									message.type = GAME_START_NUMBER_UPDATE_MESSAGE_TYPE;
+									message.gameStartNumber = gameStartNumber;
+									pushNetworkMessage(&gGameMessagesFromNet, message);
+									
+									GameMessage ackMessage;
+									ackMessage.type = ACK_MESSAGE_TYPE;
+									ackMessage.packetNumber = packetNumber;
+									pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+								}
 								
-								GameMessage ackMessage;
-								ackMessage.type = ACK_MESSAGE_TYPE;
-								ackMessage.packetNumber = packetNumber;
-								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
-							}
-							
-							if (packetNumber <= triggerIncomingPacketNumber)
-							{
-								GameMessage ackMessage;
-								ackMessage.type = ACK_MESSAGE_TYPE;
-								ackMessage.packetNumber = packetNumber;
-								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+								if (packetNumber <= triggerIncomingPacketNumber)
+								{
+									GameMessage ackMessage;
+									ackMessage.type = ACK_MESSAGE_TYPE;
+									ackMessage.packetNumber = packetNumber;
+									pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+								}
 							}
 						}
 						else if (messageTag[0] == 'm' && messageTag[1] == 'o')
@@ -1813,29 +1848,32 @@ int clientNetworkThread(void *context)
 							float y = 0.0f;
 							float z = 0.0f;
 							
-							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
-							ADVANCE_RECEIVE_BUFFER(&buffer, characterID);
-							ADVANCE_RECEIVE_BUFFER(&buffer, x);
-							ADVANCE_RECEIVE_BUFFER(&buffer, y);
-							ADVANCE_RECEIVE_BUFFER(&buffer, z);
-							ADVANCE_RECEIVE_BUFFER(&buffer, direction);
-							ADVANCE_RECEIVE_BUFFER(&buffer, pointing_direction);
-							ADVANCE_RECEIVE_BUFFER(&buffer, timestamp);
-							
-							if (packetNumber > realTimeIncomingPacketNumber && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
+							if (buffer + sizeof(packetNumber) + sizeof(characterID) + sizeof(direction) + sizeof(pointing_direction) + sizeof(timestamp) + sizeof(x) + sizeof(y) + sizeof(z) <= packetBuffer + numberOfBytes)
 							{
-								realTimeIncomingPacketNumber = packetNumber;
+								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+								ADVANCE_RECEIVE_BUFFER(&buffer, characterID);
+								ADVANCE_RECEIVE_BUFFER(&buffer, x);
+								ADVANCE_RECEIVE_BUFFER(&buffer, y);
+								ADVANCE_RECEIVE_BUFFER(&buffer, z);
+								ADVANCE_RECEIVE_BUFFER(&buffer, direction);
+								ADVANCE_RECEIVE_BUFFER(&buffer, pointing_direction);
+								ADVANCE_RECEIVE_BUFFER(&buffer, timestamp);
 								
-								GameMessage message;
-								message.type = CHARACTER_MOVED_UPDATE_MESSAGE_TYPE;
-								message.movedUpdate.characterID = characterID;
-								message.movedUpdate.x = x;
-								message.movedUpdate.y = y;
-								message.movedUpdate.z = z;
-								message.movedUpdate.direction = direction;
-								message.movedUpdate.pointing_direction = pointing_direction;
-								message.movedUpdate.timestamp = timestamp;
-								pushNetworkMessage(&gGameMessagesFromNet, message);
+								if (packetNumber > realTimeIncomingPacketNumber && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
+								{
+									realTimeIncomingPacketNumber = packetNumber;
+									
+									GameMessage message;
+									message.type = CHARACTER_MOVED_UPDATE_MESSAGE_TYPE;
+									message.movedUpdate.characterID = characterID;
+									message.movedUpdate.x = x;
+									message.movedUpdate.y = y;
+									message.movedUpdate.z = z;
+									message.movedUpdate.direction = direction;
+									message.movedUpdate.pointing_direction = pointing_direction;
+									message.movedUpdate.timestamp = timestamp;
+									pushNetworkMessage(&gGameMessagesFromNet, message);
+								}
 							}
 						}
 						else if (messageTag[0] == 'p' && messageTag[1] == 'k')
@@ -1845,27 +1883,30 @@ int clientNetworkThread(void *context)
 							int32_t characterID = 0;
 							int32_t characterLives = 0;
 							
-							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
-							ADVANCE_RECEIVE_BUFFER(&buffer, characterID);
-							ADVANCE_RECEIVE_BUFFER(&buffer, characterLives);
-							
-							if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
+							if (buffer + sizeof(packetNumber) + sizeof(characterID) + sizeof(characterLives) <= packetBuffer + numberOfBytes)
 							{
-								triggerIncomingPacketNumber++;
+								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+								ADVANCE_RECEIVE_BUFFER(&buffer, characterID);
+								ADVANCE_RECEIVE_BUFFER(&buffer, characterLives);
 								
-								GameMessage message;
-								message.type = CHARACTER_DIED_UPDATE_MESSAGE_TYPE;
-								message.diedUpdate.characterID = characterID;
-								message.diedUpdate.characterLives = characterLives;
-								pushNetworkMessage(&gGameMessagesFromNet, message);
-							}
-							
-							if (packetNumber <= triggerIncomingPacketNumber)
-							{
-								GameMessage ackMessage;
-								ackMessage.type = ACK_MESSAGE_TYPE;
-								ackMessage.packetNumber = packetNumber;
-								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+								if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
+								{
+									triggerIncomingPacketNumber++;
+									
+									GameMessage message;
+									message.type = CHARACTER_DIED_UPDATE_MESSAGE_TYPE;
+									message.diedUpdate.characterID = characterID;
+									message.diedUpdate.characterLives = characterLives;
+									pushNetworkMessage(&gGameMessagesFromNet, message);
+								}
+								
+								if (packetNumber <= triggerIncomingPacketNumber)
+								{
+									GameMessage ackMessage;
+									ackMessage.type = ACK_MESSAGE_TYPE;
+									ackMessage.packetNumber = packetNumber;
+									pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+								}
 							}
 						}
 						else if (messageTag[0] == 'c' && messageTag[1] == 'k')
@@ -1875,27 +1916,30 @@ int clientNetworkThread(void *context)
 							int32_t characterID = 0;
 							int32_t characterKills = 0;
 							
-							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
-							ADVANCE_RECEIVE_BUFFER(&buffer, characterID);
-							ADVANCE_RECEIVE_BUFFER(&buffer, characterKills);
-							
-							if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
+							if (buffer + sizeof(packetNumber) + sizeof(characterID) + sizeof(characterKills) <= packetBuffer + numberOfBytes)
 							{
-								triggerIncomingPacketNumber++;
+								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+								ADVANCE_RECEIVE_BUFFER(&buffer, characterID);
+								ADVANCE_RECEIVE_BUFFER(&buffer, characterKills);
 								
-								GameMessage message;
-								message.type = CHARACTER_KILLED_UPDATE_MESSAGE_TYPE;
-								message.killedUpdate.characterID = characterID;
-								message.killedUpdate.kills = characterKills;
-								pushNetworkMessage(&gGameMessagesFromNet, message);
-							}
-							
-							if (packetNumber <= triggerIncomingPacketNumber)
-							{
-								GameMessage ackMessage;
-								ackMessage.type = ACK_MESSAGE_TYPE;
-								ackMessage.packetNumber = packetNumber;
-								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+								if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
+								{
+									triggerIncomingPacketNumber++;
+									
+									GameMessage message;
+									message.type = CHARACTER_KILLED_UPDATE_MESSAGE_TYPE;
+									message.killedUpdate.characterID = characterID;
+									message.killedUpdate.kills = characterKills;
+									pushNetworkMessage(&gGameMessagesFromNet, message);
+								}
+								
+								if (packetNumber <= triggerIncomingPacketNumber)
+								{
+									GameMessage ackMessage;
+									ackMessage.type = ACK_MESSAGE_TYPE;
+									ackMessage.packetNumber = packetNumber;
+									pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+								}
 							}
 						}
 						else if (messageTag[0] == 's' && messageTag[1] == 'w')
@@ -1907,32 +1951,35 @@ int clientNetworkThread(void *context)
 							float y = 0.0f;
 							int32_t pointing_direction = 0;
 							
-							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
-							ADVANCE_RECEIVE_BUFFER(&buffer, characterID);
-							ADVANCE_RECEIVE_BUFFER(&buffer, x);
-							ADVANCE_RECEIVE_BUFFER(&buffer, y);
-							ADVANCE_RECEIVE_BUFFER(&buffer, pointing_direction);
-							
-							if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
+							if (buffer + sizeof(packetNumber) + sizeof(characterID) + sizeof(x) + sizeof(y) + sizeof(pointing_direction) <= packetBuffer + numberOfBytes)
 							{
-								triggerIncomingPacketNumber++;
+								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+								ADVANCE_RECEIVE_BUFFER(&buffer, characterID);
+								ADVANCE_RECEIVE_BUFFER(&buffer, x);
+								ADVANCE_RECEIVE_BUFFER(&buffer, y);
+								ADVANCE_RECEIVE_BUFFER(&buffer, pointing_direction);
 								
-								GameMessage message;
-								message.type = CHARACTER_FIRED_UPDATE_MESSAGE_TYPE;
-								message.firedUpdate.characterID = characterID;
-								message.firedUpdate.x = x;
-								message.firedUpdate.y = y;
-								message.firedUpdate.direction = pointing_direction;
+								if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
+								{
+									triggerIncomingPacketNumber++;
+									
+									GameMessage message;
+									message.type = CHARACTER_FIRED_UPDATE_MESSAGE_TYPE;
+									message.firedUpdate.characterID = characterID;
+									message.firedUpdate.x = x;
+									message.firedUpdate.y = y;
+									message.firedUpdate.direction = pointing_direction;
+									
+									pushNetworkMessage(&gGameMessagesFromNet, message);
+								}
 								
-								pushNetworkMessage(&gGameMessagesFromNet, message);
-							}
-							
-							if (packetNumber <= triggerIncomingPacketNumber)
-							{
-								GameMessage ackMessage;
-								ackMessage.type = ACK_MESSAGE_TYPE;
-								ackMessage.packetNumber = packetNumber;
-								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+								if (packetNumber <= triggerIncomingPacketNumber)
+								{
+									GameMessage ackMessage;
+									ackMessage.type = ACK_MESSAGE_TYPE;
+									ackMessage.packetNumber = packetNumber;
+									pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+								}
 							}
 						}
 						else if (messageTag[0] == 'c' && messageTag[1] == 't')
@@ -1941,28 +1988,31 @@ int clientNetworkThread(void *context)
 							int32_t characterID = 0;
 							int32_t tileIndex = 0;
 							
-							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
-							ADVANCE_RECEIVE_BUFFER(&buffer, characterID);
-							ADVANCE_RECEIVE_BUFFER(&buffer, tileIndex);
-							
-							if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM && tileIndex >= 0 && tileIndex < NUMBER_OF_TILES)
+							if (buffer + sizeof(packetNumber) + sizeof(characterID) + sizeof(tileIndex) <= packetBuffer + numberOfBytes)
 							{
-								triggerIncomingPacketNumber++;
+								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+								ADVANCE_RECEIVE_BUFFER(&buffer, characterID);
+								ADVANCE_RECEIVE_BUFFER(&buffer, tileIndex);
 								
-								GameMessage message;
-								message.type = COLOR_TILE_MESSAGE_TYPE;
-								message.colorTile.characterID = characterID;
-								message.colorTile.tileIndex = tileIndex;
+								if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM && tileIndex >= 0 && tileIndex < NUMBER_OF_TILES)
+								{
+									triggerIncomingPacketNumber++;
+									
+									GameMessage message;
+									message.type = COLOR_TILE_MESSAGE_TYPE;
+									message.colorTile.characterID = characterID;
+									message.colorTile.tileIndex = tileIndex;
+									
+									pushNetworkMessage(&gGameMessagesFromNet, message);
+								}
 								
-								pushNetworkMessage(&gGameMessagesFromNet, message);
-							}
-							
-							if (packetNumber <= triggerIncomingPacketNumber)
-							{
-								GameMessage ackMessage;
-								ackMessage.type = ACK_MESSAGE_TYPE;
-								ackMessage.packetNumber = packetNumber;
-								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+								if (packetNumber <= triggerIncomingPacketNumber)
+								{
+									GameMessage ackMessage;
+									ackMessage.type = ACK_MESSAGE_TYPE;
+									ackMessage.packetNumber = packetNumber;
+									pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+								}
 							}
 						}
 						else if (messageTag[0] == 't' && messageTag[1] == 'f')
@@ -1971,28 +2021,31 @@ int clientNetworkThread(void *context)
 							int32_t tileIndex = 0;
 							int8_t dead = 0;
 							
-							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
-							ADVANCE_RECEIVE_BUFFER(&buffer, tileIndex);
-							ADVANCE_RECEIVE_BUFFER(&buffer, dead);
-							
-							if (packetNumber == triggerIncomingPacketNumber + 1 && tileIndex >= 0 && tileIndex < NUMBER_OF_TILES)
+							if (buffer + sizeof(packetNumber) + sizeof(tileIndex) + sizeof(dead) <= packetBuffer + numberOfBytes)
 							{
-								triggerIncomingPacketNumber++;
+								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+								ADVANCE_RECEIVE_BUFFER(&buffer, tileIndex);
+								ADVANCE_RECEIVE_BUFFER(&buffer, dead);
 								
-								GameMessage message;
-								message.type = TILE_FALLING_DOWN_MESSAGE_TYPE;
-								message.fallingTile.tileIndex = tileIndex;
-								message.fallingTile.dead = (dead != 0);
+								if (packetNumber == triggerIncomingPacketNumber + 1 && tileIndex >= 0 && tileIndex < NUMBER_OF_TILES)
+								{
+									triggerIncomingPacketNumber++;
+									
+									GameMessage message;
+									message.type = TILE_FALLING_DOWN_MESSAGE_TYPE;
+									message.fallingTile.tileIndex = tileIndex;
+									message.fallingTile.dead = (dead != 0);
+									
+									pushNetworkMessage(&gGameMessagesFromNet, message);
+								}
 								
-								pushNetworkMessage(&gGameMessagesFromNet, message);
-							}
-							
-							if (packetNumber <= triggerIncomingPacketNumber)
-							{
-								GameMessage ackMessage;
-								ackMessage.type = ACK_MESSAGE_TYPE;
-								ackMessage.packetNumber = packetNumber;
-								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+								if (packetNumber <= triggerIncomingPacketNumber)
+								{
+									GameMessage ackMessage;
+									ackMessage.type = ACK_MESSAGE_TYPE;
+									ackMessage.packetNumber = packetNumber;
+									pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+								}
 							}
 						}
 						else if (messageTag[0] == 'r' && messageTag[1] == 't')
@@ -2000,96 +2053,111 @@ int clientNetworkThread(void *context)
 							uint64_t packetNumber = 0;
 							int32_t tileIndex = 0;
 							
-							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
-							ADVANCE_RECEIVE_BUFFER(&buffer, tileIndex);
-							
-							if (packetNumber == triggerIncomingPacketNumber + 1 && tileIndex >= 0 && tileIndex < NUMBER_OF_TILES)
+							if (buffer + sizeof(packetNumber) + sizeof(tileIndex) <= packetBuffer + numberOfBytes)
 							{
-								triggerIncomingPacketNumber++;
+								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+								ADVANCE_RECEIVE_BUFFER(&buffer, tileIndex);
 								
-								GameMessage message;
-								message.type = RECOVER_TILE_MESSAGE_TYPE;
-								message.recoverTile.tileIndex = tileIndex;
+								if (packetNumber == triggerIncomingPacketNumber + 1 && tileIndex >= 0 && tileIndex < NUMBER_OF_TILES)
+								{
+									triggerIncomingPacketNumber++;
+									
+									GameMessage message;
+									message.type = RECOVER_TILE_MESSAGE_TYPE;
+									message.recoverTile.tileIndex = tileIndex;
+									
+									pushNetworkMessage(&gGameMessagesFromNet, message);
+								}
 								
-								pushNetworkMessage(&gGameMessagesFromNet, message);
-							}
-							
-							if (packetNumber <= triggerIncomingPacketNumber)
-							{
-								GameMessage ackMessage;
-								ackMessage.type = ACK_MESSAGE_TYPE;
-								ackMessage.packetNumber = packetNumber;
-								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+								if (packetNumber <= triggerIncomingPacketNumber)
+								{
+									GameMessage ackMessage;
+									ackMessage.type = ACK_MESSAGE_TYPE;
+									ackMessage.packetNumber = packetNumber;
+									pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+								}
 							}
 						}
 						else if (messageTag[0] == 'n' && messageTag[1] == 'g')
 						{
 							// new game
 							uint64_t packetNumber = 0;
-							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
-							
-							if (packetNumber == triggerIncomingPacketNumber + 1)
+							if (buffer + sizeof(packetNumber) <= packetBuffer + numberOfBytes)
 							{
-								triggerIncomingPacketNumber++;
+								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
 								
-								GameMessage message;
-								message.type = GAME_RESET_MESSAGE_TYPE;
+								if (packetNumber == triggerIncomingPacketNumber + 1)
+								{
+									triggerIncomingPacketNumber++;
+									
+									GameMessage message;
+									message.type = GAME_RESET_MESSAGE_TYPE;
+									
+									pushNetworkMessage(&gGameMessagesFromNet, message);
+								}
 								
-								pushNetworkMessage(&gGameMessagesFromNet, message);
-							}
-							
-							if (packetNumber <= triggerIncomingPacketNumber)
-							{
-								GameMessage ackMessage;
-								ackMessage.type = ACK_MESSAGE_TYPE;
-								ackMessage.packetNumber = packetNumber;
-								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+								if (packetNumber <= triggerIncomingPacketNumber)
+								{
+									GameMessage ackMessage;
+									ackMessage.type = ACK_MESSAGE_TYPE;
+									ackMessage.packetNumber = packetNumber;
+									pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+								}
 							}
 						}
 						else if (messageTag[0] == 'a' && messageTag[1] == 'k')
 						{
 							uint64_t packetNumber = 0;
-							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
-							
-							SDL_bool foundAck = SDL_FALSE;
-							uint64_t maxPacketCount = receivedAckPacketCount < receivedAckPacketsCapacity ? receivedAckPacketCount : receivedAckPacketsCapacity;
-							for (uint64_t packetIndex = 0; packetIndex < maxPacketCount; packetIndex++)
+							if (buffer + sizeof(packetNumber) <= packetBuffer + numberOfBytes)
 							{
-								if (packetNumber == receivedAckPacketNumbers[packetIndex])
+								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+								
+								SDL_bool foundAck = SDL_FALSE;
+								uint64_t maxPacketCount = receivedAckPacketCount < receivedAckPacketsCapacity ? receivedAckPacketCount : receivedAckPacketsCapacity;
+								for (uint64_t packetIndex = 0; packetIndex < maxPacketCount; packetIndex++)
 								{
-									foundAck = SDL_TRUE;
-									break;
+									if (packetNumber == receivedAckPacketNumbers[packetIndex])
+									{
+										foundAck = SDL_TRUE;
+										break;
+									}
 								}
-							}
-							if (!foundAck)
-							{
-								receivedAckPacketNumbers[receivedAckPacketCount % receivedAckPacketsCapacity] = packetNumber;
-								receivedAckPacketCount++;
+								if (!foundAck)
+								{
+									receivedAckPacketNumbers[receivedAckPacketCount % receivedAckPacketsCapacity] = packetNumber;
+									receivedAckPacketCount++;
+								}
 							}
 						}
 						else if (messageTag[0] == 'p' && messageTag[1] == 'i')
 						{
 							// ping message
 							uint32_t timestamp = 0;
-							ADVANCE_RECEIVE_BUFFER(&buffer, timestamp);
-							
-							GameMessage pongMessage;
-							pongMessage.type = PONG_MESSAGE_TYPE;
-							pongMessage.pongTimestamp = timestamp;
-							pushNetworkMessage(&gGameMessagesToNet, pongMessage);
+							if (buffer + sizeof(timestamp) <= packetBuffer + numberOfBytes)
+							{
+								ADVANCE_RECEIVE_BUFFER(&buffer, timestamp);
+								
+								GameMessage pongMessage;
+								pongMessage.type = PONG_MESSAGE_TYPE;
+								pongMessage.pongTimestamp = timestamp;
+								pushNetworkMessage(&gGameMessagesToNet, pongMessage);
+							}
 						}
 						else if (messageTag[0] == 'p' && messageTag[1] == 'o')
 						{
 							// pong message
 							uint32_t timestamp = 0;
-							ADVANCE_RECEIVE_BUFFER(&buffer, timestamp);
-							
-							GameMessage message;
-							message.type = PONG_MESSAGE_TYPE;
-							message.pongTimestamp = timestamp;
-							pushNetworkMessage(&gGameMessagesFromNet, message);
-							
-							lastPongReceivedTimestamp = SDL_GetTicks();
+							if (buffer + sizeof(timestamp) <= packetBuffer + numberOfBytes)
+							{
+								ADVANCE_RECEIVE_BUFFER(&buffer, timestamp);
+								
+								GameMessage message;
+								message.type = PONG_MESSAGE_TYPE;
+								message.pongTimestamp = timestamp;
+								pushNetworkMessage(&gGameMessagesFromNet, message);
+								
+								lastPongReceivedTimestamp = SDL_GetTicks();
+							}
 						}
 						else if (messageTag[0] == 'q' && messageTag[1] == 'u')
 						{
