@@ -65,7 +65,7 @@ typedef enum
 
 typedef struct
 {
-	int direction;
+	int32_t direction;
 } CharacterMovementRequest;
 
 typedef struct
@@ -77,34 +77,34 @@ typedef struct
 {
 	int characterID;
 	float x, y;
-	int direction;
+	int32_t direction;
 } CharacterFiredUpdate;
 
 typedef struct
 {
-	int characterID;
+	int32_t characterID;
 	char *netName;
 } CharacterNetNameRequest;
 
 typedef struct
 {
-	int characterID;
-	int characterLives;
+	int32_t characterID;
+	int32_t characterLives;
 } CharacterDiedUpdate;
 
 typedef struct
 {
-	int characterID;
+	int32_t characterID;
 	float x, y, z;
-	int direction;
-	int pointing_direction;
+	int32_t direction;
+	int32_t pointing_direction;
 	uint32_t timestamp;
 } CharacterMovedUpdate;
 
 typedef struct
 {
-	int characterID;
-	int kills;
+	int32_t characterID;
+	int32_t kills;
 } CharacterKilledUpdate;
 
 typedef struct
@@ -115,8 +115,8 @@ typedef struct
 
 typedef struct
 {
-	int slotID;
-	int characterLives;
+	int32_t slotID;
+	int32_t characterLives;
 } FirstServerResponse;
 
 typedef struct
@@ -140,19 +140,19 @@ typedef struct
 
 typedef struct
 {
-	int characterID;
-	int tileIndex;
+	int32_t characterID;
+	int32_t tileIndex;
 } ColorTileMessage;
 
 typedef struct
 {
-	int tileIndex;
-	SDL_bool dead;
+	int32_t tileIndex;
+	int8_t dead;
 } FallingTileMessage;
 
 typedef struct
 {
-	int tileIndex;
+	int32_t tileIndex;
 } RecoverTileMessage;
 
 typedef struct

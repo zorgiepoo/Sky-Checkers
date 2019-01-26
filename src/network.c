@@ -25,6 +25,8 @@
 
 #include <inttypes.h>
 
+#define NET_MESSAGE_TAG_SIZE 2
+
 NetworkConnection *gNetworkConnection = NULL;
 
 static SDL_mutex *gCurrentSlotMutex;
@@ -686,6 +688,37 @@ static int characterIDForClientAddress(SocketAddress *address)
 	return NO_CHARACTER;
 }
 
+static void advanceSendBuffer(char **sendBufferPtr, const void *data, size_t size)
+{
+	memcpy(*sendBufferPtr, data, size);
+	*sendBufferPtr += size;
+}
+
+#define ADVANCE_SEND_BUFFER(sendBufferPtr, data) advanceSendBuffer((sendBufferPtr), &(data), sizeof(data))
+
+static void advanceSendBufferForInitialMessage(char **sendBufferPtr, const char *tag, uint64_t packetNumber)
+{
+	advanceSendBuffer(sendBufferPtr, tag, NET_MESSAGE_TAG_SIZE);
+	ADVANCE_SEND_BUFFER(sendBufferPtr, packetNumber);
+}
+
+static void sendAndResetBufferIfNeeded(char *sendBuffer, size_t sendBufferSize, char **sendBufferPtr, SocketAddress *address)
+{
+	if ((size_t)(*sendBufferPtr - sendBuffer) >= sendBufferSize - 256)
+	{
+		sendData(gNetworkConnection->socket, sendBuffer, (size_t)(*sendBufferPtr - sendBuffer), address);
+		*sendBufferPtr = sendBuffer;
+	}
+}
+
+static void advanceReceiveBuffer(char **buffer, void *receiveData, size_t receiveDataSize)
+{
+	memcpy(receiveData, *buffer, receiveDataSize);
+	*buffer += receiveDataSize;
+}
+
+#define ADVANCE_RECEIVE_BUFFER(buffer, data) advanceReceiveBuffer(buffer, &(data), sizeof((data)))
+
 int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 {
 	gCurrentSlot = 0;
@@ -819,8 +852,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					{
 						if (address != NULL)
 						{
-							char buffer[] = "qu";
-							sendData(gNetworkConnection->socket, buffer, sizeof(buffer) - 1, address);
+							sendData(gNetworkConnection->socket, "qu", NET_MESSAGE_TAG_SIZE, address);
 						}
 						
 						needsToQuit = SDL_TRUE;
@@ -831,15 +863,14 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						break;
 					case CHARACTER_FIRED_UPDATE_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "sw%"PRIu64" %d %f %f %d", message.packetNumber, message.firedUpdate.characterID, message.firedUpdate.x, message.firedUpdate.y, message.firedUpdate.direction);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "sw", message.packetNumber);
 						
-						sendBufferPtrs[addressIndex] += length + 1;
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.firedUpdate.characterID);
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.firedUpdate.x);
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.firedUpdate.y);
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.firedUpdate.direction);
 						
-						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
-						{
-							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
-							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
-						}
+						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
 						break;
 					}
@@ -847,169 +878,129 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						break;
 					case NUMBER_OF_PLAYERS_WAITING_FOR_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "nw%"PRIu64" %d", message.packetNumber, message.numberOfWaitingPlayers);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "nw", message.packetNumber);
 						
-						sendBufferPtrs[addressIndex] += length + 1;
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.numberOfWaitingPlayers);
 						
-						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
-						{
-							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
-							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
-						}
+						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
 						break;
 					}
 					case NET_NAME_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "nn%"PRIu64" %d %s", message.packetNumber, message.netNameRequest.characterID, message.netNameRequest.netName);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "nn", message.packetNumber);
 						
-						sendBufferPtrs[addressIndex] += length + 1;
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.netNameRequest.characterID);
 						
-						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
-						{
-							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
-							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
-						}
+						char netName[MAX_USER_NAME_SIZE] = {0};
+						strncpy(netName, message.netNameRequest.netName, MAX_USER_NAME_SIZE - 1);
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], netName);
+						
+						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
 						break;
 					}
 					case START_GAME_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "sg%"PRIu64"", message.packetNumber);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "sg", message.packetNumber);
 						
-						sendBufferPtrs[addressIndex] += length + 1;
-						
-						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
-						{
-							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
-							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
-						}
+						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
 						break;
 					}
 					case GAME_START_NUMBER_UPDATE_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "gs%"PRIu64" %d", message.packetNumber, message.gameStartNumber);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "gs", message.packetNumber);
 						
-						sendBufferPtrs[addressIndex] += length + 1;
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.gameStartNumber);
 						
-						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
-						{
-							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
-							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
-						}
+						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
 						break;
 					}
 					case CHARACTER_DIED_UPDATE_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "pk%"PRIu64" %d %d", message.packetNumber, message.diedUpdate.characterID, message.diedUpdate.characterLives);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "pk", message.packetNumber);
 						
-						sendBufferPtrs[addressIndex] += length + 1;
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.diedUpdate.characterID);
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.diedUpdate.characterLives);
 						
-						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
-						{
-							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
-							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
-						}
+						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
 						break;
 					}
 					case COLOR_TILE_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "ct%"PRIu64" %d %d", message.packetNumber, message.colorTile.characterID, message.colorTile.tileIndex);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "ct", message.packetNumber);
 						
-						sendBufferPtrs[addressIndex] += length + 1;
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.colorTile.characterID);
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.colorTile.tileIndex);
 						
-						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
-						{
-							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
-							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
-						}
+						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
 						break;
 					}
 					case TILE_FALLING_DOWN_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "tf%"PRIu64" %d %d", message.packetNumber, message.fallingTile.tileIndex, message.fallingTile.dead);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "tf", message.packetNumber);
 						
-						sendBufferPtrs[addressIndex] += length + 1;
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.fallingTile.tileIndex);
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.fallingTile.dead);
 						
-						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
-						{
-							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
-							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
-						}
+						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
 						break;
 					}
 					case RECOVER_TILE_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "rt%"PRIu64" %d", message.packetNumber, message.recoverTile.tileIndex);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "rt", message.packetNumber);
 						
-						sendBufferPtrs[addressIndex] += length + 1;
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.recoverTile.tileIndex);
 						
-						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
-						{
-							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
-							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
-						}
+						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
 						break;
 					}
 					case CHARACTER_MOVED_UPDATE_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "mo%"PRIu64" %d %f %f %f %d %d %u", message.packetNumber, message.movedUpdate.characterID, message.movedUpdate.x, message.movedUpdate.y, message.movedUpdate.z, message.movedUpdate.direction, message.movedUpdate.pointing_direction, message.movedUpdate.timestamp);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "mo", message.packetNumber);
 						
-						sendBufferPtrs[addressIndex] += length + 1;
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.movedUpdate.characterID);
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.movedUpdate.x);
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.movedUpdate.y);
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.movedUpdate.z);
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.movedUpdate.direction);
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.movedUpdate.pointing_direction);
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.movedUpdate.timestamp);
 						
-						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
-						{
-							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
-							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
-						}
+						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
 						break;
 					}
 					case CHARACTER_KILLED_UPDATE_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "ck%"PRIu64" %d %d", message.packetNumber, message.killedUpdate.characterID, message.killedUpdate.kills);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "ck", message.packetNumber);
 						
-						sendBufferPtrs[addressIndex] += length + 1;
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.killedUpdate.characterID);
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.killedUpdate.kills);
 						
-						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
-						{
-							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
-							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
-						}
+						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
 						break;
 					}
 					case GAME_RESET_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], sizeof(sendBufferPtrs[addressIndex]) - 1, "ng%"PRIu64"", message.packetNumber);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "ng", message.packetNumber);
 						
-						sendBufferPtrs[addressIndex] += length + 1;
-						
-						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
-						{
-							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
-							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
-						}
+						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
 						break;
 					}
 					case ACK_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "ak%"PRIu64"", message.packetNumber);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "ak", message.packetNumber);
 						
-						sendBufferPtrs[addressIndex] += length + 1;
-						
-						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
-						{
-							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
-							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
-						}
+						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
 						break;
 					}
@@ -1017,44 +1008,33 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					{
 						if (address != NULL)
 						{
-							int length = snprintf(sendBufferPtrs[addressIndex], 256, "pi%u", message.pingTimestamp);
+							advanceSendBuffer(&sendBufferPtrs[addressIndex], "pi", NET_MESSAGE_TAG_SIZE);
 							
-							sendBufferPtrs[addressIndex] += length + 1;
+							ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.pingTimestamp);
 							
-							if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
-							{
-								sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
-								sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
-							}
+							sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						}
 						
 						break;
 					}
 					case PONG_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "po%u", message.pongTimestamp);
+						advanceSendBuffer(&sendBufferPtrs[addressIndex], "po", NET_MESSAGE_TAG_SIZE);
 						
-						sendBufferPtrs[addressIndex] += length + 1;
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.pongTimestamp);
 						
-						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
-						{
-							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
-							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
-						}
+						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
 						break;
 					}
 					case FIRST_SERVER_RESPONSE_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtrs[addressIndex], 256, "sr%"PRIu64" %d %d", message.packetNumber, message.firstServerResponse.slotID, message.firstServerResponse.characterLives);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "sr", message.packetNumber);
 						
-						sendBufferPtrs[addressIndex] += length + 1;
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.firstServerResponse.slotID);
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.firstServerResponse.characterLives);
 						
-						if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) >= sizeof(sendBuffers[addressIndex]) - 256)
-						{
-							sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), address);
-							sendBufferPtrs[addressIndex] = sendBuffers[addressIndex];
-						}
+						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
 						break;
 					}
@@ -1181,16 +1161,20 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 				else
 				{
 					char *buffer = packetBuffer;
-					while (buffer < packetBuffer + numberOfBytes)
+					while (buffer + NET_MESSAGE_TAG_SIZE <= packetBuffer + numberOfBytes)
 					{
+						uint8_t messageTag[NET_MESSAGE_TAG_SIZE] = {0};
+						ADVANCE_RECEIVE_BUFFER(&buffer, messageTag);
+						
 						// can i play?
-						if (buffer[0] == 'c' && buffer[1] == 'p')
+						if (messageTag[0] == 'c' && messageTag[1] == 'p')
 						{
-							char *netName = malloc(MAX_USER_NAME_SIZE);
-							memset(netName, 0, MAX_USER_NAME_SIZE);
-							
 							uint64_t packetNumber = 0;
-							sscanf(buffer + 2, "%"PRIu64" %s", &packetNumber, netName);
+							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+							
+							char *netName = calloc(MAX_USER_NAME_SIZE, 1);
+							strncpy(netName, buffer, MAX_USER_NAME_SIZE - 1);
+							buffer += MAX_USER_NAME_SIZE;
 							
 							int existingCharacterID = characterIDForClientAddress(&address);
 							if ((packetNumber == 1 && existingCharacterID == NO_CHARACTER && numberOfPlayersToWaitFor > 0) || (packetNumber == 1 && existingCharacterID != NO_CHARACTER))
@@ -1236,23 +1220,23 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							else if (existingCharacterID == NO_CHARACTER)
 							{
 								// no
-								// sr == server response
-								sendData(gNetworkConnection->socket, "srn", 3, &address);
+								// sn == server no rejection response
+								sendData(gNetworkConnection->socket, "sn", NET_MESSAGE_TAG_SIZE, &address);
 							}
 						}
 						
-						else if (buffer[0] == 'r' && buffer[1] == 'm')
+						else if (messageTag[0] == 'r' && messageTag[1] == 'm')
 						{
 							// request movement
-							
 							int characterID = characterIDForClientAddress(&address);
 							if (characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 							{
-								int addressIndex = characterID - 1;
-								int direction = 0;
+								int32_t addressIndex = characterID - 1;
+								int32_t direction = 0;
 								uint64_t packetNumber = 0;
 								
-								sscanf(buffer + 2, "%"PRIu64" %d", &packetNumber, &direction);
+								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+								ADVANCE_RECEIVE_BUFFER(&buffer, direction);
 								
 								GameMessage message;
 								message.packetNumber = packetNumber;
@@ -1281,11 +1265,11 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							}
 						}
 						
-						else if (buffer[0] == 's' && buffer[1] == 'w')
+						else if (messageTag[0] == 's' && messageTag[1] == 'w')
 						{
 							// shoot weapon
 							uint64_t packetNumber = 0;
-							sscanf(buffer + 2, "%"PRIu64"", &packetNumber);
+							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
 							
 							int characterID = characterIDForClientAddress(&address);
 							if (characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
@@ -1316,10 +1300,10 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							}
 						}
 						
-						else if (buffer[0] == 'a' && buffer[1] == 'k')
+						else if (messageTag[0] == 'a' && messageTag[1] == 'k')
 						{
 							uint64_t packetNumber = 0;
-							sscanf(buffer + 2, "%"PRIu64"", &packetNumber);
+							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
 							
 							int characterID = characterIDForClientAddress(&address);
 							if (characterID != NO_CHARACTER)
@@ -1344,10 +1328,10 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							}
 						}
 						
-						else if (buffer[0] == 'p' && buffer[1] == 'i')
+						else if (messageTag[0] == 'p' && messageTag[1] == 'i')
 						{
 							uint32_t timestamp = 0;
-							sscanf(buffer + 2, "%u", &timestamp);
+							ADVANCE_RECEIVE_BUFFER(&buffer, timestamp);
 							
 							int characterID = characterIDForClientAddress(&address);
 							if (characterID != NO_CHARACTER)
@@ -1362,11 +1346,11 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							}
 						}
 						
-						else if (buffer[0] == 'p' && buffer[1] == 'o')
+						else if (messageTag[0] == 'p' && messageTag[1] == 'o')
 						{
 							// pong message
 							uint32_t timestamp = 0;
-							sscanf(buffer + 2, "%u", &timestamp);
+							ADVANCE_RECEIVE_BUFFER(&buffer, timestamp);
 							
 							int characterID = characterIDForClientAddress(&address);
 							if (characterID != NO_CHARACTER)
@@ -1381,7 +1365,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							}
 						}
 						
-						else if (buffer[0] == 'q' && buffer[1] == 'u')
+						else if (messageTag[0] == 'q' && messageTag[1] == 'u')
 						{
 							GameMessage message;
 							message.type = QUIT_MESSAGE_TYPE;
@@ -1393,8 +1377,6 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 								sendToClients(characterID, &message);
 							}
 						}
-						
-						buffer += strlen(buffer) + 1;
 					}
 				}
 			}
@@ -1506,23 +1488,17 @@ int clientNetworkThread(void *context)
 				{
 					case WELCOME_MESSAGE_TO_SERVER_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtr, 256, "cp%"PRIu64" %s", message.packetNumber, gUserNameString);
+						advanceSendBufferForInitialMessage(&sendBufferPtr, "cp", message.packetNumber);
 						
-						sendBufferPtr += length + 1;
+						ADVANCE_SEND_BUFFER(&sendBufferPtr, gUserNameString);
 						
-						if ((size_t)(sendBufferPtr - sendBuffer) >= sizeof(sendBuffer) - 256)
-						{
-							sendData(gNetworkConnection->socket, sendBuffer, (size_t)(sendBufferPtr - sendBuffer), &gNetworkConnection->hostAddress);
-							sendBufferPtr = sendBuffer;
-						}
+						sendAndResetBufferIfNeeded(sendBuffer, sizeof(sendBuffer), &sendBufferPtr, &gNetworkConnection->hostAddress);
 						
 						break;
 					}
 					case QUIT_MESSAGE_TYPE:
 					{
-						char buffer[] = "qu";
-						
-						sendData(gNetworkConnection->socket, buffer, sizeof(buffer) - 1, &gNetworkConnection->hostAddress);
+						sendData(gNetworkConnection->socket, "qu", NET_MESSAGE_TAG_SIZE, &gNetworkConnection->hostAddress);
 						
 						needsToQuit = SDL_TRUE;
 						
@@ -1532,72 +1508,48 @@ int clientNetworkThread(void *context)
 					{
 						if (lastPingIndex == messageIndex)
 						{
-							int length = snprintf(sendBufferPtr, 256, "pi%u", message.pingTimestamp);
+							advanceSendBuffer(&sendBufferPtr, "pi", NET_MESSAGE_TAG_SIZE);
 							
-							sendBufferPtr += length + 1;
+							ADVANCE_SEND_BUFFER(&sendBufferPtr, message.pingTimestamp);
 							
-							if ((size_t)(sendBufferPtr - sendBuffer) >= sizeof(sendBuffer) - 256)
-							{
-								sendData(gNetworkConnection->socket, sendBuffer, (size_t)(sendBufferPtr - sendBuffer), &gNetworkConnection->hostAddress);
-								sendBufferPtr = sendBuffer;
-							}
+							sendAndResetBufferIfNeeded(sendBuffer, sizeof(sendBuffer), &sendBufferPtr, &gNetworkConnection->hostAddress);
 						}
 						
 						break;
 					}
 					case PONG_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtr, 256, "po%u", message.pongTimestamp);
+						advanceSendBuffer(&sendBufferPtr, "po", NET_MESSAGE_TAG_SIZE);
 						
-						sendBufferPtr += length + 1;
+						ADVANCE_SEND_BUFFER(&sendBufferPtr, message.pongTimestamp);
 						
-						if ((size_t)(sendBufferPtr - sendBuffer) >= sizeof(sendBuffer) - 256)
-						{
-							sendData(gNetworkConnection->socket, sendBuffer, (size_t)(sendBufferPtr - sendBuffer), &gNetworkConnection->hostAddress);
-							sendBufferPtr = sendBuffer;
-						}
+						sendAndResetBufferIfNeeded(sendBuffer, sizeof(sendBuffer), &sendBufferPtr, &gNetworkConnection->hostAddress);
 						
 						break;
 					}
 					case MOVEMENT_REQUEST_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtr, 256, "rm%"PRIu64" %d", message.packetNumber, message.movementRequest.direction);
+						advanceSendBufferForInitialMessage(&sendBufferPtr, "rm", message.packetNumber);
 						
-						sendBufferPtr += length + 1;
+						ADVANCE_SEND_BUFFER(&sendBufferPtr, message.movementRequest.direction);
 						
-						if ((size_t)(sendBufferPtr - sendBuffer) >= sizeof(sendBuffer) - 256)
-						{
-							sendData(gNetworkConnection->socket, sendBuffer, (size_t)(sendBufferPtr - sendBuffer), &gNetworkConnection->hostAddress);
-							sendBufferPtr = sendBuffer;
-						}
+						sendAndResetBufferIfNeeded(sendBuffer, sizeof(sendBuffer), &sendBufferPtr, &gNetworkConnection->hostAddress);
 						
 						break;
 					}
 					case CHARACTER_FIRED_REQUEST_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtr, 256, "sw%"PRIu64"", message.packetNumber);
+						advanceSendBufferForInitialMessage(&sendBufferPtr, "sw", message.packetNumber);
 						
-						sendBufferPtr += length + 1;
-						
-						if ((size_t)(sendBufferPtr - sendBuffer) >= sizeof(sendBuffer) - 256)
-						{
-							sendData(gNetworkConnection->socket, sendBuffer, (size_t)(sendBufferPtr - sendBuffer), &gNetworkConnection->hostAddress);
-							sendBufferPtr = sendBuffer;
-						}
+						sendAndResetBufferIfNeeded(sendBuffer, sizeof(sendBuffer), &sendBufferPtr, &gNetworkConnection->hostAddress);
 						
 						break;
 					}
 					case ACK_MESSAGE_TYPE:
 					{
-						int length = snprintf(sendBufferPtr, 256, "ak%"PRIu64"", message.packetNumber);
+						advanceSendBufferForInitialMessage(&sendBufferPtr, "ak", message.packetNumber);
 						
-						sendBufferPtr += length + 1;
-						
-						if ((size_t)(sendBufferPtr - sendBuffer) >= sizeof(sendBuffer) - 256)
-						{
-							sendData(gNetworkConnection->socket, sendBuffer, (size_t)(sendBufferPtr - sendBuffer), &gNetworkConnection->hostAddress);
-							sendBufferPtr = sendBuffer;
-						}
+						sendAndResetBufferIfNeeded(sendBuffer, sizeof(sendBuffer), &sendBufferPtr, &gNetworkConnection->hostAddress);
 						
 						break;
 					}
@@ -1687,54 +1639,58 @@ int clientNetworkThread(void *context)
 				else
 				{
 					char *buffer = packetBuffer;
-					while ((int)(buffer - packetBuffer) < numberOfBytes)
+					while (buffer + NET_MESSAGE_TAG_SIZE <= packetBuffer + numberOfBytes)
 					{
-						if (buffer[0] == 's' && buffer[1] == 'r')
+						uint8_t messageTag[NET_MESSAGE_TAG_SIZE] = {0};
+						ADVANCE_RECEIVE_BUFFER(&buffer, messageTag);
+						
+						if (messageTag[0] == 's' && messageTag[1] == 'n')
 						{
-							if (buffer[2] == 'n')
-							{
-								GameMessage message;
-								message.type = QUIT_MESSAGE_TYPE;
-								pushNetworkMessage(&gGameMessagesFromNet, message);
-								
-								needsToQuit = SDL_TRUE;
-								
-								break;
-							}
-							else
-							{
-								uint64_t packetNumber = 0;
-								int slotID = 0;
-								int characterLives = 0;
-								
-								sscanf(buffer, "sr%"PRIu64" %d %d", &packetNumber, &slotID, &characterLives);
-								
-								if (packetNumber == triggerIncomingPacketNumber + 1)
-								{
-									triggerIncomingPacketNumber++;
-									
-									GameMessage message;
-									message.type = FIRST_SERVER_RESPONSE_MESSAGE_TYPE;
-									message.firstServerResponse.slotID = slotID;
-									message.firstServerResponse.characterLives = characterLives;
-									
-									pushNetworkMessage(&gGameMessagesFromNet, message);
-								}
-								
-								if (packetNumber <= triggerIncomingPacketNumber)
-								{
-									GameMessage ackMessage;
-									ackMessage.type = ACK_MESSAGE_TYPE;
-									ackMessage.packetNumber = packetNumber;
-									pushNetworkMessage(&gGameMessagesToNet, ackMessage);
-								}
-							}
+							GameMessage message;
+							message.type = QUIT_MESSAGE_TYPE;
+							pushNetworkMessage(&gGameMessagesFromNet, message);
+							
+							needsToQuit = SDL_TRUE;
+							
+							break;
 						}
-						else if (buffer[0] == 'n' && buffer[1] == 'w')
+						else if (messageTag[0] == 's' && messageTag[1] == 'r')
 						{
 							uint64_t packetNumber = 0;
-							int numberOfWaitingPlayers = 0;
-							sscanf(buffer + 2, "%"PRIu64" %d", &packetNumber, &numberOfWaitingPlayers);
+							int32_t slotID = 0;
+							int32_t characterLives = 0;
+							
+							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+							ADVANCE_RECEIVE_BUFFER(&buffer, slotID);
+							ADVANCE_RECEIVE_BUFFER(&buffer, characterLives);
+							
+							if (packetNumber == triggerIncomingPacketNumber + 1)
+							{
+								triggerIncomingPacketNumber++;
+								
+								GameMessage message;
+								message.type = FIRST_SERVER_RESPONSE_MESSAGE_TYPE;
+								message.firstServerResponse.slotID = slotID;
+								message.firstServerResponse.characterLives = characterLives;
+								
+								pushNetworkMessage(&gGameMessagesFromNet, message);
+							}
+							
+							if (packetNumber <= triggerIncomingPacketNumber)
+							{
+								GameMessage ackMessage;
+								ackMessage.type = ACK_MESSAGE_TYPE;
+								ackMessage.packetNumber = packetNumber;
+								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+							}
+						}
+						else if (messageTag[0] == 'n' && messageTag[1] == 'w')
+						{
+							uint64_t packetNumber = 0;
+							int32_t numberOfWaitingPlayers = 0;
+							
+							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+							ADVANCE_RECEIVE_BUFFER(&buffer, numberOfWaitingPlayers);
 							
 							if (packetNumber == triggerIncomingPacketNumber + 1 && numberOfWaitingPlayers >= 0 && numberOfWaitingPlayers < 4)
 							{
@@ -1754,16 +1710,19 @@ int clientNetworkThread(void *context)
 								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
 							}
 						}
-						else if (buffer[0] == 'n' && buffer[1] == 'n')
+						else if (messageTag[0] == 'n' && messageTag[1] == 'n')
 						{
 							// net name
 							uint64_t packetNumber = 0;
-							int characterID = 0;
-							char *netName = malloc(MAX_USER_NAME_SIZE);
+							int32_t characterID = 0;
+							char *netName = calloc(MAX_USER_NAME_SIZE, 1);
 							if (netName != NULL)
 							{
-								memset(netName, 0, MAX_USER_NAME_SIZE);
-								sscanf(buffer + 2, "%"PRIu64" %d %s", &packetNumber, &characterID, netName);
+								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+								ADVANCE_RECEIVE_BUFFER(&buffer, characterID);
+								
+								strncpy(netName, buffer, MAX_USER_NAME_SIZE - 1);
+								buffer += MAX_USER_NAME_SIZE;
 								
 								if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 								{
@@ -1789,11 +1748,11 @@ int clientNetworkThread(void *context)
 								}
 							}
 						}
-						else if (buffer[0] == 's' && buffer[1] == 'g')
+						else if (messageTag[0] == 's' && messageTag[1] == 'g')
 						{
 							// start game
 							uint64_t packetNumber = 0;
-							sscanf(buffer + 2, "%"PRIu64"", &packetNumber);
+							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
 							
 							if (packetNumber == triggerIncomingPacketNumber + 1)
 							{
@@ -1812,11 +1771,13 @@ int clientNetworkThread(void *context)
 								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
 							}
 						}
-						else if (buffer[0] == 'g' && buffer[1] == 's')
+						else if (messageTag[0] == 'g' && messageTag[1] == 's')
 						{
 							uint64_t packetNumber = 0;
-							int gameStartNumber;
-							sscanf(buffer + 2, "%"PRIu64" %d", &packetNumber, &gameStartNumber);
+							int32_t gameStartNumber = 0;
+							
+							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+							ADVANCE_RECEIVE_BUFFER(&buffer, gameStartNumber);
 							
 							if (packetNumber == triggerIncomingPacketNumber + 1)
 							{
@@ -1841,18 +1802,25 @@ int clientNetworkThread(void *context)
 								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
 							}
 						}
-						else if (buffer[0] == 'm' && buffer[1] == 'o')
+						else if (messageTag[0] == 'm' && messageTag[1] == 'o')
 						{
 							uint64_t packetNumber = 0;
-							int characterID = 0;
-							int direction = 0;
-							int pointing_direction = 0;
+							int32_t characterID = 0;
+							int32_t direction = 0;
+							int32_t pointing_direction = 0;
 							uint32_t timestamp = 0;
 							float x = 0.0f;
 							float y = 0.0f;
 							float z = 0.0f;
 							
-							sscanf(buffer + 2, "%"PRIu64" %d %f %f %f %d %d %u", &packetNumber, &characterID, &x, &y, &z, &direction, &pointing_direction, &timestamp);
+							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+							ADVANCE_RECEIVE_BUFFER(&buffer, characterID);
+							ADVANCE_RECEIVE_BUFFER(&buffer, x);
+							ADVANCE_RECEIVE_BUFFER(&buffer, y);
+							ADVANCE_RECEIVE_BUFFER(&buffer, z);
+							ADVANCE_RECEIVE_BUFFER(&buffer, direction);
+							ADVANCE_RECEIVE_BUFFER(&buffer, pointing_direction);
+							ADVANCE_RECEIVE_BUFFER(&buffer, timestamp);
 							
 							if (packetNumber > realTimeIncomingPacketNumber && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 							{
@@ -1870,14 +1838,16 @@ int clientNetworkThread(void *context)
 								pushNetworkMessage(&gGameMessagesFromNet, message);
 							}
 						}
-						else if (buffer[0] == 'p' && buffer[1] == 'k')
+						else if (messageTag[0] == 'p' && messageTag[1] == 'k')
 						{
 							// character gets killed
-							
 							uint64_t packetNumber = 0;
-							int characterID = 0;
-							int characterLives = 0;
-							sscanf(buffer + 2, "%"PRIu64" %d %d", &packetNumber, &characterID, &characterLives);
+							int32_t characterID = 0;
+							int32_t characterLives = 0;
+							
+							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+							ADVANCE_RECEIVE_BUFFER(&buffer, characterID);
+							ADVANCE_RECEIVE_BUFFER(&buffer, characterLives);
 							
 							if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 							{
@@ -1898,13 +1868,16 @@ int clientNetworkThread(void *context)
 								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
 							}
 						}
-						else if (buffer[0] == 'c' && buffer[1] == 'k')
+						else if (messageTag[0] == 'c' && messageTag[1] == 'k')
 						{
 							// character's kills increase
 							uint64_t packetNumber = 0;
-							int characterID = 0;
-							int characterKills = 0;
-							sscanf(buffer + 2, "%"PRIu64" %d %d", &packetNumber, &characterID, &characterKills);
+							int32_t characterID = 0;
+							int32_t characterKills = 0;
+							
+							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+							ADVANCE_RECEIVE_BUFFER(&buffer, characterID);
+							ADVANCE_RECEIVE_BUFFER(&buffer, characterKills);
 							
 							if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 							{
@@ -1925,16 +1898,20 @@ int clientNetworkThread(void *context)
 								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
 							}
 						}
-						else if (buffer[0] == 's' && buffer[1] == 'w')
+						else if (messageTag[0] == 's' && messageTag[1] == 'w')
 						{
 							// shoot weapon
 							uint64_t packetNumber = 0;
-							int characterID = 0;
+							int32_t characterID = 0;
 							float x = 0.0f;
 							float y = 0.0f;
-							int pointing_direction = 0;
+							int32_t pointing_direction = 0;
 							
-							sscanf(buffer + 2, "%"PRIu64" %d %f %f %d", &packetNumber, &characterID, &x, &y, &pointing_direction);
+							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+							ADVANCE_RECEIVE_BUFFER(&buffer, characterID);
+							ADVANCE_RECEIVE_BUFFER(&buffer, x);
+							ADVANCE_RECEIVE_BUFFER(&buffer, y);
+							ADVANCE_RECEIVE_BUFFER(&buffer, pointing_direction);
 							
 							if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 							{
@@ -1958,13 +1935,15 @@ int clientNetworkThread(void *context)
 								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
 							}
 						}
-						else if (buffer[0] == 'c' && buffer[1] == 't')
+						else if (messageTag[0] == 'c' && messageTag[1] == 't')
 						{
 							uint64_t packetNumber = 0;
-							int characterID = 0;
-							int tileIndex = 0;
+							int32_t characterID = 0;
+							int32_t tileIndex = 0;
 							
-							sscanf(buffer + 2, "%"PRIu64" %d %d", &packetNumber, &characterID, &tileIndex);
+							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+							ADVANCE_RECEIVE_BUFFER(&buffer, characterID);
+							ADVANCE_RECEIVE_BUFFER(&buffer, tileIndex);
 							
 							if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM && tileIndex >= 0 && tileIndex < NUMBER_OF_TILES)
 							{
@@ -1986,13 +1965,15 @@ int clientNetworkThread(void *context)
 								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
 							}
 						}
-						else if (buffer[0] == 't' && buffer[1] == 'f')
+						else if (messageTag[0] == 't' && messageTag[1] == 'f')
 						{
 							uint64_t packetNumber = 0;
-							int tileIndex = 0;
-							int dead = 0;
+							int32_t tileIndex = 0;
+							int8_t dead = 0;
 							
-							sscanf(buffer + 2, "%"PRIu64" %d %d", &packetNumber, &tileIndex, &dead);
+							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+							ADVANCE_RECEIVE_BUFFER(&buffer, tileIndex);
+							ADVANCE_RECEIVE_BUFFER(&buffer, dead);
 							
 							if (packetNumber == triggerIncomingPacketNumber + 1 && tileIndex >= 0 && tileIndex < NUMBER_OF_TILES)
 							{
@@ -2014,12 +1995,13 @@ int clientNetworkThread(void *context)
 								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
 							}
 						}
-						else if (buffer[0] == 'r' && buffer[1] == 't')
+						else if (messageTag[0] == 'r' && messageTag[1] == 't')
 						{
 							uint64_t packetNumber = 0;
-							int tileIndex = 0;
+							int32_t tileIndex = 0;
 							
-							sscanf(buffer + 2, "%"PRIu64" %d", &packetNumber, &tileIndex);
+							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+							ADVANCE_RECEIVE_BUFFER(&buffer, tileIndex);
 							
 							if (packetNumber == triggerIncomingPacketNumber + 1 && tileIndex >= 0 && tileIndex < NUMBER_OF_TILES)
 							{
@@ -2040,11 +2022,11 @@ int clientNetworkThread(void *context)
 								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
 							}
 						}
-						else if (buffer[0] == 'n' && buffer[1] == 'g')
+						else if (messageTag[0] == 'n' && messageTag[1] == 'g')
 						{
 							// new game
 							uint64_t packetNumber = 0;
-							sscanf(buffer + 2, "%"PRIu64"", &packetNumber);
+							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
 							
 							if (packetNumber == triggerIncomingPacketNumber + 1)
 							{
@@ -2064,10 +2046,10 @@ int clientNetworkThread(void *context)
 								pushNetworkMessage(&gGameMessagesToNet, ackMessage);
 							}
 						}
-						else if (buffer[0] == 'a' && buffer[1] == 'k')
+						else if (messageTag[0] == 'a' && messageTag[1] == 'k')
 						{
 							uint64_t packetNumber = 0;
-							sscanf(buffer + 2, "%"PRIu64"", &packetNumber);
+							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
 							
 							SDL_bool foundAck = SDL_FALSE;
 							uint64_t maxPacketCount = receivedAckPacketCount < receivedAckPacketsCapacity ? receivedAckPacketCount : receivedAckPacketsCapacity;
@@ -2085,22 +2067,22 @@ int clientNetworkThread(void *context)
 								receivedAckPacketCount++;
 							}
 						}
-						else if (buffer[0] == 'p' && buffer[1] == 'i')
+						else if (messageTag[0] == 'p' && messageTag[1] == 'i')
 						{
 							// ping message
 							uint32_t timestamp = 0;
-							sscanf(buffer + 2, "%u", &timestamp);
+							ADVANCE_RECEIVE_BUFFER(&buffer, timestamp);
 							
 							GameMessage pongMessage;
 							pongMessage.type = PONG_MESSAGE_TYPE;
 							pongMessage.pongTimestamp = timestamp;
 							pushNetworkMessage(&gGameMessagesToNet, pongMessage);
 						}
-						else if (buffer[0] == 'p' && buffer[1] == 'o')
+						else if (messageTag[0] == 'p' && messageTag[1] == 'o')
 						{
 							// pong message
 							uint32_t timestamp = 0;
-							sscanf(buffer + 2, "%u", &timestamp);
+							ADVANCE_RECEIVE_BUFFER(&buffer, timestamp);
 							
 							GameMessage message;
 							message.type = PONG_MESSAGE_TYPE;
@@ -2109,7 +2091,7 @@ int clientNetworkThread(void *context)
 							
 							lastPongReceivedTimestamp = SDL_GetTicks();
 						}
-						else if (buffer[0] == 'q' && buffer[1] == 'u')
+						else if (messageTag[0] == 'q' && messageTag[1] == 'u')
 						{
 							// quit
 							GameMessage message;
@@ -2120,8 +2102,6 @@ int clientNetworkThread(void *context)
 							
 							break;
 						}
-						
-						buffer += strlen(buffer) + 1;
 					}
 				}
 			}
