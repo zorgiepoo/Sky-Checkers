@@ -599,7 +599,7 @@ static void sendCharacterMovement(Character *character)
 			message.movedUpdate.characterID = IDOfCharacter(character);
 			message.movedUpdate.x = character->x;
 			message.movedUpdate.y = character->y;
-			message.movedUpdate.z = character->z;
+			message.movedUpdate.dead = !CHARACTER_IS_ALIVE(character);
 			message.movedUpdate.direction = character->direction;
 			message.movedUpdate.pointing_direction = character->pointing_direction;
 			

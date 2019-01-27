@@ -29,10 +29,11 @@
 
 typedef struct
 {
-	float x, y, z;
+	float x, y;
 	int32_t direction;
 	int32_t pointing_direction;
 	uint32_t ticks;
+	uint8_t dead;
 } CharacterMovement;
 
 #define CHARACTER_MOVEMENTS_CAPACITY 20
@@ -94,10 +95,11 @@ typedef struct
 
 typedef struct
 {
-	float x, y, z;
+	float x, y;
 	uint8_t characterID;
 	uint8_t direction;
 	uint8_t pointing_direction;
+	uint8_t dead;
 } CharacterMovedUpdate;
 
 typedef struct

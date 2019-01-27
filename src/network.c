@@ -62,7 +62,7 @@ void setPredictedDirection(Character *character, int direction)
 static void interpolateCharacter(Character *character, CharacterMovement *previousMovement, CharacterMovement *nextMovement, uint32_t renderTime)
 {
 	SDL_bool characterAlive = CHARACTER_IS_ALIVE(character);
-	SDL_bool characterShouldBeAlive = CHARACTER_IS_ALIVE(previousMovement);
+	SDL_bool characterShouldBeAlive = !previousMovement->dead;
 	if (characterAlive || characterShouldBeAlive)
 	{
 		if (characterShouldBeAlive && !characterAlive)
@@ -151,7 +151,14 @@ static void interpolateCharacter(Character *character, CharacterMovement *previo
 		
 		if (characterShouldBeAlive != characterAlive)
 		{
-			character->z = previousMovement->z;
+			if (characterShouldBeAlive)
+			{
+				character->z = CHARACTER_ALIVE_Z;
+			}
+			else
+			{
+				character->z -= OBJECT_FALLING_STEP;
+			}
 		}
 		
 		character->direction = previousMovement->direction;
@@ -369,7 +376,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 							CharacterMovement newMovement;
 							newMovement.x = message.movedUpdate.x;
 							newMovement.y = message.movedUpdate.y;
-							newMovement.z = message.movedUpdate.z;
+							newMovement.dead = message.movedUpdate.dead;
 							newMovement.direction = message.movedUpdate.direction;
 							newMovement.pointing_direction = message.movedUpdate.pointing_direction;
 							newMovement.ticks = currentTicks - gNetworkConnection->serverHalfPing;
@@ -397,7 +404,20 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 							character->active = SDL_TRUE;
 							character->x = message.movedUpdate.x;
 							character->y = message.movedUpdate.y;
-							character->z = message.movedUpdate.z;
+							
+							SDL_bool characterIsDead = !CHARACTER_IS_ALIVE(character);
+							if (characterIsDead != message.movedUpdate.dead)
+							{
+								if (!characterIsDead)
+								{
+									character->z -= OBJECT_FALLING_STEP;
+								}
+								else
+								{
+									character->z = CHARACTER_ALIVE_Z;
+								}
+							}
+							
 							character->direction = message.movedUpdate.direction;
 							character->pointing_direction = message.movedUpdate.pointing_direction;
 						}
@@ -983,12 +1003,12 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						
 						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.movedUpdate.x);
 						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.movedUpdate.y);
-						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.movedUpdate.z);
 						
 						uint8_t flags = 0;
 						flags |= ((message.movedUpdate.characterID - 1) << 0); // 2 bits needed
 						flags |= (message.movedUpdate.direction << 2); // 3 bits needed
-						flags |= (message.movedUpdate.pointing_direction << 5); // 3 bits needed
+						flags |= ((message.movedUpdate.pointing_direction - 1) << 5); // 2 bits needed
+						flags |= (message.movedUpdate.dead << 7); // 1 bit needed
 						
 						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], flags);
 						
@@ -1866,22 +1886,21 @@ int clientNetworkThread(void *context)
 						else if (messageTag[0] == 'm' && messageTag[1] == 'o')
 						{
 							uint32_t packetNumber = 0;
-							uint8_t flags = 0;
 							float x = 0.0f;
 							float y = 0.0f;
-							float z = 0.0f;
+							uint8_t flags = 0;
 							
-							if (buffer + sizeof(packetNumber) + sizeof(x) + sizeof(y) + sizeof(z) + sizeof(flags) <= packetBuffer + numberOfBytes)
+							if (buffer + sizeof(packetNumber) + sizeof(x) + sizeof(y) + sizeof(flags) <= packetBuffer + numberOfBytes)
 							{
 								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
 								ADVANCE_RECEIVE_BUFFER(&buffer, x);
 								ADVANCE_RECEIVE_BUFFER(&buffer, y);
-								ADVANCE_RECEIVE_BUFFER(&buffer, z);
 								ADVANCE_RECEIVE_BUFFER(&buffer, flags);
 								
 								uint8_t characterID = (flags & 0x3) + 1;
 								uint8_t direction = (flags >> 2) & 0x7;
-								uint8_t pointing_direction = (flags >> 5);
+								uint8_t pointing_direction = (flags >> 5) + 1;
+								uint8_t dead = (flags >> 7) != 0;
 								
 								if (packetNumber > realTimeIncomingPacketNumber && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 								{
@@ -1892,9 +1911,9 @@ int clientNetworkThread(void *context)
 									message.movedUpdate.characterID = characterID;
 									message.movedUpdate.x = x;
 									message.movedUpdate.y = y;
-									message.movedUpdate.z = z;
 									message.movedUpdate.direction = direction;
 									message.movedUpdate.pointing_direction = pointing_direction;
+									message.movedUpdate.dead = dead;
 									pushNetworkMessage(&gGameMessagesFromNet, message);
 								}
 							}
