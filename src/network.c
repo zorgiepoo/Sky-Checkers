@@ -971,7 +971,6 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.movedUpdate.z);
 						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.movedUpdate.direction);
 						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.movedUpdate.pointing_direction);
-						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.movedUpdate.timestamp);
 						
 						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
@@ -1843,12 +1842,11 @@ int clientNetworkThread(void *context)
 							uint8_t characterID = 0;
 							uint8_t direction = 0;
 							uint8_t pointing_direction = 0;
-							uint32_t timestamp = 0;
 							float x = 0.0f;
 							float y = 0.0f;
 							float z = 0.0f;
 							
-							if (buffer + sizeof(packetNumber) + sizeof(characterID) + sizeof(direction) + sizeof(pointing_direction) + sizeof(timestamp) + sizeof(x) + sizeof(y) + sizeof(z) <= packetBuffer + numberOfBytes)
+							if (buffer + sizeof(packetNumber) + sizeof(characterID) + sizeof(direction) + sizeof(pointing_direction) + sizeof(x) + sizeof(y) + sizeof(z) <= packetBuffer + numberOfBytes)
 							{
 								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
 								ADVANCE_RECEIVE_BUFFER(&buffer, characterID);
@@ -1857,7 +1855,6 @@ int clientNetworkThread(void *context)
 								ADVANCE_RECEIVE_BUFFER(&buffer, z);
 								ADVANCE_RECEIVE_BUFFER(&buffer, direction);
 								ADVANCE_RECEIVE_BUFFER(&buffer, pointing_direction);
-								ADVANCE_RECEIVE_BUFFER(&buffer, timestamp);
 								
 								if (packetNumber > realTimeIncomingPacketNumber && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 								{
@@ -1871,7 +1868,6 @@ int clientNetworkThread(void *context)
 									message.movedUpdate.z = z;
 									message.movedUpdate.direction = direction;
 									message.movedUpdate.pointing_direction = pointing_direction;
-									message.movedUpdate.timestamp = timestamp;
 									pushNetworkMessage(&gGameMessagesFromNet, message);
 								}
 							}

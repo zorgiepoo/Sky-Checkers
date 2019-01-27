@@ -98,7 +98,6 @@ typedef struct
 	float x, y, z;
 	uint8_t direction;
 	uint8_t pointing_direction;
-	uint32_t timestamp;
 } CharacterMovedUpdate;
 
 typedef struct

@@ -602,7 +602,6 @@ static void sendCharacterMovement(Character *character)
 			message.movedUpdate.z = character->z;
 			message.movedUpdate.direction = character->direction;
 			message.movedUpdate.pointing_direction = character->pointing_direction;
-			message.movedUpdate.timestamp = SDL_GetTicks();
 			
 			sendToClients(0, &message);
 		}
