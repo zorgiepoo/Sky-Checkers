@@ -702,9 +702,12 @@ static void advanceSendBufferForInitialMessage(char **sendBufferPtr, const char 
 	ADVANCE_SEND_BUFFER(sendBufferPtr, packetNumber);
 }
 
+// Our largest message size so far is around 20 bytes.
+// This should be plenty for now.
+#define MAX_MESSAGE_SIZE 32
 static void sendAndResetBufferIfNeeded(char *sendBuffer, size_t sendBufferSize, char **sendBufferPtr, SocketAddress *address)
 {
-	if ((size_t)(*sendBufferPtr - sendBuffer) >= sendBufferSize - 256)
+	if ((size_t)(*sendBufferPtr - sendBuffer) >= sendBufferSize - MAX_MESSAGE_SIZE)
 	{
 		sendData(gNetworkConnection->socket, sendBuffer, (size_t)(*sendBufferPtr - sendBuffer), address);
 		*sendBufferPtr = sendBuffer;
