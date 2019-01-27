@@ -696,7 +696,7 @@ static void advanceSendBuffer(char **sendBufferPtr, const void *data, size_t siz
 
 #define ADVANCE_SEND_BUFFER(sendBufferPtr, data) advanceSendBuffer((sendBufferPtr), &(data), sizeof(data))
 
-static void advanceSendBufferForInitialMessage(char **sendBufferPtr, const char *tag, uint64_t packetNumber)
+static void advanceSendBufferForInitialMessage(char **sendBufferPtr, const char *tag, uint32_t packetNumber)
 {
 	advanceSendBuffer(sendBufferPtr, tag, NET_MESSAGE_TAG_SIZE);
 	ADVANCE_SEND_BUFFER(sendBufferPtr, packetNumber);
@@ -724,14 +724,14 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 	gCurrentSlot = 0;
 	int numberOfPlayersToWaitFor = *(int *)initialNumberOfPlayersToWaitForPtr;
 	
-	uint64_t triggerOutgoingPacketNumbers[] = {1, 1, 1};
-	uint64_t realTimeOutgoingPacketNumbers[] = {1, 1, 1};
+	uint32_t triggerOutgoingPacketNumbers[] = {1, 1, 1};
+	uint32_t realTimeOutgoingPacketNumbers[] = {1, 1, 1};
 	
-	uint64_t triggerIncomingPacketNumbers[] = {0, 0, 0};
+	uint32_t triggerIncomingPacketNumbers[] = {0, 0, 0};
 	
-	uint64_t receivedAckPacketNumbers[3][256] = {{0}, {0}, {0}};
+	uint32_t receivedAckPacketNumbers[3][256] = {{0}, {0}, {0}};
 	size_t receivedAckPacketsCapacity = sizeof(receivedAckPacketNumbers[0]) / sizeof(*receivedAckPacketNumbers[0]);
-	uint64_t receivedAckPacketCount = 0;
+	uint32_t receivedAckPacketCount = 0;
 	
 	SDL_bool needsToQuit = SDL_FALSE;
 	
@@ -817,8 +817,8 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					else if (message.type != CHARACTER_MOVED_UPDATE_MESSAGE_TYPE)
 					{
 						SDL_bool foundAck = SDL_FALSE;
-						uint64_t maxPacketCount = receivedAckPacketCount < receivedAckPacketsCapacity ? receivedAckPacketCount : receivedAckPacketsCapacity;
-						for (uint64_t packetIndex = 0; packetIndex < maxPacketCount; packetIndex++)
+						uint32_t maxPacketCount = receivedAckPacketCount < receivedAckPacketsCapacity ? receivedAckPacketCount : receivedAckPacketsCapacity;
+						for (uint32_t packetIndex = 0; packetIndex < maxPacketCount; packetIndex++)
 						{
 							if (message.packetNumber == receivedAckPacketNumbers[addressIndex][packetIndex])
 							{
@@ -1169,7 +1169,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						// can i play?
 						if (messageTag[0] == 'c' && messageTag[1] == 'p')
 						{
-							uint64_t packetNumber = 0;
+							uint32_t packetNumber = 0;
 							
 							if (buffer + sizeof(packetNumber) + MAX_USER_NAME_SIZE <= packetBuffer + numberOfBytes)
 							{
@@ -1236,7 +1236,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							if (characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 							{
 								int32_t direction = 0;
-								uint64_t packetNumber = 0;
+								uint32_t packetNumber = 0;
 								if (buffer + sizeof(packetNumber) + sizeof(direction) <= packetBuffer + numberOfBytes)
 								{
 									int32_t addressIndex = characterID - 1;
@@ -1275,7 +1275,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						else if (messageTag[0] == 's' && messageTag[1] == 'w')
 						{
 							// shoot weapon
-							uint64_t packetNumber = 0;
+							uint32_t packetNumber = 0;
 							if (buffer + sizeof(packetNumber) <= packetBuffer + numberOfBytes)
 							{
 								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
@@ -1312,7 +1312,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						
 						else if (messageTag[0] == 'a' && messageTag[1] == 'k')
 						{
-							uint64_t packetNumber = 0;
+							uint32_t packetNumber = 0;
 							if (buffer + sizeof(packetNumber) <= packetBuffer + numberOfBytes)
 							{
 								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
@@ -1323,8 +1323,8 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 									int addressIndex = characterID - 1;
 									
 									SDL_bool foundAck = SDL_FALSE;
-									uint64_t maxPacketCount = receivedAckPacketCount < receivedAckPacketsCapacity ? receivedAckPacketCount : receivedAckPacketsCapacity;
-									for (uint64_t packetIndex = 0; packetIndex < maxPacketCount; packetIndex++)
+									uint32_t maxPacketCount = receivedAckPacketCount < receivedAckPacketsCapacity ? receivedAckPacketCount : receivedAckPacketsCapacity;
+									for (uint32_t packetIndex = 0; packetIndex < maxPacketCount; packetIndex++)
 									{
 										if (packetNumber == receivedAckPacketNumbers[addressIndex][packetIndex])
 										{
@@ -1421,14 +1421,14 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 
 int clientNetworkThread(void *context)
 {
-	uint64_t triggerOutgoingPacketNumber = 1;
+	uint32_t triggerOutgoingPacketNumber = 1;
 	
-	uint64_t triggerIncomingPacketNumber = 0;
-	uint64_t realTimeIncomingPacketNumber = 0;
+	uint32_t triggerIncomingPacketNumber = 0;
+	uint32_t realTimeIncomingPacketNumber = 0;
 	
-	uint64_t receivedAckPacketNumbers[256] = {0};
+	uint32_t receivedAckPacketNumbers[256] = {0};
 	size_t receivedAckPacketsCapacity = sizeof(receivedAckPacketNumbers) / sizeof(*receivedAckPacketNumbers);
-	uint64_t receivedAckPacketCount = 0;
+	uint32_t receivedAckPacketCount = 0;
 	
 	// tell the server we exist
 	GameMessage welcomeMessage;
@@ -1481,8 +1481,8 @@ int clientNetworkThread(void *context)
 					else
 					{
 						SDL_bool foundAck = SDL_FALSE;
-						uint64_t maxPacketCount = receivedAckPacketCount < receivedAckPacketsCapacity ? receivedAckPacketCount + 1 : receivedAckPacketsCapacity;
-						for (uint64_t packetIndex = 0; packetIndex < maxPacketCount; packetIndex++)
+						uint32_t maxPacketCount = receivedAckPacketCount < receivedAckPacketsCapacity ? receivedAckPacketCount + 1 : receivedAckPacketsCapacity;
+						for (uint32_t packetIndex = 0; packetIndex < maxPacketCount; packetIndex++)
 						{
 							if (message.packetNumber == receivedAckPacketNumbers[packetIndex])
 							{
@@ -1675,7 +1675,7 @@ int clientNetworkThread(void *context)
 						}
 						else if (messageTag[0] == 's' && messageTag[1] == 'r')
 						{
-							uint64_t packetNumber = 0;
+							uint32_t packetNumber = 0;
 							int32_t slotID = 0;
 							int32_t characterLives = 0;
 							
@@ -1708,7 +1708,7 @@ int clientNetworkThread(void *context)
 						}
 						else if (messageTag[0] == 'n' && messageTag[1] == 'w')
 						{
-							uint64_t packetNumber = 0;
+							uint32_t packetNumber = 0;
 							int32_t numberOfWaitingPlayers = 0;
 							
 							if (buffer + sizeof(packetNumber) + sizeof(numberOfWaitingPlayers) <= packetBuffer + numberOfBytes)
@@ -1738,7 +1738,7 @@ int clientNetworkThread(void *context)
 						else if (messageTag[0] == 'n' && messageTag[1] == 'n')
 						{
 							// net name
-							uint64_t packetNumber = 0;
+							uint32_t packetNumber = 0;
 							int32_t characterID = 0;
 							
 							if (buffer + sizeof(packetNumber) + sizeof(characterID) <= packetBuffer + numberOfBytes)
@@ -1780,7 +1780,7 @@ int clientNetworkThread(void *context)
 						else if (messageTag[0] == 's' && messageTag[1] == 'g')
 						{
 							// start game
-							uint64_t packetNumber = 0;
+							uint32_t packetNumber = 0;
 							ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
 							
 							if (buffer + sizeof(packetNumber) <= packetBuffer + numberOfBytes)
@@ -1805,7 +1805,7 @@ int clientNetworkThread(void *context)
 						}
 						else if (messageTag[0] == 'g' && messageTag[1] == 's')
 						{
-							uint64_t packetNumber = 0;
+							uint32_t packetNumber = 0;
 							int32_t gameStartNumber = 0;
 							
 							if (buffer + sizeof(packetNumber) + sizeof(gameStartNumber) <= packetBuffer + numberOfBytes)
@@ -1839,7 +1839,7 @@ int clientNetworkThread(void *context)
 						}
 						else if (messageTag[0] == 'm' && messageTag[1] == 'o')
 						{
-							uint64_t packetNumber = 0;
+							uint32_t packetNumber = 0;
 							int32_t characterID = 0;
 							int32_t direction = 0;
 							int32_t pointing_direction = 0;
@@ -1879,7 +1879,7 @@ int clientNetworkThread(void *context)
 						else if (messageTag[0] == 'p' && messageTag[1] == 'k')
 						{
 							// character gets killed
-							uint64_t packetNumber = 0;
+							uint32_t packetNumber = 0;
 							int32_t characterID = 0;
 							int32_t characterLives = 0;
 							
@@ -1912,7 +1912,7 @@ int clientNetworkThread(void *context)
 						else if (messageTag[0] == 'c' && messageTag[1] == 'k')
 						{
 							// character's kills increase
-							uint64_t packetNumber = 0;
+							uint32_t packetNumber = 0;
 							int32_t characterID = 0;
 							int32_t characterKills = 0;
 							
@@ -1945,7 +1945,7 @@ int clientNetworkThread(void *context)
 						else if (messageTag[0] == 's' && messageTag[1] == 'w')
 						{
 							// shoot weapon
-							uint64_t packetNumber = 0;
+							uint32_t packetNumber = 0;
 							int32_t characterID = 0;
 							float x = 0.0f;
 							float y = 0.0f;
@@ -1984,7 +1984,7 @@ int clientNetworkThread(void *context)
 						}
 						else if (messageTag[0] == 'c' && messageTag[1] == 't')
 						{
-							uint64_t packetNumber = 0;
+							uint32_t packetNumber = 0;
 							int32_t characterID = 0;
 							int32_t tileIndex = 0;
 							
@@ -2017,7 +2017,7 @@ int clientNetworkThread(void *context)
 						}
 						else if (messageTag[0] == 't' && messageTag[1] == 'f')
 						{
-							uint64_t packetNumber = 0;
+							uint32_t packetNumber = 0;
 							int32_t tileIndex = 0;
 							int8_t dead = 0;
 							
@@ -2050,7 +2050,7 @@ int clientNetworkThread(void *context)
 						}
 						else if (messageTag[0] == 'r' && messageTag[1] == 't')
 						{
-							uint64_t packetNumber = 0;
+							uint32_t packetNumber = 0;
 							int32_t tileIndex = 0;
 							
 							if (buffer + sizeof(packetNumber) + sizeof(tileIndex) <= packetBuffer + numberOfBytes)
@@ -2081,7 +2081,7 @@ int clientNetworkThread(void *context)
 						else if (messageTag[0] == 'n' && messageTag[1] == 'g')
 						{
 							// new game
-							uint64_t packetNumber = 0;
+							uint32_t packetNumber = 0;
 							if (buffer + sizeof(packetNumber) <= packetBuffer + numberOfBytes)
 							{
 								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
@@ -2107,14 +2107,14 @@ int clientNetworkThread(void *context)
 						}
 						else if (messageTag[0] == 'a' && messageTag[1] == 'k')
 						{
-							uint64_t packetNumber = 0;
+							uint32_t packetNumber = 0;
 							if (buffer + sizeof(packetNumber) <= packetBuffer + numberOfBytes)
 							{
 								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
 								
 								SDL_bool foundAck = SDL_FALSE;
-								uint64_t maxPacketCount = receivedAckPacketCount < receivedAckPacketsCapacity ? receivedAckPacketCount : receivedAckPacketsCapacity;
-								for (uint64_t packetIndex = 0; packetIndex < maxPacketCount; packetIndex++)
+								uint32_t maxPacketCount = receivedAckPacketCount < receivedAckPacketsCapacity ? receivedAckPacketCount : receivedAckPacketsCapacity;
+								for (uint32_t packetIndex = 0; packetIndex < maxPacketCount; packetIndex++)
 								{
 									if (packetNumber == receivedAckPacketNumbers[packetIndex])
 									{

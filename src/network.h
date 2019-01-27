@@ -30,8 +30,8 @@
 typedef struct
 {
 	float x, y, z;
-	int direction;
-	int pointing_direction;
+	int32_t direction;
+	int32_t pointing_direction;
 	uint32_t ticks;
 } CharacterMovement;
 
@@ -70,12 +70,12 @@ typedef struct
 
 typedef struct
 {
-	int characterID;
+	int32_t characterID;
 } CharacterFiredRequest;
 
 typedef struct
 {
-	int characterID;
+	int32_t characterID;
 	float x, y;
 	int32_t direction;
 } CharacterFiredUpdate;
@@ -109,7 +109,7 @@ typedef struct
 
 typedef struct
 {
-	int characterID;
+	int32_t characterID;
 	float x, y;
 } CharacterSpawnedUpdate;
 
@@ -122,15 +122,15 @@ typedef struct
 typedef struct
 {
 	char *netName;
-	int slotID;
-	int numberOfPlayersToWaitFor;
+	int32_t slotID;
+	int32_t numberOfPlayersToWaitFor;
 } FirstClientResponse;
 
 typedef struct
 {
 	char *netNames[4];
-	int characterID;
-	int numberOfPlayersToWaitFor;
+	int32_t characterID;
+	int32_t numberOfPlayersToWaitFor;
 } FirstDataToClient;
 
 typedef struct
@@ -158,7 +158,7 @@ typedef struct
 typedef struct
 {
 	MessageType type;
-	uint64_t packetNumber;
+	uint32_t packetNumber;
 	int addressIndex;
 	uint32_t ticks;
 	union
