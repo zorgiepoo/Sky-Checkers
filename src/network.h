@@ -65,7 +65,7 @@ typedef enum
 
 typedef struct
 {
-	int32_t direction;
+	uint8_t direction;
 } CharacterMovementRequest;
 
 typedef struct
@@ -75,36 +75,36 @@ typedef struct
 
 typedef struct
 {
-	int32_t characterID;
+	uint8_t characterID;
 	float x, y;
-	int32_t direction;
+	int8_t direction;
 } CharacterFiredUpdate;
 
 typedef struct
 {
-	int32_t characterID;
+	uint8_t characterID;
 	char *netName;
 } CharacterNetNameRequest;
 
 typedef struct
 {
-	int32_t characterID;
-	int32_t characterLives;
+	uint8_t characterID;
+	uint8_t characterLives;
 } CharacterDiedUpdate;
 
 typedef struct
 {
-	int32_t characterID;
+	uint8_t characterID;
 	float x, y, z;
-	int32_t direction;
-	int32_t pointing_direction;
+	uint8_t direction;
+	uint8_t pointing_direction;
 	uint32_t timestamp;
 } CharacterMovedUpdate;
 
 typedef struct
 {
-	int32_t characterID;
-	int32_t kills;
+	uint8_t characterID;
+	uint8_t kills;
 } CharacterKilledUpdate;
 
 typedef struct
@@ -115,22 +115,22 @@ typedef struct
 
 typedef struct
 {
-	int32_t slotID;
-	int32_t characterLives;
+	uint8_t slotID;
+	uint8_t characterLives;
 } FirstServerResponse;
 
 typedef struct
 {
 	char *netName;
 	int32_t slotID;
-	int32_t numberOfPlayersToWaitFor;
+	uint8_t numberOfPlayersToWaitFor;
 } FirstClientResponse;
 
 typedef struct
 {
 	char *netNames[4];
-	int32_t characterID;
-	int32_t numberOfPlayersToWaitFor;
+	uint8_t characterID;
+	uint8_t numberOfPlayersToWaitFor;
 } FirstDataToClient;
 
 typedef struct
@@ -140,19 +140,19 @@ typedef struct
 
 typedef struct
 {
-	int32_t characterID;
-	int32_t tileIndex;
+	uint8_t characterID;
+	uint8_t tileIndex;
 } ColorTileMessage;
 
 typedef struct
 {
-	int32_t tileIndex;
+	uint8_t tileIndex;
 	int8_t dead;
 } FallingTileMessage;
 
 typedef struct
 {
-	int32_t tileIndex;
+	uint8_t tileIndex;
 } RecoverTileMessage;
 
 typedef struct
@@ -181,8 +181,8 @@ typedef struct
 		uint32_t pingTimestamp;
 		uint32_t pongTimestamp;
 		
-		uint32_t numberOfWaitingPlayers;
-		int32_t gameStartNumber;
+		uint8_t numberOfWaitingPlayers;
+		uint8_t gameStartNumber;
 	};
 } GameMessage;
 
@@ -212,7 +212,7 @@ typedef struct
 	
 	// Writable & readable from main thread only
 	Character *character;
-	uint32_t numberOfPlayersToWaitFor;
+	uint8_t numberOfPlayersToWaitFor;
 	
 	// Writable before thread is created or during creation
 	// Only used from main thread
@@ -226,7 +226,7 @@ typedef struct
 			// Only writable before client thread is created
 			SocketAddress hostAddress;
 			// Writable & readable from main thread only
-			int characterLives;
+			uint8_t characterLives;
 			
 			// Keeping track of half-ping from the server
 			// Only readable/writable from main thread
@@ -261,7 +261,7 @@ typedef struct
 
 
 // For the server.. This should be initialized to zero before creating the server thread.
-int gCurrentSlot;
+uint8_t gCurrentSlot;
 
 GameMessageArray gGameMessagesFromNet;
 GameMessageArray gGameMessagesToNet;

@@ -743,8 +743,20 @@ void initGame(void)
 	loadCharacter(&gBlueLightning);
 
 	startAnimation();
-
-	int initialNumberOfLives = (gNetworkConnection && gNetworkConnection->type == NETWORK_CLIENT_TYPE) ? gNetworkConnection->characterLives : (gNetworkConnection && gNetworkConnection->type == NETWORK_SERVER_TYPE ? gCharacterNetLives : gCharacterLives);
+	
+	int initialNumberOfLives;
+	if (gNetworkConnection != NULL && gNetworkConnection->type == NETWORK_SERVER_TYPE)
+	{
+		initialNumberOfLives = gCharacterNetLives;
+	}
+	else if (gNetworkConnection != NULL && gNetworkConnection->type == NETWORK_CLIENT_TYPE)
+	{
+		initialNumberOfLives = gNetworkConnection->characterLives;
+	}
+	else
+	{
+		initialNumberOfLives = gCharacterLives;
+	}
 
 	gRedRover.lives = initialNumberOfLives;
 	gGreenTree.lives = initialNumberOfLives;

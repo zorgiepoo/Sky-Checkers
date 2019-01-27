@@ -206,8 +206,8 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					break;
 				case MOVEMENT_REQUEST_MESSAGE_TYPE:
 				{
-					int direction = message.movementRequest.direction;
-					int characterID = message.addressIndex + 1;
+					uint8_t direction = message.movementRequest.direction;
+					uint8_t characterID = message.addressIndex + 1;
 					
 					Character *character = getCharacter(characterID);
 					character->direction = direction;
@@ -217,7 +217,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 				}
 				case CHARACTER_FIRED_REQUEST_MESSAGE_TYPE:
 				{
-					int characterID = message.firedUpdate.characterID;
+					uint8_t characterID = message.firedUpdate.characterID;
 					Character *character = getCharacter(characterID);
 					
 					uint32_t halfPing = gNetworkConnection->clientHalfPings[message.addressIndex];
@@ -373,7 +373,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 							newMovement.pointing_direction = message.movedUpdate.pointing_direction;
 							newMovement.ticks = currentTicks - gNetworkConnection->serverHalfPing;
 							
-							int characterIndex = message.movedUpdate.characterID - 1;
+							uint8_t characterIndex = message.movedUpdate.characterID - 1;
 							
 							gNetworkConnection->characterMovements[characterIndex][gNetworkConnection->characterMovementCounts[characterIndex] % CHARACTER_MOVEMENTS_CAPACITY] = newMovement;
 							
@@ -421,8 +421,8 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					break;
 				case FIRST_SERVER_RESPONSE_MESSAGE_TYPE:
 				{
-					int slotID = message.firstServerResponse.slotID;
-					int characterLives = message.firstServerResponse.characterLives;
+					uint8_t slotID = message.firstServerResponse.slotID;
+					uint8_t characterLives = message.firstServerResponse.characterLives;
 					
 					gNetworkConnection->characterLives = characterLives;
 					
@@ -471,7 +471,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					messageBack.firstDataToClient.characterID = message.firstClientResponse.slotID;
 					messageBack.firstDataToClient.numberOfPlayersToWaitFor = message.firstClientResponse.numberOfPlayersToWaitFor;
 					
-					for (int characterIndex = RED_ROVER; characterIndex <= PINK_BUBBLE_GUM; characterIndex++)
+					for (uint8_t characterIndex = RED_ROVER; characterIndex <= PINK_BUBBLE_GUM; characterIndex++)
 					{
 						Character *character = getCharacter(characterIndex);
 						messageBack.firstDataToClient.netNames[characterIndex - 1] = character->netName;
@@ -503,7 +503,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 				{
 					if (message->type == CHARACTER_FIRED_UPDATE_MESSAGE_TYPE)
 					{
-						int characterID = message->firedUpdate.characterID;
+						uint8_t characterID = message->firedUpdate.characterID;
 						Character *character = getCharacter(characterID);
 						
 						character->pointing_direction = message->firedUpdate.direction;
@@ -511,8 +511,8 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					}
 					else if (message->type == COLOR_TILE_MESSAGE_TYPE)
 					{
-						int characterID = message->colorTile.characterID;
-						int tileIndex = message->colorTile.tileIndex;
+						uint8_t characterID = message->colorTile.characterID;
+						uint8_t tileIndex = message->colorTile.tileIndex;
 						Character *character = getCharacter(characterID);
 						
 						if (!clearedPredictedColors && character == gNetworkConnection->character)
@@ -528,7 +528,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					}
 					else if (message->type == TILE_FALLING_DOWN_MESSAGE_TYPE)
 					{
-						int tileIndex = message->fallingTile.tileIndex;
+						uint8_t tileIndex = message->fallingTile.tileIndex;
 						if (message->fallingTile.dead)
 						{
 							gTiles[tileIndex].isDead = SDL_TRUE;
@@ -567,9 +567,9 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 				}
 			}
 			
-			for (int characterID = RED_ROVER; characterID <= PINK_BUBBLE_GUM; characterID++)
+			for (uint8_t characterID = RED_ROVER; characterID <= PINK_BUBBLE_GUM; characterID++)
 			{
-				int characterIndex = characterID - 1;
+				uint8_t characterIndex = characterID - 1;
 
 				// Find the two points that will tell us where the client was 100ms ago?
 				uint32_t initialCount = gNetworkConnection->characterMovementCounts[characterIndex] < CHARACTER_MOVEMENTS_CAPACITY ? gNetworkConnection->characterMovementCounts[characterIndex] : CHARACTER_MOVEMENTS_CAPACITY;
@@ -607,7 +607,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 		}
 		
 		// Resolve position discrepanies
-		for (int characterID = RED_ROVER; characterID <= PINK_BUBBLE_GUM; characterID++)
+		for (uint8_t characterID = RED_ROVER; characterID <= PINK_BUBBLE_GUM; characterID++)
 		{
 			Character *character = getCharacter(characterID);
 			float displacementAdjustment = timeDelta * INITIAL_CHARACTER_SPEED / 32.0f;
@@ -676,9 +676,9 @@ receiveData(int socket, void *buffer, size_t length, SocketAddress *address)
 	return recvfrom(socket, buffer, length, 0, &address->sa, &addressLength);
 }
 
-static int characterIDForClientAddress(SocketAddress *address)
+static uint8_t characterIDForClientAddress(SocketAddress *address)
 {
-	for (int clientIndex = 0; clientIndex < gCurrentSlot; clientIndex++)
+	for (uint8_t clientIndex = 0; clientIndex < gCurrentSlot; clientIndex++)
 	{
 		if (memcmp(address, &gNetworkConnection->clientAddresses[clientIndex], sizeof(*address)) == 0)
 		{
@@ -722,7 +722,7 @@ static void advanceReceiveBuffer(char **buffer, void *receiveData, size_t receiv
 int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 {
 	gCurrentSlot = 0;
-	int numberOfPlayersToWaitFor = *(int *)initialNumberOfPlayersToWaitForPtr;
+	uint8_t numberOfPlayersToWaitFor = *(uint8_t *)initialNumberOfPlayersToWaitForPtr;
 	
 	uint32_t triggerOutgoingPacketNumbers[] = {1, 1, 1};
 	uint32_t realTimeOutgoingPacketNumbers[] = {1, 1, 1};
@@ -757,7 +757,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 				if (message.type == CHARACTER_MOVED_UPDATE_MESSAGE_TYPE)
 				{
 					int addressIndex = message.addressIndex;
-					int characterIndex = message.movedUpdate.characterID - 1;
+					uint8_t characterIndex = message.movedUpdate.characterID - 1;
 					
 					if (trackedMovementIndices[addressIndex][characterIndex] == 0)
 					{
@@ -1042,7 +1042,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						break;
 					case FIRST_DATA_TO_CLIENT_MESSAGE_TYPE:
 					{
-						int clientCharacterID = message.firstDataToClient.characterID;
+						uint8_t clientCharacterID = message.firstDataToClient.characterID;
 						
 						// send client its initial info
 						{
@@ -1050,7 +1050,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							responseMessage.type = FIRST_SERVER_RESPONSE_MESSAGE_TYPE;
 							responseMessage.packetNumber = 0;
 							responseMessage.firstServerResponse.slotID = clientCharacterID - 1;
-							responseMessage.firstServerResponse.characterLives = gCharacterLives;
+							responseMessage.firstServerResponse.characterLives = gCharacterNetLives;
 							
 							responseMessage.addressIndex = message.addressIndex;
 							pushNetworkMessage(&gGameMessagesToNet, responseMessage);
@@ -1072,7 +1072,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							pushNetworkMessage(&gGameMessagesToNet, netNameMessage);
 						}
 						
-						for (int characterIndex = RED_ROVER; characterIndex <= PINK_BUBBLE_GUM; characterIndex++)
+						for (uint8_t characterIndex = RED_ROVER; characterIndex <= PINK_BUBBLE_GUM; characterIndex++)
 						{
 							if (characterIndex != clientCharacterID)
 							{
@@ -1091,8 +1091,8 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							}
 						}
 						
-						int numPlayersToWaitFor = message.firstDataToClient.numberOfPlayersToWaitFor;
-						if (numPlayersToWaitFor <= 0)
+						uint8_t numPlayersToWaitFor = message.firstDataToClient.numberOfPlayersToWaitFor;
+						if (numPlayersToWaitFor == 0)
 						{
 							// tell all other clients the game has started
 							GameMessage startedMessage;
@@ -1179,7 +1179,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 								strncpy(netName, buffer, MAX_USER_NAME_SIZE - 1);
 								buffer += MAX_USER_NAME_SIZE;
 								
-								int existingCharacterID = characterIDForClientAddress(&address);
+								uint8_t existingCharacterID = characterIDForClientAddress(&address);
 								if ((packetNumber == 1 && existingCharacterID == NO_CHARACTER && numberOfPlayersToWaitFor > 0) || (packetNumber == 1 && existingCharacterID != NO_CHARACTER))
 								{
 									int addressIndex;
@@ -1232,14 +1232,14 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						else if (messageTag[0] == 'r' && messageTag[1] == 'm')
 						{
 							// request movement
-							int characterID = characterIDForClientAddress(&address);
+							uint8_t characterID = characterIDForClientAddress(&address);
 							if (characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 							{
-								int32_t direction = 0;
+								uint8_t direction = 0;
 								uint32_t packetNumber = 0;
 								if (buffer + sizeof(packetNumber) + sizeof(direction) <= packetBuffer + numberOfBytes)
 								{
-									int32_t addressIndex = characterID - 1;
+									uint8_t addressIndex = characterID - 1;
 									
 									ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
 									ADVANCE_RECEIVE_BUFFER(&buffer, direction);
@@ -1280,10 +1280,10 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							{
 								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
 								
-								int characterID = characterIDForClientAddress(&address);
+								uint8_t characterID = characterIDForClientAddress(&address);
 								if (characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 								{
-									int addressIndex = characterID - 1;
+									uint8_t addressIndex = characterID - 1;
 									
 									GameMessage message;
 									message.packetNumber = packetNumber;
@@ -1317,10 +1317,10 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							{
 								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
 								
-								int characterID = characterIDForClientAddress(&address);
+								uint8_t characterID = characterIDForClientAddress(&address);
 								if (characterID != NO_CHARACTER)
 								{
-									int addressIndex = characterID - 1;
+									uint8_t addressIndex = characterID - 1;
 									
 									SDL_bool foundAck = SDL_FALSE;
 									uint32_t maxPacketCount = receivedAckPacketCount < receivedAckPacketsCapacity ? receivedAckPacketCount : receivedAckPacketsCapacity;
@@ -1348,10 +1348,10 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							{
 								ADVANCE_RECEIVE_BUFFER(&buffer, timestamp);
 								
-								int characterID = characterIDForClientAddress(&address);
+								uint8_t characterID = characterIDForClientAddress(&address);
 								if (characterID != NO_CHARACTER)
 								{
-									int addressIndex = characterID - 1;
+									uint8_t addressIndex = characterID - 1;
 									
 									GameMessage pongMessage;
 									pongMessage.type = PONG_MESSAGE_TYPE;
@@ -1370,10 +1370,10 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							{
 								ADVANCE_RECEIVE_BUFFER(&buffer, timestamp);
 								
-								int characterID = characterIDForClientAddress(&address);
+								uint8_t characterID = characterIDForClientAddress(&address);
 								if (characterID != NO_CHARACTER)
 								{
-									int addressIndex = characterID - 1;
+									uint8_t addressIndex = characterID - 1;
 									
 									GameMessage message;
 									message.type = PONG_MESSAGE_TYPE;
@@ -1389,7 +1389,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							GameMessage message;
 							message.type = QUIT_MESSAGE_TYPE;
 							
-							int characterID = characterIDForClientAddress(&address);
+							uint8_t characterID = characterIDForClientAddress(&address);
 							
 							if (characterID != NO_CHARACTER)
 							{
@@ -1676,8 +1676,8 @@ int clientNetworkThread(void *context)
 						else if (messageTag[0] == 's' && messageTag[1] == 'r')
 						{
 							uint32_t packetNumber = 0;
-							int32_t slotID = 0;
-							int32_t characterLives = 0;
+							uint8_t slotID = 0;
+							uint8_t characterLives = 0;
 							
 							if (buffer + sizeof(packetNumber) + sizeof(slotID) + sizeof(characterLives) <= packetBuffer + numberOfBytes)
 							{
@@ -1709,7 +1709,7 @@ int clientNetworkThread(void *context)
 						else if (messageTag[0] == 'n' && messageTag[1] == 'w')
 						{
 							uint32_t packetNumber = 0;
-							int32_t numberOfWaitingPlayers = 0;
+							uint8_t numberOfWaitingPlayers = 0;
 							
 							if (buffer + sizeof(packetNumber) + sizeof(numberOfWaitingPlayers) <= packetBuffer + numberOfBytes)
 							{
@@ -1739,7 +1739,7 @@ int clientNetworkThread(void *context)
 						{
 							// net name
 							uint32_t packetNumber = 0;
-							int32_t characterID = 0;
+							uint8_t characterID = 0;
 							
 							if (buffer + sizeof(packetNumber) + sizeof(characterID) <= packetBuffer + numberOfBytes)
 							{
@@ -1806,7 +1806,7 @@ int clientNetworkThread(void *context)
 						else if (messageTag[0] == 'g' && messageTag[1] == 's')
 						{
 							uint32_t packetNumber = 0;
-							int32_t gameStartNumber = 0;
+							uint8_t gameStartNumber = 0;
 							
 							if (buffer + sizeof(packetNumber) + sizeof(gameStartNumber) <= packetBuffer + numberOfBytes)
 							{
@@ -1840,9 +1840,9 @@ int clientNetworkThread(void *context)
 						else if (messageTag[0] == 'm' && messageTag[1] == 'o')
 						{
 							uint32_t packetNumber = 0;
-							int32_t characterID = 0;
-							int32_t direction = 0;
-							int32_t pointing_direction = 0;
+							uint8_t characterID = 0;
+							uint8_t direction = 0;
+							uint8_t pointing_direction = 0;
 							uint32_t timestamp = 0;
 							float x = 0.0f;
 							float y = 0.0f;
@@ -1880,8 +1880,8 @@ int clientNetworkThread(void *context)
 						{
 							// character gets killed
 							uint32_t packetNumber = 0;
-							int32_t characterID = 0;
-							int32_t characterLives = 0;
+							uint8_t characterID = 0;
+							uint8_t characterLives = 0;
 							
 							if (buffer + sizeof(packetNumber) + sizeof(characterID) + sizeof(characterLives) <= packetBuffer + numberOfBytes)
 							{
@@ -1913,8 +1913,8 @@ int clientNetworkThread(void *context)
 						{
 							// character's kills increase
 							uint32_t packetNumber = 0;
-							int32_t characterID = 0;
-							int32_t characterKills = 0;
+							uint8_t characterID = 0;
+							uint8_t characterKills = 0;
 							
 							if (buffer + sizeof(packetNumber) + sizeof(characterID) + sizeof(characterKills) <= packetBuffer + numberOfBytes)
 							{
@@ -1946,10 +1946,10 @@ int clientNetworkThread(void *context)
 						{
 							// shoot weapon
 							uint32_t packetNumber = 0;
-							int32_t characterID = 0;
+							uint8_t characterID = 0;
 							float x = 0.0f;
 							float y = 0.0f;
-							int32_t pointing_direction = 0;
+							int8_t pointing_direction = 0;
 							
 							if (buffer + sizeof(packetNumber) + sizeof(characterID) + sizeof(x) + sizeof(y) + sizeof(pointing_direction) <= packetBuffer + numberOfBytes)
 							{
@@ -1985,8 +1985,8 @@ int clientNetworkThread(void *context)
 						else if (messageTag[0] == 'c' && messageTag[1] == 't')
 						{
 							uint32_t packetNumber = 0;
-							int32_t characterID = 0;
-							int32_t tileIndex = 0;
+							uint8_t characterID = 0;
+							uint8_t tileIndex = 0;
 							
 							if (buffer + sizeof(packetNumber) + sizeof(characterID) + sizeof(tileIndex) <= packetBuffer + numberOfBytes)
 							{
@@ -2018,7 +2018,7 @@ int clientNetworkThread(void *context)
 						else if (messageTag[0] == 't' && messageTag[1] == 'f')
 						{
 							uint32_t packetNumber = 0;
-							int32_t tileIndex = 0;
+							uint8_t tileIndex = 0;
 							int8_t dead = 0;
 							
 							if (buffer + sizeof(packetNumber) + sizeof(tileIndex) + sizeof(dead) <= packetBuffer + numberOfBytes)
@@ -2051,7 +2051,7 @@ int clientNetworkThread(void *context)
 						else if (messageTag[0] == 'r' && messageTag[1] == 't')
 						{
 							uint32_t packetNumber = 0;
-							int32_t tileIndex = 0;
+							uint8_t tileIndex = 0;
 							
 							if (buffer + sizeof(packetNumber) + sizeof(tileIndex) <= packetBuffer + numberOfBytes)
 							{
