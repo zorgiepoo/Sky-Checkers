@@ -218,7 +218,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 				}
 				case CHARACTER_FIRED_REQUEST_MESSAGE_TYPE:
 				{
-					uint8_t characterID = message.firedUpdate.characterID;
+					uint8_t characterID = message.firedRequest.characterID;
 					Character *character = getCharacter(characterID);
 					
 					uint32_t halfPing = gNetworkConnection->clientHalfPings[message.addressIndex];
@@ -869,10 +869,13 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					{
 						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "sw", message.packetNumber);
 						
-						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.firedUpdate.characterID);
+						uint8_t flags = 0;
+						flags |= ((message.firedUpdate.characterID - 1) << 0); // 2 bits needed
+						flags |= ((message.firedUpdate.direction - 1) << 2); // 2 bits needed
+						
 						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.firedUpdate.x);
 						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.firedUpdate.y);
-						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.firedUpdate.direction);
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], flags);
 						
 						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
@@ -898,7 +901,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						
 						char netName[MAX_USER_NAME_SIZE] = {0};
 						strncpy(netName, message.netNameRequest.netName, MAX_USER_NAME_SIZE - 1);
-						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], netName);
+						advanceSendBuffer(&sendBufferPtrs[addressIndex], netName, sizeof(netName) - 1);
 						
 						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
@@ -926,8 +929,11 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					{
 						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "pk", message.packetNumber);
 						
-						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.diedUpdate.characterID);
-						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.diedUpdate.characterLives);
+						uint8_t flags = 0;
+						flags |= ((message.diedUpdate.characterID - 1) << 0); // 2 bits needed
+						flags |= (message.diedUpdate.characterLives << 2); // 4 bits needed
+						
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], flags);
 						
 						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
@@ -937,8 +943,11 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					{
 						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "ct", message.packetNumber);
 						
-						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.colorTile.characterID);
-						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.colorTile.tileIndex);
+						uint8_t flags = 0;
+						flags |= ((message.colorTile.characterID - 1) << 0); // 2 bits needed
+						flags |= (message.colorTile.tileIndex << 2); // 6 bits needed
+						
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], flags);
 						
 						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
@@ -948,8 +957,11 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					{
 						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "tf", message.packetNumber);
 						
-						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.fallingTile.tileIndex);
-						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.fallingTile.dead);
+						uint8_t flags = 0;
+						flags |= (message.fallingTile.dead << 0); // 1 bit needed
+						flags |= (message.fallingTile.tileIndex << 1); // 6 bits needed
+						
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], flags);
 						
 						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
@@ -969,12 +981,16 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					{
 						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "mo", message.packetNumber);
 						
-						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.movedUpdate.characterID);
 						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.movedUpdate.x);
 						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.movedUpdate.y);
 						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.movedUpdate.z);
-						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.movedUpdate.direction);
-						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.movedUpdate.pointing_direction);
+						
+						uint8_t flags = 0;
+						flags |= ((message.movedUpdate.characterID - 1) << 0); // 2 bits needed
+						flags |= (message.movedUpdate.direction << 2); // 3 bits needed
+						flags |= (message.movedUpdate.pointing_direction << 5); // 3 bits needed
+						
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], flags);
 						
 						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
@@ -984,8 +1000,11 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					{
 						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "ck", message.packetNumber);
 						
-						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.killedUpdate.characterID);
-						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.killedUpdate.kills);
+						uint8_t flags = 0;
+						flags |= ((message.killedUpdate.characterID - 1) << 0); // 2 bits needed
+						flags |= (message.killedUpdate.kills << 2); // 5 bits needed
+						
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], flags);
 						
 						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
@@ -1034,8 +1053,11 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					{
 						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "sr", message.packetNumber);
 						
-						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.firstServerResponse.slotID);
-						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.firstServerResponse.characterLives);
+						uint8_t flags = 0;
+						flags |= (message.firstServerResponse.slotID << 0); // 2 bits needed
+						flags |= (message.firstServerResponse.characterLives << 2); // 4 bits needed
+						
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], flags);
 						
 						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
@@ -1174,13 +1196,13 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						{
 							uint32_t packetNumber = 0;
 							
-							if (buffer + sizeof(packetNumber) + MAX_USER_NAME_SIZE <= packetBuffer + numberOfBytes)
+							if (buffer + sizeof(packetNumber) + (MAX_USER_NAME_SIZE - 1) <= packetBuffer + numberOfBytes)
 							{
 								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
 								
 								char *netName = calloc(MAX_USER_NAME_SIZE, 1);
 								strncpy(netName, buffer, MAX_USER_NAME_SIZE - 1);
-								buffer += MAX_USER_NAME_SIZE;
+								buffer += (MAX_USER_NAME_SIZE - 1);
 								
 								uint8_t existingCharacterID = characterIDForClientAddress(&address);
 								if ((packetNumber == 1 && existingCharacterID == NO_CHARACTER && numberOfPlayersToWaitFor > 0) || (packetNumber == 1 && existingCharacterID != NO_CHARACTER))
@@ -1512,7 +1534,7 @@ int clientNetworkThread(void *context)
 					{
 						advanceSendBufferForInitialMessage(&sendBufferPtr, "cp", message.packetNumber);
 						
-						ADVANCE_SEND_BUFFER(&sendBufferPtr, gUserNameString);
+						advanceSendBuffer(&sendBufferPtr, gUserNameString, MAX_USER_NAME_SIZE - 1);
 						
 						sendAndResetBufferIfNeeded(sendBuffer, sizeof(sendBuffer), &sendBufferPtr, &gNetworkConnection->hostAddress);
 						
@@ -1679,14 +1701,15 @@ int clientNetworkThread(void *context)
 						else if (messageTag[0] == 's' && messageTag[1] == 'r')
 						{
 							uint32_t packetNumber = 0;
-							uint8_t slotID = 0;
-							uint8_t characterLives = 0;
+							uint8_t flags = 0;
 							
-							if (buffer + sizeof(packetNumber) + sizeof(slotID) + sizeof(characterLives) <= packetBuffer + numberOfBytes)
+							if (buffer + sizeof(packetNumber) + sizeof(flags) <= packetBuffer + numberOfBytes)
 							{
 								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
-								ADVANCE_RECEIVE_BUFFER(&buffer, slotID);
-								ADVANCE_RECEIVE_BUFFER(&buffer, characterLives);
+								ADVANCE_RECEIVE_BUFFER(&buffer, flags);
+								
+								uint8_t slotID = (flags & 0x3);
+								uint8_t characterLives = (flags >> 2);
 								
 								if (packetNumber == triggerIncomingPacketNumber + 1)
 								{
@@ -1744,7 +1767,7 @@ int clientNetworkThread(void *context)
 							uint32_t packetNumber = 0;
 							uint8_t characterID = 0;
 							
-							if (buffer + sizeof(packetNumber) + sizeof(characterID) <= packetBuffer + numberOfBytes)
+							if (buffer + sizeof(packetNumber) + sizeof(characterID) + (MAX_USER_NAME_SIZE - 1)  <= packetBuffer + numberOfBytes)
 							{
 								char *netName = calloc(MAX_USER_NAME_SIZE, 1);
 								if (netName != NULL)
@@ -1753,7 +1776,7 @@ int clientNetworkThread(void *context)
 									ADVANCE_RECEIVE_BUFFER(&buffer, characterID);
 									
 									strncpy(netName, buffer, MAX_USER_NAME_SIZE - 1);
-									buffer += MAX_USER_NAME_SIZE;
+									buffer += MAX_USER_NAME_SIZE - 1;
 									
 									if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 									{
@@ -1843,22 +1866,22 @@ int clientNetworkThread(void *context)
 						else if (messageTag[0] == 'm' && messageTag[1] == 'o')
 						{
 							uint32_t packetNumber = 0;
-							uint8_t characterID = 0;
-							uint8_t direction = 0;
-							uint8_t pointing_direction = 0;
+							uint8_t flags = 0;
 							float x = 0.0f;
 							float y = 0.0f;
 							float z = 0.0f;
 							
-							if (buffer + sizeof(packetNumber) + sizeof(characterID) + sizeof(direction) + sizeof(pointing_direction) + sizeof(x) + sizeof(y) + sizeof(z) <= packetBuffer + numberOfBytes)
+							if (buffer + sizeof(packetNumber) + sizeof(x) + sizeof(y) + sizeof(z) + sizeof(flags) <= packetBuffer + numberOfBytes)
 							{
 								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
-								ADVANCE_RECEIVE_BUFFER(&buffer, characterID);
 								ADVANCE_RECEIVE_BUFFER(&buffer, x);
 								ADVANCE_RECEIVE_BUFFER(&buffer, y);
 								ADVANCE_RECEIVE_BUFFER(&buffer, z);
-								ADVANCE_RECEIVE_BUFFER(&buffer, direction);
-								ADVANCE_RECEIVE_BUFFER(&buffer, pointing_direction);
+								ADVANCE_RECEIVE_BUFFER(&buffer, flags);
+								
+								uint8_t characterID = (flags & 0x3) + 1;
+								uint8_t direction = (flags >> 2) & 0x7;
+								uint8_t pointing_direction = (flags >> 5);
 								
 								if (packetNumber > realTimeIncomingPacketNumber && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 								{
@@ -1880,14 +1903,15 @@ int clientNetworkThread(void *context)
 						{
 							// character gets killed
 							uint32_t packetNumber = 0;
-							uint8_t characterID = 0;
-							uint8_t characterLives = 0;
+							uint8_t flags = 0;
 							
-							if (buffer + sizeof(packetNumber) + sizeof(characterID) + sizeof(characterLives) <= packetBuffer + numberOfBytes)
+							if (buffer + sizeof(packetNumber) + sizeof(flags) <= packetBuffer + numberOfBytes)
 							{
 								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
-								ADVANCE_RECEIVE_BUFFER(&buffer, characterID);
-								ADVANCE_RECEIVE_BUFFER(&buffer, characterLives);
+								ADVANCE_RECEIVE_BUFFER(&buffer, flags);
+								
+								uint8_t characterID = (flags & 0x3) + 1;
+								uint8_t characterLives = (flags >> 2);
 								
 								if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 								{
@@ -1913,14 +1937,15 @@ int clientNetworkThread(void *context)
 						{
 							// character's kills increase
 							uint32_t packetNumber = 0;
-							uint8_t characterID = 0;
-							uint8_t characterKills = 0;
+							uint8_t flags = 0;
 							
-							if (buffer + sizeof(packetNumber) + sizeof(characterID) + sizeof(characterKills) <= packetBuffer + numberOfBytes)
+							if (buffer + sizeof(packetNumber) + sizeof(flags) <= packetBuffer + numberOfBytes)
 							{
 								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
-								ADVANCE_RECEIVE_BUFFER(&buffer, characterID);
-								ADVANCE_RECEIVE_BUFFER(&buffer, characterKills);
+								ADVANCE_RECEIVE_BUFFER(&buffer, flags);
+								
+								uint8_t characterID = (flags & 0x3) + 1;
+								uint8_t characterKills = (flags >> 2);
 								
 								if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 								{
@@ -1946,18 +1971,19 @@ int clientNetworkThread(void *context)
 						{
 							// shoot weapon
 							uint32_t packetNumber = 0;
-							uint8_t characterID = 0;
 							float x = 0.0f;
 							float y = 0.0f;
-							int8_t pointing_direction = 0;
+							uint8_t flags = 0;
 							
-							if (buffer + sizeof(packetNumber) + sizeof(characterID) + sizeof(x) + sizeof(y) + sizeof(pointing_direction) <= packetBuffer + numberOfBytes)
+							if (buffer + sizeof(packetNumber) + sizeof(x) + sizeof(y) + sizeof(flags) <= packetBuffer + numberOfBytes)
 							{
 								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
-								ADVANCE_RECEIVE_BUFFER(&buffer, characterID);
 								ADVANCE_RECEIVE_BUFFER(&buffer, x);
 								ADVANCE_RECEIVE_BUFFER(&buffer, y);
-								ADVANCE_RECEIVE_BUFFER(&buffer, pointing_direction);
+								ADVANCE_RECEIVE_BUFFER(&buffer, flags);
+								
+								uint8_t characterID = (flags & 0x3) + 1;
+								uint8_t pointing_direction = (flags >> 2) + 1;
 								
 								if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
 								{
@@ -1965,9 +1991,9 @@ int clientNetworkThread(void *context)
 									
 									GameMessage message;
 									message.type = CHARACTER_FIRED_UPDATE_MESSAGE_TYPE;
-									message.firedUpdate.characterID = characterID;
 									message.firedUpdate.x = x;
 									message.firedUpdate.y = y;
+									message.firedUpdate.characterID = characterID;
 									message.firedUpdate.direction = pointing_direction;
 									
 									pushNetworkMessage(&gGameMessagesFromNet, message);
@@ -1985,14 +2011,15 @@ int clientNetworkThread(void *context)
 						else if (messageTag[0] == 'c' && messageTag[1] == 't')
 						{
 							uint32_t packetNumber = 0;
-							uint8_t characterID = 0;
-							uint8_t tileIndex = 0;
+							uint8_t flags = 0;
 							
-							if (buffer + sizeof(packetNumber) + sizeof(characterID) + sizeof(tileIndex) <= packetBuffer + numberOfBytes)
+							if (buffer + sizeof(packetNumber) + sizeof(flags) <= packetBuffer + numberOfBytes)
 							{
 								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
-								ADVANCE_RECEIVE_BUFFER(&buffer, characterID);
-								ADVANCE_RECEIVE_BUFFER(&buffer, tileIndex);
+								ADVANCE_RECEIVE_BUFFER(&buffer, flags);
+								
+								uint8_t characterID = (flags & 0x3) + 1;
+								uint8_t tileIndex = (flags >> 2);
 								
 								if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM && tileIndex >= 0 && tileIndex < NUMBER_OF_TILES)
 								{
@@ -2018,14 +2045,15 @@ int clientNetworkThread(void *context)
 						else if (messageTag[0] == 't' && messageTag[1] == 'f')
 						{
 							uint32_t packetNumber = 0;
-							uint8_t tileIndex = 0;
-							int8_t dead = 0;
+							uint8_t flags = 0;
 							
-							if (buffer + sizeof(packetNumber) + sizeof(tileIndex) + sizeof(dead) <= packetBuffer + numberOfBytes)
+							if (buffer + sizeof(packetNumber) + sizeof(flags) <= packetBuffer + numberOfBytes)
 							{
 								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
-								ADVANCE_RECEIVE_BUFFER(&buffer, tileIndex);
-								ADVANCE_RECEIVE_BUFFER(&buffer, dead);
+								ADVANCE_RECEIVE_BUFFER(&buffer, flags);
+								
+								int8_t dead = (flags & 0x1);
+								uint8_t tileIndex = (flags >> 1);
 								
 								if (packetNumber == triggerIncomingPacketNumber + 1 && tileIndex >= 0 && tileIndex < NUMBER_OF_TILES)
 								{
@@ -2033,8 +2061,8 @@ int clientNetworkThread(void *context)
 									
 									GameMessage message;
 									message.type = TILE_FALLING_DOWN_MESSAGE_TYPE;
-									message.fallingTile.tileIndex = tileIndex;
 									message.fallingTile.dead = (dead != 0);
+									message.fallingTile.tileIndex = tileIndex;
 									
 									pushNetworkMessage(&gGameMessagesFromNet, message);
 								}

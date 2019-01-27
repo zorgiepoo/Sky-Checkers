@@ -687,9 +687,9 @@ void fireCharacterWeapon(Character *character)
 					{
 						GameMessage message;
 						message.type = CHARACTER_FIRED_UPDATE_MESSAGE_TYPE;
-						message.firedUpdate.characterID = IDOfCharacter(character);
 						message.firedUpdate.x = character->x;
 						message.firedUpdate.y = character->y;
+						message.firedUpdate.characterID = IDOfCharacter(character);
 						message.firedUpdate.direction = character->pointing_direction;
 						
 						sendToClients(message.firedUpdate.characterID, &message);

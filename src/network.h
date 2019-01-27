@@ -70,13 +70,13 @@ typedef struct
 
 typedef struct
 {
-	int32_t characterID;
+	uint8_t characterID;
 } CharacterFiredRequest;
 
 typedef struct
 {
-	uint8_t characterID;
 	float x, y;
+	uint8_t characterID;
 	int8_t direction;
 } CharacterFiredUpdate;
 
@@ -94,8 +94,8 @@ typedef struct
 
 typedef struct
 {
-	uint8_t characterID;
 	float x, y, z;
+	uint8_t characterID;
 	uint8_t direction;
 	uint8_t pointing_direction;
 } CharacterMovedUpdate;
@@ -145,8 +145,8 @@ typedef struct
 
 typedef struct
 {
-	uint8_t tileIndex;
 	int8_t dead;
+	uint8_t tileIndex;
 } FallingTileMessage;
 
 typedef struct
