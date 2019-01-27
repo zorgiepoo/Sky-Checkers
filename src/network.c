@@ -26,6 +26,7 @@
 #include <inttypes.h>
 
 #define NET_MESSAGE_TAG_SIZE 2
+#define MAX_PACKET_SIZE 500
 
 NetworkConnection *gNetworkConnection = NULL;
 
@@ -747,7 +748,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 		
 		if (messagesAvailable != NULL)
 		{
-			char sendBuffers[3][4096];
+			char sendBuffers[3][MAX_PACKET_SIZE];
 			char *sendBufferPtrs[] = {sendBuffers[0], sendBuffers[1], sendBuffers[2]};
 			
 			// Only keep one movement message per character per packet
@@ -1152,7 +1153,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 			}
 			else
 			{
-				char packetBuffer[4096];
+				char packetBuffer[MAX_PACKET_SIZE];
 				SocketAddress address;
 				int numberOfBytes;
 				if ((numberOfBytes = receiveData(gNetworkConnection->socket, packetBuffer, sizeof(packetBuffer), &address)) == -1)
@@ -1450,7 +1451,7 @@ int clientNetworkThread(void *context)
 		GameMessage *messagesAvailable = popNetworkMessages(&gGameMessagesToNet, &messagesCount);
 		if (messagesAvailable != NULL)
 		{
-			char sendBuffer[4096];
+			char sendBuffer[MAX_PACKET_SIZE];
 			char *sendBufferPtr = sendBuffer;
 			
 			uint32_t lastPingIndex = 0;
@@ -1651,7 +1652,7 @@ int clientNetworkThread(void *context)
 			}
 			else
 			{
-				char packetBuffer[4096];
+				char packetBuffer[MAX_PACKET_SIZE];
 				int numberOfBytes;
 				if ((numberOfBytes = receiveData(gNetworkConnection->socket, packetBuffer, sizeof(packetBuffer), &gNetworkConnection->hostAddress)) == -1)
 				{
