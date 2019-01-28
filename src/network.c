@@ -25,8 +25,28 @@
 
 #include <inttypes.h>
 
-#define NET_MESSAGE_TAG_SIZE 2
 #define MAX_PACKET_SIZE 500
+
+#define CAN_I_PLAY_MESSAGE_TAG 1 // previously "cp"
+#define REQUEST_MOVEMENT_MESSAGE_TAG 2 // previously "rm"
+#define SHOOT_WEAPON_MESSAGE_TAG 3 // previously "sw"
+#define ACK_MESSAGE_TAG 4 // previously "ak"
+#define PING_MESSAGE_TAG 5 // previously "pi"
+#define PONG_MESSAGE_TAG 6 // previously "po"
+#define QUIT_MESSAGE_TAG 7 // previously "qu"
+#define SERVER_REJECTION_MESSAGE_TAG 8 // previously "sn"
+#define SERVER_ACCEPTANCE_MESSAGE_TAG 9 // previously "sr"
+#define NUMBER_OF_PLAYERS_WAITING_MESSAGE_TAG 10 // previously "nw"
+#define NET_NAME_MESSAGE_TAG 11 // previously "nn"
+#define START_GAME_MESSAGE_TAG 12 // previously "sg"
+#define GAME_START_NUMBER_MESSAGE_TAG 13 // previously "gs"
+#define MOVEMENT_MESSAGE_TAG 14 // previously "mo"
+#define PLAYER_KILLED_MESSAGE_TAG 15 // previously "pk"
+#define CHARACTER_KILLS_MESSAGE_TAG 16 // previously "ck"
+#define COLOR_TILE_MESSAGE_TAG 17 // previously "ct"
+#define TILE_FALLING_MESSAGE_TAG 18 // previously "tf"
+#define RECOVER_TILE_MESSAGE_TAG 19 // previously "rt"
+#define NEW_GAME_MESSAGE_TAG 20 // previously "ng"
 
 NetworkConnection *gNetworkConnection = NULL;
 
@@ -717,9 +737,9 @@ static void advanceSendBuffer(char **sendBufferPtr, const void *data, size_t siz
 
 #define ADVANCE_SEND_BUFFER(sendBufferPtr, data) advanceSendBuffer((sendBufferPtr), &(data), sizeof(data))
 
-static void advanceSendBufferForInitialMessage(char **sendBufferPtr, const char *tag, uint32_t packetNumber)
+static void advanceSendBufferForInitialMessage(char **sendBufferPtr, uint8_t tag, uint32_t packetNumber)
 {
-	advanceSendBuffer(sendBufferPtr, tag, NET_MESSAGE_TAG_SIZE);
+	ADVANCE_SEND_BUFFER(sendBufferPtr, tag);
 	ADVANCE_SEND_BUFFER(sendBufferPtr, packetNumber);
 }
 
@@ -876,7 +896,8 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					{
 						if (address != NULL)
 						{
-							sendData(gNetworkConnection->socket, "qu", NET_MESSAGE_TAG_SIZE, address);
+							uint8_t tag = QUIT_MESSAGE_TAG;
+							sendData(gNetworkConnection->socket, &tag, sizeof(tag), address);
 						}
 						
 						needsToQuit = SDL_TRUE;
@@ -887,7 +908,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						break;
 					case CHARACTER_FIRED_UPDATE_MESSAGE_TYPE:
 					{
-						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "sw", message.packetNumber);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], SHOOT_WEAPON_MESSAGE_TAG, message.packetNumber);
 						
 						uint8_t flags = 0;
 						flags |= ((message.firedUpdate.characterID - 1) << 0); // 2 bits needed
@@ -905,7 +926,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						break;
 					case NUMBER_OF_PLAYERS_WAITING_FOR_MESSAGE_TYPE:
 					{
-						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "nw", message.packetNumber);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], NUMBER_OF_PLAYERS_WAITING_MESSAGE_TAG, message.packetNumber);
 						
 						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.numberOfWaitingPlayers);
 						
@@ -915,7 +936,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case NET_NAME_MESSAGE_TYPE:
 					{
-						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "nn", message.packetNumber);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], NET_NAME_MESSAGE_TAG, message.packetNumber);
 						
 						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.netNameRequest.characterID);
 						
@@ -929,7 +950,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case START_GAME_MESSAGE_TYPE:
 					{
-						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "sg", message.packetNumber);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], START_GAME_MESSAGE_TAG, message.packetNumber);
 						
 						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
@@ -937,7 +958,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case GAME_START_NUMBER_UPDATE_MESSAGE_TYPE:
 					{
-						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "gs", message.packetNumber);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], GAME_START_NUMBER_MESSAGE_TAG, message.packetNumber);
 						
 						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.gameStartNumber);
 						
@@ -947,7 +968,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case CHARACTER_DIED_UPDATE_MESSAGE_TYPE:
 					{
-						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "pk", message.packetNumber);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], PLAYER_KILLED_MESSAGE_TAG, message.packetNumber);
 						
 						uint8_t flags = 0;
 						flags |= ((message.diedUpdate.characterID - 1) << 0); // 2 bits needed
@@ -961,7 +982,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case COLOR_TILE_MESSAGE_TYPE:
 					{
-						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "ct", message.packetNumber);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], COLOR_TILE_MESSAGE_TAG, message.packetNumber);
 						
 						uint8_t flags = 0;
 						flags |= ((message.colorTile.characterID - 1) << 0); // 2 bits needed
@@ -975,7 +996,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case TILE_FALLING_DOWN_MESSAGE_TYPE:
 					{
-						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "tf", message.packetNumber);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], TILE_FALLING_MESSAGE_TAG, message.packetNumber);
 						
 						uint8_t flags = 0;
 						flags |= (message.fallingTile.dead << 0); // 1 bit needed
@@ -989,7 +1010,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case RECOVER_TILE_MESSAGE_TYPE:
 					{
-						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "rt", message.packetNumber);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], RECOVER_TILE_MESSAGE_TAG, message.packetNumber);
 						
 						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.recoverTile.tileIndex);
 						
@@ -999,7 +1020,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case CHARACTER_MOVED_UPDATE_MESSAGE_TYPE:
 					{
-						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "mo", message.packetNumber);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], MOVEMENT_MESSAGE_TAG, message.packetNumber);
 						
 						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.movedUpdate.x);
 						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.movedUpdate.y);
@@ -1018,7 +1039,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case CHARACTER_KILLED_UPDATE_MESSAGE_TYPE:
 					{
-						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "ck", message.packetNumber);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], CHARACTER_KILLS_MESSAGE_TAG, message.packetNumber);
 						
 						uint8_t flags = 0;
 						flags |= ((message.killedUpdate.characterID - 1) << 0); // 2 bits needed
@@ -1032,7 +1053,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case GAME_RESET_MESSAGE_TYPE:
 					{
-						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "ng", message.packetNumber);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], NEW_GAME_MESSAGE_TAG, message.packetNumber);
 						
 						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
@@ -1040,7 +1061,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case ACK_MESSAGE_TYPE:
 					{
-						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "ak", message.packetNumber);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], ACK_MESSAGE_TAG, message.packetNumber);
 						
 						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
@@ -1050,8 +1071,8 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					{
 						if (address != NULL)
 						{
-							advanceSendBuffer(&sendBufferPtrs[addressIndex], "pi", NET_MESSAGE_TAG_SIZE);
-							
+							uint8_t pingTag = PING_MESSAGE_TAG;
+							ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], pingTag);
 							ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.pingTimestamp);
 							
 							sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
@@ -1061,8 +1082,8 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case PONG_MESSAGE_TYPE:
 					{
-						advanceSendBuffer(&sendBufferPtrs[addressIndex], "po", NET_MESSAGE_TAG_SIZE);
-						
+						uint8_t pongTag = PONG_MESSAGE_TAG;
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], pongTag);
 						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.pongTimestamp);
 						
 						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
@@ -1071,7 +1092,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					case FIRST_SERVER_RESPONSE_MESSAGE_TYPE:
 					{
-						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], "sr", message.packetNumber);
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], SERVER_ACCEPTANCE_MESSAGE_TAG, message.packetNumber);
 						
 						uint8_t flags = 0;
 						flags |= (message.firstServerResponse.slotID << 0); // 2 bits needed
@@ -1206,13 +1227,12 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 				else
 				{
 					char *buffer = packetBuffer;
-					while (buffer + NET_MESSAGE_TAG_SIZE <= packetBuffer + numberOfBytes)
+					uint8_t messageTag = 0;
+					while (buffer + sizeof(messageTag) <= packetBuffer + numberOfBytes)
 					{
-						uint8_t messageTag[NET_MESSAGE_TAG_SIZE] = {0};
 						ADVANCE_RECEIVE_BUFFER(&buffer, messageTag);
 						
-						// can i play?
-						if (messageTag[0] == 'c' && messageTag[1] == 'p')
+						if (messageTag == CAN_I_PLAY_MESSAGE_TAG)
 						{
 							uint32_t packetNumber = 0;
 							
@@ -1269,12 +1289,13 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 								{
 									// no
 									// sn == server no rejection response
-									sendData(gNetworkConnection->socket, "sn", NET_MESSAGE_TAG_SIZE, &address);
+									uint8_t rejectionTag = SERVER_REJECTION_MESSAGE_TAG;
+									sendData(gNetworkConnection->socket, &rejectionTag, sizeof(rejectionTag), &address);
 								}
 							}
 						}
 						
-						else if (messageTag[0] == 'r' && messageTag[1] == 'm')
+						else if (messageTag == REQUEST_MOVEMENT_MESSAGE_TAG)
 						{
 							// request movement
 							uint8_t characterID = characterIDForClientAddress(&address);
@@ -1317,7 +1338,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							}
 						}
 						
-						else if (messageTag[0] == 's' && messageTag[1] == 'w')
+						else if (messageTag == SHOOT_WEAPON_MESSAGE_TAG)
 						{
 							// shoot weapon
 							uint32_t packetNumber = 0;
@@ -1355,7 +1376,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							}
 						}
 						
-						else if (messageTag[0] == 'a' && messageTag[1] == 'k')
+						else if (messageTag == ACK_MESSAGE_TAG)
 						{
 							uint32_t packetNumber = 0;
 							if (buffer + sizeof(packetNumber) <= packetBuffer + numberOfBytes)
@@ -1386,7 +1407,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							}
 						}
 						
-						else if (messageTag[0] == 'p' && messageTag[1] == 'i')
+						else if (messageTag == PING_MESSAGE_TAG)
 						{
 							uint32_t timestamp = 0;
 							if (buffer + sizeof(timestamp) <= packetBuffer + numberOfBytes)
@@ -1407,7 +1428,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							}
 						}
 						
-						else if (messageTag[0] == 'p' && messageTag[1] == 'o')
+						else if (messageTag == PONG_MESSAGE_TAG)
 						{
 							// pong message
 							uint32_t timestamp = 0;
@@ -1429,7 +1450,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							}
 						}
 						
-						else if (messageTag[0] == 'q' && messageTag[1] == 'u')
+						else if (messageTag == QUIT_MESSAGE_TAG)
 						{
 							GameMessage message;
 							message.type = QUIT_MESSAGE_TYPE;
@@ -1552,7 +1573,7 @@ int clientNetworkThread(void *context)
 				{
 					case WELCOME_MESSAGE_TO_SERVER_MESSAGE_TYPE:
 					{
-						advanceSendBufferForInitialMessage(&sendBufferPtr, "cp", message.packetNumber);
+						advanceSendBufferForInitialMessage(&sendBufferPtr, CAN_I_PLAY_MESSAGE_TAG, message.packetNumber);
 						
 						advanceSendBuffer(&sendBufferPtr, gUserNameString, MAX_USER_NAME_SIZE - 1);
 						
@@ -1562,7 +1583,8 @@ int clientNetworkThread(void *context)
 					}
 					case QUIT_MESSAGE_TYPE:
 					{
-						sendData(gNetworkConnection->socket, "qu", NET_MESSAGE_TAG_SIZE, &gNetworkConnection->hostAddress);
+						uint8_t quitTag = QUIT_MESSAGE_TAG;
+						sendData(gNetworkConnection->socket, &quitTag, sizeof(quitTag), &gNetworkConnection->hostAddress);
 						
 						needsToQuit = SDL_TRUE;
 						
@@ -1572,8 +1594,8 @@ int clientNetworkThread(void *context)
 					{
 						if (lastPingIndex == messageIndex)
 						{
-							advanceSendBuffer(&sendBufferPtr, "pi", NET_MESSAGE_TAG_SIZE);
-							
+							uint8_t pingTag = PING_MESSAGE_TAG;
+							ADVANCE_SEND_BUFFER(&sendBufferPtr, pingTag);
 							ADVANCE_SEND_BUFFER(&sendBufferPtr, message.pingTimestamp);
 							
 							sendAndResetBufferIfNeeded(sendBuffer, sizeof(sendBuffer), &sendBufferPtr, &gNetworkConnection->hostAddress);
@@ -1583,8 +1605,8 @@ int clientNetworkThread(void *context)
 					}
 					case PONG_MESSAGE_TYPE:
 					{
-						advanceSendBuffer(&sendBufferPtr, "po", NET_MESSAGE_TAG_SIZE);
-						
+						uint8_t pongTag = PONG_MESSAGE_TAG;
+						ADVANCE_SEND_BUFFER(&sendBufferPtr, pongTag);
 						ADVANCE_SEND_BUFFER(&sendBufferPtr, message.pongTimestamp);
 						
 						sendAndResetBufferIfNeeded(sendBuffer, sizeof(sendBuffer), &sendBufferPtr, &gNetworkConnection->hostAddress);
@@ -1593,7 +1615,7 @@ int clientNetworkThread(void *context)
 					}
 					case MOVEMENT_REQUEST_MESSAGE_TYPE:
 					{
-						advanceSendBufferForInitialMessage(&sendBufferPtr, "rm", message.packetNumber);
+						advanceSendBufferForInitialMessage(&sendBufferPtr, REQUEST_MOVEMENT_MESSAGE_TAG, message.packetNumber);
 						
 						ADVANCE_SEND_BUFFER(&sendBufferPtr, message.movementRequest.direction);
 						
@@ -1603,7 +1625,7 @@ int clientNetworkThread(void *context)
 					}
 					case CHARACTER_FIRED_REQUEST_MESSAGE_TYPE:
 					{
-						advanceSendBufferForInitialMessage(&sendBufferPtr, "sw", message.packetNumber);
+						advanceSendBufferForInitialMessage(&sendBufferPtr, SHOOT_WEAPON_MESSAGE_TAG, message.packetNumber);
 						
 						sendAndResetBufferIfNeeded(sendBuffer, sizeof(sendBuffer), &sendBufferPtr, &gNetworkConnection->hostAddress);
 						
@@ -1611,7 +1633,7 @@ int clientNetworkThread(void *context)
 					}
 					case ACK_MESSAGE_TYPE:
 					{
-						advanceSendBufferForInitialMessage(&sendBufferPtr, "ak", message.packetNumber);
+						advanceSendBufferForInitialMessage(&sendBufferPtr, ACK_MESSAGE_TAG, message.packetNumber);
 						
 						sendAndResetBufferIfNeeded(sendBuffer, sizeof(sendBuffer), &sendBufferPtr, &gNetworkConnection->hostAddress);
 						
@@ -1703,12 +1725,12 @@ int clientNetworkThread(void *context)
 				else
 				{
 					char *buffer = packetBuffer;
-					while (buffer + NET_MESSAGE_TAG_SIZE <= packetBuffer + numberOfBytes)
+					uint8_t messageTag = 0;
+					while (buffer + sizeof(messageTag) <= packetBuffer + numberOfBytes)
 					{
-						uint8_t messageTag[NET_MESSAGE_TAG_SIZE] = {0};
 						ADVANCE_RECEIVE_BUFFER(&buffer, messageTag);
 						
-						if (messageTag[0] == 's' && messageTag[1] == 'n')
+						if (messageTag == SERVER_REJECTION_MESSAGE_TAG)
 						{
 							GameMessage message;
 							message.type = QUIT_MESSAGE_TYPE;
@@ -1718,7 +1740,7 @@ int clientNetworkThread(void *context)
 							
 							break;
 						}
-						else if (messageTag[0] == 's' && messageTag[1] == 'r')
+						else if (messageTag == SERVER_ACCEPTANCE_MESSAGE_TAG)
 						{
 							uint32_t packetNumber = 0;
 							uint8_t flags = 0;
@@ -1752,7 +1774,7 @@ int clientNetworkThread(void *context)
 								}
 							}
 						}
-						else if (messageTag[0] == 'n' && messageTag[1] == 'w')
+						else if (messageTag == NUMBER_OF_PLAYERS_WAITING_MESSAGE_TAG)
 						{
 							uint32_t packetNumber = 0;
 							uint8_t numberOfWaitingPlayers = 0;
@@ -1781,7 +1803,7 @@ int clientNetworkThread(void *context)
 								}
 							}
 						}
-						else if (messageTag[0] == 'n' && messageTag[1] == 'n')
+						else if (messageTag == NET_NAME_MESSAGE_TAG)
 						{
 							// net name
 							uint32_t packetNumber = 0;
@@ -1823,7 +1845,7 @@ int clientNetworkThread(void *context)
 								}
 							}
 						}
-						else if (messageTag[0] == 's' && messageTag[1] == 'g')
+						else if (messageTag == START_GAME_MESSAGE_TAG)
 						{
 							// start game
 							uint32_t packetNumber = 0;
@@ -1849,7 +1871,7 @@ int clientNetworkThread(void *context)
 								}
 							}
 						}
-						else if (messageTag[0] == 'g' && messageTag[1] == 's')
+						else if (messageTag == GAME_START_NUMBER_MESSAGE_TAG)
 						{
 							uint32_t packetNumber = 0;
 							uint8_t gameStartNumber = 0;
@@ -1883,7 +1905,7 @@ int clientNetworkThread(void *context)
 								}
 							}
 						}
-						else if (messageTag[0] == 'm' && messageTag[1] == 'o')
+						else if (messageTag == MOVEMENT_MESSAGE_TAG)
 						{
 							uint32_t packetNumber = 0;
 							float x = 0.0f;
@@ -1918,7 +1940,7 @@ int clientNetworkThread(void *context)
 								}
 							}
 						}
-						else if (messageTag[0] == 'p' && messageTag[1] == 'k')
+						else if (messageTag == PLAYER_KILLED_MESSAGE_TAG)
 						{
 							// character gets killed
 							uint32_t packetNumber = 0;
@@ -1952,7 +1974,7 @@ int clientNetworkThread(void *context)
 								}
 							}
 						}
-						else if (messageTag[0] == 'c' && messageTag[1] == 'k')
+						else if (messageTag == CHARACTER_KILLS_MESSAGE_TAG)
 						{
 							// character's kills increase
 							uint32_t packetNumber = 0;
@@ -1986,7 +2008,7 @@ int clientNetworkThread(void *context)
 								}
 							}
 						}
-						else if (messageTag[0] == 's' && messageTag[1] == 'w')
+						else if (messageTag == SHOOT_WEAPON_MESSAGE_TAG)
 						{
 							// shoot weapon
 							uint32_t packetNumber = 0;
@@ -2027,7 +2049,7 @@ int clientNetworkThread(void *context)
 								}
 							}
 						}
-						else if (messageTag[0] == 'c' && messageTag[1] == 't')
+						else if (messageTag == COLOR_TILE_MESSAGE_TAG)
 						{
 							uint32_t packetNumber = 0;
 							uint8_t flags = 0;
@@ -2061,7 +2083,7 @@ int clientNetworkThread(void *context)
 								}
 							}
 						}
-						else if (messageTag[0] == 't' && messageTag[1] == 'f')
+						else if (messageTag == TILE_FALLING_MESSAGE_TAG)
 						{
 							uint32_t packetNumber = 0;
 							uint8_t flags = 0;
@@ -2095,7 +2117,7 @@ int clientNetworkThread(void *context)
 								}
 							}
 						}
-						else if (messageTag[0] == 'r' && messageTag[1] == 't')
+						else if (messageTag == RECOVER_TILE_MESSAGE_TAG)
 						{
 							uint32_t packetNumber = 0;
 							uint8_t tileIndex = 0;
@@ -2125,7 +2147,7 @@ int clientNetworkThread(void *context)
 								}
 							}
 						}
-						else if (messageTag[0] == 'n' && messageTag[1] == 'g')
+						else if (messageTag == NEW_GAME_MESSAGE_TAG)
 						{
 							// new game
 							uint32_t packetNumber = 0;
@@ -2152,7 +2174,7 @@ int clientNetworkThread(void *context)
 								}
 							}
 						}
-						else if (messageTag[0] == 'a' && messageTag[1] == 'k')
+						else if (messageTag == ACK_MESSAGE_TAG)
 						{
 							uint32_t packetNumber = 0;
 							if (buffer + sizeof(packetNumber) <= packetBuffer + numberOfBytes)
@@ -2176,7 +2198,7 @@ int clientNetworkThread(void *context)
 								}
 							}
 						}
-						else if (messageTag[0] == 'p' && messageTag[1] == 'i')
+						else if (messageTag == PING_MESSAGE_TAG)
 						{
 							// ping message
 							uint32_t timestamp = 0;
@@ -2190,7 +2212,7 @@ int clientNetworkThread(void *context)
 								pushNetworkMessage(&gGameMessagesToNet, pongMessage);
 							}
 						}
-						else if (messageTag[0] == 'p' && messageTag[1] == 'o')
+						else if (messageTag == PONG_MESSAGE_TAG)
 						{
 							// pong message
 							uint32_t timestamp = 0;
@@ -2206,7 +2228,7 @@ int clientNetworkThread(void *context)
 								lastPongReceivedTimestamp = SDL_GetTicks();
 							}
 						}
-						else if (messageTag[0] == 'q' && messageTag[1] == 'u')
+						else if (messageTag == QUIT_MESSAGE_TAG)
 						{
 							// quit
 							GameMessage message;
