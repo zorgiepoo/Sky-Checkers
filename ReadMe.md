@@ -5,15 +5,15 @@
 ## Introduction
 Sky Checkers is a multiplayer game based on an old N64 Kirby mini-game. Knock off your enemies and be the last one standing!
 
-This was my first substantial programming project started during my high school years and is the only game I've finished writing. I now enjoy ensuring this product stays alive.
-
 Sky Checkers supports macOS, Windows, and Linux. Downloads can be found on the [releases page](https://github.com/zorgiepoo/Sky-Checkers/releases). For information on compiling the latest changes from source, please see [INSTALL](INSTALL).
+
+This game was originally written during my high school years. Recently, I've rewritten the renderer and netcode in addition to making other enhancements. Thus, the releases page may lag behind current development quite a bit.
 
 ## Features
 
 * 3D graphics supporting OpenGL and Metal backends (in the master branch)
-* Local or [online](https://zgcoder.net/software/skycheckers/images/skycheckers_ubuntu_and_osx.png) battles with 1 - 4 players (online uses port 4893 over UDP)
-* AI bots with an easy, medium, or hard difficulty
+* Local or [online (no audio)](https://zgcoder.net/zfw/skycheckers_play_noaudio.mov) battles with 1 - 4 players
+* Bots with an easy, medium, or hard difficulty
 * Gamepad support
 * [Console](https://zgcoder.net/software/skycheckers/images/console.png) for development & debugging
 
