@@ -463,7 +463,7 @@ static void drawCharacterLives(Renderer *renderer, mat4_t modelViewMatrix, color
 	drawStringLeftAligned(renderer, playerLabelModelViewMatrix(modelViewMatrix), color, 0.0027f, playerLabel);
 }
 
-#define LIVES_DRAWING_OFFSET 1.0f
+#define LIVES_DRAWING_OFFSET 0.8f
 void drawAllCharacterLives(Renderer *renderer, const mat4_t *iconTranslations)
 {
 	const mat4_t pinkBubbleGumModelViewMatrix = m4_mul(iconTranslations[0], m4_translation((vec3_t){LIVES_DRAWING_OFFSET, 0.0f, 0.0f}));
