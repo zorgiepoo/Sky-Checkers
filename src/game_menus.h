@@ -26,7 +26,7 @@
 extern char gServerAddressString[MAX_SERVER_ADDRESS_SIZE];
 extern int gServerAddressStringIndex;
 
-#define MAX_USER_NAME_SIZE	6
+#define MAX_USER_NAME_SIZE	8
 extern char gUserNameString[MAX_USER_NAME_SIZE];
 extern int gUserNameStringIndex;
 
