@@ -162,7 +162,7 @@ void drawCharacterIcons(Renderer *renderer, const mat4_t *translations);
 
 void drawCharacters(Renderer *renderer);
 
-void drawCharacterLives(Renderer *renderer);
+void drawAllCharacterLives(Renderer *renderer, const mat4_t *iconTranslations);
 
 void getOtherCharacters(Character *characterA, Character **characterB, Character **characterC, Character **characterD);
 

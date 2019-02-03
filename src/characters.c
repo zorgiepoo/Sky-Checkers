@@ -450,7 +450,7 @@ static mat4_t playerLabelModelViewMatrix(mat4_t modelViewMatrix)
 	return m4_mul(modelViewMatrix, m4_translation((vec3_t){0.5f, 0.0f, 0.0f}));
 }
 
-static void drawCharacterLive(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, Character *character, float livesWidth, float livesHeight, const char *playerNumberString, float playerLabelWidth, float playerLabelHeight)
+static void drawCharacterLives(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, Character *character, float livesWidth, float livesHeight, const char *playerNumberString, float playerLabelWidth, float playerLabelHeight)
 {
 	if (character->lives != 0)
 	{
@@ -463,12 +463,13 @@ static void drawCharacterLive(Renderer *renderer, mat4_t modelViewMatrix, color4
 	drawStringLeftAligned(renderer, playerLabelModelViewMatrix(modelViewMatrix), color, 0.0027f, playerLabel);
 }
 
-void drawCharacterLives(Renderer *renderer)
+#define LIVES_DRAWING_OFFSET 1.0f
+void drawAllCharacterLives(Renderer *renderer, const mat4_t *iconTranslations)
 {
-	const mat4_t pinkBubbleGumModelViewMatrix = m4_translation((vec3_t){-12.3f / 1.52f, -14.4f / 1.52f, -38.0f / 1.52f});
-	const mat4_t redRoverModelViewMatrix = m4_translation((vec3_t){-4.2f / 1.52f, -14.4f / 1.52f, -38.0f / 1.52f});
-	const mat4_t greenTreeModelViewMatrix = m4_translation((vec3_t){3.9f / 1.52f, -14.4f / 1.52f, -38.0f / 1.52f});
-	const mat4_t blueLightningModelViewMatrix = m4_translation((vec3_t){12.0f / 1.52f, -14.4f / 1.52f, -38.0f / 1.52f});
+	const mat4_t pinkBubbleGumModelViewMatrix = m4_mul(iconTranslations[0], m4_translation((vec3_t){LIVES_DRAWING_OFFSET, 0.0f, 0.0f}));
+	const mat4_t redRoverModelViewMatrix = m4_mul(iconTranslations[1], m4_translation((vec3_t){LIVES_DRAWING_OFFSET, 0.0f, 0.0f}));
+	const mat4_t greenTreeModelViewMatrix = m4_mul(iconTranslations[2], m4_translation((vec3_t){LIVES_DRAWING_OFFSET, 0.0f, 0.0f}));
+	const mat4_t blueLightningModelViewMatrix = m4_mul(iconTranslations[3], m4_translation((vec3_t){LIVES_DRAWING_OFFSET, 0.0f, 0.0f}));
 	
 	const color4_t pinkBubbleGumColor = (color4_t){1.0f, 0.6f, 0.6f, 1.0f};
 	const color4_t redRoverColor = (color4_t){0.9f, 0.0f, 0.0f, 1.0f};
@@ -481,10 +482,10 @@ void drawCharacterLives(Renderer *renderer)
 	const float livesWidth = 0.5f / 1.52f;
 	const float livesHeight = 0.5f / 1.52f;
 	
-	drawCharacterLive(renderer, pinkBubbleGumModelViewMatrix, pinkBubbleGumColor, &gPinkBubbleGum, livesWidth, livesHeight, "[P1]", playerLabelWidth, playerLabelHeight);
-	drawCharacterLive(renderer, redRoverModelViewMatrix, redRoverColor, &gRedRover, livesWidth, livesHeight, "[P2]", playerLabelWidth, playerLabelHeight);
-	drawCharacterLive(renderer, greenTreeModelViewMatrix, greenTreeColor, &gGreenTree, livesWidth, livesHeight, "[P3]", playerLabelWidth, playerLabelHeight);
-	drawCharacterLive(renderer, blueLightningModelViewMatrix, blueLightningColor, &gBlueLightning, livesWidth, livesHeight, "[P4]", playerLabelWidth, playerLabelHeight);
+	drawCharacterLives(renderer, pinkBubbleGumModelViewMatrix, pinkBubbleGumColor, &gPinkBubbleGum, livesWidth, livesHeight, "[P1]", playerLabelWidth, playerLabelHeight);
+	drawCharacterLives(renderer, redRoverModelViewMatrix, redRoverColor, &gRedRover, livesWidth, livesHeight, "[P2]", playerLabelWidth, playerLabelHeight);
+	drawCharacterLives(renderer, greenTreeModelViewMatrix, greenTreeColor, &gGreenTree, livesWidth, livesHeight, "[P3]", playerLabelWidth, playerLabelHeight);
+	drawCharacterLives(renderer, blueLightningModelViewMatrix, blueLightningColor, &gBlueLightning, livesWidth, livesHeight, "[P4]", playerLabelWidth, playerLabelHeight);
 }
 
 /*

@@ -70,6 +70,8 @@ SDL_bool gDrawPings = SDL_FALSE;
 static GameState gGameState;
 
 #define MAX_CHARACTER_LIVES 10
+#define CHARACTER_ICON_DISPLACEMENT 5.0f
+#define CHARACTER_ICON_OFFSET -8.5f
 
 void initGame(void);
 
@@ -966,10 +968,10 @@ static void drawScene(Renderer *renderer)
 		// Character icons at the bottom of the screen at z = -25.0f
 		const mat4_t characterIconTranslations[] =
 		{
-			m4_translation((vec3_t){-9.0f, -9.5f, -25.0f}),
-			m4_translation((vec3_t){-3.67f, -9.5f, -25.0f}),
-			m4_translation((vec3_t){1.63f, -9.5f, -25.0f}),
-			m4_translation((vec3_t){6.93f, -9.5f, -25.0f})
+			m4_translation((vec3_t){CHARACTER_ICON_OFFSET, -9.5f, -25.0f}),
+			m4_translation((vec3_t){CHARACTER_ICON_OFFSET + CHARACTER_ICON_DISPLACEMENT, -9.5f, -25.0f}),
+			m4_translation((vec3_t){CHARACTER_ICON_OFFSET + CHARACTER_ICON_DISPLACEMENT * 2, -9.5f, -25.0f}),
+			m4_translation((vec3_t){CHARACTER_ICON_OFFSET + CHARACTER_ICON_DISPLACEMENT * 3, -9.5f, -25.0f})
 		};
 		drawCharacterIcons(renderer, characterIconTranslations);
 		
@@ -979,7 +981,7 @@ static void drawScene(Renderer *renderer)
 		drawSky(renderer, RENDERER_OPTION_BLENDING_ALPHA);
 		
 		// Character lives at z = -25.0f
-		drawCharacterLives(renderer);
+		drawAllCharacterLives(renderer, characterIconTranslations);
 		
 		// Render game instruction text at -25.0f
 		if (!gGameHasStarted)
