@@ -291,6 +291,18 @@ static void animateTilesAndPlayerRecovery(double timeDelta, SDL_Window *window, 
 		/* First, color the tiles that are going to be destroyed */
 		if (!player->coloredTiles)
 		{
+			// Set the weapon direction
+			// We don't do this in prepareFiringCharacterWeapon() because we may be setting it too early
+			// for network clients, when making a color prediction
+			if (gNetworkConnection != NULL && gNetworkConnection->type == NETWORK_CLIENT_TYPE && player->predictedDirection != NO_DIRECTION)
+			{
+				player->weap->direction = player->predictedDirection;
+			}
+			else
+			{
+				player->weap->direction = player->pointing_direction;
+			}
+			
 			// Get the location of where the player fired their weapon
 			int tileLocation = getTileIndexLocation((int)player->weap->initialX, (int)player->weap->initialY);
 			if (tileLocation >= 0 && tileLocation < NUMBER_OF_TILES)

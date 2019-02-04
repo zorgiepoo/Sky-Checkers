@@ -726,7 +726,6 @@ void prepareFiringCharacterWeapon(Character *character, float x, float y, float 
 		character->weap->initialX = x;
 		character->weap->initialY = y;
 		character->weap->compensation = compensation;
-		character->weap->direction = character->pointing_direction;
 		
 		character->weap->fired = SDL_TRUE;
 	}
