@@ -29,9 +29,6 @@ static void directCharacterBasedOnCollisions(Character *character, int currentTi
 
 static void shootWeaponProjectile(Character *character, int currentTime);
 
-static int rowOfCharacter(Character *character);
-static int columnOfCharacter(Character *character);
-
 static void fireAIWeapon(Character *character);
 
 static void attackCharacterOnRow(Character *character, Character *characterB, int currentTime);
@@ -212,20 +209,6 @@ static void shootWeaponProjectile(Character *character, int currentTime)
 	{
 		attackCharacterOnColumn(character, characterD, currentTime);
 	}
-}
-
-// Returns the row index the character is on
-static int rowOfCharacter(Character *character)
-{
-	int tileIndex = getTileIndexLocation((int)character->x, (int)character->y);
-	return tileIndex / 8;
-}
-
-// Returns the column index the character is on
-static int columnOfCharacter(Character *character)
-{
-	int tileIndex = getTileIndexLocation((int)character->x, (int)character->y);
-	return tileIndex % 8;
 }
 
 static void fireAIWeapon(Character *character)

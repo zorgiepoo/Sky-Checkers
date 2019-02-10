@@ -44,7 +44,7 @@ static void randomizeCharacterDirection(Character *character);
 
 /* Note: Does not initialize the character's weapon */
 void loadCharacter(Character *character)
-{	
+{
 	if (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE)
 	{
 		spawnCharacter(character);
@@ -87,6 +87,9 @@ void resetCharacterWins(void)
 void initCharacters(void)
 {
 	// redRover
+	gRedRover.x = 0.0f;
+	gRedRover.y = 0.0f;
+	gRedRover.z = 0.0f;
 	loadCharacter(&gRedRover);
 	gRedRover.weap = malloc(sizeof(Weapon));
 	initWeapon(gRedRover.weap);
@@ -101,6 +104,9 @@ void initCharacters(void)
 	gRedRover.blue = 0.0f;
 	
 	// greenTree
+	gGreenTree.x = 0.0f;
+	gGreenTree.y = 0.0f;
+	gGreenTree.z = 0.0f;
 	loadCharacter(&gGreenTree);
 	gGreenTree.weap = malloc(sizeof(Weapon));
 	initWeapon(gGreenTree.weap);
@@ -115,6 +121,9 @@ void initCharacters(void)
 	gGreenTree.blue = 0.3f;
 	
 	// pinkBubbleGum
+	gPinkBubbleGum.x = 0.0f;
+	gPinkBubbleGum.y = 0.0f;
+	gPinkBubbleGum.z = 0.0f;
 	loadCharacter(&gPinkBubbleGum);
 	gPinkBubbleGum.weap = malloc(sizeof(Weapon));
 	initWeapon(gPinkBubbleGum.weap);
@@ -129,6 +138,9 @@ void initCharacters(void)
 	gPinkBubbleGum.blue = 0.6f;
 	
 	// blueLightning
+	gBlueLightning.x = 0.0f;
+	gBlueLightning.y = 0.0f;
+	gBlueLightning.z = 0.0f;
 	loadCharacter(&gBlueLightning);
 	gBlueLightning.weap = malloc(sizeof(Weapon));
 	initWeapon(gBlueLightning.weap);
@@ -564,20 +576,22 @@ Character *getCharacter(int ID)
 
 void spawnCharacter(Character *character)
 {
-	int randOne;
-	int randTwo;
-	SDL_bool isFree = SDL_FALSE;
+	int availableTileIndexes[NUMBER_OF_TILES];
+	int numberOfAvailableTiles = 0;
 	
-	while (!isFree)
+	for (int tileIndex = 0; tileIndex < NUMBER_OF_TILES; tileIndex++)
 	{
-		randOne = (mt_random() % 15);
-		randTwo = (mt_random() % 15);
-		
-		isFree = availableTile((float)randOne, (float)randTwo);
+		if (availableTileIndex(tileIndex))
+		{
+			availableTileIndexes[numberOfAvailableTiles] = tileIndex;
+			numberOfAvailableTiles++;
+		}
 	}
 	
-	character->x = (float)randOne;
-	character->y = (float)randTwo;
+	int randomIndex = (mt_random() % numberOfAvailableTiles);
+	
+	character->x = (availableTileIndexes[randomIndex] % 8) * 2.0f;
+	character->y = (availableTileIndexes[randomIndex] / 8) * 2.0f;
 	character->z = CHARACTER_ALIVE_Z;
 	character->active = SDL_TRUE;
 	character->direction = NO_DIRECTION;

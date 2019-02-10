@@ -150,3 +150,17 @@ int getTileIndexLocation(int x, int y)
 	
 	return tileX + (tileY * 8);
 }
+
+// Returns the row index the character is on
+int rowOfCharacter(Character *character)
+{
+	int tileIndex = getTileIndexLocation((int)character->x, (int)character->y);
+	return tileIndex / 8;
+}
+
+// Returns the column index the character is on
+int columnOfCharacter(Character *character)
+{
+	int tileIndex = getTileIndexLocation((int)character->x, (int)character->y);
+	return tileIndex % 8;
+}

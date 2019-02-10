@@ -143,15 +143,10 @@ int downTileIndex(int tileIndex)
 	return downIndex;
 }
 
-/*
- * Tests to see if the given x and y coordinates are available for a tile.
- * Returns SDL_FALSE if the tile is not free to use, otherwise returns SDL_TRUE
- */
-SDL_bool availableTile(float x, float y)
+// Tests if a tile is suitable for a spawning location
+SDL_bool availableTileIndex(int tileIndex)
 {
-	int tile_loc = getTileIndexLocation((int)x, (int)y);
-	if (tile_loc < 0 || tile_loc >= NUMBER_OF_TILES)
-		return SDL_FALSE;
+	int tile_loc = tileIndex;
 	
 	if (gTiles[tile_loc].state == SDL_FALSE)
 		return SDL_FALSE;
@@ -162,17 +157,28 @@ SDL_bool availableTile(float x, float y)
 	if (gTiles[tile_loc].coloredID != NO_CHARACTER)
 		return SDL_FALSE;
 	
-	if (getTileIndexLocation((int)gRedRover.x, (int)gRedRover.y) == tile_loc)
-		return SDL_FALSE;
+	int column = tile_loc % 8;
+	int row = tile_loc / 8;
 	
-	if (getTileIndexLocation((int)gGreenTree.x, (int)gGreenTree.y) == tile_loc)
+	if (CHARACTER_IS_ALIVE(&gRedRover) && (columnOfCharacter(&gRedRover) == column || rowOfCharacter(&gRedRover) == row))
+	{
 		return SDL_FALSE;
+	}
 	
-	if (getTileIndexLocation((int)gPinkBubbleGum.x, (int)gPinkBubbleGum.y) == tile_loc)
+	if (CHARACTER_IS_ALIVE(&gGreenTree) && (columnOfCharacter(&gGreenTree) == column || rowOfCharacter(&gGreenTree) == row))
+	{
 		return SDL_FALSE;
+	}
 	
-	if (getTileIndexLocation((int)gBlueLightning.x, (int)gBlueLightning.y) == tile_loc)
+	if (CHARACTER_IS_ALIVE(&gPinkBubbleGum) && (columnOfCharacter(&gPinkBubbleGum) == column || rowOfCharacter(&gPinkBubbleGum) == row))
+	{
 		return SDL_FALSE;
+	}
+	
+	if (CHARACTER_IS_ALIVE(&gBlueLightning) && (columnOfCharacter(&gBlueLightning) == column || rowOfCharacter(&gBlueLightning) == row))
+	{
+		return SDL_FALSE;
+	}
 	
 	return SDL_TRUE;
 }

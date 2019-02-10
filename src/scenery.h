@@ -62,7 +62,7 @@ int leftTileIndex(int tileIndex);
 int upTileIndex(int tileIndex);
 int downTileIndex(int tileIndex);
 
-SDL_bool availableTile(float x, float y);
+SDL_bool availableTileIndex(int tileIndex);
 
 void loadSceneryTextures(Renderer *renderer);
 
