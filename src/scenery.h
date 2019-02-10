@@ -39,6 +39,7 @@ typedef struct
 	int coloredID;
 	// Same as above but used by client prediction for netcode
 	int predictedColorID;
+	uint32_t predictedColorTime;
 	
 	SDL_bool state;
 	SDL_bool isDead;
@@ -51,6 +52,9 @@ Tile gTiles[NUMBER_OF_TILES];
 void loadTiles(void);
 
 void restoreDefaultTileColor(int tileIndex);
+
+void clearPredictedColor(int tileIndex);
+void clearPredictedColorWithTime(int tileIndex, uint32_t currentTime);
 
 // Returns -1 if no such tile is found
 int rightTileIndex(int tileIndex);

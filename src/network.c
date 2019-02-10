@@ -57,21 +57,6 @@ static void depleteNetworkMessages(GameMessageArray *messageArray);
 
 static void cleanupStateFromNetwork(void);
 
-static void clearPredictedColors(int characterID)
-{
-	for (int tileIndex = 0; tileIndex < NUMBER_OF_TILES; tileIndex++)
-	{
-		if (gTiles[tileIndex].predictedColorID == characterID)
-		{
-			if (gTiles[tileIndex].coloredID == NO_CHARACTER)
-			{
-				restoreDefaultTileColor(tileIndex);
-			}
-			gTiles[tileIndex].predictedColorID = NO_CHARACTER;
-		}
-	}
-}
-
 void setPredictedDirection(Character *character, int direction)
 {
 	character->predictedDirection = direction;
@@ -536,7 +521,6 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 		{
 			uint32_t renderTime = currentTime - (uint32_t)(3 * gNetworkConnection->serverHalfPing);
 			
-			SDL_bool clearedPredictedColors = SDL_FALSE;
 			for (uint32_t triggerMessageIndex = 0; triggerMessageIndex < gNetworkConnection->characterTriggerMessagesCount; triggerMessageIndex++)
 			{
 				GameMessage *message = &gNetworkConnection->characterTriggerMessages[triggerMessageIndex];
@@ -556,16 +540,12 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 						uint8_t tileIndex = message->colorTile.tileIndex;
 						Character *character = getCharacter(characterID);
 						
-						if (!clearedPredictedColors && character == gNetworkConnection->character)
-						{
-							clearPredictedColors(characterID);
-							clearedPredictedColors = SDL_TRUE;
-						}
-						
 						gTiles[tileIndex].red = character->weap->red;
 						gTiles[tileIndex].green = character->weap->green;
 						gTiles[tileIndex].blue = character->weap->blue;
 						gTiles[tileIndex].coloredID = characterID;
+						
+						clearPredictedColor(tileIndex);
 					}
 					else if (message->type == TILE_FALLING_DOWN_MESSAGE_TYPE)
 					{
@@ -596,7 +576,6 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 						character->lives = message->diedUpdate.characterLives;
 						
 						prepareCharactersDeath(character);
-						clearPredictedColors(message->diedUpdate.characterID);
 						
 						decideWhetherToMakeAPlayerAWinner(character);
 						

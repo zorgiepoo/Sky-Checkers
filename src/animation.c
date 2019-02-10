@@ -79,6 +79,8 @@ static void recoverCharacter(Character *player);
 
 static void sendPing(void);
 
+static void clearPredictedColors(void);
+
 void animate(SDL_Window *window, double timeDelta)
 {
 	gSecondTimer += (float)timeDelta;
@@ -167,6 +169,8 @@ void animate(SDL_Window *window, double timeDelta)
 	killCharacter(&gPinkBubbleGumInput, timeDelta);
 	killCharacter(&gBlueLightningInput, timeDelta);
 	
+	clearPredictedColors();
+	
 	collapseTiles(timeDelta);
 	
 	animateTilesAndPlayerRecovery(timeDelta, window, &gRedRover);
@@ -213,6 +217,19 @@ static void sendPing(void)
 	}
 }
 
+static void clearPredictedColors(void)
+{
+	if (gNetworkConnection != NULL && gNetworkConnection->type == NETWORK_CLIENT_TYPE)
+	{
+		uint32_t currentTime = SDL_GetTicks();
+		
+		for (int tileIndex = 0; tileIndex < NUMBER_OF_TILES; tileIndex++)
+		{
+			clearPredictedColorWithTime(tileIndex, currentTime);
+		}
+	}
+}
+
 /*
  * Change the color of the tile to the weap's color only if the color of the tile is at its default color and if that the tile's state exists
  */
@@ -242,6 +259,7 @@ static void colorTile(int tileIndex, Character *character)
 			else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE)
 			{
 				gTiles[tileIndex].predictedColorID = IDOfCharacter(character);
+				gTiles[tileIndex].predictedColorTime = SDL_GetTicks();
 			}
 		}
 		else

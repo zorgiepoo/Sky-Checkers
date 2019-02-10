@@ -37,6 +37,7 @@ void loadTiles(void)
 		gTiles[tileIndex].isDead = SDL_FALSE;
 		gTiles[tileIndex].coloredID = NO_CHARACTER;
 		gTiles[tileIndex].predictedColorID = NO_CHARACTER;
+		gTiles[tileIndex].predictedColorTime = 0;
 		
 		int rowIndex = tileIndex / 8;
 		int columnIndex = tileIndex % 8;
@@ -73,6 +74,28 @@ void restoreDefaultTileColor(int tileIndex)
 		gTiles[tileIndex].red = 0.682f;
 		gTiles[tileIndex].green = 0.572f;
 		gTiles[tileIndex].blue = 0.329f;
+	}
+}
+
+void clearPredictedColor(int tileIndex)
+{
+	if (gTiles[tileIndex].predictedColorID != NO_CHARACTER)
+	{
+		gTiles[tileIndex].predictedColorID = NO_CHARACTER;
+		gTiles[tileIndex].predictedColorTime = 0;
+		
+		if (gTiles[tileIndex].coloredID == NO_CHARACTER)
+		{
+			restoreDefaultTileColor(tileIndex);
+		}
+	}
+}
+
+void clearPredictedColorWithTime(int tileIndex, uint32_t currentTime)
+{
+	if ((currentTime - gTiles[tileIndex].predictedColorTime) >= 600)
+	{
+		clearPredictedColor(tileIndex);
 	}
 }
 
