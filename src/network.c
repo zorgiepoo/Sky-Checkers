@@ -545,7 +545,11 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 						gTiles[tileIndex].blue = character->weap->blue;
 						gTiles[tileIndex].coloredID = characterID;
 						
+						// Clear this particular tile's predicted color regardless of who set it
 						clearPredictedColor(tileIndex);
+						
+						// Clear all of this character's predicted colors across the board
+						clearPredictedColorsForCharacter(characterID);
 					}
 					else if (message->type == TILE_FALLING_DOWN_MESSAGE_TYPE)
 					{
@@ -630,7 +634,18 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 		for (uint8_t characterID = RED_ROVER; characterID <= PINK_BUBBLE_GUM; characterID++)
 		{
 			Character *character = getCharacter(characterID);
-			float displacementAdjustment = timeDelta * INITIAL_CHARACTER_SPEED / 32.0f;
+			
+			// Give a larger displacement if the character is moving
+			// When the character is stationary, we don't want to make adjusting their movement obvious to the player
+			float displacementAdjustment;
+			if (character->direction == NO_DIRECTION)
+			{
+				displacementAdjustment = timeDelta * INITIAL_CHARACTER_SPEED / 64.0f;
+			}
+			else
+			{
+				displacementAdjustment = timeDelta * INITIAL_CHARACTER_SPEED / 32.0f;
+			}
 			
 			if (fabsf(character->xDiscrepancy) < displacementAdjustment)
 			{
