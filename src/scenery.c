@@ -77,17 +77,22 @@ void restoreDefaultTileColor(int tileIndex)
 	}
 }
 
+void _clearPredictedColor(int tileIndex)
+{
+	gTiles[tileIndex].predictedColorID = NO_CHARACTER;
+	gTiles[tileIndex].predictedColorTime = 0;
+	
+	if (gTiles[tileIndex].coloredID == NO_CHARACTER)
+	{
+		restoreDefaultTileColor(tileIndex);
+	}
+}
+
 void clearPredictedColor(int tileIndex)
 {
 	if (gTiles[tileIndex].predictedColorID != NO_CHARACTER)
 	{
-		gTiles[tileIndex].predictedColorID = NO_CHARACTER;
-		gTiles[tileIndex].predictedColorTime = 0;
-		
-		if (gTiles[tileIndex].coloredID == NO_CHARACTER)
-		{
-			restoreDefaultTileColor(tileIndex);
-		}
+		_clearPredictedColor(tileIndex);
 	}
 }
 
@@ -96,6 +101,17 @@ void clearPredictedColorWithTime(int tileIndex, uint32_t currentTime)
 	if ((currentTime - gTiles[tileIndex].predictedColorTime) >= 600)
 	{
 		clearPredictedColor(tileIndex);
+	}
+}
+
+void clearPredictedColorsForCharacter(int characterID)
+{
+	for (int tileIndex = 0; tileIndex < NUMBER_OF_TILES; tileIndex++)
+	{
+		if (gTiles[tileIndex].predictedColorID == characterID)
+		{
+			_clearPredictedColor(tileIndex);
+		}
 	}
 }
 

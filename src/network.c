@@ -545,7 +545,11 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 						gTiles[tileIndex].blue = character->weap->blue;
 						gTiles[tileIndex].coloredID = characterID;
 						
+						// Clear this particular tile's predicted color regardless of who set it
 						clearPredictedColor(tileIndex);
+						
+						// Clear all of this character's predicted colors across the board
+						clearPredictedColorsForCharacter(characterID);
 					}
 					else if (message->type == TILE_FALLING_DOWN_MESSAGE_TYPE)
 					{

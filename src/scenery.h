@@ -55,6 +55,7 @@ void restoreDefaultTileColor(int tileIndex);
 
 void clearPredictedColor(int tileIndex);
 void clearPredictedColorWithTime(int tileIndex, uint32_t currentTime);
+void clearPredictedColorsForCharacter(int characterID);
 
 // Returns -1 if no such tile is found
 int rightTileIndex(int tileIndex);
