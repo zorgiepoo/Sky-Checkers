@@ -635,8 +635,8 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 		{
 			Character *character = getCharacter(characterID);
 			
-			// Give a larger displacement if the character is not moving
-			// When the character is stationary, we don't want to make adjustment their movement obvious to the player
+			// Give a larger displacement if the character is moving
+			// When the character is stationary, we don't want to make adjusting their movement obvious to the player
 			float displacementAdjustment;
 			if (character->direction == NO_DIRECTION)
 			{
