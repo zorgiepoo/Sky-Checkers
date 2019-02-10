@@ -1900,7 +1900,7 @@ int clientNetworkThread(void *context)
 								
 								uint8_t characterID = (flags & 0x3) + 1;
 								uint8_t direction = (flags >> 2) & 0x7;
-								uint8_t pointing_direction = (flags >> 5) + 1;
+								uint8_t pointing_direction = ((flags >> 5) & 0x3) + 1;
 								uint8_t dead = (flags >> 7) != 0;
 								
 								if (packetNumber > realTimeIncomingPacketNumber && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
