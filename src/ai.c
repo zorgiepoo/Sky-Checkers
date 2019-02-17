@@ -213,7 +213,7 @@ static void shootWeaponProjectile(Character *character, int currentTime)
 
 static void fireAIWeapon(Character *character)
 {
-	prepareFiringCharacterWeapon(character, character->x, character->y, 0.0f);
+	prepareFiringCharacterWeapon(character, character->x, character->y, character->pointing_direction, 0.0f);
 }
 
 static void attackCharacterOnRow(Character *character, Character *characterB, int currentTime)

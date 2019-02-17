@@ -730,7 +730,7 @@ void fireCharacterWeapon(Character *character)
 	character->weap->fired = SDL_FALSE;
 }
 
-void prepareFiringCharacterWeapon(Character *character, float x, float y, float compensation)
+void prepareFiringCharacterWeapon(Character *character, float x, float y, int direction, float compensation)
 {
 	if (character->active && !character->weap->animationState)
 	{
@@ -740,6 +740,7 @@ void prepareFiringCharacterWeapon(Character *character, float x, float y, float 
 		character->weap->initialX = x;
 		character->weap->initialY = y;
 		character->weap->compensation = compensation;
+		character->weap->direction = direction;
 		
 		character->weap->fired = SDL_TRUE;
 	}

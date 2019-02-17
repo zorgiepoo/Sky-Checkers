@@ -237,7 +237,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					
 					float compensation = (halfPing > 110 ? 110.0f : (float)halfPing) / 1000.0f;
 					
-					prepareFiringCharacterWeapon(character, character->x, character->y, compensation);
+					prepareFiringCharacterWeapon(character, character->x, character->y, character->pointing_direction, compensation);
 					
 					break;
 				}
@@ -532,7 +532,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 						Character *character = getCharacter(characterID);
 						
 						character->pointing_direction = message->firedUpdate.direction;
-						prepareFiringCharacterWeapon(character, message->firedUpdate.x, message->firedUpdate.y, 0.0f);
+						prepareFiringCharacterWeapon(character, message->firedUpdate.x, message->firedUpdate.y, character->pointing_direction, 0.0f);
 					}
 					else if (message->type == COLOR_TILE_MESSAGE_TYPE)
 					{
