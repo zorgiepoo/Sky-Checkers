@@ -1268,6 +1268,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 									else
 									{
 										addressIndex = existingCharacterID - 1;
+										free(netName);
 									}
 									
 									if (packetNumber <= triggerIncomingPacketNumbers[addressIndex])
@@ -1279,12 +1280,17 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 										pushNetworkMessage(&gGameMessagesToNet, ackMessage);
 									}
 								}
-								else if (existingCharacterID == NO_CHARACTER)
+								else
 								{
-									// no
-									// sn == server no rejection response
-									uint8_t rejectionTag = SERVER_REJECTION_MESSAGE_TAG;
-									sendData(gNetworkConnection->socket, &rejectionTag, sizeof(rejectionTag), &address);
+									free(netName);
+									
+									if (existingCharacterID == NO_CHARACTER)
+									{
+										// no
+										// sn == server no rejection response
+										uint8_t rejectionTag = SERVER_REJECTION_MESSAGE_TAG;
+										sendData(gNetworkConnection->socket, &rejectionTag, sizeof(rejectionTag), &address);
+									}
 								}
 							}
 						}
