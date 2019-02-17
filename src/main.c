@@ -1057,19 +1057,31 @@ static void drawScene(Renderer *renderer)
 			
 			if (gGameWinner == RED_ROVER)
 			{
-				drawStringScaled(renderer, winLoseModelViewMatrix, (color4_t){gRedRover.red, gRedRover.green, gRedRover.blue, 1.0f}, 0.0027f, "Red Rover wins!");
+				char winBuffer[128] = {0};
+				snprintf(winBuffer, sizeof(winBuffer) - 1, "%s wins!", gRedRover.netName != NULL ? gRedRover.netName : "Red Rover");
+				
+				drawStringScaled(renderer, winLoseModelViewMatrix, (color4_t){gRedRover.red, gRedRover.green, gRedRover.blue, 1.0f}, 0.0027f, winBuffer);
 			}
 			else if (gGameWinner == GREEN_TREE)
 			{
-				drawStringScaled(renderer, winLoseModelViewMatrix, (color4_t){gGreenTree.red, gGreenTree.green, gGreenTree.blue, 1.0f}, 0.0027f, "Green Tree wins!");
+				char winBuffer[128] = {0};
+				snprintf(winBuffer, sizeof(winBuffer) - 1, "%s wins!", gGreenTree.netName != NULL ? gGreenTree.netName : "Green Tree");
+				
+				drawStringScaled(renderer, winLoseModelViewMatrix, (color4_t){gGreenTree.red, gGreenTree.green, gGreenTree.blue, 1.0f}, 0.0027f, winBuffer);
 			}
 			else if (gGameWinner == PINK_BUBBLE_GUM)
 			{
-				drawStringScaled(renderer, winLoseModelViewMatrix, (color4_t){gPinkBubbleGum.red, gPinkBubbleGum.green, gPinkBubbleGum.blue, 1.0f}, 0.0027f, "Pink Bubblegum wins!");
+				char winBuffer[128] = {0};
+				snprintf(winBuffer, sizeof(winBuffer) - 1, "%s wins!", gPinkBubbleGum.netName != NULL ? gPinkBubbleGum.netName : "Pink Bubblegum");
+				
+				drawStringScaled(renderer, winLoseModelViewMatrix, (color4_t){gPinkBubbleGum.red, gPinkBubbleGum.green, gPinkBubbleGum.blue, 1.0f}, 0.0027f, winBuffer);
 			}
 			else if (gGameWinner == BLUE_LIGHTNING)
 			{
-				drawStringScaled(renderer, winLoseModelViewMatrix, (color4_t){gBlueLightning.red, gBlueLightning.green, gBlueLightning.blue, 1.0f}, 0.0027f, "Blue Lightning wins!");
+				char winBuffer[128] = {0};
+				snprintf(winBuffer, sizeof(winBuffer) - 1, "%s wins!", gBlueLightning.netName != NULL ? gBlueLightning.netName : "Blue Lightning");
+				
+				drawStringScaled(renderer, winLoseModelViewMatrix, (color4_t){gBlueLightning.red, gBlueLightning.green, gBlueLightning.blue, 1.0f}, 0.0027f, winBuffer);
 			}
 			
 			// Character scores on scoreboard at z = -20.0f
