@@ -644,7 +644,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 			}
 			else
 			{
-				displacementAdjustment = timeDelta * INITIAL_CHARACTER_SPEED / 32.0f;
+				displacementAdjustment = timeDelta * INITIAL_CHARACTER_SPEED / 16.0f;
 			}
 			
 			if (fabsf(character->xDiscrepancy) < displacementAdjustment)
