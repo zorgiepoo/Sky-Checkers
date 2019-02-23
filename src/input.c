@@ -100,37 +100,7 @@ Character *characterFromInput(Input *characterInput)
 
 static void prepareFiringFromInput(Input *input)
 {
-	// If we are a client, prepare firing the weapon based on the latest retrieved player movement
-	// rather than using the current rendering movement which may have not caught up yet
-	int playerDirection = input->character->pointing_direction;
-	
-	if (gNetworkConnection != NULL && gNetworkConnection->type == NETWORK_CLIENT_TYPE)
-	{
-		if (input->character->predictedDirection != NO_DIRECTION)
-		{
-			// Use the predicted client direction if available
-			playerDirection = input->character->predictedDirection;
-		}
-		
-		int characterIndex = IDOfCharacter(input->character) - 1;
-		uint32_t characterMovementCount = gNetworkConnection->characterMovementCounts[characterIndex];
-		
-		if (characterMovementCount > 0)
-		{
-			CharacterMovement *latestMovement = &gNetworkConnection->characterMovements[characterIndex][(characterMovementCount - 1) % CHARACTER_MOVEMENTS_CAPACITY];
-			
-			int movementTileIndex = getTileIndexLocation((int)latestMovement->x, (int)latestMovement->y);
-			int renderingTileIndex = getTileIndexLocation((int)input->character->x, (int)input->character->y);
-			
-			if (movementTileIndex != renderingTileIndex)
-			{
-				prepareFiringCharacterWeapon(input->character, latestMovement->x, latestMovement->y, playerDirection, 0.0f);
-				return;
-			}
-		}
-	}
-	
-	prepareFiringCharacterWeapon(input->character, input->character->x, input->character->y, playerDirection, 0.0f);
+	prepareFiringCharacterWeapon(input->character, input->character->x, input->character->y, input->character->pointing_direction, 0.0f);
 }
 
 void performDownAction(Input *input, SDL_Event *event)
