@@ -1548,7 +1548,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 			break;
 
 		case SDL_JOYBUTTONDOWN:
-			if (gGameState == GAME_STATE_ON && gGameWinner != NO_CHARACTER && ((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0))
+			if (gGameState == GAME_STATE_ON && gGameWinner != NO_CHARACTER && ((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && !joyButtonEventMatchesMovementFromInput(&event->jbutton, &gPinkBubbleGumInput) && !joyButtonEventMatchesMovementFromInput(&event->jbutton, &gRedRoverInput) && !joyButtonEventMatchesMovementFromInput(&event->jbutton, &gGreenTreeInput) && !joyButtonEventMatchesMovementFromInput(&event->jbutton, &gBlueLightningInput))
 			{
 				// new game
 				if (!gConsoleActivated && (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE))

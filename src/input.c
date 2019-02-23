@@ -517,3 +517,28 @@ void updateCharacterFromInput(Input *input)
 	
 	input->character->direction = bestDirectionFromInputTicks(input->priority == 0, input->right_ticks, input->left_ticks, input->up_ticks, input->down_ticks);
 }
+
+SDL_bool joyButtonEventMatchesMovementFromInput(SDL_JoyButtonEvent *buttonEvent, Input *input)
+{
+	if (buttonEvent->which == input->joy_right_id && buttonEvent->button == input->rjs_id)
+	{
+		return SDL_TRUE;
+	}
+	
+	if (buttonEvent->which == input->joy_left_id && buttonEvent->button == input->ljs_id)
+	{
+		return SDL_TRUE;
+	}
+	
+	if (buttonEvent->which == input->joy_up_id && buttonEvent->button == input->ujs_id)
+	{
+		return SDL_TRUE;
+	}
+	
+	if (buttonEvent->which == input->joy_down_id && buttonEvent->button == input->djs_id)
+	{
+		return SDL_TRUE;
+	}
+	
+	return SDL_FALSE;
+}

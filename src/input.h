@@ -107,3 +107,5 @@ void performUpAction(Input *input, SDL_Event *event);
 
 void updateCharacterFromInput(Input *input);
 void updateCharacterFromAnyInput(void);
+
+SDL_bool joyButtonEventMatchesMovementFromInput(SDL_JoyButtonEvent *buttonEvent, Input *input);
