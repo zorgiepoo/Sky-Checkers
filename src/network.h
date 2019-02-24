@@ -207,12 +207,6 @@ typedef union
 
 typedef struct
 {
-	SocketAddress address;
-	SDL_bool active;
-} ClientAddress;
-
-typedef struct
-{
 	// Only writable before threads are created
 	int type;
 	int socket;
@@ -256,7 +250,7 @@ typedef struct
 		struct
 		{
 			// Only readable/writable from server thread
-			ClientAddress clientAddresses[3];
+			SocketAddress clientAddresses[3];
 			// Keeping track of half-ping from clients
 			// Only readable/writable from main thread
 			uint32_t clientHalfPings[3];
@@ -265,6 +259,10 @@ typedef struct
 		};
 	};
 } NetworkConnection;
+
+
+// For the server.. This should be initialized to zero before creating the server thread.
+uint8_t gCurrentSlot;
 
 GameMessageArray gGameMessagesFromNet;
 GameMessageArray gGameMessagesToNet;
