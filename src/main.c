@@ -787,6 +787,28 @@ void endGame(void)
 	gGameShouldReset = SDL_FALSE;
 }
 
+static void exitGame(void)
+{
+	resetCharacterWins();
+	endGame();
+	
+	if (gNetworkConnection)
+	{
+		if (gNetworkConnection->type == NETWORK_SERVER_TYPE)
+		{
+			GameMessage message;
+			message.type = QUIT_MESSAGE_TYPE;
+			sendToClients(0, &message);
+		}
+		else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE)
+		{
+			GameMessage message;
+			message.type = QUIT_MESSAGE_TYPE;
+			sendToServer(message);
+		}
+	}
+}
+
 void drawFramesPerSecond(Renderer *renderer)
 {
 	static unsigned frame_count = 0;
@@ -1505,13 +1527,17 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 				}
 				else if (gGameState == GAME_STATE_ON)
 				{
-					if (!gConsoleActivated && gEscapeHeldDownTimer == 0)
-					{
-						gEscapeHeldDownTimer = SDL_GetTicks();
-					}
-					else /* if (gConsoleActivated) */
+					if (gConsoleActivated)
 					{
 						clearConsole();
+					}
+					else if (gGameWinner != NO_CHARACTER && (gNetworkConnection == NULL || gNetworkConnection->type == NETWORK_SERVER_TYPE))
+					{
+						exitGame();
+					}
+					else if (gEscapeHeldDownTimer == 0)
+					{
+						gEscapeHeldDownTimer = SDL_GetTicks();
 					}
 				}
 			}
@@ -1614,24 +1640,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 	
 	if (gGameState == GAME_STATE_ON && gEscapeHeldDownTimer > 0 && SDL_GetTicks() - gEscapeHeldDownTimer > 1000)
 	{
-		resetCharacterWins();
-		endGame();
-
-		if (gNetworkConnection)
-		{
-			if (gNetworkConnection->type == NETWORK_SERVER_TYPE)
-			{
-				GameMessage message;
-				message.type = QUIT_MESSAGE_TYPE;
-				sendToClients(0, &message);
-			}
-			else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE)
-			{
-				GameMessage message;
-				message.type = QUIT_MESSAGE_TYPE;
-				sendToServer(message);
-			}
-		}
+		exitGame();
 	}
 
 	/*
