@@ -730,13 +730,34 @@ void fireCharacterWeapon(Character *character)
 	character->weap->fired = SDL_FALSE;
 }
 
+#define INITIAL_WEAPON_DISPLACEMENT 2.0f
 void prepareFiringCharacterWeapon(Character *character, float x, float y, int direction, float compensation)
 {
 	if (character->active && !character->weap->animationState)
 	{
 		// don't bind the z value
-		character->weap->x = x;
-		character->weap->y = y;
+		switch (direction)
+		{
+			case UP:
+				character->weap->x = x;
+				character->weap->y = y + INITIAL_WEAPON_DISPLACEMENT;
+				break;
+			case DOWN:
+				character->weap->x = x;
+				character->weap->y = y - INITIAL_WEAPON_DISPLACEMENT;
+				break;
+			case RIGHT:
+				character->weap->x = x + INITIAL_WEAPON_DISPLACEMENT;
+				character->weap->y = y;
+				break;
+			case LEFT:
+				character->weap->x = x - INITIAL_WEAPON_DISPLACEMENT;
+				character->weap->y = y;
+				break;
+			default:
+				character->weap->x = x;
+				character->weap->y = y;
+		}
 		character->weap->initialX = x;
 		character->weap->initialY = y;
 		character->weap->compensation = compensation;
