@@ -275,8 +275,6 @@ void networkServerPlayMenuAction(void *context)
 	gNetworkConnection->numberOfPlayersToWaitFor += (gGreenTree.netState == NETWORK_PENDING_STATE);
 	gNetworkConnection->numberOfPlayersToWaitFor += (gBlueLightning.netState == NETWORK_PENDING_STATE);
 	
-	gCurrentSlot = 0;
-	
 	initGame();
 	
 	gRedRoverInput.character = gNetworkConnection->character;

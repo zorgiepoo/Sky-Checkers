@@ -50,8 +50,6 @@
 
 NetworkConnection *gNetworkConnection = NULL;
 
-static SDL_mutex *gCurrentSlotMutex;
-
 static void pushNetworkMessage(GameMessageArray *messageArray, GameMessage message);
 static void depleteNetworkMessages(GameMessageArray *messageArray);
 
@@ -713,9 +711,9 @@ receiveData(int socket, void *buffer, size_t length, SocketAddress *address)
 
 static uint8_t characterIDForClientAddress(SocketAddress *address)
 {
-	for (uint8_t clientIndex = 0; clientIndex < gCurrentSlot; clientIndex++)
+	for (uint8_t clientIndex = 0; clientIndex < sizeof(gNetworkConnection->clientAddresses) / sizeof(gNetworkConnection->clientAddresses[0]); clientIndex++)
 	{
-		if (memcmp(address, &gNetworkConnection->clientAddresses[clientIndex], sizeof(*address)) == 0)
+		if (gNetworkConnection->clientAddresses[clientIndex].active && memcmp(address, &gNetworkConnection->clientAddresses[clientIndex].address, sizeof(*address)) == 0)
 		{
 			return clientIndex + 1;
 		}
@@ -759,7 +757,7 @@ static void advanceReceiveBuffer(char **buffer, void *receiveData, size_t receiv
 
 int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 {
-	gCurrentSlot = 0;
+	int currentSlot = 0;
 	uint8_t numberOfPlayersToWaitFor = *(uint8_t *)initialNumberOfPlayersToWaitForPtr;
 	
 	uint32_t triggerOutgoingPacketNumbers[] = {1, 1, 1};
@@ -795,28 +793,33 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 				if (message.type == CHARACTER_MOVED_UPDATE_MESSAGE_TYPE)
 				{
 					int addressIndex = message.addressIndex;
-					uint8_t characterIndex = message.movedUpdate.characterID - 1;
-					
-					if (trackedMovementIndices[addressIndex][characterIndex] == 0)
+					if (gNetworkConnection->clientAddresses[addressIndex].active)
 					{
-						trackedMovementIndices[addressIndex][characterIndex] = messagesLeft - 1;
-					}
-					else
-					{
-						messagesAvailable[messagesLeft - 1].addressIndex = -1;
+						uint8_t characterIndex = message.movedUpdate.characterID - 1;
+						
+						if (trackedMovementIndices[addressIndex][characterIndex] == 0)
+						{
+							trackedMovementIndices[addressIndex][characterIndex] = messagesLeft - 1;
+						}
+						else
+						{
+							messagesAvailable[messagesLeft - 1].addressIndex = -1;
+						}
 					}
 				}
 				else if (message.type == PING_MESSAGE_TYPE)
 				{
 					int addressIndex = message.addressIndex;
-					
-					if (trackedPingIndices[addressIndex] == 0)
+					if (gNetworkConnection->clientAddresses[addressIndex].active)
 					{
-						trackedPingIndices[addressIndex] = messagesLeft - 1;
-					}
-					else
-					{
-						messagesAvailable[messagesLeft - 1].addressIndex = -1;
+						if (trackedPingIndices[addressIndex] == 0)
+						{
+							trackedPingIndices[addressIndex] = messagesLeft - 1;
+						}
+						else
+						{
+							messagesAvailable[messagesLeft - 1].addressIndex = -1;
+						}
 					}
 				}
 			}
@@ -825,7 +828,12 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 			{
 				GameMessage message = messagesAvailable[messageIndex];
 				int addressIndex = message.addressIndex;
-				SocketAddress *address = (addressIndex == -1) ? NULL : &gNetworkConnection->clientAddresses[addressIndex];
+				SocketAddress *address = (addressIndex == -1) ? NULL : &gNetworkConnection->clientAddresses[addressIndex].address;
+				
+				if (address != NULL && !gNetworkConnection->clientAddresses[addressIndex].active)
+				{
+					continue;
+				}
 				
 				if (!needsToQuit && message.type != QUIT_MESSAGE_TYPE && message.type != ACK_MESSAGE_TYPE && message.type != FIRST_DATA_TO_CLIENT_MESSAGE_TYPE && message.type != PING_MESSAGE_TYPE && message.type != PONG_MESSAGE_TYPE)
 				{
@@ -1176,11 +1184,14 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 				}
 			}
 			
-			for (int addressIndex = 0; addressIndex < 3; addressIndex++)
+			for (int addressIndex = 0; addressIndex < (int)(sizeof(gNetworkConnection->clientAddresses) / sizeof(gNetworkConnection->clientAddresses[0])); addressIndex++)
 			{
-				if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) > 0)
+				if (gNetworkConnection->clientAddresses[addressIndex].active)
 				{
-					sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), &gNetworkConnection->clientAddresses[addressIndex]);
+					if ((size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]) > 0)
+					{
+						sendData(gNetworkConnection->socket, sendBuffers[addressIndex], (size_t)(sendBufferPtrs[addressIndex] - sendBuffers[addressIndex]), &gNetworkConnection->clientAddresses[addressIndex].address);
+					}
 				}
 			}
 			
@@ -1246,22 +1257,21 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 									{
 										// yes
 										// sr == server response
-										addressIndex = gCurrentSlot;
-										gNetworkConnection->clientAddresses[addressIndex] = address;
+										addressIndex = currentSlot;
+										gNetworkConnection->clientAddresses[addressIndex].active = SDL_TRUE;
+										gNetworkConnection->clientAddresses[addressIndex].address = address;
 										triggerIncomingPacketNumbers[addressIndex]++;
 										
-										SDL_LockMutex(gCurrentSlotMutex);
-										gCurrentSlot++;
-										SDL_UnlockMutex(gCurrentSlotMutex);
+										currentSlot++;
 										
 										numberOfPlayersToWaitFor--;
 										
 										GameMessage message;
 										message.type = FIRST_CLIENT_RESPONSE_MESSAGE_TYPE;
-										message.addressIndex = gCurrentSlot - 1;
+										message.addressIndex = currentSlot - 1;
 										message.firstClientResponse.netName = netName;
 										message.firstClientResponse.numberOfPlayersToWaitFor = numberOfPlayersToWaitFor;
-										message.firstClientResponse.slotID = gCurrentSlot;
+										message.firstClientResponse.slotID = currentSlot;
 										
 										pushNetworkMessage(&gGameMessagesFromNet, message);
 									}
@@ -2272,8 +2282,6 @@ void initializeNetworkBuffers(void)
 {
 	initializeGameBuffer(&gGameMessagesFromNet);
 	initializeGameBuffer(&gGameMessagesToNet);
-	
-	gCurrentSlotMutex = SDL_CreateMutex();
 }
 
 static void _pushNetworkMessage(GameMessageArray *messageArray, GameMessage message)
@@ -2405,12 +2413,11 @@ static void cleanupStateFromNetwork(void)
 
 void sendToClients(int exception, GameMessage *message)
 {
-	SDL_LockMutex(gCurrentSlotMutex);
 	SDL_LockMutex(gGameMessagesToNet.mutex);
 	
 	message->packetNumber = 0;
 	
-	for (int clientIndex = 0; clientIndex < gCurrentSlot; clientIndex++)
+	for (int clientIndex = 0; clientIndex < (int)(sizeof(gNetworkConnection->clientAddresses) / sizeof(gNetworkConnection->clientAddresses[0])); clientIndex++)
 	{
 		if (clientIndex + 1 != exception)
 		{
@@ -2427,7 +2434,6 @@ void sendToClients(int exception, GameMessage *message)
 	}
 	
 	SDL_UnlockMutex(gGameMessagesToNet.mutex);
-	SDL_UnlockMutex(gCurrentSlotMutex);
 }
 
 void sendToServer(GameMessage message)
