@@ -1062,7 +1062,7 @@ static void drawScene(Renderer *renderer)
 			}
 			
 			// Render escape game text
-			if (gEscapeHeldDownTimer > 0)
+			if (gEscapeHeldDownTimer > 0 && gGameWinner == NO_CHARACTER)
 			{
 				color4_t textColor = (color4_t){1.0f, 0.0f, 0.0f, 1.0f};
 				
@@ -1126,13 +1126,19 @@ static void drawScene(Renderer *renderer)
 			// Character scores on scoreboard at z = -20.0f
 			drawScoreboardForCharacters(renderer, SCOREBOARD_RENDER_SCORES);
 			
-			// Play again text at z = -20.0f
-			if (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE)
+			// Play again or exit text at z = -20.0f
 			{
-				// Draw a "Press ENTER to play again" notice
 				mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f / 1.25f, -7.0f / 1.25f, -25.0f / 1.25f});
 				
-				drawStringScaled(renderer, modelViewMatrix, (color4_t){0.0f, 0.0f, 0.4f, 0.6f}, 0.004f, "Fire to play again or Escape to quit");
+				if (gNetworkConnection == NULL || gNetworkConnection->type == NETWORK_SERVER_TYPE)
+				{
+					// Draw a "Press ENTER to play again" notice
+					drawStringScaled(renderer, modelViewMatrix, (color4_t){0.0f, 0.0f, 0.4f, 0.6f}, 0.004f, "Fire to play again or Escape to quit");
+				}
+				else if (gNetworkConnection != NULL && gNetworkConnection->type == NETWORK_CLIENT_TYPE && gEscapeHeldDownTimer > 0)
+				{
+					drawStringScaled(renderer, modelViewMatrix, (color4_t){0.0f, 0.0f, 0.4f, 0.6f}, 0.004f, "Hold Escape to quit...");
+				}
 			}
 		}
 		else
