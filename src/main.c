@@ -69,6 +69,8 @@ SDL_bool gDrawPings = SDL_FALSE;
 
 static GameState gGameState;
 
+static uint32_t gEscapeHeldDownTimer;
+
 #define MAX_CHARACTER_LIVES 10
 #define CHARACTER_ICON_DISPLACEMENT 5.0f
 #define CHARACTER_ICON_OFFSET -8.5f
@@ -769,6 +771,8 @@ void initGame(void)
 
 	// wait for NEW_GAME_WILL_BEGIN_DELAY seconds until the game can be started.
 	gGameStartNumber = NEW_GAME_WILL_BEGIN_DELAY;
+	
+	gEscapeHeldDownTimer = 0;
 }
 
 void endGame(void)
@@ -983,54 +987,67 @@ static void drawScene(Renderer *renderer)
 		// Character lives at z = -25.0f
 		drawAllCharacterLives(renderer, characterIconTranslations);
 		
-		// Render game instruction text at -25.0f
-		if (!gGameHasStarted)
+		// Render game instruction and holding escape text at -25.0f
 		{
-			color4_t textColor = (color4_t){0.0f, 0.0f, 1.0f, 1.0f};
-			
 			mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f / 11.2f, 80.0f / 11.2f, -280.0f / 11.2f});
 			
-			if (gPinkBubbleGum.netState == NETWORK_PENDING_STATE || gRedRover.netState == NETWORK_PENDING_STATE || gGreenTree.netState == NETWORK_PENDING_STATE || gBlueLightning.netState == NETWORK_PENDING_STATE)
+			if (!gGameHasStarted)
 			{
-				if (gNetworkConnection)
+				color4_t textColor = (color4_t){0.0f, 0.0f, 1.0f, 1.0f};
+				
+				if (gPinkBubbleGum.netState == NETWORK_PENDING_STATE || gRedRover.netState == NETWORK_PENDING_STATE || gGreenTree.netState == NETWORK_PENDING_STATE || gBlueLightning.netState == NETWORK_PENDING_STATE)
 				{
-					// be sure to take account the plural form of player(s)
-					if (gNetworkConnection->numberOfPlayersToWaitFor > 1)
+					if (gNetworkConnection)
 					{
-						char buffer[256] = {0};
-						snprintf(buffer, sizeof(buffer) - 1, "Waiting for %d players to connect...", gNetworkConnection->numberOfPlayersToWaitFor);
-						
-						mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-6.8f, 0.0f, 0.0f}), modelViewMatrix);
-						
-						drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, 0.0045538f, buffer);
+						// be sure to take account the plural form of player(s)
+						if (gNetworkConnection->numberOfPlayersToWaitFor > 1)
+						{
+							char buffer[256] = {0};
+							snprintf(buffer, sizeof(buffer) - 1, "Waiting for %d players to connect...", gNetworkConnection->numberOfPlayersToWaitFor);
+							
+							mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-6.8f, 0.0f, 0.0f}), modelViewMatrix);
+							
+							drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, 0.0045538f, buffer);
+						}
+						else if (gNetworkConnection->numberOfPlayersToWaitFor == 0)
+						{
+							mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-6.8f, 0.0f, 0.0f}), modelViewMatrix);
+							
+							drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, 0.0045538f, "Waiting for players to connect...");
+						}
+						else
+						{
+							mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-6.8f, 0.0f, 0.0f}), modelViewMatrix);
+							
+							drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, 0.0045538f, "Waiting for 1 player to connect...");
+						}
 					}
-					else if (gNetworkConnection->numberOfPlayersToWaitFor == 0)
-					{
-						mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-6.8f, 0.0f, 0.0f}), modelViewMatrix);
-						
-						drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, 0.0045538f, "Waiting for players to connect...");
-					}
-					else
-					{
-						mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-6.8f, 0.0f, 0.0f}), modelViewMatrix);
-						
-						drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, 0.0045538f, "Waiting for 1 player to connect...");
-					}
+				}
+				
+				else if (gGameStartNumber > 0)
+				{
+					char buffer[256] = {0};
+					snprintf(buffer, sizeof(buffer) - 1, "Game begins in %d", gGameStartNumber);
+					
+					mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-3.8f, 0.0f, 0.0f}), modelViewMatrix);
+					drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, 0.0045538f, buffer);
+				}
+				
+				else if (gGameStartNumber == 0)
+				{
+					gGameHasStarted = SDL_TRUE;
 				}
 			}
 			
-			else if (gGameStartNumber > 0)
+			// Render escape game text
+			if (gEscapeHeldDownTimer > 0)
 			{
-				char buffer[256] = {0};
-				snprintf(buffer, sizeof(buffer) - 1, "Game begins in %d", gGameStartNumber);
+				color4_t textColor = (color4_t){1.0f, 0.0f, 0.0f, 1.0f};
 				
-				mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-3.8f, 0.0f, 0.0f}), modelViewMatrix);
-				drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, 0.0045538f, buffer);
-			}
-			
-			else if (gGameStartNumber == 0)
-			{
-				gGameHasStarted = SDL_TRUE;
+				char buffer[] = "Hold down Escape to quit...";
+				
+				mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-4.3f, 1.7f, 0.0f}), modelViewMatrix);
+				drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, 0.0035f, buffer);
 			}
 		}
 		
@@ -1454,57 +1471,43 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 			{
 				if (gGameState == GAME_STATE_OFF)
 				{
-					if (gNetworkAddressFieldIsActive)
+					if (gEscapeHeldDownTimer == 0)
 					{
-						gNetworkAddressFieldIsActive = SDL_FALSE;
-					}
-					else if (gNetworkUserNameFieldIsActive)
-					{
-						gNetworkUserNameFieldIsActive = SDL_FALSE;
-					}
-					else if (gDrawArrowsForCharacterLivesFlag)
-					{
-						gDrawArrowsForCharacterLivesFlag = SDL_FALSE;
-					}
-					else if (gDrawArrowsForNetPlayerLivesFlag)
-					{
-						gDrawArrowsForNetPlayerLivesFlag = SDL_FALSE;
-					}
-					else if (gDrawArrowsForAIModeFlag)
-					{
-						gDrawArrowsForAIModeFlag = SDL_FALSE;
-					}
-					else if (gDrawArrowsForNumberOfNetHumansFlag)
-					{
-						gDrawArrowsForNumberOfNetHumansFlag = SDL_FALSE;
-					}
-					else
-					{
-						changeMenu(LEFT);
+						if (gNetworkAddressFieldIsActive)
+						{
+							gNetworkAddressFieldIsActive = SDL_FALSE;
+						}
+						else if (gNetworkUserNameFieldIsActive)
+						{
+							gNetworkUserNameFieldIsActive = SDL_FALSE;
+						}
+						else if (gDrawArrowsForCharacterLivesFlag)
+						{
+							gDrawArrowsForCharacterLivesFlag = SDL_FALSE;
+						}
+						else if (gDrawArrowsForNetPlayerLivesFlag)
+						{
+							gDrawArrowsForNetPlayerLivesFlag = SDL_FALSE;
+						}
+						else if (gDrawArrowsForAIModeFlag)
+						{
+							gDrawArrowsForAIModeFlag = SDL_FALSE;
+						}
+						else if (gDrawArrowsForNumberOfNetHumansFlag)
+						{
+							gDrawArrowsForNumberOfNetHumansFlag = SDL_FALSE;
+						}
+						else
+						{
+							changeMenu(LEFT);
+						}
 					}
 				}
 				else if (gGameState == GAME_STATE_ON)
 				{
-					if (!gConsoleActivated)
+					if (!gConsoleActivated && gEscapeHeldDownTimer == 0)
 					{
-						resetCharacterWins();
-						endGame();
-
-						if (gNetworkConnection)
-						{
-							if (gNetworkConnection->type == NETWORK_SERVER_TYPE)
-							{
-								GameMessage message;
-								message.type = QUIT_MESSAGE_TYPE;
-								sendToClients(0, &message);
-							}
-							else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE)
-							{
-								GameMessage message;
-								message.type = QUIT_MESSAGE_TYPE;
-								sendToServer(message);
-							}
-						}
+						gEscapeHeldDownTimer = SDL_GetTicks();
 					}
 					else /* if (gConsoleActivated) */
 					{
@@ -1543,6 +1546,13 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 					performNetworkUserNameBackspace();
 				}
 			}
+			break;
+		case SDL_KEYUP:
+			if (event->key.keysym.scancode == SDL_SCANCODE_ESCAPE)
+			{
+				gEscapeHeldDownTimer = 0;
+			}
+			break;
 		case SDL_TEXTINPUT:
 			writeTextInput(event->text.text, SDL_TEXTINPUTEVENT_TEXT_SIZE);
 			break;
@@ -1600,6 +1610,28 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 		case SDL_QUIT:
 			*quit = SDL_TRUE;
 			break;
+	}
+	
+	if (gGameState == GAME_STATE_ON && gEscapeHeldDownTimer > 0 && SDL_GetTicks() - gEscapeHeldDownTimer > 1000)
+	{
+		resetCharacterWins();
+		endGame();
+
+		if (gNetworkConnection)
+		{
+			if (gNetworkConnection->type == NETWORK_SERVER_TYPE)
+			{
+				GameMessage message;
+				message.type = QUIT_MESSAGE_TYPE;
+				sendToClients(0, &message);
+			}
+			else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE)
+			{
+				GameMessage message;
+				message.type = QUIT_MESSAGE_TYPE;
+				sendToServer(message);
+			}
+		}
 	}
 
 	/*
