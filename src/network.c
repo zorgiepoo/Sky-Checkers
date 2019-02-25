@@ -1784,7 +1784,7 @@ int clientNetworkThread(void *context)
 								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
 								ADVANCE_RECEIVE_BUFFER(&buffer, numberOfWaitingPlayers);
 								
-								if (packetNumber == triggerIncomingPacketNumber + 1 && numberOfWaitingPlayers >= 0 && numberOfWaitingPlayers < 4)
+								if (packetNumber == triggerIncomingPacketNumber + 1 && numberOfWaitingPlayers < 4)
 								{
 									triggerIncomingPacketNumber++;
 									
@@ -2062,7 +2062,7 @@ int clientNetworkThread(void *context)
 								uint8_t characterID = (flags & 0x3) + 1;
 								uint8_t tileIndex = (flags >> 2);
 								
-								if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM && tileIndex >= 0 && tileIndex < NUMBER_OF_TILES)
+								if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM && tileIndex < NUMBER_OF_TILES)
 								{
 									triggerIncomingPacketNumber++;
 									
@@ -2096,7 +2096,7 @@ int clientNetworkThread(void *context)
 								int8_t dead = (flags & 0x1);
 								uint8_t tileIndex = (flags >> 1);
 								
-								if (packetNumber == triggerIncomingPacketNumber + 1 && tileIndex >= 0 && tileIndex < NUMBER_OF_TILES)
+								if (packetNumber == triggerIncomingPacketNumber + 1 && tileIndex < NUMBER_OF_TILES)
 								{
 									triggerIncomingPacketNumber++;
 									
@@ -2127,7 +2127,7 @@ int clientNetworkThread(void *context)
 								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
 								ADVANCE_RECEIVE_BUFFER(&buffer, tileIndex);
 								
-								if (packetNumber == triggerIncomingPacketNumber + 1 && tileIndex >= 0 && tileIndex < NUMBER_OF_TILES)
+								if (packetNumber == triggerIncomingPacketNumber + 1 && tileIndex < NUMBER_OF_TILES)
 								{
 									triggerIncomingPacketNumber++;
 									
