@@ -1281,7 +1281,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 				}
 			}
 #ifndef MAC_OS_X
-			else if (event->key.keysym.sym == SDLK_RETURN && (event->key.keysym.mod & metaMod) != 0)
+			else if (event->key.keysym.sym == SDLK_RETURN && (event->key.keysym.mod & KMOD_ALT) != 0)
 			{
 				uint32_t windowFlags = SDL_GetWindowFlags(renderer->window);
 				if ((windowFlags & (SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN)) == 0)
@@ -1290,12 +1290,24 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 					{
 						fprintf(stderr, "Failed to set fullscreen because: %s\n", SDL_GetError());
 					}
+					else
+					{
+						renderer->fullscreen = SDL_TRUE;
+					}
 				}
 				else
 				{
 					if (SDL_SetWindowFullscreen(renderer->window, 0) != 0)
 					{
 						fprintf(stderr, "Failed to escape fullscreen because: %s\n", SDL_GetError());
+					}
+					else
+					{
+						renderer->fullscreen = SDL_FALSE;
+#ifdef WINDOWS
+						// Not sure why but on Windows at least a resize event isn't sent when exiting fullscreen
+						updateViewport(renderer);
+#endif
 					}
 				}
 			}
