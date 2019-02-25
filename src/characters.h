@@ -72,7 +72,7 @@ typedef struct _Character
 	float x, y, z;
 	
 	/* Colors of character faces */
-	float red, green, blue;
+	float red, green, blue, alpha;
 	
 	/* Direction character is currently going in */
 	int direction;
@@ -160,7 +160,7 @@ void buildCharacterModels(Renderer *renderer);
 
 void drawCharacterIcons(Renderer *renderer, const mat4_t *translations);
 
-void drawCharacters(Renderer *renderer);
+void drawCharacters(Renderer *renderer, RendererOptions options);
 
 void drawAllCharacterLives(Renderer *renderer, const mat4_t *iconTranslations);
 

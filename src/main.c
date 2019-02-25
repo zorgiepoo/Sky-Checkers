@@ -986,7 +986,7 @@ static void drawScene(Renderer *renderer)
 
 		// Characters renders at z = -25.3 to -24.7 after a world rotation when not fallen
 		// When falling, will reach to around -195
-		drawCharacters(renderer);
+		drawCharacters(renderer, RENDERER_OPTION_NONE);
 
 		// Tiles renders at z = -25.0f to -26.0f after a world rotation when not fallen
 		drawTiles(renderer);
@@ -1005,6 +1005,10 @@ static void drawScene(Renderer *renderer)
 		
 		// Sky renders at z = -38.0f
 		drawSky(renderer, RENDERER_OPTION_BLENDING_ALPHA);
+		
+		// Characters renders at z = -25.3 to -24.7 after a world rotation when not fallen
+		// When falling, will reach to around -195
+		drawCharacters(renderer, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
 		
 		// Character lives at z = -25.0f
 		drawAllCharacterLives(renderer, characterIconTranslations);

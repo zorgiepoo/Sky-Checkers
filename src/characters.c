@@ -55,6 +55,7 @@ void loadCharacter(Character *character)
 		character->active = SDL_TRUE;
 	}
 	
+	character->alpha = 1.0f;
 	character->speed = INITIAL_CHARACTER_SPEED;
 	character->recovery_timer = 0;
 	character->animation_timer = 0;
@@ -387,27 +388,40 @@ static mat4_t modelViewMatrixForCharacter(Character *character, mat4_t worldMatr
 	return m4_mul(m4_mul(worldMatrix, modelTranslationMatrix), modelRotationMatrix);
 }
 
-static void drawCharacter(Renderer *renderer, Character *character, mat4_t worldMatrix)
+static SDL_bool characterIsBlended(Character *character)
+{
+	return (fabsf(1.0f - character->alpha) > 0.001f);
+}
+
+static void drawCharacter(Renderer *renderer, Character *character, mat4_t worldMatrix, RendererOptions options)
 {
 	// don't draw the character if they're not in the scene
 	if (character->z > CHARACTER_TERMINATING_Z)
 	{
 		mat4_t modelViewMatrix = modelViewMatrixForCharacter(character, worldMatrix);
 		
-		drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, gCharacterTex, RENDERER_TRIANGLE_MODE, gCharacterVertexAndTextureCoordinateArrayObject, gCharacterIndicesBufferObject, 5220, (color4_t){character->red, character->green, character->blue, 1.0f}, RENDERER_OPTION_NONE);
+		drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, gCharacterTex, RENDERER_TRIANGLE_MODE, gCharacterVertexAndTextureCoordinateArrayObject, gCharacterIndicesBufferObject, 5220, (color4_t){character->red, character->green, character->blue, character->alpha}, options);
 	}
 }
 
-void drawCharacters(Renderer *renderer)
+static void testAndDrawCharacterIfNeeded(Renderer *renderer, Character *character, mat4_t worldMatrix, RendererOptions options)
+{
+	if (((options & RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA) != 0) == characterIsBlended(character))
+	{
+		drawCharacter(renderer, character, worldMatrix, options);
+	}
+}
+
+void drawCharacters(Renderer *renderer, RendererOptions options)
 {
 	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((float)M_PI / 180.0f));
 	mat4_t worldTranslationMatrix = m4_translation((vec3_t){-7.0f, 12.5f, -25.0f});
 	mat4_t worldMatrix = m4_mul(worldRotationMatrix, worldTranslationMatrix);
 	
-	drawCharacter(renderer, &gRedRover, worldMatrix);
-	drawCharacter(renderer, &gGreenTree, worldMatrix);
-	drawCharacter(renderer, &gPinkBubbleGum, worldMatrix);
-	drawCharacter(renderer, &gBlueLightning, worldMatrix);
+	testAndDrawCharacterIfNeeded(renderer, &gRedRover, worldMatrix, options);
+	testAndDrawCharacterIfNeeded(renderer, &gGreenTree, worldMatrix, options);
+	testAndDrawCharacterIfNeeded(renderer, &gPinkBubbleGum, worldMatrix, options);
+	testAndDrawCharacterIfNeeded(renderer, &gBlueLightning, worldMatrix, options);
 }
 
 static mat4_t characterIconModelViewMatrix(mat4_t modelViewMatrix)

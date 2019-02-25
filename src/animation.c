@@ -296,6 +296,8 @@ static void moveWeapon(Weapon *weapon, double timeDelta)
 #define RECOVERY_TIME_DELAY_DELTA (10 * ANIMATION_TIME_ELAPSED_INTERVAL)
 #define CHARACTER_REGAIN_MOVEMENT (25 * ANIMATION_TIME_ELAPSED_INTERVAL)
 #define END_CHARACTER_ANIMATION ((70 + 1) * ANIMATION_TIME_ELAPSED_INTERVAL)
+#define NUM_ALPHA_FLASH_ITERATIONS 3
+#define DOUBLE_ALPHA_FLUCUATION (0.4f * 2)
 static void animateTilesAndPlayerRecovery(double timeDelta, SDL_Window *window, Character *player)
 {
 	if (player->weap->animationState)
@@ -305,6 +307,27 @@ static void animateTilesAndPlayerRecovery(double timeDelta, SDL_Window *window, 
 			playShootingSound();
 		}
 		player->animation_timer += timeDelta;
+		
+		if ((gNetworkConnection == NULL && player->state == CHARACTER_HUMAN_STATE) || (gNetworkConnection != NULL && player->netName != NULL))
+		{
+			// Calculate player's alpha value based on current animation time
+			float alphaChunk = ((END_CHARACTER_ANIMATION - player->weap->compensation) / (float)NUM_ALPHA_FLASH_ITERATIONS);
+			
+			// Scale current modulo time of alphaChunk by DOUBLE_ALPHA_FLUCUATION
+			float oneMinusAlphaValue = fmodf(player->animation_timer, alphaChunk) * (DOUBLE_ALPHA_FLUCUATION / alphaChunk);
+			
+			// Wrap alpha value backwards when it's >= DOUBLE_ALPHA_FLUCUATION / 2
+			float wrappedOneMinusAlphaValue;
+			if (oneMinusAlphaValue > DOUBLE_ALPHA_FLUCUATION / 2.0f)
+			{
+				wrappedOneMinusAlphaValue = (DOUBLE_ALPHA_FLUCUATION / 2.0f) - (oneMinusAlphaValue - (DOUBLE_ALPHA_FLUCUATION / 2.0f));
+			}
+			else
+			{
+				wrappedOneMinusAlphaValue = oneMinusAlphaValue;
+			}
+			player->alpha = 1.0f - wrappedOneMinusAlphaValue;
+		}
 		
 		/* First, color the tiles that are going to be destroyed */
 		if (!player->coloredTiles)
@@ -416,6 +439,7 @@ static void animateTilesAndPlayerRecovery(double timeDelta, SDL_Window *window, 
 			player->weap->animationState = SDL_FALSE;
 			player->animation_timer = 0;
 			
+			player->alpha = 1.0f;
 			player->needTileLoc = SDL_TRUE;
 			player->coloredTiles = SDL_FALSE;
 			player->destroyedTileIndex = -1;
