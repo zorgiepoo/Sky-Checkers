@@ -1648,7 +1648,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 			break;
 	}
 	
-	if (gGameState == GAME_STATE_ON && gEscapeHeldDownTimer > 0 && SDL_GetTicks() - gEscapeHeldDownTimer > 1000)
+	if (gGameState == GAME_STATE_ON && gEscapeHeldDownTimer > 0 && SDL_GetTicks() - gEscapeHeldDownTimer > 700)
 	{
 		exitGame();
 	}
