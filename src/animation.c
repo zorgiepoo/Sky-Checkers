@@ -311,10 +311,10 @@ static void animateTilesAndPlayerRecovery(double timeDelta, SDL_Window *window, 
 		if ((gNetworkConnection == NULL && player->state == CHARACTER_HUMAN_STATE) || (gNetworkConnection != NULL && player->netName != NULL))
 		{
 			// Calculate player's alpha value based on current animation time
-			float alphaChunk = ((END_CHARACTER_ANIMATION - player->weap->compensation) / (float)NUM_ALPHA_FLASH_ITERATIONS);
+			float alphaChunk = (((float)END_CHARACTER_ANIMATION - player->weap->compensation) / (float)NUM_ALPHA_FLASH_ITERATIONS);
 			
 			// Scale current modulo time of alphaChunk by DOUBLE_ALPHA_FLUCUATION
-			float oneMinusAlphaValue = fmodf(player->animation_timer, alphaChunk) * (DOUBLE_ALPHA_FLUCUATION / alphaChunk);
+			float oneMinusAlphaValue = fmodf((float)player->animation_timer, alphaChunk) * (DOUBLE_ALPHA_FLUCUATION / alphaChunk);
 			
 			// Wrap alpha value backwards when it's >= DOUBLE_ALPHA_FLUCUATION / 2
 			float wrappedOneMinusAlphaValue;
