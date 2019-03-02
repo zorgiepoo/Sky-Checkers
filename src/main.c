@@ -612,6 +612,23 @@ cleanup:
 	fclose(fp);
 }
 
+static void writeCharacterInput(FILE *fp, const char *characterName, Input *input)
+{
+	fprintf(fp, "%s key right: %i\n", characterName, input->r_id);
+	fprintf(fp, "%s key left: %i\n", characterName, input->l_id);
+	fprintf(fp, "%s key up: %i\n", characterName, input->u_id);
+	fprintf(fp, "%s key down: %i\n", characterName, input->d_id);
+	fprintf(fp, "%s key weapon: %i\n", characterName, input->weap_id);
+	
+	fprintf(fp, "\n");
+	
+	fprintf(fp, "%s joy right id: %i, axis: %i, joy id: %i (%s)\n", characterName, input->rjs_id, input->rjs_axis_id, input->joy_right_id, input->joy_right);
+	fprintf(fp, "%s joy left id: %i, axis: %i, joy id: %i (%s)\n", characterName, input->ljs_id, input->ljs_axis_id, input->joy_left_id, input->joy_left);
+	fprintf(fp, "%s joy up id: %i, axis: %i, joy id: %i (%s)\n", characterName, input->ujs_id, input->ujs_axis_id, input->joy_up_id, input->joy_up);
+	fprintf(fp, "%s joy down id: %i, axis: %i, joy id: %i (%s)\n", characterName, input->djs_id, input->djs_axis_id, input->joy_down_id, input->joy_down);
+	fprintf(fp, "%s joy weapon id: %i, axis: %i, joy id: %i (%s)\n", characterName, input->weapjs_id, input->weapjs_axis_id, input->joy_weap_id, input->joy_weap);
+}
+
 static void writeDefaults(Renderer *renderer)
 {
 	FILE *fp = getUserDataFile("wb");
@@ -654,72 +671,19 @@ static void writeDefaults(Renderer *renderer)
 
 	fprintf(fp, "\n");
 
-	// PinkBubbleGum defaults
-	fprintf(fp, "Pink Bubblegum key right: %i\n", gPinkBubbleGumInput.r_id);
-	fprintf(fp, "Pink Bubblegum key left: %i\n", gPinkBubbleGumInput.l_id);
-	fprintf(fp, "Pink Bubblegum key up: %i\n", gPinkBubbleGumInput.u_id);
-	fprintf(fp, "Pink Bubblegum key down: %i\n", gPinkBubbleGumInput.d_id);
-	fprintf(fp, "Pink Bubblegum key weapon: %i\n", gPinkBubbleGumInput.weap_id);
-
+	// Character defaults
+	
+	writeCharacterInput(fp, "Pink Bubblegum", &gPinkBubbleGumInput);
 	fprintf(fp, "\n");
-
-	fprintf(fp, "Pink Bubblegum joy right id: %i, axis: %i, joy id: %i (%s)\n", gPinkBubbleGumInput.rjs_id, gPinkBubbleGumInput.rjs_axis_id, gPinkBubbleGumInput.joy_right_id, gPinkBubbleGumInput.joy_right);
-	fprintf(fp, "Pink Bubblegum joy left id: %i, axis: %i, joy id: %i (%s)\n", gPinkBubbleGumInput.ljs_id, gPinkBubbleGumInput.ljs_axis_id, gPinkBubbleGumInput.joy_left_id, gPinkBubbleGumInput.joy_left);
-	fprintf(fp, "Pink Bubblegum joy up id: %i, axis: %i, joy id: %i (%s)\n", gPinkBubbleGumInput.ujs_id, gPinkBubbleGumInput.ujs_axis_id, gPinkBubbleGumInput.joy_up_id, gPinkBubbleGumInput.joy_up);
-	fprintf(fp, "Pink Bubblegum joy down id: %i, axis: %i, joy id: %i (%s)\n", gPinkBubbleGumInput.djs_id, gPinkBubbleGumInput.djs_axis_id, gPinkBubbleGumInput.joy_down_id, gPinkBubbleGumInput.joy_down);
-	fprintf(fp, "Pink Bubblegum joy weapon id: %i, axis: %i, joy id: %i (%s)\n", gPinkBubbleGumInput.weapjs_id, gPinkBubbleGumInput.weapjs_axis_id, gPinkBubbleGumInput.joy_weap_id, gPinkBubbleGumInput.joy_weap);
-
+	
+	writeCharacterInput(fp, "Red Rover", &gRedRoverInput);
 	fprintf(fp, "\n");
-
-	// RedRover defaults
-	fprintf(fp, "Red Rover key right: %i\n", gRedRoverInput.r_id);
-	fprintf(fp, "Red Rover key left: %i\n", gRedRoverInput.l_id);
-	fprintf(fp, "Red Rover key up: %i\n", gRedRoverInput.u_id);
-	fprintf(fp, "Red Rover key down: %i\n", gRedRoverInput.d_id);
-	fprintf(fp, "Red Rover key weapon: %i\n", gRedRoverInput.weap_id);
-
+	
+	writeCharacterInput(fp, "Green Tree", &gGreenTreeInput);
 	fprintf(fp, "\n");
-
-	fprintf(fp, "Red Rover joy right id: %i, axis: %i, joy id: %i (%s)\n", gRedRoverInput.rjs_id, gRedRoverInput.rjs_axis_id, gRedRoverInput.joy_right_id, gRedRoverInput.joy_right);
-	fprintf(fp, "Red Rover joy left id: %i, axis: %i, joy id: %i (%s)\n", gRedRoverInput.ljs_id, gRedRoverInput.ljs_axis_id, gRedRoverInput.joy_left_id, gRedRoverInput.joy_left);
-	fprintf(fp, "Red Rover joy up id: %i, axis: %i, joy id: %i (%s)\n", gRedRoverInput.ujs_id, gRedRoverInput.ujs_axis_id, gRedRoverInput.joy_up_id, gRedRoverInput.joy_up);
-	fprintf(fp, "Red Rover joy down id: %i, axis: %i, joy id: %i (%s)\n", gRedRoverInput.djs_id, gRedRoverInput.djs_axis_id, gRedRoverInput.joy_down_id, gRedRoverInput.joy_down);
-	fprintf(fp, "Red Rover joy weapon id: %i, axis: %i, joy id: %i (%s)\n", gRedRoverInput.weapjs_id, gRedRoverInput.weapjs_axis_id, gRedRoverInput.joy_weap_id, gRedRoverInput.joy_weap);
-
-	fprintf(fp, "\n");
-
-	// GreenTree defaults
-	fprintf(fp, "Green Tree key right: %i\n", gGreenTreeInput.r_id);
-	fprintf(fp, "Green Tree key left: %i\n", gGreenTreeInput.l_id);
-	fprintf(fp, "Green Tree key up: %i\n", gGreenTreeInput.u_id);
-	fprintf(fp, "Green Tree key down: %i\n", gGreenTreeInput.d_id);
-	fprintf(fp, "Green Tree key weapon: %i\n", gGreenTreeInput.weap_id);
-
-	fprintf(fp, "\n");
-
-	fprintf(fp, "Green Tree joy right id: %i, axis: %i, joy id: %i (%s)\n", gGreenTreeInput.rjs_id, gGreenTreeInput.rjs_axis_id, gGreenTreeInput.joy_right_id, gGreenTreeInput.joy_right);
-	fprintf(fp, "Green Tree joy left id: %i, axis: %i, joy id: %i (%s)\n", gGreenTreeInput.ljs_id, gGreenTreeInput.ljs_axis_id, gGreenTreeInput.joy_left_id, gGreenTreeInput.joy_left);
-	fprintf(fp, "Green Tree joy up id: %i, axis: %i, joy id: %i (%s)\n", gGreenTreeInput.ujs_id, gGreenTreeInput.ujs_axis_id, gGreenTreeInput.joy_up_id, gGreenTreeInput.joy_up);
-	fprintf(fp, "Green Tree joy down id: %i, axis: %i, joy id: %i (%s)\n", gGreenTreeInput.djs_id, gGreenTreeInput.djs_axis_id, gGreenTreeInput.joy_down_id, gGreenTreeInput.joy_down);
-	fprintf(fp, "Green Tree joy weapon id: %i, axis: %i, joy id: %i (%s)\n", gGreenTreeInput.weapjs_id, gGreenTreeInput.weapjs_axis_id, gGreenTreeInput.joy_weap_id, gGreenTreeInput.joy_weap);
-
-	fprintf(fp, "\n");
-
-	// BlueLightning defaults
-	fprintf(fp, "Blue Lightning key right: %i\n", gBlueLightningInput.r_id);
-	fprintf(fp, "Blue Lightning key left: %i\n", gBlueLightningInput.l_id);
-	fprintf(fp, "Blue Lightning key up: %i\n", gBlueLightningInput.u_id);
-	fprintf(fp, "Blue Lightning key down: %i\n", gBlueLightningInput.d_id);
-	fprintf(fp, "Blue Lightning key weapon: %i\n", gBlueLightningInput.weap_id);
-
-	fprintf(fp, "\n");
-
-	fprintf(fp, "Blue Lightning joy right id: %i, axis: %i, joy id: %i (%s)\n", gBlueLightningInput.rjs_id, gBlueLightningInput.rjs_axis_id, gBlueLightningInput.joy_right_id, gBlueLightningInput.joy_right);
-	fprintf(fp, "Blue Lightning joy left id: %i, axis: %i, joy id: %i (%s)\n", gBlueLightningInput.ljs_id, gBlueLightningInput.ljs_axis_id, gBlueLightningInput.joy_left_id, gBlueLightningInput.joy_left);
-	fprintf(fp, "Blue Lightning joy up id: %i, axis: %i, joy id: %i (%s)\n", gBlueLightningInput.ujs_id, gBlueLightningInput.ujs_axis_id, gBlueLightningInput.joy_up_id, gBlueLightningInput.joy_up);
-	fprintf(fp, "Blue Lightning joy down id: %i, axis: %i, joy id: %i (%s)\n", gBlueLightningInput.djs_id, gBlueLightningInput.djs_axis_id, gBlueLightningInput.joy_down_id, gBlueLightningInput.joy_down);
-	fprintf(fp, "Blue Lightning joy weapon id: %i, axis: %i, joy id: %i (%s)\n", gBlueLightningInput.weapjs_id, gBlueLightningInput.weapjs_axis_id, gBlueLightningInput.joy_weap_id, gBlueLightningInput.joy_weap);
-
+	
+	writeCharacterInput(fp, "Blue Lightning", &gBlueLightningInput);
+	
 	fprintf(fp, "\n");
 	fprintf(fp, "Server IP Address: %s\n", gServerAddressString);
 
