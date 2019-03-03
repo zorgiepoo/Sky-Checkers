@@ -952,9 +952,16 @@ void configureJoyStick(Input *input, int type)
 {
 	Sint16 value;
 	Uint8 axis;
-	int joy_id = 0;
+	int joy_id = -1;
 	
 	unsigned trigger = getJoyStickTrigger(&value, &axis, &joy_id);
+	
+	SDL_JoystickGUID guid;
+	if (joy_id != -1)
+	{
+		SDL_Joystick *joystick = SDL_JoystickFromInstanceID(joy_id);
+		guid = SDL_JoystickGetGUID(joystick);
+	}
 	
 	if (type == RIGHT)
 	{
@@ -985,6 +992,8 @@ void configureJoyStick(Input *input, int type)
 		{
 			sprintf(input->joy_right, "Joy Button %i", input->rjs_id);
 		}
+		
+		SDL_JoystickGetGUIDString(guid, input->joy_right_guid, MAX_JOY_GUID_BUFFER_LENGTH);
 	}
 	
 	else if (type == LEFT)
@@ -1019,6 +1028,8 @@ void configureJoyStick(Input *input, int type)
 		{
 			sprintf(input->joy_left, "Joy Button %i", input->ljs_id);
 		}
+		
+		SDL_JoystickGetGUIDString(guid, input->joy_left_guid, MAX_JOY_GUID_BUFFER_LENGTH);
 	}
 	
 	else if (type == UP)
@@ -1053,6 +1064,8 @@ void configureJoyStick(Input *input, int type)
 		{
 			sprintf(input->joy_up, "Joy Button %i", input->ujs_id);
 		}
+		
+		SDL_JoystickGetGUIDString(guid, input->joy_up_guid, MAX_JOY_GUID_BUFFER_LENGTH);
 	}
 	
 	else if (type == DOWN)
@@ -1088,6 +1101,7 @@ void configureJoyStick(Input *input, int type)
 			sprintf(input->joy_down, "Joy Button %i", input->djs_id);
 		}
 		
+		SDL_JoystickGetGUIDString(guid, input->joy_down_guid, MAX_JOY_GUID_BUFFER_LENGTH);
 	}
 	else if (type == WEAPON)
 	{
@@ -1121,6 +1135,8 @@ void configureJoyStick(Input *input, int type)
 		{
 			sprintf(input->joy_weap, "Joy Button %i", input->weapjs_id);
 		}
+		
+		SDL_JoystickGetGUIDString(guid, input->joy_weap_guid, MAX_JOY_GUID_BUFFER_LENGTH);
 	}
 }
 

@@ -75,11 +75,13 @@ static uint32_t gEscapeHeldDownTimer;
 #define CHARACTER_ICON_DISPLACEMENT 5.0f
 #define CHARACTER_ICON_OFFSET -8.5f
 
+#define MAX_SUPPORTED_JOYSTICKS 32
+
 void initGame(void);
 
 static void initScene(Renderer *renderer);
 
-static void readDefaults(void);
+static void readDefaults(SDL_Joystick **joysticks);
 static void writeDefaults(Renderer *renderer);
 
 static void drawBlackBox(Renderer *renderer)
@@ -218,19 +220,57 @@ static SDL_bool scanLineTerminatingString(FILE *fp, char *destBuffer, size_t max
 	return success;
 }
 
-static SDL_bool scanGroupedJoyString(FILE *fp, char *joyBuffer)
+static SDL_bool scanJoyGuidAndDescriptionString(FILE *fp, char *guidBuffer, char *descriptionBuffer)
 {
-	char tempBuffer[MAX_JOY_DESCRIPTION_BUFFER_LENGTH + 2] = {0};
+	char tempBuffer[MAX_JOY_GUID_BUFFER_LENGTH + MAX_JOY_DESCRIPTION_BUFFER_LENGTH + 2] = {0};
 	if (!scanLineTerminatingString(fp, tempBuffer, sizeof(tempBuffer))) return SDL_FALSE;
 	
 	size_t length = strlen(tempBuffer);
-	if (length <= 2) return SDL_FALSE;
+	if (length <= 3) return SDL_FALSE; // () + space at least
 	
-	if (tempBuffer[0] != '(' || tempBuffer[length - 1] != ')') return SDL_FALSE;
+	if (tempBuffer[length - 1] != ')') return SDL_FALSE;
 	
-	memcpy(joyBuffer, tempBuffer + 1, length - 2);
+	char *lastOpenParenPtr = strrchr(tempBuffer, '(');
+	if (lastOpenParenPtr == NULL || lastOpenParenPtr >= &tempBuffer[length - 1]) return SDL_FALSE;
+	
+	if (lastOpenParenPtr - tempBuffer < 1) return SDL_FALSE;
+	if (lastOpenParenPtr - tempBuffer - 1 >= MAX_JOY_GUID_BUFFER_LENGTH) return SDL_FALSE;
+	
+	size_t guidLength = lastOpenParenPtr - tempBuffer - 1;
+	memcpy(guidBuffer, tempBuffer, guidLength);
+	guidBuffer[guidLength] = '\0';
+	
+	size_t descriptionLength = tempBuffer + length - lastOpenParenPtr - 2;
+	if (descriptionLength >= MAX_JOY_DESCRIPTION_BUFFER_LENGTH) return SDL_FALSE;
+	memcpy(descriptionBuffer, lastOpenParenPtr + 1, descriptionLength);
+	descriptionBuffer[descriptionLength] = '\0';
 	
 	return SDL_TRUE;
+}
+
+static void setJoystickIdFromGuid(SDL_Joystick **joysticks, int *joystickId, char *guidString)
+{
+	for (int joystickIndex = 0; joystickIndex < MAX_SUPPORTED_JOYSTICKS; joystickIndex++)
+	{
+		SDL_Joystick *joystick = joysticks[joystickIndex];
+		if (joystick == NULL)
+		{
+			break;
+		}
+		
+		SDL_JoystickGUID guid = SDL_JoystickGetGUID(joystick);
+		
+		char guidBuffer[MAX_JOY_GUID_BUFFER_LENGTH] = {0};
+		SDL_JoystickGetGUIDString(guid, guidBuffer, MAX_JOY_GUID_BUFFER_LENGTH);
+		
+		if (strncmp(guidString, guidBuffer, MAX_JOY_GUID_BUFFER_LENGTH) == 0)
+		{
+			*joystickId = SDL_JoystickInstanceID(joystick);
+			return;
+		}
+	}
+	
+	*joystickId = -1;
 }
 
 // SDL 1.2 had a different mapping of key codes compared to SDL 2
@@ -365,42 +405,9 @@ static SDL_Scancode scanCodeFromKeyCode1_2(int keyCode)
 	return SDL_SCANCODE_UNKNOWN;
 }
 
-static SDL_bool readCharacterInputDefaults(FILE *fp, const char *characterName, Input *input, int defaultsVersion)
+static SDL_bool readCharacterInputDefaults(FILE *fp, const char *characterName, Input *input, SDL_Joystick **joysticks, int defaultsVersion)
 {
-	if (!scanExpectedString(fp, characterName)) return SDL_FALSE;
-	if (fscanf(fp, " key right: %i\n", &input->r_id) < 1) return SDL_FALSE;
-	if (defaultsVersion <= 1)
-	{
-		input->r_id = scanCodeFromKeyCode1_2(input->r_id);
-	}
-	
-	if (!scanExpectedString(fp, characterName)) return SDL_FALSE;
-	if (fscanf(fp, " key left: %i\n", &input->l_id) < 1) return SDL_FALSE;
-	if (defaultsVersion <= 1)
-	{
-		input->l_id = scanCodeFromKeyCode1_2(input->l_id);
-	}
-	
-	if (!scanExpectedString(fp, characterName)) return SDL_FALSE;
-	if (fscanf(fp, " key up: %i\n", &input->u_id) < 1) return SDL_FALSE;
-	if (defaultsVersion <= 1)
-	{
-		input->u_id = scanCodeFromKeyCode1_2(input->u_id);
-	}
-	
-	if (!scanExpectedString(fp, characterName)) return SDL_FALSE;
-	if (fscanf(fp, " key down: %i\n", &input->d_id) < 1) return SDL_FALSE;
-	if (defaultsVersion <= 1)
-	{
-		input->d_id = scanCodeFromKeyCode1_2(input->d_id);
-	}
-	
-	if (!scanExpectedString(fp, characterName)) return SDL_FALSE;
-	if (fscanf(fp, " key weapon: %i\n", &input->weap_id) < 1) return SDL_FALSE;
-	if (defaultsVersion <= 1)
-	{
-		input->weap_id = scanCodeFromKeyCode1_2(input->weap_id);
-	}
+	SDL_bool readInputDefaults = SDL_FALSE;
 	
 	input->joy_right = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
 	input->joy_left = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
@@ -408,32 +415,114 @@ static SDL_bool readCharacterInputDefaults(FILE *fp, const char *characterName, 
 	input->joy_down = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
 	input->joy_weap = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
 	
-	if (!scanExpectedString(fp, characterName)) return SDL_FALSE;
-	if (fscanf(fp, " joy right id: %i, axis: %i, joy id: %i ", &input->rjs_id, &input->rjs_axis_id, &input->joy_right_id) < 3) return SDL_FALSE;
-	if (!scanGroupedJoyString(fp, input->joy_right)) return SDL_FALSE;
+	input->joy_right_guid = calloc(MAX_JOY_GUID_BUFFER_LENGTH, 1);
+	input->joy_left_guid = calloc(MAX_JOY_GUID_BUFFER_LENGTH, 1);
+	input->joy_up_guid = calloc(MAX_JOY_GUID_BUFFER_LENGTH, 1);
+	input->joy_down_guid = calloc(MAX_JOY_GUID_BUFFER_LENGTH, 1);
+	input->joy_weap_guid = calloc(MAX_JOY_GUID_BUFFER_LENGTH, 1);
 	
-	if (!scanExpectedString(fp, characterName)) return SDL_FALSE;
-	if (fscanf(fp, " joy left id: %i, axis: %i, joy id: %i ", &input->ljs_id, &input->ljs_axis_id, &input->joy_left_id) < 3) return SDL_FALSE;
-	if (!scanGroupedJoyString(fp, input->joy_left)) return SDL_FALSE;
+	if (!scanExpectedString(fp, characterName)) goto read_input_cleanup;
+	if (fscanf(fp, " key right: %i\n", &input->r_id) < 1) goto read_input_cleanup;
+	if (defaultsVersion <= 1)
+	{
+		input->r_id = scanCodeFromKeyCode1_2(input->r_id);
+	}
 	
-	if (!scanExpectedString(fp, characterName)) return SDL_FALSE;
-	if (fscanf(fp, " joy up id: %i, axis: %i, joy id: %i ", &input->ujs_id, &input->ujs_axis_id, &input->joy_up_id) < 3) return SDL_FALSE;
-	if (!scanGroupedJoyString(fp, input->joy_up)) return SDL_FALSE;
+	if (!scanExpectedString(fp, characterName)) goto read_input_cleanup;
+	if (fscanf(fp, " key left: %i\n", &input->l_id) < 1) goto read_input_cleanup;
+	if (defaultsVersion <= 1)
+	{
+		input->l_id = scanCodeFromKeyCode1_2(input->l_id);
+	}
 	
-	if (!scanExpectedString(fp, characterName)) return SDL_FALSE;
-	if (fscanf(fp, " joy down id: %i, axis: %i, joy id: %i ", &input->djs_id, &input->djs_axis_id, &input->joy_down_id) < 3) return SDL_FALSE;
-	if (!scanGroupedJoyString(fp, input->joy_down)) return SDL_FALSE;
+	if (!scanExpectedString(fp, characterName)) goto read_input_cleanup;
+	if (fscanf(fp, " key up: %i\n", &input->u_id) < 1) goto read_input_cleanup;
+	if (defaultsVersion <= 1)
+	{
+		input->u_id = scanCodeFromKeyCode1_2(input->u_id);
+	}
 	
-	if (!scanExpectedString(fp, characterName)) return SDL_FALSE;
-	if (fscanf(fp, " joy weapon id: %i, axis: %i, joy id: %i ", &input->weapjs_id, &input->weapjs_axis_id, &input->joy_weap_id) < 3) return SDL_FALSE;
-	if (!scanGroupedJoyString(fp, input->joy_weap)) return SDL_FALSE;
+	if (!scanExpectedString(fp, characterName)) goto read_input_cleanup;
+	if (fscanf(fp, " key down: %i\n", &input->d_id) < 1) goto read_input_cleanup;
+	if (defaultsVersion <= 1)
+	{
+		input->d_id = scanCodeFromKeyCode1_2(input->d_id);
+	}
 	
-	if (!scanExpectedString(fp, "\n")) return SDL_FALSE;
+	if (!scanExpectedString(fp, characterName)) goto read_input_cleanup;
+	if (fscanf(fp, " key weapon: %i\n", &input->weap_id) < 1) goto read_input_cleanup;
+	if (defaultsVersion <= 1)
+	{
+		input->weap_id = scanCodeFromKeyCode1_2(input->weap_id);
+	}
 	
-	return SDL_TRUE;
+	if (!scanExpectedString(fp, characterName)) goto read_input_cleanup;
+	if (fscanf(fp, " joy right id: %i, axis: %i, joy id: ", &input->rjs_id, &input->rjs_axis_id) < 2) goto read_input_cleanup;
+	if (!scanJoyGuidAndDescriptionString(fp, input->joy_right_guid, input->joy_right)) goto read_input_cleanup;
+	setJoystickIdFromGuid(joysticks, &input->joy_right_id, input->joy_right_guid);
+	
+	if (!scanExpectedString(fp, characterName)) goto read_input_cleanup;
+	if (fscanf(fp, " joy left id: %i, axis: %i, joy id: ", &input->ljs_id, &input->ljs_axis_id) < 2) goto read_input_cleanup;
+	if (!scanJoyGuidAndDescriptionString(fp, input->joy_left_guid, input->joy_left)) goto read_input_cleanup;
+	setJoystickIdFromGuid(joysticks, &input->joy_left_id, input->joy_left_guid);
+	
+	if (!scanExpectedString(fp, characterName)) goto read_input_cleanup;
+	if (fscanf(fp, " joy up id: %i, axis: %i, joy id: ", &input->ujs_id, &input->ujs_axis_id) < 2) goto read_input_cleanup;
+	if (!scanJoyGuidAndDescriptionString(fp, input->joy_up_guid, input->joy_up)) goto read_input_cleanup;
+	setJoystickIdFromGuid(joysticks, &input->joy_up_id, input->joy_up_guid);
+	
+	if (!scanExpectedString(fp, characterName)) goto read_input_cleanup;
+	if (fscanf(fp, " joy down id: %i, axis: %i, joy id: ", &input->djs_id, &input->djs_axis_id) < 2) goto read_input_cleanup;
+	if (!scanJoyGuidAndDescriptionString(fp, input->joy_down_guid, input->joy_down)) goto read_input_cleanup;
+	setJoystickIdFromGuid(joysticks, &input->joy_down_id, input->joy_down_guid);
+	
+	if (!scanExpectedString(fp, characterName)) goto read_input_cleanup;
+	if (fscanf(fp, " joy weapon id: %i, axis: %i, joy id: ", &input->weapjs_id, &input->weapjs_axis_id) < 2) goto read_input_cleanup;
+	if (!scanJoyGuidAndDescriptionString(fp, input->joy_weap_guid, input->joy_weap)) goto read_input_cleanup;
+	setJoystickIdFromGuid(joysticks, &input->joy_weap_id, input->joy_weap_guid);
+	
+	if (!scanExpectedString(fp, "\n")) goto read_input_cleanup;
+	
+	readInputDefaults = SDL_TRUE;
+	
+read_input_cleanup:
+	if (!readInputDefaults)
+	{
+		free(input->joy_right);
+		input->joy_right = NULL;
+		
+		free(input->joy_left);
+		input->joy_left = NULL;
+		
+		free(input->joy_up);
+		input->joy_up = NULL;
+		
+		free(input->joy_down);
+		input->joy_down = NULL;
+		
+		free(input->joy_weap);
+		input->joy_weap = NULL;
+		
+		free(input->joy_right_guid);
+		input->joy_right_guid = NULL;
+		
+		free(input->joy_left_guid);
+		input->joy_left_guid = NULL;
+		
+		free(input->joy_up_guid);
+		input->joy_up_guid = NULL;
+		
+		free(input->joy_down_guid);
+		input->joy_down_guid = NULL;
+		
+		free(input->joy_weap_guid);
+		input->joy_weap_guid = NULL;
+	}
+	
+	return readInputDefaults;
 }
 
-static void readDefaults(void)
+static void readDefaults(SDL_Joystick **joysticks)
 {
 	#ifndef WINDOWS
 		// this would be a good time to get the default user name
@@ -584,10 +673,10 @@ static void readDefaults(void)
 		gNumberOfNetHumans = 1;
 	}
 	
-	if (!readCharacterInputDefaults(fp, "Pink Bubblegum", &gPinkBubbleGumInput, defaultsVersion)) goto cleanup;
-	if (!readCharacterInputDefaults(fp, "Red Rover", &gRedRoverInput, defaultsVersion)) goto cleanup;
-	if (!readCharacterInputDefaults(fp, "Green Tree", &gGreenTreeInput, defaultsVersion)) goto cleanup;
-	if (!readCharacterInputDefaults(fp, "Blue Lightning", &gBlueLightningInput, defaultsVersion)) goto cleanup;
+	if (!readCharacterInputDefaults(fp, "Pink Bubblegum", &gPinkBubbleGumInput, joysticks, defaultsVersion)) goto cleanup;
+	if (!readCharacterInputDefaults(fp, "Red Rover", &gRedRoverInput, joysticks, defaultsVersion)) goto cleanup;
+	if (!readCharacterInputDefaults(fp, "Green Tree", &gGreenTreeInput, joysticks, defaultsVersion)) goto cleanup;
+	if (!readCharacterInputDefaults(fp, "Blue Lightning", &gBlueLightningInput, joysticks, defaultsVersion)) goto cleanup;
 	
 	if (!scanExpectedString(fp, "Server IP Address: ")) goto cleanup;
 	if (!scanLineTerminatingString(fp, gServerAddressString, sizeof(gServerAddressString))) goto cleanup;
@@ -612,6 +701,18 @@ cleanup:
 	fclose(fp);
 }
 
+static char *joystickGuidFromId(char *guid)
+{
+	if (guid != NULL && strlen(guid) > 0)
+	{
+		return guid;
+	}
+	else
+	{
+		return "_NULL_";
+	}
+}
+
 static void writeCharacterInput(FILE *fp, const char *characterName, Input *input)
 {
 	fprintf(fp, "%s key right: %i\n", characterName, input->r_id);
@@ -622,11 +723,11 @@ static void writeCharacterInput(FILE *fp, const char *characterName, Input *inpu
 	
 	fprintf(fp, "\n");
 	
-	fprintf(fp, "%s joy right id: %i, axis: %i, joy id: %i (%s)\n", characterName, input->rjs_id, input->rjs_axis_id, input->joy_right_id, input->joy_right);
-	fprintf(fp, "%s joy left id: %i, axis: %i, joy id: %i (%s)\n", characterName, input->ljs_id, input->ljs_axis_id, input->joy_left_id, input->joy_left);
-	fprintf(fp, "%s joy up id: %i, axis: %i, joy id: %i (%s)\n", characterName, input->ujs_id, input->ujs_axis_id, input->joy_up_id, input->joy_up);
-	fprintf(fp, "%s joy down id: %i, axis: %i, joy id: %i (%s)\n", characterName, input->djs_id, input->djs_axis_id, input->joy_down_id, input->joy_down);
-	fprintf(fp, "%s joy weapon id: %i, axis: %i, joy id: %i (%s)\n", characterName, input->weapjs_id, input->weapjs_axis_id, input->joy_weap_id, input->joy_weap);
+	fprintf(fp, "%s joy right id: %i, axis: %i, joy id: %s (%s)\n", characterName, input->rjs_id, input->rjs_axis_id, joystickGuidFromId(input->joy_right_guid), input->joy_right);
+	fprintf(fp, "%s joy left id: %i, axis: %i, joy id: %s (%s)\n", characterName, input->ljs_id, input->ljs_axis_id, joystickGuidFromId(input->joy_left_guid), input->joy_left);
+	fprintf(fp, "%s joy up id: %i, axis: %i, joy id: %s (%s)\n", characterName, input->ujs_id, input->ujs_axis_id, joystickGuidFromId(input->joy_up_guid), input->joy_up);
+	fprintf(fp, "%s joy down id: %i, axis: %i, joy id: %s (%s)\n", characterName, input->djs_id, input->djs_axis_id, joystickGuidFromId(input->joy_down_guid), input->joy_down);
+	fprintf(fp, "%s joy weapon id: %i, axis: %i, joy id: %s (%s)\n", characterName, input->weapjs_id, input->weapjs_axis_id, joystickGuidFromId(input->joy_weap_guid), input->joy_weap);
 }
 
 static void writeDefaults(Renderer *renderer)
@@ -1761,25 +1862,25 @@ static void eventLoop(Renderer *renderer)
 	}
 }
 
-void initJoySticks(void)
+void initJoySticks(SDL_Joystick **joysticks)
 {
-	int numJoySticks = 0;
-	int joyIndex;
-
-	numJoySticks = SDL_NumJoysticks();
-
+	int numJoySticks = SDL_NumJoysticks();
 	if (numJoySticks > 0)
 	{
-
-		if (numJoySticks > 4)
+		if (numJoySticks > MAX_SUPPORTED_JOYSTICKS)
 		{
-			fprintf(stderr, "There's more than 4 joysticks available. We're going to only read the first four joysticks connected to the system.\n");
-			numJoySticks = 4;
+			numJoySticks = MAX_SUPPORTED_JOYSTICKS;
 		}
-
-		for (joyIndex = 0; joyIndex < numJoySticks; joyIndex++)
+		
+		int numJoysticksCreated = 0;
+		for (int joyIndex = 0; joyIndex < numJoySticks; joyIndex++)
 		{
-			SDL_JoystickOpen(joyIndex);
+			SDL_Joystick *joystick = SDL_JoystickOpen(joyIndex);
+			if (joystick != NULL)
+			{
+				joysticks[numJoysticksCreated] = joystick;
+				numJoysticksCreated++;
+			}
 		}
 	}
 }
@@ -1802,14 +1903,15 @@ int main(int argc, char *argv[])
 	}
 #endif
 
-	initJoySticks();
+	SDL_Joystick *joysticks[MAX_SUPPORTED_JOYSTICKS] = {0};
+	initJoySticks(joysticks);
 
 	if (!initAudio())
 	{
 		return -3;
 	};
 
-	readDefaults();
+	readDefaults(joysticks);
 
 	// Create renderer
 #ifdef _PROFILING

@@ -55,12 +55,25 @@ void initInput(Input *input, int right, int left, int up, int down, int weapon)
 	input->djs_axis_id = JOY_AXIS_NONE;
 	input->weapjs_axis_id = JOY_AXIS_NONE;
 	
+	input->joy_right_id = JOY_INVALID_ID;
+	input->joy_left_id = JOY_INVALID_ID;
+	input->joy_up_id = JOY_INVALID_ID;
+	input->joy_down_id = JOY_INVALID_ID;
+	input->joy_weap_id = JOY_INVALID_ID;
+	
 	// allocate some memory for the descriptions.
 	input->joy_right = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
 	input->joy_left = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
 	input->joy_up = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
 	input->joy_down = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
 	input->joy_weap = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
+	
+	// alocate memory for the uuids
+	input->joy_right_guid = calloc(MAX_JOY_GUID_BUFFER_LENGTH, 1);
+	input->joy_left_guid = calloc(MAX_JOY_GUID_BUFFER_LENGTH, 1);
+	input->joy_up_guid = calloc(MAX_JOY_GUID_BUFFER_LENGTH, 1);
+	input->joy_down_guid = calloc(MAX_JOY_GUID_BUFFER_LENGTH, 1);
+	input->joy_weap_guid = calloc(MAX_JOY_GUID_BUFFER_LENGTH, 1);
 	
 	sprintf(input->joy_right, "None");
 	sprintf(input->joy_left, "None");

@@ -31,6 +31,7 @@
 #define JOY_INVALID_ID	-1
 
 #define MAX_JOY_DESCRIPTION_BUFFER_LENGTH 128
+#define MAX_JOY_GUID_BUFFER_LENGTH 128
 
 // This dictates what the analog deadzone is. Max is 32767
 #define VALID_ANALOG_MAGNITUDE 10000
@@ -84,6 +85,13 @@ typedef struct
 	int joy_down_id;
 	int joy_up_id;
 	int joy_weap_id;
+	
+	// joystick instance guid strings corresponding to joystick ids above
+	char *joy_right_guid;
+	char *joy_left_guid;
+	char *joy_down_guid;
+	char *joy_up_guid;
+	char *joy_weap_guid;
 	
 	// descriptions of joy actions
 	char *joy_right;
