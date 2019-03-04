@@ -84,6 +84,11 @@ static void initScene(Renderer *renderer);
 static void readDefaults(SDL_Joystick **joysticks);
 static void writeDefaults(Renderer *renderer);
 
+static void removeJoyStick(SDL_Joystick **joysticks, SDL_JoystickID instanceID);
+static void addJoyStick(SDL_Joystick **joysticks, int deviceIndex);
+static void setJoystickIdFromGuid(SDL_Joystick **joysticks, int *joystickId, char *guidString);
+static void reloadJoySticks(SDL_Joystick **joysticks);
+
 static void drawBlackBox(Renderer *renderer)
 {
 	static BufferArrayObject vertexArrayObject;
@@ -253,20 +258,18 @@ static void setJoystickIdFromGuid(SDL_Joystick **joysticks, int *joystickId, cha
 	for (int joystickIndex = 0; joystickIndex < MAX_SUPPORTED_JOYSTICKS; joystickIndex++)
 	{
 		SDL_Joystick *joystick = joysticks[joystickIndex];
-		if (joystick == NULL)
+		if (joystick != NULL && SDL_JoystickGetAttached(joystick))
 		{
-			break;
-		}
-		
-		SDL_JoystickGUID guid = SDL_JoystickGetGUID(joystick);
-		
-		char guidBuffer[MAX_JOY_GUID_BUFFER_LENGTH] = {0};
-		SDL_JoystickGetGUIDString(guid, guidBuffer, MAX_JOY_GUID_BUFFER_LENGTH);
-		
-		if (strncmp(guidString, guidBuffer, MAX_JOY_GUID_BUFFER_LENGTH) == 0)
-		{
-			*joystickId = SDL_JoystickInstanceID(joystick);
-			return;
+			SDL_JoystickGUID guid = SDL_JoystickGetGUID(joystick);
+			
+			char guidBuffer[MAX_JOY_GUID_BUFFER_LENGTH] = {0};
+			SDL_JoystickGetGUIDString(guid, guidBuffer, MAX_JOY_GUID_BUFFER_LENGTH);
+			
+			if (strncmp(guidString, guidBuffer, MAX_JOY_GUID_BUFFER_LENGTH) == 0)
+			{
+				*joystickId = SDL_JoystickInstanceID(joystick);
+				return;
+			}
 		}
 	}
 	
@@ -1364,7 +1367,7 @@ static void writeTextInput(const char *text, uint8_t maxSize)
 	}
 }
 
-static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDrawScene, SDL_bool *quit)
+static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDrawScene, SDL_Joystick **joysticks, SDL_bool *quit)
 {
 	SDL_Window *window = renderer->window;
 	
@@ -1727,6 +1730,14 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 			}
 
 			break;
+		case SDL_JOYDEVICEADDED:
+			addJoyStick(joysticks, event->jdevice.which);
+			reloadJoySticks(joysticks);
+			break;
+		case SDL_JOYDEVICEREMOVED:
+			removeJoyStick(joysticks, event->jdevice.which);
+			reloadJoySticks(joysticks);
+			break;
 		case SDL_WINDOWEVENT:
 			if (event->window.event == SDL_WINDOWEVENT_FOCUS_LOST)
 			{
@@ -1795,7 +1806,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 
 #define MAX_ITERATIONS (25 * ANIMATION_TIMER_INTERVAL)
 
-static void eventLoop(Renderer *renderer)
+static void eventLoop(Renderer *renderer, SDL_Joystick **joysticks)
 {
 	SDL_Event event;
 	SDL_bool needsToDrawScene = SDL_TRUE;
@@ -1810,7 +1821,7 @@ static void eventLoop(Renderer *renderer)
 	{
 		while (SDL_PollEvent(&event))
 		{
-			eventInput(&event, renderer, &needsToDrawScene, &done);
+			eventInput(&event, renderer, &needsToDrawScene, joysticks, &done);
 		}
 		
 		// Update game state
@@ -1902,7 +1913,71 @@ static void eventLoop(Renderer *renderer)
 	}
 }
 
-void initJoySticks(SDL_Joystick **joysticks)
+static void removeJoyStick(SDL_Joystick **joysticks, SDL_JoystickID instanceID)
+{
+	for (int joyIndex = 0; joyIndex < MAX_SUPPORTED_JOYSTICKS; joyIndex++)
+	{
+		if (joysticks[joyIndex] != NULL)
+		{
+			if (!SDL_JoystickGetAttached(joysticks[joyIndex]))
+			{
+				joysticks[joyIndex] = NULL;
+			}
+			else if (SDL_JoystickInstanceID(joysticks[joyIndex]) == instanceID)
+			{
+				SDL_JoystickClose(joysticks[joyIndex]);
+				joysticks[joyIndex] = NULL;
+			}
+		}
+	}
+}
+
+static void addJoyStick(SDL_Joystick **joysticks, int deviceIndex)
+{
+	SDL_Joystick *newJoystick = SDL_JoystickOpen(deviceIndex);
+	if (newJoystick == NULL)
+	{
+		return;
+	}
+	
+	for (int joyIndex = 0; joyIndex < MAX_SUPPORTED_JOYSTICKS; joyIndex++)
+	{
+		if (joysticks[joyIndex] != NULL && SDL_JoystickGetAttached(joysticks[joyIndex]) && SDL_JoystickInstanceID(joysticks[joyIndex]) == SDL_JoystickInstanceID(newJoystick))
+		{
+			return;
+		}
+	}
+	
+	for (int joyIndex = 0; joyIndex < MAX_SUPPORTED_JOYSTICKS; joyIndex++)
+	{
+		if (joysticks[joyIndex] == NULL || !SDL_JoystickGetAttached(joysticks[joyIndex]))
+		{
+			joysticks[joyIndex] = newJoystick;
+			return;
+		}
+	}
+	
+	SDL_JoystickClose(newJoystick);
+}
+
+static void reloadJoyStickForInput(SDL_Joystick **joysticks, Input *input)
+{
+	setJoystickIdFromGuid(joysticks, &input->joy_right_id, input->joy_right_guid);
+	setJoystickIdFromGuid(joysticks, &input->joy_left_id, input->joy_left_guid);
+	setJoystickIdFromGuid(joysticks, &input->joy_up_id, input->joy_up_guid);
+	setJoystickIdFromGuid(joysticks, &input->joy_down_id, input->joy_down_guid);
+	setJoystickIdFromGuid(joysticks, &input->joy_weap_id, input->joy_weap_guid);
+}
+
+static void reloadJoySticks(SDL_Joystick **joysticks)
+{
+	reloadJoyStickForInput(joysticks, &gRedRoverInput);
+	reloadJoyStickForInput(joysticks, &gPinkBubbleGumInput);
+	reloadJoyStickForInput(joysticks, &gGreenTreeInput);
+	reloadJoyStickForInput(joysticks, &gBlueLightningInput);
+}
+
+static void initJoySticks(SDL_Joystick **joysticks)
 {
 	int numJoySticks = SDL_NumJoysticks();
 	if (numJoySticks > 0)
@@ -1992,7 +2067,7 @@ int main(int argc, char *argv[])
 	initializeNetworkBuffers();
 
 	// Start the game event loop
-    eventLoop(&renderer);
+	eventLoop(&renderer, joysticks);
 	
 	// Prepare to quit
 	

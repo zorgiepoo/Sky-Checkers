@@ -161,7 +161,6 @@ void performDownAction(Input *input, SDL_Event *event)
 	
 	else if (event->type == SDL_JOYAXISMOTION)
 	{
-		
 		if (input->joy_up_id == event->jaxis.which && input->ujs_axis_id == event->jaxis.axis)
 		{
 			if (input->ujs_id > VALID_ANALOG_MAGNITUDE)
