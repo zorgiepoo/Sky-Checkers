@@ -1080,12 +1080,6 @@ static void drawScene(Renderer *renderer)
 	{
 		// Render opaque objects first
 		
-		if (gGameWinner != NO_CHARACTER)
-		{
-			// Character icons on scoreboard at z = -20.0f
-			drawScoreboardForCharacters(renderer, SCOREBOARD_RENDER_ICONS);
-		}
-		
 		// Weapons renders at z = -24.0f to -25.0f after a world rotation
 		drawWeapon(renderer, gRedRover.weap);
 		drawWeapon(renderer, gGreenTree.weap);
@@ -1202,6 +1196,14 @@ static void drawScene(Renderer *renderer)
 			
 			// Renders at z = -22.0f
 			drawBlackBox(renderer);
+			
+			if (gGameWinner != NO_CHARACTER)
+			{
+				// Character icons on scoreboard at z = -20.0f
+				// This is supposed to actually be opaque, but it doesn't render properly in the GL renderer
+				// if this is rendered beforehand, don't know why.
+				drawScoreboardForCharacters(renderer, SCOREBOARD_RENDER_ICONS);
+			}
 			
 			// Renders winning/losing text at z = -20.0f
 			mat4_t winLoseModelViewMatrix = m4_translation((vec3_t){70.0f / 14.0f, 100.0f / 14.0f, -280.0f / 14.0f});
