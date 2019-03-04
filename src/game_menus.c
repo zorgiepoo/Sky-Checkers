@@ -60,7 +60,7 @@ int gUserNameStringIndex = 4;
 
 static char *convertKeyCodeToString(unsigned theKeyCode);
 static unsigned getKey(void);
-static unsigned getJoyStickTrigger(Sint16 *value, Uint8 *axis, int *joy_id);
+static unsigned getJoyStickTrigger(Sint16 *value, Uint8 *axis, Uint8 *hat, int *joy_id);
 
 static void drawUpAndDownArrowTriangles(Renderer *renderer, mat4_t modelViewMatrix)
 {
@@ -948,20 +948,84 @@ void pinkBubbleGumConfigJoyStickAction(void *context)
 	changeMenu(RIGHT);
 }
 
+static void setJoyDescription(unsigned int trigger, Uint8 axis, Uint8 hat, char *descriptionBuffer, int jsid)
+{
+	if (axis != JOY_AXIS_NONE)
+	{
+		if (trigger == JOY_UP)
+		{
+			sprintf(descriptionBuffer, "Joy Up");
+		}
+		else if (trigger == JOY_RIGHT)
+		{
+			sprintf(descriptionBuffer, "Joy Right");
+		}
+		else if (trigger == JOY_DOWN)
+		{
+			sprintf(descriptionBuffer, "Joy Down");
+		}
+		else if (trigger == JOY_LEFT)
+		{
+			sprintf(descriptionBuffer, "Joy Left");
+		}
+	}
+	else if (hat != JOY_HAT_NONE)
+	{
+		if (trigger == JOY_UP)
+		{
+			sprintf(descriptionBuffer, "JoyHat Up");
+		}
+		else if (trigger == JOY_RIGHT)
+		{
+			sprintf(descriptionBuffer, "JoyHat Right");
+		}
+		else if (trigger == JOY_DOWN)
+		{
+			sprintf(descriptionBuffer, "JoyHat Down");
+		}
+		else if (trigger == JOY_LEFT)
+		{
+			sprintf(descriptionBuffer, "JoyHat Left");
+		}
+		else if (trigger == JOYHAT_UPRIGHT)
+		{
+			sprintf(descriptionBuffer, "JoyHat Right-Up");
+		}
+		else if (trigger == JOYHAT_DOWNRIGHT)
+		{
+			sprintf(descriptionBuffer, "JoyHat Right-Down");
+		}
+		else if (trigger == JOYHAT_DOWNLEFT)
+		{
+			sprintf(descriptionBuffer, "JoyHat Left-Down");
+		}
+		else if (trigger == JOYHAT_UPLEFT)
+		{
+			sprintf(descriptionBuffer, "JoyHat Left-Up");
+		}
+	}
+	else
+	{
+		sprintf(descriptionBuffer, "Joy Button %d", jsid);
+	}
+}
+
 void configureJoyStick(Input *input, int type)
 {
 	Sint16 value;
 	Uint8 axis;
+	Uint8 hat;
 	int joy_id = -1;
 	
-	unsigned trigger = getJoyStickTrigger(&value, &axis, &joy_id);
+	unsigned int trigger = getJoyStickTrigger(&value, &axis, &hat, &joy_id);
 	
-	SDL_JoystickGUID guid;
-	if (joy_id != -1)
+	if (joy_id == -1)
 	{
-		SDL_Joystick *joystick = SDL_JoystickFromInstanceID(joy_id);
-		guid = SDL_JoystickGetGUID(joystick);
+		return;
 	}
+	
+	SDL_Joystick *joystick = SDL_JoystickFromInstanceID(joy_id);
+	SDL_JoystickGUID guid = SDL_JoystickGetGUID(joystick);
 	
 	if (type == RIGHT)
 	{
@@ -971,27 +1035,9 @@ void configureJoyStick(Input *input, int type)
 			input->rjs_id = value;
 		
 		input->rjs_axis_id = axis;
+		input->rjs_hat_id = hat;
 		
-		if (axis != JOY_AXIS_NONE)
-		{
-			if (trigger == JOY_UP)
-			{
-				sprintf(input->joy_right, "Joy Up");
-			} else if (trigger == JOY_RIGHT)
-			{
-				sprintf(input->joy_right, "Joy Right");
-			} else if (trigger == JOY_DOWN)
-			{
-				sprintf(input->joy_right, "Joy Down");
-			} else if (trigger == JOY_LEFT)
-			{
-				sprintf(input->joy_right, "Joy Left");
-			}			
-		}
-		else
-		{
-			sprintf(input->joy_right, "Joy Button %i", input->rjs_id);
-		}
+		setJoyDescription(trigger, axis, hat, input->joy_right, input->rjs_id);
 		
 		SDL_JoystickGetGUIDString(guid, input->joy_right_guid, MAX_JOY_GUID_BUFFER_LENGTH);
 	}
@@ -1004,30 +1050,9 @@ void configureJoyStick(Input *input, int type)
 			input->ljs_id = value;
 		
 		input->ljs_axis_id = axis;
+		input->ljs_hat_id = hat;
 		
-		if (axis != JOY_AXIS_NONE)
-		{
-			if (trigger == JOY_UP)
-			{
-				sprintf(input->joy_left, "Joy Up");
-			}
-			else if (trigger == JOY_RIGHT)
-			{
-				sprintf(input->joy_left, "Joy Right");
-			}
-			else if (trigger == JOY_DOWN)
-			{
-				sprintf(input->joy_left, "Joy Down");
-			}
-			else if (trigger == JOY_LEFT)
-			{
-				sprintf(input->joy_left, "Joy Left");
-			}			
-		}
-		else
-		{
-			sprintf(input->joy_left, "Joy Button %i", input->ljs_id);
-		}
+		setJoyDescription(trigger, axis, hat, input->joy_left, input->ljs_id);
 		
 		SDL_JoystickGetGUIDString(guid, input->joy_left_guid, MAX_JOY_GUID_BUFFER_LENGTH);
 	}
@@ -1035,35 +1060,14 @@ void configureJoyStick(Input *input, int type)
 	else if (type == UP)
 	{
 		input->joy_up_id = joy_id;
+		input->ujs_hat_id = hat;
 		
 		if (value != (signed)JOY_NONE)
 			input->ujs_id = value;
 		
 		input->ujs_axis_id = axis;
 		
-		if (axis != JOY_AXIS_NONE)
-		{
-			if (trigger == JOY_UP)
-			{
-				sprintf(input->joy_up, "Joy Up");
-			}
-			else if (trigger == JOY_RIGHT)
-			{
-				sprintf(input->joy_up, "Joy Right");
-			}
-			else if (trigger == JOY_DOWN)
-			{
-				sprintf(input->joy_up, "Joy Down");
-			}
-			else if (trigger == JOY_LEFT)
-			{
-				sprintf(input->joy_up, "Joy Left");
-			}			
-		}
-		else
-		{
-			sprintf(input->joy_up, "Joy Button %i", input->ujs_id);
-		}
+		setJoyDescription(trigger, axis, hat, input->joy_up, input->ujs_id);
 		
 		SDL_JoystickGetGUIDString(guid, input->joy_up_guid, MAX_JOY_GUID_BUFFER_LENGTH);
 	}
@@ -1071,35 +1075,14 @@ void configureJoyStick(Input *input, int type)
 	else if (type == DOWN)
 	{
 		input->joy_down_id = joy_id;
+		input->djs_hat_id = hat;
 		
 		if (value != (signed)JOY_NONE)
 			input->djs_id = value;
 		
 		input->djs_axis_id = axis;
 		
-		if (axis != JOY_AXIS_NONE)
-		{
-			if (trigger == JOY_UP)
-			{
-				sprintf(input->joy_down, "Joy Up");
-			}
-			else if (trigger == JOY_RIGHT)
-			{
-				sprintf(input->joy_down, "Joy Right");
-			}
-			else if (trigger == JOY_DOWN)
-			{
-				sprintf(input->joy_down, "Joy Down");
-			}
-			else if (trigger == JOY_LEFT)
-			{
-				sprintf(input->joy_down, "Joy Left");
-			}			
-		}
-		else
-		{
-			sprintf(input->joy_down, "Joy Button %i", input->djs_id);
-		}
+		setJoyDescription(trigger, axis, hat, input->joy_down, input->djs_id);
 		
 		SDL_JoystickGetGUIDString(guid, input->joy_down_guid, MAX_JOY_GUID_BUFFER_LENGTH);
 	}
@@ -1111,30 +1094,9 @@ void configureJoyStick(Input *input, int type)
 			input->weapjs_id = value;
 		
 		input->weapjs_axis_id = axis;
+		input->weapjs_hat_id = hat;
 		
-		if (axis != JOY_AXIS_NONE)
-		{
-			if (trigger == JOY_UP)
-			{
-				sprintf(input->joy_weap, "Joy Up");
-			}
-			else if (trigger == JOY_RIGHT)
-			{
-				sprintf(input->joy_weap, "Joy Right");
-			}
-			else if (trigger == JOY_DOWN)
-			{
-				sprintf(input->joy_weap, "Joy Down");
-			}
-			else if (trigger == JOY_LEFT)
-			{
-				sprintf(input->joy_weap, "Joy Left");
-			}			
-		}
-		else
-		{
-			sprintf(input->joy_weap, "Joy Button %i", input->weapjs_id);
-		}
+		setJoyDescription(trigger, axis, hat, input->joy_weap, input->weapjs_id);
 		
 		SDL_JoystickGetGUIDString(guid, input->joy_weap_guid, MAX_JOY_GUID_BUFFER_LENGTH);
 	}
@@ -2044,13 +2006,14 @@ static unsigned getKey(void)
 	return key;
 }
 
-unsigned getJoyStickTrigger(Sint16 *value, Uint8 *axis, int *joy_id)
+unsigned int getJoyStickTrigger(Sint16 *value, Uint8 *axis, Uint8 *hat, int *joy_id)
 {
 	SDL_Event event;
-	unsigned trigger = JOY_NONE;
+	unsigned int trigger = JOY_NONE;
 	
 	*axis = JOY_AXIS_NONE;
 	*value = JOY_NONE;
+	*hat = JOY_HAT_NONE;
 	
 	/*
 	 * When we are finished, end the execution of the function by returning the trigger.
@@ -2062,50 +2025,93 @@ unsigned getJoyStickTrigger(Sint16 *value, Uint8 *axis, int *joy_id)
 		{
 			switch (event.type)
 			{
-				case SDL_KEYDOWN:
-					if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
-						return trigger;
-					
-					break;
-				case SDL_JOYBUTTONDOWN:
-					*value = event.jbutton.button;
-					
-					*joy_id = event.jbutton.which;
-					
+			case SDL_KEYDOWN:
+				if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
 					return trigger;
-					
-				case SDL_JOYAXISMOTION:
-					
-					// check for invalid value
-					if (!(( event.jaxis.value < -VALID_ANALOG_MAGNITUDE ) || (event.jaxis.value > VALID_ANALOG_MAGNITUDE )))
-					{
-						fprintf(stderr, "Invalid value: %d with axis: %d\n", event.jaxis.value, event.jaxis.axis);
-						break;
-					}
-					
-					// x axis
-					if (event.jaxis.axis == 0)
-					{
-						if (event.jaxis.value > VALID_ANALOG_MAGNITUDE)
-							trigger = JOY_RIGHT;
-						else if (event.jaxis.value < -VALID_ANALOG_MAGNITUDE)
-							trigger = JOY_LEFT;
-					}
-					// y axis
-					else if (event.jaxis.axis == 1)
-					{
-						if (event.jaxis.value > 0)
-							trigger = JOY_DOWN;
-						else if (event.jaxis.value < 0)
-							trigger = JOY_UP;
-					}
-					
-					*joy_id = event.jaxis.which;
-					*value = event.jaxis.value;
-					*axis = event.jaxis.axis;
-					
-					return trigger;
+				
+				break;
+			case SDL_JOYBUTTONDOWN:
+				*value = event.jbutton.button;
+				
+				*joy_id = event.jbutton.which;
+				
+				return trigger;
+				
+			case SDL_JOYAXISMOTION:
+				// check for invalid value
+				if (!(( event.jaxis.value < -VALID_ANALOG_MAGNITUDE ) || (event.jaxis.value > VALID_ANALOG_MAGNITUDE )))
+				{
+					fprintf(stderr, "Invalid value: %d with axis: %d\n", event.jaxis.value, event.jaxis.axis);
 					break;
+				}
+				
+				// x axis
+				if (event.jaxis.axis == 0)
+				{
+					if (event.jaxis.value > VALID_ANALOG_MAGNITUDE)
+						trigger = JOY_RIGHT;
+					else if (event.jaxis.value < -VALID_ANALOG_MAGNITUDE)
+						trigger = JOY_LEFT;
+				}
+				// y axis
+				else if (event.jaxis.axis == 1)
+				{
+					if (event.jaxis.value > 0)
+						trigger = JOY_DOWN;
+					else if (event.jaxis.value < 0)
+						trigger = JOY_UP;
+				}
+				
+				*joy_id = event.jaxis.which;
+				*value = event.jaxis.value;
+				*axis = event.jaxis.axis;
+				
+				return trigger;
+			case SDL_JOYHATMOTION:
+				if (event.jhat.value == 0)
+				{
+					break;
+				}
+				else
+				{
+					*joy_id = event.jhat.which;
+					*value = event.jhat.value;
+					*hat = event.jhat.hat;
+					
+					if (event.jhat.value == SDL_HAT_LEFTUP)
+					{
+						trigger = JOYHAT_UPLEFT;
+					}
+					else if (event.jhat.value == SDL_HAT_LEFTDOWN)
+					{
+						trigger = JOYHAT_DOWNLEFT;
+					}
+					else if (event.jhat.value == SDL_HAT_RIGHTUP)
+					{
+						trigger = JOYHAT_UPRIGHT;
+					}
+					else if (event.jhat.value == SDL_HAT_RIGHTDOWN)
+					{
+						trigger = JOYHAT_DOWNRIGHT;
+					}
+					else if (event.jhat.value == SDL_HAT_RIGHT)
+					{
+						trigger = JOY_RIGHT;
+					}
+					else if (event.jhat.value == SDL_HAT_LEFT)
+					{
+						trigger = JOY_LEFT;
+					}
+					else if (event.jhat.value == SDL_HAT_UP)
+					{
+						trigger = JOY_UP;
+					}
+					else if (event.jhat.value == SDL_HAT_DOWN)
+					{
+						trigger = JOY_DOWN;
+					}
+					return trigger;
+				}
 			}
 		}
 	}

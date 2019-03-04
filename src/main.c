@@ -457,27 +457,67 @@ static SDL_bool readCharacterInputDefaults(FILE *fp, const char *characterName, 
 	}
 	
 	if (!scanExpectedString(fp, characterName)) goto read_input_cleanup;
-	if (fscanf(fp, " joy right id: %i, axis: %i, joy id: ", &input->rjs_id, &input->rjs_axis_id) < 2) goto read_input_cleanup;
+	if (defaultsVersion < 3)
+	{
+		if (fscanf(fp, " joy right id: %i, axis: %i, joy id: ", &input->rjs_id, &input->rjs_axis_id) < 2) goto read_input_cleanup;
+	}
+	else
+	{
+		input->rjs_hat_id = JOY_HAT_NONE;
+		if (fscanf(fp, " joy right id: %i, axis: %i, hat: %i, joy id: ", &input->rjs_id, &input->rjs_axis_id, &input->rjs_hat_id) < 3) goto read_input_cleanup;
+	}
 	if (!scanJoyGuidAndDescriptionString(fp, input->joy_right_guid, input->joy_right)) goto read_input_cleanup;
 	setJoystickIdFromGuid(joysticks, &input->joy_right_id, input->joy_right_guid);
 	
 	if (!scanExpectedString(fp, characterName)) goto read_input_cleanup;
-	if (fscanf(fp, " joy left id: %i, axis: %i, joy id: ", &input->ljs_id, &input->ljs_axis_id) < 2) goto read_input_cleanup;
+	if (defaultsVersion < 3)
+	{
+		if (fscanf(fp, " joy left id: %i, axis: %i, joy id: ", &input->ljs_id, &input->ljs_axis_id) < 2) goto read_input_cleanup;
+	}
+	else
+	{
+		input->ljs_hat_id = JOY_HAT_NONE;
+		if (fscanf(fp, " joy left id: %i, axis: %i, hat: %i, joy id: ", &input->ljs_id, &input->ljs_axis_id, &input->ljs_hat_id) < 3) goto read_input_cleanup;
+	}
 	if (!scanJoyGuidAndDescriptionString(fp, input->joy_left_guid, input->joy_left)) goto read_input_cleanup;
 	setJoystickIdFromGuid(joysticks, &input->joy_left_id, input->joy_left_guid);
 	
 	if (!scanExpectedString(fp, characterName)) goto read_input_cleanup;
-	if (fscanf(fp, " joy up id: %i, axis: %i, joy id: ", &input->ujs_id, &input->ujs_axis_id) < 2) goto read_input_cleanup;
+	if (defaultsVersion < 3)
+	{
+		if (fscanf(fp, " joy up id: %i, axis: %i, joy id: ", &input->ujs_id, &input->ujs_axis_id) < 2) goto read_input_cleanup;
+	}
+	else
+	{
+		input->ujs_hat_id = JOY_HAT_NONE;
+		if (fscanf(fp, " joy up id: %i, axis: %i, hat: %i, joy id: ", &input->ujs_id, &input->ujs_axis_id, &input->ujs_hat_id) < 3) goto read_input_cleanup;
+	}
 	if (!scanJoyGuidAndDescriptionString(fp, input->joy_up_guid, input->joy_up)) goto read_input_cleanup;
 	setJoystickIdFromGuid(joysticks, &input->joy_up_id, input->joy_up_guid);
 	
 	if (!scanExpectedString(fp, characterName)) goto read_input_cleanup;
-	if (fscanf(fp, " joy down id: %i, axis: %i, joy id: ", &input->djs_id, &input->djs_axis_id) < 2) goto read_input_cleanup;
+	if (defaultsVersion < 3)
+	{
+		if (fscanf(fp, " joy down id: %i, axis: %i, joy id: ", &input->djs_id, &input->djs_axis_id) < 2) goto read_input_cleanup;
+	}
+	else
+	{
+		input->djs_hat_id = JOY_HAT_NONE;
+		if (fscanf(fp, " joy down id: %i, axis: %i, hat: %i, joy id: ", &input->djs_id, &input->djs_axis_id, &input->djs_hat_id) < 3) goto read_input_cleanup;
+	}
 	if (!scanJoyGuidAndDescriptionString(fp, input->joy_down_guid, input->joy_down)) goto read_input_cleanup;
 	setJoystickIdFromGuid(joysticks, &input->joy_down_id, input->joy_down_guid);
 	
 	if (!scanExpectedString(fp, characterName)) goto read_input_cleanup;
-	if (fscanf(fp, " joy weapon id: %i, axis: %i, joy id: ", &input->weapjs_id, &input->weapjs_axis_id) < 2) goto read_input_cleanup;
+	if (defaultsVersion < 3)
+	{
+		if (fscanf(fp, " joy weapon id: %i, axis: %i, joy id: ", &input->weapjs_id, &input->weapjs_axis_id) < 2) goto read_input_cleanup;
+	}
+	else
+	{
+		input->weapjs_hat_id = JOY_HAT_NONE;
+		if (fscanf(fp, " joy weapon id: %i, axis: %i, hat: %i, joy id: ", &input->weapjs_id, &input->weapjs_axis_id, &input->weapjs_hat_id) < 3) goto read_input_cleanup;
+	}
 	if (!scanJoyGuidAndDescriptionString(fp, input->joy_weap_guid, input->joy_weap)) goto read_input_cleanup;
 	setJoystickIdFromGuid(joysticks, &input->joy_weap_id, input->joy_weap_guid);
 	
@@ -723,11 +763,11 @@ static void writeCharacterInput(FILE *fp, const char *characterName, Input *inpu
 	
 	fprintf(fp, "\n");
 	
-	fprintf(fp, "%s joy right id: %i, axis: %i, joy id: %s (%s)\n", characterName, input->rjs_id, input->rjs_axis_id, joystickGuidFromId(input->joy_right_guid), input->joy_right);
-	fprintf(fp, "%s joy left id: %i, axis: %i, joy id: %s (%s)\n", characterName, input->ljs_id, input->ljs_axis_id, joystickGuidFromId(input->joy_left_guid), input->joy_left);
-	fprintf(fp, "%s joy up id: %i, axis: %i, joy id: %s (%s)\n", characterName, input->ujs_id, input->ujs_axis_id, joystickGuidFromId(input->joy_up_guid), input->joy_up);
-	fprintf(fp, "%s joy down id: %i, axis: %i, joy id: %s (%s)\n", characterName, input->djs_id, input->djs_axis_id, joystickGuidFromId(input->joy_down_guid), input->joy_down);
-	fprintf(fp, "%s joy weapon id: %i, axis: %i, joy id: %s (%s)\n", characterName, input->weapjs_id, input->weapjs_axis_id, joystickGuidFromId(input->joy_weap_guid), input->joy_weap);
+	fprintf(fp, "%s joy right id: %i, axis: %i, hat: %i, joy id: %s (%s)\n", characterName, input->rjs_id, input->rjs_axis_id, input->rjs_hat_id, joystickGuidFromId(input->joy_right_guid), input->joy_right);
+	fprintf(fp, "%s joy left id: %i, axis: %i, hat: %i, joy id: %s (%s)\n", characterName, input->ljs_id, input->ljs_axis_id, input->ljs_hat_id, joystickGuidFromId(input->joy_left_guid), input->joy_left);
+	fprintf(fp, "%s joy up id: %i, axis: %i, hat: %i, joy id: %s (%s)\n", characterName, input->ujs_id, input->ujs_axis_id, input->ujs_hat_id, joystickGuidFromId(input->joy_up_guid), input->joy_up);
+	fprintf(fp, "%s joy down id: %i, axis: %i, hat: %i, joy id: %s (%s)\n", characterName, input->djs_id, input->djs_axis_id, input->djs_hat_id, joystickGuidFromId(input->joy_down_guid), input->joy_down);
+	fprintf(fp, "%s joy weapon id: %i, axis: %i, hat: %i, joy id: %s (%s)\n", characterName, input->weapjs_id, input->weapjs_axis_id, input->weapjs_hat_id, joystickGuidFromId(input->joy_weap_guid), input->joy_weap);
 }
 
 static void writeDefaults(Renderer *renderer)
@@ -797,7 +837,7 @@ static void writeDefaults(Renderer *renderer)
 	
 	// If defaults version ever gets > 9, I may have to adjust the defaults reading code
 	// I doubt this will ever happen though
-	fprintf(fp, "\nDefaults version: 2\n");
+	fprintf(fp, "\nDefaults version: 3\n");
 
 	fclose(fp);
 }
@@ -1736,7 +1776,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 	 * Other actions, such as changing menus are dealt before here
 	 */
 	if (!(event->key.keysym.sym == SDLK_RETURN && (SDL_GetModState() & metaMod) != 0) &&
-		gGameState == GAME_STATE_ON && (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP || event->type == SDL_JOYBUTTONDOWN || event->type == SDL_JOYBUTTONUP || event->type == SDL_JOYAXISMOTION))
+		gGameState == GAME_STATE_ON && (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP || event->type == SDL_JOYBUTTONDOWN || event->type == SDL_JOYHATMOTION || event->type == SDL_JOYBUTTONUP || event->type == SDL_JOYAXISMOTION))
 	{
 		if (!gConsoleActivated)
 		{

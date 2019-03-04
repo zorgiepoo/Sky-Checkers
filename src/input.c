@@ -55,6 +55,12 @@ void initInput(Input *input, int right, int left, int up, int down, int weapon)
 	input->djs_axis_id = JOY_AXIS_NONE;
 	input->weapjs_axis_id = JOY_AXIS_NONE;
 	
+	input->rjs_hat_id = JOY_HAT_NONE;
+	input->ljs_hat_id = JOY_HAT_NONE;
+	input->ujs_hat_id = JOY_HAT_NONE;
+	input->djs_hat_id = JOY_HAT_NONE;
+	input->weapjs_hat_id = JOY_HAT_NONE;
+	
 	input->joy_right_id = JOY_INVALID_ID;
 	input->joy_left_id = JOY_INVALID_ID;
 	input->joy_up_id = JOY_INVALID_ID;
@@ -353,6 +359,37 @@ void performDownAction(Input *input, SDL_Event *event)
 			input->right_ticks = event->key.timestamp;
 		}
 	}
+	else if (event->type == SDL_JOYHATMOTION)
+	{
+		if (event->jhat.value != 0)
+		{
+			if (event->jhat.which == input->joy_weap_id && event->jhat.hat == input->weapjs_hat_id && event->jhat.value == input->weapjs_id && input->weapjs_axis_id == JOY_AXIS_NONE && !input->character->weap->animationState && !input->weap)
+			{
+				if (gGameHasStarted)
+					input->weap = SDL_TRUE;
+			}
+			
+			else if (event->jhat.which == input->joy_up_id && event->jhat.hat == input->ujs_hat_id && event->jhat.value == input->ujs_id && input->ujs_axis_id == JOY_AXIS_NONE)
+			{
+				input->up_ticks = event->key.timestamp;
+			}
+			
+			else if (event->jhat.which == input->joy_down_id && event->jhat.hat == input->djs_hat_id && event->jhat.value == input->djs_id && input->djs_axis_id == JOY_AXIS_NONE)
+			{
+				input->down_ticks = event->key.timestamp;
+			}
+			
+			else if (event->jhat.which == input->joy_left_id && event->jhat.hat == input->ljs_hat_id && event->jhat.value == input->ljs_id && input->ljs_axis_id == JOY_AXIS_NONE)
+			{
+				input->left_ticks = event->key.timestamp;
+			}
+			
+			else if (event->jhat.which == input->joy_right_id && event->jhat.hat == input->rjs_hat_id && event->jhat.value == input->rjs_id && input->rjs_axis_id == JOY_AXIS_NONE)
+			{
+				input->right_ticks = event->key.timestamp;
+			}
+		}
+	}
 }
 
 void performUpAction(Input *input, SDL_Event *event)
@@ -423,6 +460,41 @@ void performUpAction(Input *input, SDL_Event *event)
 				prepareFiringFromInput(input);
 			}
 			input->weap = SDL_FALSE;
+		}
+	}
+	else if (event->type == SDL_JOYHATMOTION)
+	{
+		if (event->jhat.value == 0)
+		{
+			if (input->up_ticks != 0 && event->jhat.which == input->joy_up_id && event->jhat.hat == input->ujs_hat_id && input->ujs_axis_id == JOY_AXIS_NONE)
+			{
+				input->up_ticks = 0;
+			}
+			
+			if (input->down_ticks != 0 && event->jhat.which == input->joy_down_id && event->jhat.hat == input->djs_hat_id && input->djs_axis_id == JOY_AXIS_NONE)
+			{
+				input->down_ticks = 0;
+			}
+			
+			if (input->right_ticks != 0 && event->jhat.which == input->joy_right_id && event->jhat.hat == input->rjs_hat_id && input->rjs_axis_id == JOY_AXIS_NONE)
+			{
+				input->right_ticks = 0;
+			}
+			
+			if (input->left_ticks != 0 && event->jhat.which == input->joy_left_id && event->jhat.hat == input->ljs_hat_id && input->ljs_axis_id == JOY_AXIS_NONE)
+			{
+				input->left_ticks = 0;
+			}
+			
+			if (input->weap && event->jhat.which == input->joy_weap_id && event->jhat.hat == input->weapjs_hat_id && input->weapjs_axis_id == JOY_AXIS_NONE &&
+					 !input->character->weap->animationState)
+			{
+				if (gGameHasStarted)
+				{
+					prepareFiringFromInput(input);
+				}
+				input->weap = SDL_FALSE;
+			}
 		}
 	}
 	else if (event->type == SDL_JOYAXISMOTION)

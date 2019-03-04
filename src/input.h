@@ -27,7 +27,12 @@
 #define JOY_RIGHT	8003
 #define JOY_DOWN	8004
 #define JOY_LEFT	8005
+#define JOYHAT_UPRIGHT 8006
+#define JOYHAT_DOWNRIGHT 8007
+#define JOYHAT_DOWNLEFT 8008
+#define JOYHAT_UPLEFT 8009
 #define JOY_AXIS_NONE	100
+#define JOY_HAT_NONE	100
 #define JOY_INVALID_ID	-1
 
 #define MAX_JOY_DESCRIPTION_BUFFER_LENGTH 128
@@ -78,6 +83,13 @@ typedef struct
 	unsigned int ujs_axis_id;
 	unsigned int djs_axis_id;
 	unsigned int weapjs_axis_id;
+	
+	// joy stick hat ids
+	unsigned int rjs_hat_id;
+	unsigned int ljs_hat_id;
+	unsigned int ujs_hat_id;
+	unsigned int djs_hat_id;
+	unsigned int weapjs_hat_id;
 	
 	// joystick instance ids which tell us what joystick is being triggered
 	int joy_right_id;
