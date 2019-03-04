@@ -1314,7 +1314,7 @@ static void drawScene(Renderer *renderer)
 				
 				color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 1.0f};
 				
-				drawString(renderer, translationMatrix, textColor, 100.0f / 14.0f, 5.0f / 14.0f, "Click Enter to modify a mapping value and input in a button on your controller. Click Escape to exit out.");
+				drawString(renderer, translationMatrix, textColor, 100.0f / 14.0f, 5.0f / 14.0f, "Enter: map controller input; Escape: cancel; Spacebar: clear.");
 				
 				mat4_t noticeModelViewMatrix = m4_mul(translationMatrix, m4_translation((vec3_t){0.0f / 14.0f, -20.0f / 14.0f, 0.0f / 14.0f}));
 				
@@ -1330,7 +1330,7 @@ static void drawScene(Renderer *renderer)
 				
 				color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 1.0f};
 				
-				drawString(renderer, translationMatrix, textColor, 100.0f / 14.0f, 5.0f / 14.0f, "Click Enter to modify a mapping value and input in a key. Click Escape to exit out.");
+				drawString(renderer, translationMatrix, textColor, 70.0f / 14.0f, 5.0f / 14.0f, "Enter: map keyboard input; Escape: cancel.");
 			}
 		}
 		

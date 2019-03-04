@@ -60,7 +60,7 @@ int gUserNameStringIndex = 4;
 
 static char *convertKeyCodeToString(unsigned theKeyCode);
 static unsigned getKey(void);
-static unsigned getJoyStickTrigger(Sint16 *value, Uint8 *axis, Uint8 *hat, int *joy_id);
+static unsigned int getJoyStickTrigger(Sint16 *value, Uint8 *axis, Uint8 *hat, int *joy_id, SDL_bool *clear);
 
 static void drawUpAndDownArrowTriangles(Renderer *renderer, mat4_t modelViewMatrix)
 {
@@ -1016,8 +1016,60 @@ void configureJoyStick(Input *input, int type)
 	Uint8 axis;
 	Uint8 hat;
 	int joy_id = -1;
+	SDL_bool clear;
 	
-	unsigned int trigger = getJoyStickTrigger(&value, &axis, &hat, &joy_id);
+	unsigned int trigger = getJoyStickTrigger(&value, &axis, &hat, &joy_id, &clear);
+	
+	if (clear)
+	{
+		if (type == RIGHT)
+		{
+			input->rjs_id = JOY_NONE;
+			input->rjs_axis_id = JOY_AXIS_NONE;
+			input->rjs_hat_id = JOY_HAT_NONE;
+			input->joy_right_id = -1;
+			memset(input->joy_right_guid, 0, MAX_JOY_GUID_BUFFER_LENGTH);
+			snprintf(input->joy_right, MAX_JOY_DESCRIPTION_BUFFER_LENGTH, "None");
+		}
+		else if (type == LEFT)
+		{
+			input->ljs_id = JOY_NONE;
+			input->ljs_axis_id = JOY_AXIS_NONE;
+			input->ljs_hat_id = JOY_HAT_NONE;
+			input->joy_left_id = -1;
+			memset(input->joy_left_guid, 0, MAX_JOY_GUID_BUFFER_LENGTH);
+			snprintf(input->joy_left, MAX_JOY_DESCRIPTION_BUFFER_LENGTH, "None");
+		}
+		else if (type == DOWN)
+		{
+			input->djs_id = JOY_NONE;
+			input->djs_axis_id = JOY_AXIS_NONE;
+			input->djs_hat_id = JOY_HAT_NONE;
+			input->joy_down_id = -1;
+			memset(input->joy_down_guid, 0, MAX_JOY_GUID_BUFFER_LENGTH);
+			snprintf(input->joy_down, MAX_JOY_DESCRIPTION_BUFFER_LENGTH, "None");
+		}
+		else if (type == UP)
+		{
+			input->ujs_id = JOY_NONE;
+			input->ujs_axis_id = JOY_AXIS_NONE;
+			input->ujs_hat_id = JOY_HAT_NONE;
+			input->joy_up_id = -1;
+			memset(input->joy_up_guid, 0, MAX_JOY_GUID_BUFFER_LENGTH);
+			snprintf(input->joy_up, MAX_JOY_DESCRIPTION_BUFFER_LENGTH, "None");
+		}
+		else if (type == WEAPON)
+		{
+			input->weapjs_id = JOY_NONE;
+			input->weapjs_axis_id = JOY_AXIS_NONE;
+			input->weapjs_hat_id = JOY_HAT_NONE;
+			input->joy_weap_id = -1;
+			memset(input->joy_weap_guid, 0, MAX_JOY_GUID_BUFFER_LENGTH);
+			snprintf(input->joy_weap, MAX_JOY_DESCRIPTION_BUFFER_LENGTH, "None");
+		}
+		
+		return;
+	}
 	
 	if (joy_id == -1)
 	{
@@ -2006,7 +2058,7 @@ static unsigned getKey(void)
 	return key;
 }
 
-unsigned int getJoyStickTrigger(Sint16 *value, Uint8 *axis, Uint8 *hat, int *joy_id)
+unsigned int getJoyStickTrigger(Sint16 *value, Uint8 *axis, Uint8 *hat, int *joy_id, SDL_bool *clear)
 {
 	SDL_Event event;
 	unsigned int trigger = JOY_NONE;
@@ -2014,6 +2066,7 @@ unsigned int getJoyStickTrigger(Sint16 *value, Uint8 *axis, Uint8 *hat, int *joy
 	*axis = JOY_AXIS_NONE;
 	*value = JOY_NONE;
 	*hat = JOY_HAT_NONE;
+	*clear = SDL_FALSE;
 	
 	/*
 	 * When we are finished, end the execution of the function by returning the trigger.
@@ -2028,6 +2081,12 @@ unsigned int getJoyStickTrigger(Sint16 *value, Uint8 *axis, Uint8 *hat, int *joy
 			case SDL_KEYDOWN:
 				if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
 					return trigger;
+				
+				if (event.key.keysym.scancode == SDL_SCANCODE_SPACE)
+				{
+					*clear = SDL_TRUE;
+					return trigger;
+				}
 				
 				break;
 			case SDL_JOYBUTTONDOWN:
