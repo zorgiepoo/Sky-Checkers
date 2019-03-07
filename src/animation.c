@@ -320,7 +320,7 @@ static void animateTilesAndPlayerRecovery(double timeDelta, SDL_Window *window, 
 			float wrappedOneMinusAlphaValue;
 			if (oneMinusAlphaValue > DOUBLE_ALPHA_FLUCUATION / 2.0f)
 			{
-				wrappedOneMinusAlphaValue = (DOUBLE_ALPHA_FLUCUATION / 2.0f) - (oneMinusAlphaValue - (DOUBLE_ALPHA_FLUCUATION / 2.0f));
+				wrappedOneMinusAlphaValue = DOUBLE_ALPHA_FLUCUATION - oneMinusAlphaValue;
 			}
 			else
 			{
