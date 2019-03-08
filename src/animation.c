@@ -297,7 +297,7 @@ static void moveWeapon(Weapon *weapon, double timeDelta)
 #define CHARACTER_REGAIN_MOVEMENT (25 * ANIMATION_TIME_ELAPSED_INTERVAL)
 #define END_CHARACTER_ANIMATION ((70 + 1) * ANIMATION_TIME_ELAPSED_INTERVAL)
 #define NUM_ALPHA_FLASH_ITERATIONS 3
-#define DOUBLE_ALPHA_FLUCUATION (0.4f * 2)
+#define ALPHA_FLUCUATION 0.4f
 static void animateTilesAndPlayerRecovery(double timeDelta, SDL_Window *window, Character *player)
 {
 	if (player->weap->animationState)
@@ -311,22 +311,17 @@ static void animateTilesAndPlayerRecovery(double timeDelta, SDL_Window *window, 
 		if ((gNetworkConnection == NULL && player->state == CHARACTER_HUMAN_STATE) || (gNetworkConnection != NULL && player->netName != NULL))
 		{
 			// Calculate player's alpha value based on current animation time
+			
+			// Calculate the size of each alpha chunk
 			float alphaChunk = (((float)END_CHARACTER_ANIMATION - player->weap->compensation) / (float)NUM_ALPHA_FLASH_ITERATIONS);
 			
-			// Scale current modulo time of alphaChunk by DOUBLE_ALPHA_FLUCUATION
-			float oneMinusAlphaValue = fmodf((float)player->animation_timer, alphaChunk) / alphaChunk * DOUBLE_ALPHA_FLUCUATION;
+			// Scale current time to alphaChunk
+			float normalizedTime = fmodf((float)player->animation_timer, alphaChunk) / alphaChunk;
 			
-			// Wrap alpha value backwards when it's >= DOUBLE_ALPHA_FLUCUATION / 2
-			float wrappedOneMinusAlphaValue;
-			if (oneMinusAlphaValue > DOUBLE_ALPHA_FLUCUATION / 2.0f)
-			{
-				wrappedOneMinusAlphaValue = DOUBLE_ALPHA_FLUCUATION - oneMinusAlphaValue;
-			}
-			else
-			{
-				wrappedOneMinusAlphaValue = oneMinusAlphaValue;
-			}
-			player->alpha = 1.0f - wrappedOneMinusAlphaValue;
+			// Calculate displacement using a triangle wave equation
+			float displacement = 2.0f * ALPHA_FLUCUATION * fabs(normalizedTime - floorf(normalizedTime + 0.5f));
+			
+			player->alpha = 1.0f - displacement;
 		}
 		
 		/* First, color the tiles that are going to be destroyed */
