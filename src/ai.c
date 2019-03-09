@@ -24,7 +24,7 @@
 #include "utilities.h"
 #include "scenery.h"
 
-static void setNewDirection(int *direction);
+static void setNewDirection(Character *character);
 static void directCharacterBasedOnCollisions(Character *character, int currentTime);
 
 static void shootWeaponProjectile(Character *character, int currentTime);
@@ -43,7 +43,7 @@ void updateAI(Character *character, int currentTime, double timeDelta)
 	
 	if (character->direction == NO_DIRECTION || currentTime > character->ai_timer)
 	{
-		setNewDirection(&character->direction);
+		setNewDirection(character);
 		character->ai_timer = currentTime + (mt_random() % 2) + 1;
 	}
 	
@@ -55,17 +55,54 @@ void updateAI(Character *character, int currentTime, double timeDelta)
 	}
 }
 
-static void setNewDirection(int *direction)
+static void setNewDirection(Character *character)
 {
-	if (*direction == UP || *direction == DOWN)
+	int column = columnOfCharacter(character);
+	int row = rowOfCharacter(character);
+	
+	if (row >= 0 && row < 8 && column >= 0 && column < 8)
 	{
-		// set it to either LEFT or RIGHT
-		*direction = (mt_random() % 2) + 1;
-	}
-	else /* if (*direction == RIGHT || *direction == LEFT) */
-	{
-		// set it to either UP or DOWN
-		*direction = (mt_random() % 2) + 3;
+		SDL_bool unableToMoveLeft = column == 0 || !gTiles[row * 8 + (column - 1)].state || gTiles[row * 8 + (column - 1)].isDead;
+		SDL_bool unableToMoveRight = column == 7 || !gTiles[row * 8 + (column + 1)].state || gTiles[row * 8 + (column + 1)].isDead;
+		SDL_bool unableToMoveDown = row == 0 || !gTiles[(row - 1) * 8 + column].state || gTiles[(row - 1) * 8 + column].isDead;
+		SDL_bool unableToMoveUp = row == 7 || !gTiles[(row + 1) * 8 + column].state || gTiles[(row + 1) * 8 + column].isDead;
+		
+		if (unableToMoveLeft && unableToMoveRight && unableToMoveDown && unableToMoveUp)
+		{
+			character->direction = NO_DIRECTION;
+		}
+		else if (character->direction == UP || character->direction == DOWN)
+		{
+			// set new direction to either LEFT or RIGHT
+			if (unableToMoveLeft)
+			{
+				character->direction = RIGHT;
+			}
+			else if (unableToMoveRight)
+			{
+				character->direction = LEFT;
+			}
+			else
+			{
+				character->direction = (mt_random() % 2) + 1;
+			}
+		}
+		else /* if (*direction == RIGHT || *direction == LEFT || *direction == NO_DIRECTION) */
+		{
+			// set new direction to either UP or DOWN
+			if (unableToMoveDown)
+			{
+				character->direction = UP;
+			}
+			else if (unableToMoveUp)
+			{
+				character->direction = DOWN;
+			}
+			else
+			{
+				character->direction = (mt_random() % 2) + 3;
+			}
+		}
 	}
 }
 
@@ -82,7 +119,7 @@ static void avoidCharacter(Character *character, Character *characterB, int curr
 		 (character->direction == LEFT && characterB->direction == LEFT) /* character is on right side */
 		)))
 	{
-		setNewDirection(&character->direction);
+		setNewDirection(character);
 		character->ai_timer = currentTime + (mt_random() % 2) + 1;
 	}
 }
@@ -97,7 +134,7 @@ static void directCharacterBasedOnCollisions(Character *character, int currentTi
 	
 	if (!characterCanMove(character->direction, character))
 	{
-		setNewDirection(&character->direction);
+		setNewDirection(character);
 		character->ai_timer = currentTime + (mt_random() % 2) + 1;
 	}
 	
@@ -110,7 +147,6 @@ static void directCharacterBasedOnCollisions(Character *character, int currentTi
 	int tileLocation = getTileIndexLocation((int)character->x, (int)character->y);
 	if (tileLocation >= 0 && tileLocation < NUMBER_OF_TILES)
 	{
-		// gray color red == 0.31
 		if (gTiles[tileLocation].coloredID == GRAY_STONE_ID)
 		{
 			int row = rowOfCharacter(character);
@@ -180,7 +216,7 @@ static void shootWeaponProjectile(Character *character, int currentTime)
 	
 	// Exit out of function randomly depending on AI difficulty.
 	// Obviously, an AIMode of AI_EASY_MODE will exit out more than AI_HARD_MODE
-	if ((mt_random() % 10) + 1 <= (unsigned)AIMode)
+	if ((mt_random() % 10) + 1 <= (unsigned int)AIMode)
 	{
 		return;
 	}
@@ -224,7 +260,7 @@ static void attackCharacterOnRow(Character *character, Character *characterB, in
 		character->direction = LEFT;
 		fireAIWeapon(character);
 		
-		setNewDirection(&character->direction);
+		setNewDirection(character);
 		character->ai_timer = currentTime + (mt_random() % 2) + 1;
 	}
 	else if (character->x < characterB->x && character->direction != RIGHT)
@@ -233,7 +269,7 @@ static void attackCharacterOnRow(Character *character, Character *characterB, in
 		character->direction = RIGHT;
 		fireAIWeapon(character);
 		
-		setNewDirection(&character->direction);
+		setNewDirection(character);
 		character->ai_timer = currentTime + (mt_random() % 2) + 1;
 	}
 }
@@ -246,7 +282,7 @@ static void attackCharacterOnColumn(Character *character, Character *characterB,
 		character->direction = DOWN;
 		fireAIWeapon(character);
 		
-		setNewDirection(&character->direction);
+		setNewDirection(character);
 		character->ai_timer = currentTime + (mt_random() % 2) + 1;
 	}
 	else if (character->y < characterB->y && character->direction != UP)
@@ -255,7 +291,7 @@ static void attackCharacterOnColumn(Character *character, Character *characterB,
 		character->direction = UP;
 		fireAIWeapon(character);
 		
-		setNewDirection(&character->direction);
+		setNewDirection(character);
 		character->ai_timer = currentTime + (mt_random() % 2) + 1;
 	}
 }
