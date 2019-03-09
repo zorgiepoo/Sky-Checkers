@@ -254,7 +254,7 @@ static void fireAIWeapon(Character *character)
 
 static void attackCharacterOnRow(Character *character, Character *characterB, int currentTime)
 {
-	if (character->x > characterB->x && character->direction != LEFT)
+	if (character->x > characterB->x)
 	{
 		turnCharacter(character, LEFT);
 		character->direction = LEFT;
@@ -263,7 +263,7 @@ static void attackCharacterOnRow(Character *character, Character *characterB, in
 		setNewDirection(character);
 		character->ai_timer = currentTime + (mt_random() % 2) + 1;
 	}
-	else if (character->x < characterB->x && character->direction != RIGHT)
+	else if (character->x < characterB->x)
 	{
 		turnCharacter(character, RIGHT);
 		character->direction = RIGHT;
@@ -276,7 +276,7 @@ static void attackCharacterOnRow(Character *character, Character *characterB, in
 
 static void attackCharacterOnColumn(Character *character, Character *characterB, int currentTime)
 {
-	if (character->y > characterB->y && character->direction != DOWN)
+	if (character->y > characterB->y)
 	{
 		turnCharacter(character, DOWN);
 		character->direction = DOWN;
@@ -285,7 +285,7 @@ static void attackCharacterOnColumn(Character *character, Character *characterB,
 		setNewDirection(character);
 		character->ai_timer = currentTime + (mt_random() % 2) + 1;
 	}
-	else if (character->y < characterB->y && character->direction != UP)
+	else if (character->y < characterB->y)
 	{
 		turnCharacter(character, UP);
 		character->direction = UP;
