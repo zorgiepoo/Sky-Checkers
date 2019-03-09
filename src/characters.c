@@ -71,7 +71,8 @@ void loadCharacter(Character *character)
 	character->predictedDirectionTime = 0;
 	character->predictedDirection = NO_DIRECTION;
 	
-	character->ai_timer = 0;
+	character->move_timer = 0;
+	character->fire_timer = 0.0f;
 	character->time_alive = 0;
 	
 	character->kills = 0;

@@ -41,16 +41,17 @@ void updateAI(Character *character, int currentTime, double timeDelta)
 	if (!CHARACTER_IS_ALIVE(character) || character->state != CHARACTER_AI_STATE || !character->active || !character->lives || (gNetworkConnection && gNetworkConnection->type == NETWORK_CLIENT_TYPE))
 		return;
 	
-	if (character->direction == NO_DIRECTION || currentTime > character->ai_timer)
+	if (character->direction == NO_DIRECTION || currentTime > character->move_timer)
 	{
 		setNewDirection(character);
-		character->ai_timer = currentTime + (mt_random() % 2) + 1;
+		character->move_timer = currentTime + (mt_random() % 2) + 1;
 	}
 	
 	directCharacterBasedOnCollisions(character, currentTime);
 	
 	if (!gNetworkConnection || (gRedRover.netState == NETWORK_PLAYING_STATE && gGreenTree.netState == NETWORK_PLAYING_STATE && gBlueLightning.netState == NETWORK_PLAYING_STATE))
 	{
+		character->fire_timer += (float)timeDelta;
 		shootWeaponProjectile(character, currentTime);
 	}
 }
@@ -120,7 +121,7 @@ static void avoidCharacter(Character *character, Character *characterB, int curr
 		)))
 	{
 		setNewDirection(character);
-		character->ai_timer = currentTime + (mt_random() % 2) + 1;
+		character->move_timer = currentTime + (mt_random() % 2) + 1;
 	}
 }
 
@@ -135,7 +136,7 @@ static void directCharacterBasedOnCollisions(Character *character, int currentTi
 	if (!characterCanMove(character->direction, character))
 	{
 		setNewDirection(character);
-		character->ai_timer = currentTime + (mt_random() % 2) + 1;
+		character->move_timer = currentTime + (mt_random() % 2) + 1;
 	}
 	
 	avoidCharacter(character, characterB, currentTime);
@@ -184,8 +185,10 @@ static void shootWeaponProjectile(Character *character, int currentTime)
 {
 	int AIMode = gNetworkConnection ? gAINetMode : gAIMode;
 	
-	if (character->time_alive < AIMode || character->weap->animationState || !gGameHasStarted)
+	if (character->time_alive < AIMode || character->fire_timer < 0.25f || character->weap->animationState || !gGameHasStarted)
 		return;
+	
+	character->fire_timer = 0.0f;
 	
 	Character *characterB;
 	Character *characterC;
@@ -214,9 +217,23 @@ static void shootWeaponProjectile(Character *character, int currentTime)
 		return;
 	}
 	
+	unsigned int exitOutValue;
+	if (AIMode == AI_HARD_MODE)
+	{
+		exitOutValue = 1;
+	}
+	else if (AIMode == AI_MEDIUM_MODE)
+	{
+		exitOutValue = 5;
+	}
+	else
+	{
+		exitOutValue = 8;
+	}
+	
 	// Exit out of function randomly depending on AI difficulty.
-	// Obviously, an AIMode of AI_EASY_MODE will exit out more than AI_HARD_MODE
-	if ((mt_random() % 10) + 1 <= (unsigned int)AIMode)
+	// An AIMode of AI_EASY_MODE will exit out more than AI_HARD_MODE
+	if ((mt_random() % 10) + 1 <= exitOutValue)
 	{
 		return;
 	}
@@ -245,6 +262,33 @@ static void shootWeaponProjectile(Character *character, int currentTime)
 	{
 		attackCharacterOnColumn(character, characterD, currentTime);
 	}
+	else if ((mt_random() % 2) == 0)
+	{
+		if (characterB->time_alive >= AIMode && abs(rowOfCharacter(character) - rowOfCharacter(characterB)) <= 1)
+		{
+			attackCharacterOnRow(character, characterB, currentTime);
+		}
+		else if (characterC->time_alive >= AIMode && abs(rowOfCharacter(character) - rowOfCharacter(characterC)) <= 1)
+		{
+			attackCharacterOnRow(character, characterC, currentTime);
+		}
+		else if (characterD->time_alive >= AIMode && abs(rowOfCharacter(character) - rowOfCharacter(characterD)) <= 1)
+		{
+			attackCharacterOnRow(character, characterD, currentTime);
+		}
+		else if (characterB->time_alive >= AIMode && abs(columnOfCharacter(character) - columnOfCharacter(characterB)) <= 1)
+		{
+			attackCharacterOnColumn(character, characterB, currentTime);
+		}
+		else if (characterC->time_alive >= AIMode && abs(columnOfCharacter(character) - columnOfCharacter(characterC)) <= 1)
+		{
+			attackCharacterOnColumn(character, characterC, currentTime);
+		}
+		else if (characterD->time_alive >= AIMode && abs(columnOfCharacter(character) - columnOfCharacter(characterD)) <= 1)
+		{
+			attackCharacterOnColumn(character, characterD, currentTime);
+		}
+	}
 }
 
 static void fireAIWeapon(Character *character)
@@ -261,7 +305,7 @@ static void attackCharacterOnRow(Character *character, Character *characterB, in
 		fireAIWeapon(character);
 		
 		setNewDirection(character);
-		character->ai_timer = currentTime + (mt_random() % 2) + 1;
+		character->move_timer = currentTime + (mt_random() % 2) + 1;
 	}
 	else if (character->x < characterB->x)
 	{
@@ -270,7 +314,7 @@ static void attackCharacterOnRow(Character *character, Character *characterB, in
 		fireAIWeapon(character);
 		
 		setNewDirection(character);
-		character->ai_timer = currentTime + (mt_random() % 2) + 1;
+		character->move_timer = currentTime + (mt_random() % 2) + 1;
 	}
 }
 
@@ -283,7 +327,7 @@ static void attackCharacterOnColumn(Character *character, Character *characterB,
 		fireAIWeapon(character);
 		
 		setNewDirection(character);
-		character->ai_timer = currentTime + (mt_random() % 2) + 1;
+		character->move_timer = currentTime + (mt_random() % 2) + 1;
 	}
 	else if (character->y < characterB->y)
 	{
@@ -292,6 +336,6 @@ static void attackCharacterOnColumn(Character *character, Character *characterB,
 		fireAIWeapon(character);
 		
 		setNewDirection(character);
-		character->ai_timer = currentTime + (mt_random() % 2) + 1;
+		character->move_timer = currentTime + (mt_random() % 2) + 1;
 	}
 }
