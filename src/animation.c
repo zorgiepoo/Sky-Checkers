@@ -308,7 +308,7 @@ static void animateTilesAndPlayerRecovery(double timeDelta, SDL_Window *window, 
 		}
 		player->animation_timer += timeDelta;
 		
-		if ((gNetworkConnection == NULL && player->state == CHARACTER_HUMAN_STATE) || (gNetworkConnection != NULL && player->netName != NULL))
+		if ((gNetworkConnection == NULL && player->state == CHARACTER_HUMAN_STATE) || (gNetworkConnection != NULL && gNetworkConnection->character == player))
 		{
 			// Calculate player's alpha value based on current animation time
 			
