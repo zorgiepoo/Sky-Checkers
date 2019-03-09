@@ -37,6 +37,8 @@ typedef struct
 	
 	// ID of character that colored tile or GRAY_STONE_ID
 	int coloredID;
+	uint32_t colorTime;
+	
 	// Same as above but used by client prediction for netcode
 	int predictedColorID;
 	uint32_t predictedColorTime;

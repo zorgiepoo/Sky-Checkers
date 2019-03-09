@@ -243,11 +243,14 @@ static void colorTile(int tileIndex, Character *character)
 		gTiles[tileIndex].blue = weap->blue;
 		gTiles[tileIndex].green = weap->green;
 		
+		uint32_t currentTime = SDL_GetTicks();
+		
 		if (gNetworkConnection != NULL)
 		{
 			if (gNetworkConnection->type == NETWORK_SERVER_TYPE)
 			{
 				gTiles[tileIndex].coloredID = IDOfCharacter(character);
+				gTiles[tileIndex].colorTime = currentTime;
 				
 				GameMessage message;
 				message.type = COLOR_TILE_MESSAGE_TYPE;
@@ -259,12 +262,13 @@ static void colorTile(int tileIndex, Character *character)
 			else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE)
 			{
 				gTiles[tileIndex].predictedColorID = IDOfCharacter(character);
-				gTiles[tileIndex].predictedColorTime = SDL_GetTicks();
+				gTiles[tileIndex].predictedColorTime = currentTime;
 			}
 		}
 		else
 		{
 			gTiles[tileIndex].coloredID = IDOfCharacter(character);
+			gTiles[tileIndex].colorTime = currentTime;
 		}
 	}
 }
@@ -599,6 +603,7 @@ void recoverDestroyedTile(int tileIndex)
 {
 	restoreDefaultTileColor(tileIndex);
 	gTiles[tileIndex].coloredID = NO_CHARACTER;
+	gTiles[tileIndex].colorTime = 0;
 	gTiles[tileIndex].z = TILE_ALIVE_Z;
 	gTiles[tileIndex].state = SDL_TRUE;
 	gTiles[tileIndex].recovery_timer = 0.0;

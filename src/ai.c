@@ -217,6 +217,13 @@ static void shootWeaponProjectile(Character *character, int currentTime)
 		return;
 	}
 	
+	// If the tile the AI is on has been colored for a while, don't let them react fast enough to fire back
+	uint32_t ticks = SDL_GetTicks();
+	if (gTiles[tileIndex].colorTime > 0 && ticks >= gTiles[tileIndex].colorTime + 350)
+	{
+		return;
+	}
+	
 	unsigned int exitOutValue;
 	if (AIMode == AI_HARD_MODE)
 	{
