@@ -323,7 +323,7 @@ static void animateTilesAndPlayerRecovery(double timeDelta, SDL_Window *window, 
 			float normalizedTime = fmodf((float)player->animation_timer, alphaChunk) / alphaChunk;
 			
 			// Calculate displacement using a triangle wave equation
-			float displacement = 2.0f * ALPHA_FLUCUATION * fabs(normalizedTime - floorf(normalizedTime + 0.5f));
+			float displacement = 2.0f * ALPHA_FLUCUATION * fabsf(normalizedTime - floorf(normalizedTime + 0.5f));
 			
 			player->alpha = 1.0f - displacement;
 		}
