@@ -73,7 +73,7 @@ void loadCharacter(Character *character)
 	
 	character->move_timer = 0;
 	character->fire_timer = 0.0f;
-	character->time_alive = 0;
+	character->time_alive = 0.0f;
 	
 	character->kills = 0;
 }

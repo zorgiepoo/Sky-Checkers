@@ -115,21 +115,21 @@ void animate(SDL_Window *window, double timeDelta)
 				gGameWinner = gCurrentWinner;
 			}
 		}
-		
-		// Make sure character is on checkerboard
-		
-		if (CHARACTER_IS_ALIVE(&gRedRover))
-			gRedRover.time_alive++;
-		
-		if (CHARACTER_IS_ALIVE(&gGreenTree))
-			gGreenTree.time_alive++;
-		
-		if (CHARACTER_IS_ALIVE(&gPinkBubbleGum))
-			gPinkBubbleGum.time_alive++;
-		
-		if (CHARACTER_IS_ALIVE(&gBlueLightning))
-			gBlueLightning.time_alive++;
 	}
+	
+	// Update time alive counters
+	
+	if (CHARACTER_IS_ALIVE(&gRedRover))
+		gRedRover.time_alive += (float)timeDelta;
+	
+	if (CHARACTER_IS_ALIVE(&gGreenTree))
+		gGreenTree.time_alive += (float)timeDelta;
+	
+	if (CHARACTER_IS_ALIVE(&gPinkBubbleGum))
+		gPinkBubbleGum.time_alive += (float)timeDelta;
+	
+	if (CHARACTER_IS_ALIVE(&gBlueLightning))
+		gBlueLightning.time_alive += (float)timeDelta;
 	
 	// Update inputs
 	
@@ -739,7 +739,7 @@ static void killCharacter(Input *characterInput, double timeDelta)
 	{
 		prepareCharactersDeath(player);
 		
-		player->time_alive = 0;
+		player->time_alive = 0.0f;
 		
 		player->lives--;
 		player->active = SDL_FALSE;

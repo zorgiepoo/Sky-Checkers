@@ -140,7 +140,7 @@ typedef struct _Character
 	/* AI */
 	int move_timer;
 	float fire_timer;
-	int time_alive;
+	float time_alive;
 } Character;
 
 extern Character gRedRover;

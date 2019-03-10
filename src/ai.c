@@ -185,7 +185,21 @@ static void shootWeaponProjectile(Character *character, int currentTime)
 {
 	int AIMode = gNetworkConnection ? gAINetMode : gAIMode;
 	
-	if (character->time_alive < AIMode || character->fire_timer < 0.25f || character->weap->animationState || !gGameHasStarted)
+	float timeAliveThreshold;
+	if (AIMode == AI_HARD_MODE)
+	{
+		timeAliveThreshold = 1.0f;
+	}
+	else if (AIMode == AI_MEDIUM_MODE)
+	{
+		timeAliveThreshold = 2.0f;
+	}
+	else
+	{
+		timeAliveThreshold = 3.0f;
+	}
+	
+	if (character->time_alive < timeAliveThreshold || character->fire_timer < 0.25f || character->weap->animationState || !gGameHasStarted)
 		return;
 	
 	character->fire_timer = 0.0f;
@@ -245,53 +259,53 @@ static void shootWeaponProjectile(Character *character, int currentTime)
 		return;
 	}
 	
-	if (characterB->time_alive >= AIMode && rowOfCharacter(character) == rowOfCharacter(characterB))
+	if (characterB->time_alive >= timeAliveThreshold && rowOfCharacter(character) == rowOfCharacter(characterB))
 	{
 		attackCharacterOnRow(character, characterB, currentTime);
 	}
-	else if (characterC->time_alive >= AIMode && rowOfCharacter(character) == rowOfCharacter(characterC))
+	else if (characterC->time_alive >= timeAliveThreshold && rowOfCharacter(character) == rowOfCharacter(characterC))
 	{
 		attackCharacterOnRow(character, characterC, currentTime);
 	}
-	else if (characterD->time_alive >= AIMode && rowOfCharacter(character) == rowOfCharacter(characterD))
+	else if (characterD->time_alive >= timeAliveThreshold && rowOfCharacter(character) == rowOfCharacter(characterD))
 	{
 		attackCharacterOnRow(character, characterD, currentTime);
 	}
-	else if (characterB->time_alive >= AIMode && columnOfCharacter(character) == columnOfCharacter(characterB))
+	else if (characterB->time_alive >= timeAliveThreshold && columnOfCharacter(character) == columnOfCharacter(characterB))
 	{
 		attackCharacterOnColumn(character, characterB, currentTime);
 	}
-	else if (characterC->time_alive >= AIMode && columnOfCharacter(character) == columnOfCharacter(characterC))
+	else if (characterC->time_alive >= timeAliveThreshold && columnOfCharacter(character) == columnOfCharacter(characterC))
 	{
 		attackCharacterOnColumn(character, characterC, currentTime);
 	}
-	else if (characterD->time_alive >= AIMode && columnOfCharacter(character) == columnOfCharacter(characterD))
+	else if (characterD->time_alive >= timeAliveThreshold && columnOfCharacter(character) == columnOfCharacter(characterD))
 	{
 		attackCharacterOnColumn(character, characterD, currentTime);
 	}
 	else if ((mt_random() % 2) == 0)
 	{
-		if (characterB->time_alive >= AIMode && abs(rowOfCharacter(character) - rowOfCharacter(characterB)) <= 1)
+		if (characterB->time_alive >= timeAliveThreshold && abs(rowOfCharacter(character) - rowOfCharacter(characterB)) <= 1)
 		{
 			attackCharacterOnRow(character, characterB, currentTime);
 		}
-		else if (characterC->time_alive >= AIMode && abs(rowOfCharacter(character) - rowOfCharacter(characterC)) <= 1)
+		else if (characterC->time_alive >= timeAliveThreshold && abs(rowOfCharacter(character) - rowOfCharacter(characterC)) <= 1)
 		{
 			attackCharacterOnRow(character, characterC, currentTime);
 		}
-		else if (characterD->time_alive >= AIMode && abs(rowOfCharacter(character) - rowOfCharacter(characterD)) <= 1)
+		else if (characterD->time_alive >= timeAliveThreshold && abs(rowOfCharacter(character) - rowOfCharacter(characterD)) <= 1)
 		{
 			attackCharacterOnRow(character, characterD, currentTime);
 		}
-		else if (characterB->time_alive >= AIMode && abs(columnOfCharacter(character) - columnOfCharacter(characterB)) <= 1)
+		else if (characterB->time_alive >= timeAliveThreshold && abs(columnOfCharacter(character) - columnOfCharacter(characterB)) <= 1)
 		{
 			attackCharacterOnColumn(character, characterB, currentTime);
 		}
-		else if (characterC->time_alive >= AIMode && abs(columnOfCharacter(character) - columnOfCharacter(characterC)) <= 1)
+		else if (characterC->time_alive >= timeAliveThreshold && abs(columnOfCharacter(character) - columnOfCharacter(characterC)) <= 1)
 		{
 			attackCharacterOnColumn(character, characterC, currentTime);
 		}
-		else if (characterD->time_alive >= AIMode && abs(columnOfCharacter(character) - columnOfCharacter(characterD)) <= 1)
+		else if (characterD->time_alive >= timeAliveThreshold && abs(columnOfCharacter(character) - columnOfCharacter(characterD)) <= 1)
 		{
 			attackCharacterOnColumn(character, characterD, currentTime);
 		}
