@@ -301,7 +301,7 @@ static void moveWeapon(Weapon *weapon, double timeDelta)
 #define CHARACTER_REGAIN_MOVEMENT (25 * ANIMATION_TIME_ELAPSED_INTERVAL)
 #define END_CHARACTER_ANIMATION ((70 + 1) * ANIMATION_TIME_ELAPSED_INTERVAL)
 #define NUM_ALPHA_FLASH_ITERATIONS 3
-#define ALPHA_FLUCUATION 0.4f
+#define ALPHA_FLUCUATION 0.5f
 static void animateTilesAndPlayerRecovery(double timeDelta, SDL_Window *window, Character *player)
 {
 	if (player->weap->animationState)
