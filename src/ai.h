@@ -22,4 +22,4 @@
 #include "maincore.h"
 #include "input.h"
 
-void updateAI(Character *chnaracter, int currentTime, double timeDelta);
+void updateAI(Character *chnaracter, float currentTime, double timeDelta);

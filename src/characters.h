@@ -138,7 +138,7 @@ typedef struct _Character
 	int destroyedTileIndex;
 	
 	/* AI */
-	int move_timer;
+	float move_timer;
 	float fire_timer;
 	float time_alive;
 } Character;

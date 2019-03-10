@@ -25,26 +25,31 @@
 #include "scenery.h"
 
 static void setNewDirection(Character *character);
-static void directCharacterBasedOnCollisions(Character *character, int currentTime);
+static void directCharacterBasedOnCollisions(Character *character, float currentTime);
 
-static void shootWeaponProjectile(Character *character, int currentTime);
+static void shootWeaponProjectile(Character *character, float currentTime);
 
 static void fireAIWeapon(Character *character);
 
-static void attackCharacterOnRow(Character *character, Character *characterB, int currentTime);
-static void attackCharacterOnColumn(Character *character, Character *characterB, int currentTime);
+static void attackCharacterOnRow(Character *character, Character *characterB, float currentTime);
+static void attackCharacterOnColumn(Character *character, Character *characterB, float currentTime);
 
-static void avoidCharacter(Character *character, Character *characterB, int currentTime);
+static void avoidCharacter(Character *character, Character *characterB, float currentTime);
 
-void updateAI(Character *character, int currentTime, double timeDelta)
+static void updateDirectionAndMoveTimer(Character *character, float currentTime)
+{
+	setNewDirection(character);
+	character->move_timer = currentTime + (float)((mt_random() % 2) + 1);
+}
+
+void updateAI(Character *character, float currentTime, double timeDelta)
 {
 	if (!CHARACTER_IS_ALIVE(character) || character->state != CHARACTER_AI_STATE || !character->active || !character->lives || (gNetworkConnection && gNetworkConnection->type == NETWORK_CLIENT_TYPE))
 		return;
 	
 	if (character->direction == NO_DIRECTION || currentTime > character->move_timer)
 	{
-		setNewDirection(character);
-		character->move_timer = currentTime + (mt_random() % 2) + 1;
+		updateDirectionAndMoveTimer(character, currentTime);
 	}
 	
 	directCharacterBasedOnCollisions(character, currentTime);
@@ -107,7 +112,7 @@ static void setNewDirection(Character *character)
 	}
 }
 
-static void avoidCharacter(Character *character, Character *characterB, int currentTime)
+static void avoidCharacter(Character *character, Character *characterB, float currentTime)
 {
 	if (!checkCharacterColl(character, characterB, character->direction)									&&
 		(characterB->state != CHARACTER_AI_STATE															||
@@ -120,12 +125,11 @@ static void avoidCharacter(Character *character, Character *characterB, int curr
 		 (character->direction == LEFT && characterB->direction == LEFT) /* character is on right side */
 		)))
 	{
-		setNewDirection(character);
-		character->move_timer = currentTime + (mt_random() % 2) + 1;
+		updateDirectionAndMoveTimer(character, currentTime);
 	}
 }
 
-static void directCharacterBasedOnCollisions(Character *character, int currentTime)
+static void directCharacterBasedOnCollisions(Character *character, float currentTime)
 {
 	Character *characterB;
 	Character *characterC;
@@ -135,8 +139,7 @@ static void directCharacterBasedOnCollisions(Character *character, int currentTi
 	
 	if (!characterCanMove(character->direction, character))
 	{
-		setNewDirection(character);
-		character->move_timer = currentTime + (mt_random() % 2) + 1;
+		updateDirectionAndMoveTimer(character, currentTime);
 	}
 	
 	avoidCharacter(character, characterB, currentTime);
@@ -181,7 +184,7 @@ static void directCharacterBasedOnCollisions(Character *character, int currentTi
 	}
 }
 
-static void shootWeaponProjectile(Character *character, int currentTime)
+static void shootWeaponProjectile(Character *character, float currentTime)
 {
 	int AIMode = gNetworkConnection ? gAINetMode : gAIMode;
 	
@@ -317,7 +320,7 @@ static void fireAIWeapon(Character *character)
 	prepareFiringCharacterWeapon(character, character->x, character->y, character->pointing_direction, 0.0f);
 }
 
-static void attackCharacterOnRow(Character *character, Character *characterB, int currentTime)
+static void attackCharacterOnRow(Character *character, Character *characterB, float currentTime)
 {
 	if (character->x > characterB->x)
 	{
@@ -325,8 +328,7 @@ static void attackCharacterOnRow(Character *character, Character *characterB, in
 		character->direction = LEFT;
 		fireAIWeapon(character);
 		
-		setNewDirection(character);
-		character->move_timer = currentTime + (mt_random() % 2) + 1;
+		updateDirectionAndMoveTimer(character, currentTime);
 	}
 	else if (character->x < characterB->x)
 	{
@@ -334,12 +336,11 @@ static void attackCharacterOnRow(Character *character, Character *characterB, in
 		character->direction = RIGHT;
 		fireAIWeapon(character);
 		
-		setNewDirection(character);
-		character->move_timer = currentTime + (mt_random() % 2) + 1;
+		updateDirectionAndMoveTimer(character, currentTime);
 	}
 }
 
-static void attackCharacterOnColumn(Character *character, Character *characterB, int currentTime)
+static void attackCharacterOnColumn(Character *character, Character *characterB, float currentTime)
 {
 	if (character->y > characterB->y)
 	{
@@ -347,8 +348,7 @@ static void attackCharacterOnColumn(Character *character, Character *characterB,
 		character->direction = DOWN;
 		fireAIWeapon(character);
 		
-		setNewDirection(character);
-		character->move_timer = currentTime + (mt_random() % 2) + 1;
+		updateDirectionAndMoveTimer(character, currentTime);
 	}
 	else if (character->y < characterB->y)
 	{
@@ -356,7 +356,6 @@ static void attackCharacterOnColumn(Character *character, Character *characterB,
 		character->direction = UP;
 		fireAIWeapon(character);
 		
-		setNewDirection(character);
-		character->move_timer = currentTime + (mt_random() % 2) + 1;
+		updateDirectionAndMoveTimer(character, currentTime);
 	}
 }

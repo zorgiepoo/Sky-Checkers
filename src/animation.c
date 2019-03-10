@@ -142,10 +142,10 @@ void animate(SDL_Window *window, double timeDelta)
 	
 	// Animate objects based on time delta
 	
-	updateAI(&gRedRover, (int)gSecondTimer, timeDelta);
-	updateAI(&gGreenTree, (int)gSecondTimer, timeDelta);
-	updateAI(&gPinkBubbleGum, (int)gSecondTimer, timeDelta);
-	updateAI(&gBlueLightning, (int)gSecondTimer, timeDelta);
+	updateAI(&gRedRover, gSecondTimer, timeDelta);
+	updateAI(&gGreenTree, gSecondTimer, timeDelta);
+	updateAI(&gPinkBubbleGum, gSecondTimer, timeDelta);
+	updateAI(&gBlueLightning, gSecondTimer, timeDelta);
 	
 	// Weapons must have possibility of being updated before moving characters,
 	// which could change their look direction
