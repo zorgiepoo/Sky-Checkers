@@ -25,8 +25,10 @@
     <ClInclude Include="..\src\menu.h" />
     <ClInclude Include="..\src\network.h" />
     <ClInclude Include="..\src\renderer.h" />
+    <ClInclude Include="..\src\renderer_d3d11.h" />
     <ClInclude Include="..\src\renderer_gl.h" />
     <ClInclude Include="..\src\renderer_projection.h" />
+    <ClInclude Include="..\src\renderer_types.h" />
     <ClInclude Include="..\src\scenery.h" />
     <ClInclude Include="..\src\utilities.h" />
     <ClInclude Include="..\src\weapon.h" />
@@ -47,6 +49,7 @@
     <ClCompile Include="..\src\menu.c" />
     <ClCompile Include="..\src\network.c" />
     <ClCompile Include="..\src\renderer.c" />
+    <ClCompile Include="..\src\renderer_d3d11.cpp" />
     <ClCompile Include="..\src\renderer_gl.c" />
     <ClCompile Include="..\src\renderer_projection.c" />
     <ClCompile Include="..\src\scenery.c" />
@@ -107,7 +110,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glew32.lib;opengl32.lib;SDL2.lib;SDL2main.lib;SDL2_ttf.lib;SDL2_mixer.lib;ws2_32.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32.lib;opengl32.lib;d3d11.lib;SDL2.lib;SDL2main.lib;SDL2_ttf.lib;SDL2_mixer.lib;ws2_32.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>

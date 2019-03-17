@@ -25,6 +25,10 @@
 #include "utilities.h"
 #endif
 
+#ifdef WINDOWS
+#include "renderer_d3d11.h"
+#endif
+
 void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, SDL_bool fullscreen, SDL_bool vsync, SDL_bool fsaa)
 {
 	SDL_ShowCursor(SDL_DISABLE);
@@ -44,7 +48,7 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 		fprintf(stderr, "NOTICE: Force disabling anti-aliasing usage!!\n");
 	}
 	
-#ifdef MAC_OS_X
+#ifndef linux
 	SDL_bool forcingOpenGL = SDL_FALSE;
 	char *forceOpenGLEnvironmentVariable = getenv("FORCE_OPENGL");
 	if (forceOpenGLEnvironmentVariable != NULL && strlen(forceOpenGLEnvironmentVariable) > 0 && (tolower(forceOpenGLEnvironmentVariable[0]) == 'y' || forceOpenGLEnvironmentVariable[0] == '1'))
@@ -53,11 +57,15 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 	}
 #endif
 	
-#ifdef MAC_OS_X
+#ifndef linux
 	if (!forcingOpenGL)
 	{
+#ifdef MAC_OS_X
 		// Metal
 		createdRenderer = createRenderer_metal(renderer, windowTitle, windowWidth, windowHeight, fullscreen, vsync, fsaa);
+#else
+		createdRenderer = createRenderer_d3d11(renderer, windowTitle, windowWidth, windowHeight, fullscreen, vsync, fsaa);
+#endif
 #ifdef _DEBUG
 		if (!createdRenderer)
 		{

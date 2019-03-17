@@ -19,6 +19,10 @@
 
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "maincore.h"
 
 #define MSAA_PREFERRED_RETINA_SAMPLE_COUNT 2
@@ -86,7 +90,7 @@ typedef struct
 typedef struct
 {
 	int32_t program;
-	
+
 	int32_t modelViewProjectionMatrixUniformLocation;
 	int32_t colorUniformLocation;
 	int32_t textureUniformLocation;
@@ -94,33 +98,33 @@ typedef struct
 
 #define MAX_PIPELINE_COUNT 6
 
+typedef enum
+{
+	NDC_TYPE_GL,
+	NDC_TYPE_METAL
+} NDCType;
+
 typedef struct _Renderer
 {
 	SDL_Window *window;
 	float projectionMatrix[16];
-	
+
 	// Width and height of drawable in pixels
 	int32_t drawableWidth;
 	int32_t drawableHeight;
-	
+
 	// Used for keeping track of width/height in points of window when not in fullscreen
 	int32_t windowWidth;
 	int32_t windowHeight;
-	
+
 	uint32_t sampleCount;
-	
+
 	SDL_bool fullscreen;
 	SDL_bool vsync;
 	SDL_bool fsaa;
-	
-	enum
-	{
-		NDC_TYPE_GL
-#ifdef MAC_OS_X
-		,NDC_TYPE_METAL
-#endif
-	} ndcType;
-	
+
+	NDCType ndcType;
+
 	union
 	{
 		// Private GL data
@@ -129,7 +133,7 @@ typedef struct _Renderer
 			Shader_gl glPositionTextureShader;
 			Shader_gl glPositionShader;
 		};
-		
+
 #ifdef MAC_OS_X
 		// Private metal data
 		struct
@@ -147,22 +151,40 @@ typedef struct _Renderer
 			SDL_bool metalIgnoreFirstFullscreenTransition;
 		};
 #endif
+
+#ifdef WINDOWS
+		// Private D3D11 data
+		struct
+		{
+			void *device;
+			void *context;
+			void *renderTargetView;
+			void *depthStencilView;
+			void *depthStencilBuffer;
+			void *disabledDepthStencilState;
+			void *swapChain;
+		};
+#endif
 	};
-	
+
 #ifdef MAC_OS_X
 	SDL_bool macosInFullscreenTransition;
 #endif
-	
+
 	// Private function pointers
-	void (*updateViewportPtr)(struct _Renderer *);
-	void (*renderFramePtr)(struct _Renderer *, void (*)(struct _Renderer *));
-	TextureObject (*textureFromPixelDataPtr)(struct _Renderer *, const void *, int32_t, int32_t);
-	void (*deleteTexturePtr)(struct _Renderer *, TextureObject);
-	BufferObject (*createBufferObjectPtr)(struct _Renderer *, const void *data, uint32_t size);
-	BufferArrayObject (*createVertexArrayObjectPtr)(struct _Renderer *, const void *, uint32_t);
-	BufferArrayObject (*createVertexAndTextureCoordinateArrayObjectPtr)(struct _Renderer *, const void *, uint32_t, uint32_t);
-	void (*drawVerticesPtr)(struct _Renderer *, float *, RendererMode, BufferArrayObject, uint32_t, color4_t, RendererOptions);
-	void (*drawVerticesFromIndicesPtr)(struct _Renderer *, float *, RendererMode, BufferArrayObject, BufferObject, uint32_t, color4_t, RendererOptions);
-	void (*drawTextureWithVerticesPtr)(struct _Renderer *, float *, TextureObject, RendererMode, BufferArrayObject, uint32_t, color4_t, RendererOptions);
-	void (*drawTextureWithVerticesFromIndicesPtr)(struct _Renderer *, float *, TextureObject, RendererMode, BufferArrayObject, BufferObject, uint32_t, color4_t, RendererOptions);
+	void(*updateViewportPtr)(struct _Renderer *);
+	void(*renderFramePtr)(struct _Renderer *, void(*)(struct _Renderer *));
+	TextureObject(*textureFromPixelDataPtr)(struct _Renderer *, const void *, int32_t, int32_t);
+	void(*deleteTexturePtr)(struct _Renderer *, TextureObject);
+	BufferObject(*createBufferObjectPtr)(struct _Renderer *, const void *data, uint32_t size);
+	BufferArrayObject(*createVertexArrayObjectPtr)(struct _Renderer *, const void *, uint32_t);
+	BufferArrayObject(*createVertexAndTextureCoordinateArrayObjectPtr)(struct _Renderer *, const void *, uint32_t, uint32_t);
+	void(*drawVerticesPtr)(struct _Renderer *, float *, RendererMode, BufferArrayObject, uint32_t, color4_t, RendererOptions);
+	void(*drawVerticesFromIndicesPtr)(struct _Renderer *, float *, RendererMode, BufferArrayObject, BufferObject, uint32_t, color4_t, RendererOptions);
+	void(*drawTextureWithVerticesPtr)(struct _Renderer *, float *, TextureObject, RendererMode, BufferArrayObject, uint32_t, color4_t, RendererOptions);
+	void(*drawTextureWithVerticesFromIndicesPtr)(struct _Renderer *, float *, TextureObject, RendererMode, BufferArrayObject, BufferObject, uint32_t, color4_t, RendererOptions);
 } Renderer;
+
+#ifdef __cplusplus
+}
+#endif
