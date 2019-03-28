@@ -57,6 +57,9 @@ typedef struct
 #ifdef MAC_OS_X
 		void *metalObject;
 #endif
+#ifdef WINDOWS
+		void *d3d11Object;
+#endif
 		uint32_t glObject;
 	};
 } BufferObject;
@@ -72,6 +75,13 @@ typedef struct
 			uint32_t metalVerticesSize;
 		};
 #endif
+#ifdef WINDOWS
+		struct
+		{
+			void *d3d11Object;
+			uint32_t d3d11VerticesSize;
+		};
+#endif
 		uint32_t glObject;
 	};
 } BufferArrayObject;
@@ -82,6 +92,9 @@ typedef struct
 	{
 #ifdef MAC_OS_X
 		void *metalObject;
+#endif
+#ifdef WINDOWS
+		void *d3d11Object;
 #endif
 		uint32_t glObject;
 	};
@@ -95,6 +108,15 @@ typedef struct
 	int32_t colorUniformLocation;
 	int32_t textureUniformLocation;
 } Shader_gl;
+
+#ifdef WINDOWS
+typedef struct
+{
+	void *vertexShader;
+	void *pixelShader;
+	void *vertexInputLayout;
+} Shader_d3d11;
+#endif
 
 #define MAX_PIPELINE_COUNT 6
 
@@ -156,13 +178,21 @@ typedef struct _Renderer
 		// Private D3D11 data
 		struct
 		{
-			void *device;
-			void *context;
-			void *renderTargetView;
-			void *depthStencilView;
-			void *depthStencilBuffer;
-			void *disabledDepthStencilState;
-			void *swapChain;
+			void *d3d11Device;
+			void *d3d11Context;
+			void *d3d11RenderTargetView;
+			void *d3d11DepthStencilView;
+			void *d3d11DepthStencilBuffer;
+			void *d3d11DepthStencilState;
+			void *d3d11DisabledDepthStencilState;
+			void *d3d11OneMinusAlphaBlendState;
+			void *d3d11AlphaBlendState;
+			void *d3d11SwapChain;
+			Shader_d3d11 d3d11PositionShader;
+			Shader_d3d11 d3d11TexturePositionShader;
+			void *d3d11VertexShaderConstantBuffer;
+			void *d3d11PixelShaderConstantBuffer;
+			void *d3d11SamplerState;
 		};
 #endif
 	};

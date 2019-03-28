@@ -23,6 +23,9 @@
 
 #include <d3d11.h>
 #include <d3dcompiler.h>
+#include <DirectXMath.h>
+
+using namespace DirectX;
 
 extern "C" static void updateViewport_d3d11(Renderer *renderer);
 
@@ -51,19 +54,19 @@ extern "C" static void updateViewport_d3d11(Renderer *renderer)
 	renderer->drawableWidth = renderer->windowWidth;
 	renderer->drawableHeight = renderer->windowHeight;
 
-	IDXGISwapChain *swapChain = (IDXGISwapChain *)renderer->swapChain;
-	ID3D11DeviceContext *context = (ID3D11DeviceContext *)renderer->context;
+	IDXGISwapChain *swapChain = (IDXGISwapChain *)renderer->d3d11SwapChain;
+	ID3D11DeviceContext *context = (ID3D11DeviceContext *)renderer->d3d11Context;
 
 	// Release previous render target view and resize swapchain if necessary
-	ID3D11RenderTargetView *renderTargetView = (ID3D11RenderTargetView *)renderer->renderTargetView;
+	ID3D11RenderTargetView *renderTargetView = (ID3D11RenderTargetView *)renderer->d3d11RenderTargetView;
 	if (renderTargetView != nullptr)
 	{
 		context->OMSetRenderTargets(0, nullptr, nullptr);
 
-		ID3D11Texture2D *depthStencilBuffer = (ID3D11Texture2D *)renderer->depthStencilBuffer;
+		ID3D11Texture2D *depthStencilBuffer = (ID3D11Texture2D *)renderer->d3d11DepthStencilBuffer;
 		depthStencilBuffer->Release();
 
-		ID3D11DepthStencilView *depthStencilView = (ID3D11DepthStencilView *)renderer->depthStencilView;
+		ID3D11DepthStencilView *depthStencilView = (ID3D11DepthStencilView *)renderer->d3d11DepthStencilView;
 		depthStencilView->Release();
 
 		renderTargetView->Release();
@@ -87,7 +90,7 @@ extern "C" static void updateViewport_d3d11(Renderer *renderer)
 	}
 
 	// Create render target view with back buffer
-	ID3D11Device *device = (ID3D11Device *)renderer->device;
+	ID3D11Device *device = (ID3D11Device *)renderer->d3d11Device;
 	HRESULT targetViewResult = device->CreateRenderTargetView(backBufferPtr, NULL, &renderTargetView);
 	backBufferPtr->Release();
 	if (FAILED(targetViewResult))
@@ -154,12 +157,215 @@ extern "C" static void updateViewport_d3d11(Renderer *renderer)
 	viewport.TopLeftY = 0.0f;
 
 	context->RSSetViewports(1, &viewport);
+	
+	XMMATRIX projectionMatrix = XMMatrixPerspectiveFovRH(45.0f * ((float)M_PI / 180.0f), (float)(renderer->drawableWidth / renderer->drawableHeight), 10.0f, 300.0f);
+	memcpy(renderer->projectionMatrix, &projectionMatrix, sizeof(renderer->projectionMatrix));
 
-	updateProjectionMatrix(renderer);
+	renderer->d3d11RenderTargetView = renderTargetView;
+	renderer->d3d11DepthStencilView = depthStencilView;
+	renderer->d3d11DepthStencilBuffer = depthStencilBuffer;
+}
 
-	renderer->renderTargetView = renderTargetView;
-	renderer->depthStencilView = depthStencilView;
-	renderer->depthStencilBuffer = depthStencilBuffer;
+static bool readFileBytes(const char *filename, void **bytesOutput, SIZE_T *lengthOutput)
+{
+	FILE *file = fopen(filename, "rb");
+	if (file == nullptr)
+	{
+		fprintf(stderr, "Error: failed to read file: %s\n", filename);
+		return false;
+	}
+
+	fseek(file, 0, SEEK_END);
+	SIZE_T length = (SIZE_T)ftell(file);
+	fseek(file, 0, SEEK_SET);
+
+	void *bytes = malloc(length);
+	if (bytes == nullptr)
+	{
+		fprintf(stderr, "Error: failed to allocate bytes for malloc in readFileBytes() for %s\n", filename);
+		fclose(file);
+		return false;
+	}
+
+	if (fread(bytes, length, 1, file) < 1)
+	{
+		fprintf(stderr, "Error: failed to fread file in readFileBytes() for %s\n", filename);
+
+		free(bytes);
+		fclose(file);
+		return false;
+	}
+
+	fclose(file);
+
+	*bytesOutput = bytes;
+	*lengthOutput = length;
+
+	return true;
+}
+
+static bool createShader(Renderer *renderer, Shader_d3d11 *shader, const char *vertexShaderName, const char *pixelShaderName, SDL_bool textured)
+{
+	ID3D11Device *device = (ID3D11Device *)renderer->d3d11Device;
+
+	void *vertexShaderBytes;
+	SIZE_T vertexShaderLength;
+	if (!readFileBytes(vertexShaderName, &vertexShaderBytes, &vertexShaderLength))
+	{
+		return false;
+	}
+
+	ID3D11VertexShader *vertexShader = nullptr;
+	HRESULT vertexShaderResult = device->CreateVertexShader(vertexShaderBytes, vertexShaderLength, nullptr, &vertexShader);
+
+	if (FAILED(vertexShaderResult))
+	{
+		free(vertexShaderBytes);
+		fprintf(stderr, "Error: failed to create vertex shader with error %d from %s\n", vertexShaderResult, vertexShaderName);
+		return false;
+	}
+
+	D3D11_INPUT_ELEMENT_DESC vertexInputLayoutDescription[2];
+	ZeroMemory(&vertexInputLayoutDescription, sizeof(vertexInputLayoutDescription));
+
+	vertexInputLayoutDescription[0].SemanticName = "POSITION";
+	vertexInputLayoutDescription[0].SemanticIndex = 0;
+	vertexInputLayoutDescription[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	vertexInputLayoutDescription[0].InputSlot = 0;
+	vertexInputLayoutDescription[0].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+	vertexInputLayoutDescription[0].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+	vertexInputLayoutDescription[0].InstanceDataStepRate = 0;
+
+	if (textured)
+	{
+		vertexInputLayoutDescription[1].SemanticName = "TEXCOORD";
+		vertexInputLayoutDescription[1].SemanticIndex = 0;
+		vertexInputLayoutDescription[1].Format = DXGI_FORMAT_R32G32_FLOAT;
+		vertexInputLayoutDescription[1].InputSlot = 1;
+		vertexInputLayoutDescription[1].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+		vertexInputLayoutDescription[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+		vertexInputLayoutDescription[1].InstanceDataStepRate = 0;
+	}
+
+	ID3D11InputLayout *vertexInputLayout = nullptr;
+	HRESULT createVertexInputLayoutResult = device->CreateInputLayout(vertexInputLayoutDescription, textured ? 2 : 1, vertexShaderBytes, vertexShaderLength, &vertexInputLayout);
+	
+	free(vertexShaderBytes);
+
+	if (FAILED(createVertexInputLayoutResult))
+	{
+		fprintf(stderr, "Failed to create vertex input layout with error %d for %s\n", createVertexInputLayoutResult, vertexShaderName);
+		vertexShader->Release();
+		return false;
+	}
+
+	void *pixelShaderBytes;
+	SIZE_T pixelShaderLength;
+	if (!readFileBytes(pixelShaderName, &pixelShaderBytes, &pixelShaderLength))
+	{
+		vertexInputLayout->Release();
+		vertexShader->Release();
+		return false;
+	}
+
+	ID3D11PixelShader *pixelShader = nullptr;
+	HRESULT pixelShaderResult = device->CreatePixelShader(pixelShaderBytes, pixelShaderLength, nullptr, &pixelShader);
+
+	free(pixelShaderBytes);
+
+	if (FAILED(pixelShaderResult))
+	{
+		vertexInputLayout->Release();
+		vertexShader->Release();
+		fprintf(stderr, "Error: failed to create pixel shader with error %d from %s\n", pixelShaderResult, pixelShaderName);
+		return false;
+	}
+	
+	shader->vertexShader = vertexShader;
+	shader->pixelShader = pixelShader;
+	shader->vertexInputLayout = vertexInputLayout;
+
+	return true;
+}
+
+static bool createConstantBuffers(Renderer *renderer)
+{
+	ID3D11Device *device = (ID3D11Device *)renderer->d3d11Device;
+
+	// Set up constant buffer for vertex shader
+	D3D11_BUFFER_DESC matrixBufferDescription;
+	ZeroMemory(&matrixBufferDescription, sizeof(matrixBufferDescription));
+
+	matrixBufferDescription.Usage = D3D11_USAGE_DYNAMIC;
+	matrixBufferDescription.ByteWidth = sizeof(renderer->projectionMatrix);
+	matrixBufferDescription.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	matrixBufferDescription.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	matrixBufferDescription.MiscFlags = 0;
+	matrixBufferDescription.StructureByteStride = 0;
+
+	ID3D11Buffer *matrixBuffer = nullptr;
+	HRESULT createMatrixBufferResult = device->CreateBuffer(&matrixBufferDescription, nullptr, &matrixBuffer);
+	if (FAILED(createMatrixBufferResult))
+	{
+		fprintf(stderr, "Error: Failed to create matrix buffer for shader: %d\n", createMatrixBufferResult);
+		return false;
+	}
+
+	// Set up constant buffer for pixel shader
+	D3D11_BUFFER_DESC colorBufferDescription;
+	ZeroMemory(&colorBufferDescription, sizeof(colorBufferDescription));
+
+	colorBufferDescription.Usage = D3D11_USAGE_DYNAMIC;
+	colorBufferDescription.ByteWidth = sizeof(float) * 4;
+	colorBufferDescription.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	colorBufferDescription.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	colorBufferDescription.MiscFlags = 0;
+	colorBufferDescription.StructureByteStride = 0;
+
+	ID3D11Buffer *colorBuffer = nullptr;
+	HRESULT createColorBufferResult = device->CreateBuffer(&colorBufferDescription, nullptr, &colorBuffer);
+	if (FAILED(createColorBufferResult))
+	{
+		fprintf(stderr, "Error: Failed to create color buffer for shader: %d\n", createColorBufferResult);
+		matrixBuffer->Release();
+
+		return false;
+	}
+
+	// Set up texture sampler
+	D3D11_SAMPLER_DESC samplerDescription;
+	ZeroMemory(&samplerDescription, sizeof(samplerDescription));
+
+	samplerDescription.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	samplerDescription.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDescription.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDescription.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDescription.MipLODBias = 0.0f;
+	samplerDescription.MaxAnisotropy = 1;
+	samplerDescription.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+	samplerDescription.BorderColor[0] = 0.0f;
+	samplerDescription.BorderColor[1] = 0.0f;
+	samplerDescription.BorderColor[2] = 0.0f;
+	samplerDescription.BorderColor[3] = 0.0f;
+	samplerDescription.MinLOD = 0.0f;
+	samplerDescription.MaxLOD = D3D11_FLOAT32_MAX;
+
+	ID3D11SamplerState *samplerState = nullptr;
+	HRESULT createSamplerResult = device->CreateSamplerState(&samplerDescription, &samplerState);
+	if (FAILED(createSamplerResult))
+	{
+		fprintf(stderr, "Error: Failed to create sampler state: %d\n", createSamplerResult);
+		matrixBuffer->Release();
+		colorBuffer->Release();
+
+		return false;
+	}
+
+	renderer->d3d11VertexShaderConstantBuffer = matrixBuffer;
+	renderer->d3d11PixelShaderConstantBuffer = colorBuffer;
+	renderer->d3d11SamplerState = samplerState;
+
+	return true;
 }
 
 extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, SDL_bool fullscreen, SDL_bool vsync, SDL_bool fsaa)
@@ -168,7 +374,10 @@ extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowT
 	ID3D11Device *device = nullptr;
 	IDXGISwapChain *swapChain = nullptr;
 	ID3D11DeviceContext *context = nullptr;
+	ID3D11DepthStencilState *depthStencilState = nullptr;
 	ID3D11DepthStencilState *disabledDepthStencilState = nullptr;
+	ID3D11BlendState *alphaBlendState = nullptr;
+	ID3D11BlendState *oneMinusAlphaBlendState = nullptr;
 	ID3D11RasterizerState *rasterState = nullptr;
 
 	uint32_t videoFlags = SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE;
@@ -249,15 +458,41 @@ extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowT
 		goto INIT_FAILURE;
 	}
 
+	// Create depth stencil state
+	D3D11_DEPTH_STENCIL_DESC depthStencilDescription;
+	ZeroMemory(&depthStencilDescription, sizeof(depthStencilDescription));
+
+	depthStencilDescription.DepthEnable = TRUE;
+	depthStencilDescription.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	depthStencilDescription.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+	depthStencilDescription.StencilEnable = FALSE;
+	depthStencilDescription.StencilReadMask = 0xFF;
+	depthStencilDescription.StencilWriteMask = 0xFF;
+	depthStencilDescription.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDescription.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+	depthStencilDescription.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDescription.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	depthStencilDescription.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDescription.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+	depthStencilDescription.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDescription.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+	HRESULT depthStencilResult = device->CreateDepthStencilState(&depthStencilDescription, &depthStencilState);
+	if (FAILED(depthStencilResult))
+	{
+		fprintf(stderr, "Error: Failed to create D3D11 depth stencil: %d\n", depthStencilResult);
+		depthStencilState = nullptr;
+		goto INIT_FAILURE;
+	}
+
 	// Create disabled depth stencil state
-	// D3D already has a default enabled depth stencil state that suits our needs
 	D3D11_DEPTH_STENCIL_DESC disabledDepthStencilDescription;
 	ZeroMemory(&disabledDepthStencilDescription, sizeof(disabledDepthStencilDescription));
 
 	disabledDepthStencilDescription.DepthEnable = FALSE;
 	disabledDepthStencilDescription.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 	disabledDepthStencilDescription.DepthFunc = D3D11_COMPARISON_LESS;
-	disabledDepthStencilDescription.StencilEnable = TRUE;
+	disabledDepthStencilDescription.StencilEnable = FALSE;
 	disabledDepthStencilDescription.StencilReadMask = 0xFF;
 	disabledDepthStencilDescription.StencilWriteMask = 0xFF;
 	disabledDepthStencilDescription.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
@@ -269,11 +504,57 @@ extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowT
 	disabledDepthStencilDescription.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
 	disabledDepthStencilDescription.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 	
-	HRESULT depthStencilResult = device->CreateDepthStencilState(&disabledDepthStencilDescription, &disabledDepthStencilState);
-	if (FAILED(depthStencilResult))
+	HRESULT disabledDepthStencilResult = device->CreateDepthStencilState(&disabledDepthStencilDescription, &disabledDepthStencilState);
+	if (FAILED(disabledDepthStencilResult))
 	{
-		fprintf(stderr, "Error: Failed to create D3D11 depth stencil: %d\n", depthStencilResult);
+		fprintf(stderr, "Error: Failed to create D3D11 depth stencil: %d\n", disabledDepthStencilResult);
 		disabledDepthStencilState = nullptr;
+		goto INIT_FAILURE;
+	}
+
+	// Create alpha blend state
+	D3D11_BLEND_DESC alphaBlendDescription;
+	ZeroMemory(&alphaBlendDescription, sizeof(alphaBlendDescription));
+
+	alphaBlendDescription.AlphaToCoverageEnable = FALSE;
+	alphaBlendDescription.IndependentBlendEnable = FALSE;
+	alphaBlendDescription.RenderTarget[0].BlendEnable = TRUE;
+	alphaBlendDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	alphaBlendDescription.RenderTarget[0].DestBlend = D3D11_BLEND_SRC_ALPHA;
+	alphaBlendDescription.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	alphaBlendDescription.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_SRC_ALPHA;
+	alphaBlendDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_SRC_ALPHA;
+	alphaBlendDescription.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	alphaBlendDescription.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+	HRESULT createAlphaBlendResult = device->CreateBlendState(&alphaBlendDescription, &alphaBlendState);
+	if (FAILED(createAlphaBlendResult))
+	{
+		fprintf(stderr, "Error: Failed to create D3D11 alpha blend state: %d\n", createAlphaBlendResult);
+		alphaBlendState = nullptr;
+		goto INIT_FAILURE;
+	}
+
+	// Create one minus alpha blend state
+	D3D11_BLEND_DESC oneMinusAlphaBlendDescription;
+	ZeroMemory(&oneMinusAlphaBlendDescription, sizeof(oneMinusAlphaBlendDescription));
+
+	oneMinusAlphaBlendDescription.AlphaToCoverageEnable = FALSE;
+	oneMinusAlphaBlendDescription.IndependentBlendEnable = FALSE;
+	oneMinusAlphaBlendDescription.RenderTarget[0].BlendEnable = TRUE;
+	oneMinusAlphaBlendDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	oneMinusAlphaBlendDescription.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	oneMinusAlphaBlendDescription.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	oneMinusAlphaBlendDescription.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_SRC_ALPHA;
+	oneMinusAlphaBlendDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
+	oneMinusAlphaBlendDescription.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	oneMinusAlphaBlendDescription.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+	HRESULT createOneMinusAlphaBlendResult = device->CreateBlendState(&oneMinusAlphaBlendDescription, &oneMinusAlphaBlendState);
+	if (FAILED(createOneMinusAlphaBlendResult))
+	{
+		fprintf(stderr, "Error: Failed to create D3D11 one minus alpha blend state: %d\n", createOneMinusAlphaBlendResult);
+		oneMinusAlphaBlendState = nullptr;
 		goto INIT_FAILURE;
 	}
 
@@ -302,17 +583,40 @@ extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowT
 
 	context->RSSetState(rasterState);
 
-	renderer->ndcType = NDC_TYPE_METAL;
-	renderer->device = device;
-	renderer->context = context;
-	renderer->swapChain = swapChain;
+	renderer->d3d11Device = device;
 
-	renderer->renderTargetView = nullptr;
-	renderer->depthStencilView = nullptr;
-	renderer->depthStencilBuffer = nullptr;
+	if (!createConstantBuffers(renderer))
+	{
+		fprintf(stderr, "Error: Failed to create constant buffers\n");
+		goto INIT_FAILURE;
+	}
+
+	if (!createShader(renderer, &renderer->d3d11PositionShader, "Data\\Shaders\\position-vertex.cso", "Data\\Shaders\\position-pixel.cso", SDL_FALSE))
+	{
+		fprintf(stderr, "Error: Failed to create position shader\n");
+		goto INIT_FAILURE;
+	}
+
+	if (!createShader(renderer, &renderer->d3d11TexturePositionShader, "Data\\Shaders\\texture-position-vertex.cso", "Data\\Shaders\\texture-position-pixel.cso", SDL_TRUE))
+	{
+		fprintf(stderr, "Error: Failed to create texture position shader\n");
+		goto INIT_FAILURE;
+	}
+
+	renderer->ndcType = NDC_TYPE_METAL;
+	renderer->d3d11Context = context;
+	renderer->d3d11SwapChain = swapChain;
+
+	renderer->d3d11RenderTargetView = nullptr;
+	renderer->d3d11DepthStencilView = nullptr;
+	renderer->d3d11DepthStencilBuffer = nullptr;
 	updateViewport_d3d11(renderer);
 
-	renderer->disabledDepthStencilState = disabledDepthStencilState;
+	renderer->d3d11DepthStencilState = depthStencilState;
+	renderer->d3d11DisabledDepthStencilState = disabledDepthStencilState;
+
+	renderer->d3d11AlphaBlendState = alphaBlendState;
+	renderer->d3d11OneMinusAlphaBlendState = oneMinusAlphaBlendState;
 
 	renderer->updateViewportPtr = updateViewport_d3d11;
 	renderer->renderFramePtr = renderFrame_d3d11;
@@ -334,9 +638,24 @@ INIT_FAILURE:
 		swapChain->SetFullscreenState(false, NULL);
 	}
 
+	if (depthStencilState != nullptr)
+	{
+		depthStencilState->Release();
+	}
+
 	if (disabledDepthStencilState != nullptr)
 	{
 		disabledDepthStencilState->Release();
+	}
+
+	if (alphaBlendState != nullptr)
+	{
+		alphaBlendState->Release();
+	}
+
+	if (oneMinusAlphaBlendState != nullptr)
+	{
+		oneMinusAlphaBlendState->Release();
 	}
 
 	if (context != nullptr)
@@ -366,21 +685,21 @@ INIT_FAILURE:
 extern "C" void renderFrame_d3d11(Renderer *renderer, void(*drawFunc)(Renderer *))
 {
 	// Clear back buffer
-	ID3D11DeviceContext *context = (ID3D11DeviceContext *)renderer->context;
-	ID3D11RenderTargetView *renderTargetView = (ID3D11RenderTargetView *)renderer->renderTargetView;
+	ID3D11DeviceContext *context = (ID3D11DeviceContext *)renderer->d3d11Context;
+	ID3D11RenderTargetView *renderTargetView = (ID3D11RenderTargetView *)renderer->d3d11RenderTargetView;
 
 	float clearColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	context->ClearRenderTargetView(renderTargetView, clearColor);
 
 	// Clear depth buffer
-	ID3D11DepthStencilView *depthStencilView = (ID3D11DepthStencilView *)renderer->depthStencilView;
+	ID3D11DepthStencilView *depthStencilView = (ID3D11DepthStencilView *)renderer->d3d11DepthStencilView;
 	context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	// Draw scene
 	drawFunc(renderer);
 
 	// Present back buffer to screen
-	IDXGISwapChain *swapChain = (IDXGISwapChain *)renderer->swapChain;
+	IDXGISwapChain *swapChain = (IDXGISwapChain *)renderer->d3d11SwapChain;
 	if (renderer->vsync)
 	{
 		// Lock to screen refresh rate
@@ -395,49 +714,270 @@ extern "C" void renderFrame_d3d11(Renderer *renderer, void(*drawFunc)(Renderer *
 
 extern "C" TextureObject textureFromPixelData_d3d11(Renderer *renderer, const void *pixels, int32_t width, int32_t height)
 {
-	TextureObject texture;
-	texture.glObject = 0;
-	return texture;
+	D3D11_SUBRESOURCE_DATA textureData;
+	ZeroMemory(&textureData, sizeof(textureData));
+
+	const UINT bytesPerRow = 4;
+
+	textureData.pSysMem = pixels;
+	textureData.SysMemPitch = bytesPerRow * (UINT)width;
+	textureData.SysMemSlicePitch = 0;
+
+	D3D11_TEXTURE2D_DESC textureDescription;
+	ZeroMemory(&textureDescription, sizeof(textureDescription));
+
+	textureDescription.Width = width;
+	textureDescription.Height = height;
+	textureDescription.MipLevels = 1;
+	textureDescription.ArraySize = 1;
+	textureDescription.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDescription.SampleDesc.Count = 1;
+	textureDescription.SampleDesc.Quality = 0;
+	textureDescription.Usage = D3D11_USAGE_DEFAULT;
+	textureDescription.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	textureDescription.CPUAccessFlags = 0;
+	textureDescription.MiscFlags = 0;
+
+	ID3D11Device *device = (ID3D11Device *)renderer->d3d11Device;
+	ID3D11Texture2D *texture = nullptr;
+	HRESULT textureResult = device->CreateTexture2D(&textureDescription, &textureData, &texture);
+	if (FAILED(textureResult))
+	{
+		fprintf(stderr, "Failed to create d3d texture: %d\n", textureResult);
+		abort();
+	}
+
+	ID3D11ShaderResourceView *resourceView = nullptr;
+	HRESULT resourceViewResult = device->CreateShaderResourceView(texture, nullptr, &resourceView);
+	if (FAILED(resourceViewResult))
+	{
+		fprintf(stderr, "Failed to create d3d texture resource view: %d\n", resourceViewResult);
+		abort();
+	}
+
+	TextureObject textureObject;
+	textureObject.d3d11Object = resourceView;
+	return textureObject;
 }
 
-extern "C" void deleteTexture_d3d11(Renderer *renderer, TextureObject texture)
+extern "C" void deleteTexture_d3d11(Renderer *renderer, TextureObject textureObject)
 {
+	ID3D11ShaderResourceView *textureResourceView = (ID3D11ShaderResourceView *)textureObject.d3d11Object;
+	textureResourceView->Release();
+}
+
+static ID3D11Buffer *createVertexBuffer(ID3D11Device *device, const void *data, uint32_t size, D3D11_BIND_FLAG bindFlags)
+{
+	D3D11_BUFFER_DESC vertexBufferDescription;
+	ZeroMemory(&vertexBufferDescription, sizeof(vertexBufferDescription));
+
+	vertexBufferDescription.Usage = D3D11_USAGE_DEFAULT;
+	vertexBufferDescription.ByteWidth = size;
+	vertexBufferDescription.BindFlags = bindFlags;
+	vertexBufferDescription.CPUAccessFlags = 0;
+	vertexBufferDescription.MiscFlags = 0;
+	vertexBufferDescription.StructureByteStride = 0;
+
+	D3D11_SUBRESOURCE_DATA vertexData;
+	ZeroMemory(&vertexData, sizeof(vertexData));
+
+	vertexData.pSysMem = data;
+	vertexData.SysMemPitch = 0;
+	vertexData.SysMemSlicePitch = 0;
+
+	ID3D11Buffer *vertexBuffer = nullptr;
+	HRESULT createBufferResult = device->CreateBuffer(&vertexBufferDescription, &vertexData, &vertexBuffer);
+	
+	if (FAILED(createBufferResult))
+	{
+		fprintf(stderr, "Failed to create vertex buffer with error: %d\n", createBufferResult);
+		abort();
+	}
+
+	return vertexBuffer;
 }
 
 extern "C" BufferObject createBufferObject_d3d11(Renderer *renderer, const void *data, uint32_t size)
 {
 	BufferObject buffer;
-	buffer.glObject = 0;
+	buffer.d3d11Object = createVertexBuffer((ID3D11Device *)renderer->d3d11Device, data, size, D3D11_BIND_INDEX_BUFFER);
 	return buffer;
 }
 
 extern "C" BufferArrayObject createVertexArrayObject_d3d11(Renderer *renderer, const void *vertices, uint32_t verticesSize)
 {
 	BufferArrayObject bufferArray;
-	bufferArray.glObject = 0;
+	bufferArray.d3d11Object = createVertexBuffer((ID3D11Device *)renderer->d3d11Device, vertices, verticesSize, D3D11_BIND_VERTEX_BUFFER);
+	bufferArray.d3d11VerticesSize = verticesSize;
 	return bufferArray;
 }
 
 extern "C" BufferArrayObject createVertexAndTextureCoordinateArrayObject_d3d11(Renderer *renderer, const void *verticesAndTextureCoordinates, uint32_t verticesSize, uint32_t textureCoordinatesSize)
 {
 	BufferArrayObject bufferArray;
-	bufferArray.glObject = 0;
+	bufferArray.d3d11Object = createVertexBuffer((ID3D11Device *)renderer->d3d11Device, verticesAndTextureCoordinates, verticesSize + textureCoordinatesSize, D3D11_BIND_VERTEX_BUFFER);
+	bufferArray.d3d11VerticesSize = verticesSize;
 	return bufferArray;
+}
+
+static D3D11_PRIMITIVE_TOPOLOGY primitiveTopologyFromRendererMode(RendererMode mode)
+{
+	switch (mode)
+	{
+	case RENDERER_TRIANGLE_MODE:
+		return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	case RENDERER_TRIANGLE_STRIP_MODE:
+		return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+	}
+	return D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
+}
+
+static void copyDataToDynamicBuffer(ID3D11DeviceContext *context, ID3D11Buffer *buffer, void *data, size_t size)
+{
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+
+	HRESULT mappedResult = context->Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+#ifdef _DEBUG
+	if (FAILED(mappedResult))
+	{
+		fprintf(stderr, "Error: failed to Map() dynamic buffer: %d\n", mappedResult);
+		abort();
+	}
+#endif
+
+	memcpy(mappedResource.pData, data, size);
+
+	context->Unmap(buffer, 0);
+}
+
+static void encodeRendererAndShaderState(Renderer *renderer, Shader_d3d11 *shader, float *modelViewProjectionMatrix, RendererMode mode, color4_t color, RendererOptions options)
+{
+	ID3D11DeviceContext *context = (ID3D11DeviceContext *)renderer->d3d11Context;
+	
+	if ((options & RENDERER_OPTION_DISABLE_DEPTH_TEST) != 0)
+	{
+		ID3D11DepthStencilState *disabledDepthStencilState = (ID3D11DepthStencilState *)renderer->d3d11DisabledDepthStencilState;
+		context->OMSetDepthStencilState(disabledDepthStencilState, 0);
+	}
+	else
+	{
+		ID3D11DepthStencilState *depthStencilState = (ID3D11DepthStencilState *)renderer->d3d11DepthStencilState;
+		context->OMSetDepthStencilState(depthStencilState, 0);
+	}
+
+	if ((options & RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA) != 0)
+	{
+		ID3D11BlendState *oneMinusAlphaBlendState = (ID3D11BlendState *)renderer->d3d11OneMinusAlphaBlendState;
+		context->OMSetBlendState(oneMinusAlphaBlendState, nullptr, 0xffffffff);
+	}
+	else if ((options & RENDERER_OPTION_BLENDING_ALPHA) != 0)
+	{
+		ID3D11BlendState *alphaBlendState = (ID3D11BlendState *)renderer->d3d11AlphaBlendState;
+		context->OMSetBlendState(alphaBlendState, nullptr, 0xffffffff);
+	}
+	else
+	{
+		context->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+	}
+
+	context->IASetPrimitiveTopology(primitiveTopologyFromRendererMode(mode));
+
+	ID3D11Buffer *vertexConstantBuffer = (ID3D11Buffer *)renderer->d3d11VertexShaderConstantBuffer;
+	copyDataToDynamicBuffer(context, vertexConstantBuffer, modelViewProjectionMatrix, sizeof(renderer->projectionMatrix));
+	context->VSSetConstantBuffers(0, 1, &vertexConstantBuffer);
+
+	ID3D11Buffer *pixelConstantBuffer = (ID3D11Buffer *)renderer->d3d11PixelShaderConstantBuffer;
+	copyDataToDynamicBuffer(context, pixelConstantBuffer, &color, sizeof(color));
+	context->PSSetConstantBuffers(0, 1, &pixelConstantBuffer);
+
+	ID3D11InputLayout *vertexInputLayout = (ID3D11InputLayout *)shader->vertexInputLayout;
+	context->IASetInputLayout(vertexInputLayout);
+
+	ID3D11VertexShader *vertexShader = (ID3D11VertexShader *)shader->vertexShader;
+	context->VSSetShader(vertexShader, nullptr, 0);
+
+	ID3D11PixelShader *pixelShader = (ID3D11PixelShader *)shader->pixelShader;
+	context->PSSetShader(pixelShader, nullptr, 0);
+}
+
+static void encodeVertices(Renderer *renderer, BufferArrayObject vertexArrayObject)
+{
+	ID3D11DeviceContext *context = (ID3D11DeviceContext *)renderer->d3d11Context;
+	
+	ID3D11Buffer *vertexBuffer = (ID3D11Buffer *)vertexArrayObject.d3d11Object;
+	UINT stride = sizeof(float) * 3;
+	UINT offset = 0;
+	context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
+}
+
+static void encodeVerticesAndTextureCoordinates(Renderer *renderer, BufferArrayObject vertexAndTextureArrayObject)
+{
+	ID3D11DeviceContext *context = (ID3D11DeviceContext *)renderer->d3d11Context;
+
+	ID3D11Buffer *vertexAndTextureCoordinateBuffer = (ID3D11Buffer *)vertexAndTextureArrayObject.d3d11Object;
+	ID3D11Buffer *bufferArray[] = { vertexAndTextureCoordinateBuffer , vertexAndTextureCoordinateBuffer };
+	UINT strides[] = { sizeof(float) * 3, sizeof(float) * 2 };
+	UINT offsets[] = { 0, vertexAndTextureArrayObject.d3d11VerticesSize };
+
+	context->IASetVertexBuffers(0, 2, bufferArray, strides, offsets);
+}
+
+static void encodeTexture(Renderer *renderer, TextureObject texture)
+{
+	ID3D11DeviceContext *context = (ID3D11DeviceContext *)renderer->d3d11Context;
+
+	ID3D11ShaderResourceView *resourceView = (ID3D11ShaderResourceView *)texture.d3d11Object;
+	context->PSSetShaderResources(0, 1, &resourceView);
+
+	ID3D11SamplerState *samplerState = (ID3D11SamplerState *)renderer->d3d11SamplerState;
+	context->PSSetSamplers(0, 1, &samplerState);
+}
+
+static void encodeIndexBuffer(Renderer *renderer, BufferObject indicesBufferObject)
+{
+	ID3D11DeviceContext *context = (ID3D11DeviceContext *)renderer->d3d11Context;
+
+	ID3D11Buffer *indexBuffer = (ID3D11Buffer *)indicesBufferObject.d3d11Object;
+	context->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R16_UINT, 0);
 }
 
 extern "C" void drawVertices_d3d11(Renderer *renderer, float *modelViewProjectionMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options)
 {
-	//context->OMSetDepthStencilState(depthStencilState, 1);
+	encodeRendererAndShaderState(renderer, &renderer->d3d11PositionShader, modelViewProjectionMatrix, mode, color, options);
+	encodeVertices(renderer, vertexArrayObject);
+
+	ID3D11DeviceContext *context = (ID3D11DeviceContext *)renderer->d3d11Context;
+	context->Draw(vertexCount, 0);
 }
 
 extern "C" void drawVerticesFromIndices_d3d11(Renderer *renderer, float *modelViewProjectionMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options)
 {
+	encodeRendererAndShaderState(renderer, &renderer->d3d11PositionShader, modelViewProjectionMatrix, mode, color, options);
+	encodeVertices(renderer, vertexArrayObject);
+	encodeIndexBuffer(renderer, indicesBufferObject);
+
+	ID3D11DeviceContext *context = (ID3D11DeviceContext *)renderer->d3d11Context;
+	context->DrawIndexed(indicesCount, 0, 0);
 }
 
 extern "C" void drawTextureWithVertices_d3d11(Renderer *renderer, float *modelViewProjectionMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options)
 {
+	ID3D11DeviceContext *context = (ID3D11DeviceContext *)renderer->d3d11Context;
+
+	encodeRendererAndShaderState(renderer, &renderer->d3d11TexturePositionShader, modelViewProjectionMatrix, mode, color, options);
+	encodeVerticesAndTextureCoordinates(renderer, vertexAndTextureArrayObject);
+	encodeTexture(renderer, texture);
+
+	context->Draw(vertexCount, 0);
 }
 
 extern "C" void drawTextureWithVerticesFromIndices_d3d11(Renderer *renderer, float *modelViewProjectionMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options)
 {
+	encodeRendererAndShaderState(renderer, &renderer->d3d11TexturePositionShader, modelViewProjectionMatrix, mode, color, options);
+	encodeVerticesAndTextureCoordinates(renderer, vertexAndTextureArrayObject);
+	encodeTexture(renderer, texture);
+	encodeIndexBuffer(renderer, indicesBufferObject);
+
+	ID3D11DeviceContext *context = (ID3D11DeviceContext *)renderer->d3d11Context;
+	context->DrawIndexed(indicesCount, 0, 0);
 }

@@ -63,7 +63,8 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 #ifdef MAC_OS_X
 		// Metal
 		createdRenderer = createRenderer_metal(renderer, windowTitle, windowWidth, windowHeight, fullscreen, vsync, fsaa);
-#else
+#endif
+#ifdef WINDOWS
 		createdRenderer = createRenderer_d3d11(renderer, windowTitle, windowWidth, windowHeight, fullscreen, vsync, fsaa);
 #endif
 #ifdef _DEBUG

@@ -10,3 +10,5 @@ win/dinput.pdb
 *.vcxproj.user
 *.aps
 *.opensdf
+Data/Shaders/*.cso
+
