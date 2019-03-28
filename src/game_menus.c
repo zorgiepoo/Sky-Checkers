@@ -85,7 +85,7 @@ static void drawUpAndDownArrowTriangles(Renderer *renderer, mat4_t modelViewMatr
 	
 	// Because all opaque objects should be rendered first, we will draw a transparent object
 	// that matches all of the menu's
-	drawVertices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertexArrayObject, 18, (color4_t){0.0f, 0.0f, 0.5f, 0.8f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
+	drawVertices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertexArrayObject, 6, (color4_t){0.0f, 0.0f, 0.5f, 0.8f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
 }
 
 /* A bunch of menu drawing and action functions! */
