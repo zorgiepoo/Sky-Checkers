@@ -372,6 +372,10 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 			SDL_GL_SetSwapInterval(1);
 		}
 	}
+	else
+	{
+		SDL_GL_SetSwapInterval(0);
+	}
 	
 #ifndef MAC_OS_X
 	glewExperimental = GL_TRUE;
