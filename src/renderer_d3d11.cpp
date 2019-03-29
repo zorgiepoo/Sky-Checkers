@@ -412,48 +412,10 @@ extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowT
 
 	renderer->vsync = SDL_FALSE;
 
-	DXGI_SWAP_CHAIN_DESC swapChainDesc;
-	ZeroMemory(&swapChainDesc, sizeof(swapChainDesc));
-
-	// Infer window width/height from our SDL window
-	swapChainDesc.BufferDesc.Width = 0;
-	swapChainDesc.BufferDesc.Height = 0;
-
-	// This is assuming no vsync, figure out the vsync case later
-	// We have to query for adapter's refresh rate I guess..
-	swapChainDesc.BufferDesc.RefreshRate.Numerator = 0;
-	swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
-
-	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-	swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-
-	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-
-	swapChainDesc.SampleDesc.Count = fsaa ? MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT : 1;
-	swapChainDesc.SampleDesc.Quality = 0;
-
-	// Use one buffer for now, figure out fullscreen later
-	swapChainDesc.BufferCount = 1;
-
-	// figure out fullscreen later
-	swapChainDesc.Windowed = !renderer->fullscreen;
-
-	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-
-	// Will avoid setting flags for now, may need to revisit later for fullscreen
-	swapChainDesc.Flags = 0;
-
-	SDL_SysWMinfo systemInfo;
-	SDL_VERSION(&systemInfo.version);
-	SDL_GetWindowWMInfo(renderer->window, &systemInfo);
-
-	swapChainDesc.OutputWindow = systemInfo.info.win.window;
-
 	// I should request for DX 10 and 9 feature levels too
 	D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_11_0;
 
-	HRESULT deviceResult = D3D11CreateDeviceAndSwapChain(adapter, D3D_DRIVER_TYPE_HARDWARE, nullptr, deviceFlags, &featureLevel, 1, D3D11_SDK_VERSION, &swapChainDesc, &swapChain, &device, nullptr, &context);
+	HRESULT deviceResult = D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_HARDWARE, nullptr, deviceFlags, &featureLevel, 1, D3D11_SDK_VERSION, &device, nullptr, &context);
 	if (FAILED(deviceResult))
 	{
 		fprintf(stderr, "Error: Failed to create D3D11 device: %d\n", deviceResult);
@@ -482,6 +444,79 @@ extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowT
 	else
 	{
 		renderer->fsaa = SDL_FALSE;
+	}
+
+	// Retrieve factory from device
+	// See https://docs.microsoft.com/en-us/windows/desktop/api/dxgi/nn-dxgi-idxgifactory remarks
+	IDXGIDevice *pDXGIDevice = nullptr;
+	HRESULT queryInterfaceResult = device->QueryInterface(__uuidof(IDXGIDevice), (void **)&pDXGIDevice);
+	if (FAILED(queryInterfaceResult))
+	{
+		fprintf(stderr, "Error: Failed to query interface from device: %d\n", queryInterfaceResult);
+		goto INIT_FAILURE;
+	}
+
+	IDXGIAdapter *pDXGIAdapter = nullptr;
+	HRESULT getAdapterResult = pDXGIDevice->GetAdapter(&pDXGIAdapter);
+	if (FAILED(getAdapterResult))
+	{
+		fprintf(stderr, "Error: Failed to get adapter from device: %d\n", getAdapterResult);
+		goto INIT_FAILURE;
+	}
+
+	IDXGIFactory *pIDXGIFactory = nullptr;
+	HRESULT getParentResult = pDXGIAdapter->GetParent(__uuidof(IDXGIFactory), (void **)&pIDXGIFactory);
+	if (FAILED(getParentResult))
+	{
+		fprintf(stderr, "Error: Failed to get parent from device: %d\n", getParentResult);
+		goto INIT_FAILURE;
+	}
+
+	// Create swapchain
+	DXGI_SWAP_CHAIN_DESC swapChainDesc;
+	ZeroMemory(&swapChainDesc, sizeof(swapChainDesc));
+
+	// Infer window width/height from our SDL window
+	swapChainDesc.BufferDesc.Width = 0;
+	swapChainDesc.BufferDesc.Height = 0;
+
+	// This is assuming no vsync, figure out the vsync case later
+	// We have to query for adapter's refresh rate I guess..
+	swapChainDesc.BufferDesc.RefreshRate.Numerator = 0;
+	swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
+
+	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+	swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+
+	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+
+	swapChainDesc.SampleDesc.Count = renderer->fsaa ? MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT : 1;
+	swapChainDesc.SampleDesc.Quality = 0;
+
+	// Use one buffer for now, figure out fullscreen later
+	swapChainDesc.BufferCount = 1;
+
+	// figure out fullscreen later
+	swapChainDesc.Windowed = !renderer->fullscreen;
+
+	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+
+	// Will avoid setting flags for now, may need to revisit later for fullscreen
+	swapChainDesc.Flags = 0;
+
+	SDL_SysWMinfo systemInfo;
+	SDL_VERSION(&systemInfo.version);
+	SDL_GetWindowWMInfo(renderer->window, &systemInfo);
+
+	swapChainDesc.OutputWindow = systemInfo.info.win.window;
+
+	HRESULT swapChainResult = pIDXGIFactory->CreateSwapChain(device, &swapChainDesc, &swapChain);
+	if (FAILED(swapChainResult))
+	{
+		fprintf(stderr, "Error: Failed to create D3D11 swap chain: %d\n", swapChainResult);
+		swapChain = nullptr;
+		goto INIT_FAILURE;
 	}
 
 	// Create depth stencil state
