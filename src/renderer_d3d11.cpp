@@ -409,7 +409,7 @@ extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowT
 	deviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
-	renderer->vsync = SDL_FALSE;
+	renderer->vsync = vsync;
 
 	// I should request for DX 10 and 9 feature levels too
 	D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_11_0;
@@ -479,8 +479,8 @@ extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowT
 	swapChainDesc.BufferDesc.Width = 0;
 	swapChainDesc.BufferDesc.Height = 0;
 
-	// This is assuming no vsync, figure out the vsync case later
-	// We have to query for adapter's refresh rate I guess..
+	// Leaving RefreshRate to 0 in swap chain seems to be fine
+	// No need to query for display's refresh rate
 	swapChainDesc.BufferDesc.RefreshRate.Numerator = 0;
 	swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
 
