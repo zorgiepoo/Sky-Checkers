@@ -117,8 +117,7 @@ extern "C" static void updateViewport_d3d11(Renderer *renderer)
 	depthBufferDescription.Format = DEPTH_FORMAT;
 	// Assume no anti-aliasing for now
 	depthBufferDescription.SampleDesc.Count = renderer->fsaa ? MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT : 1;
-	// D3D11_STANDARD_MULTISAMPLE_PATTERN
-	depthBufferDescription.SampleDesc.Quality = 0;
+	depthBufferDescription.SampleDesc.Quality = renderer->fsaa ? D3D11_STANDARD_MULTISAMPLE_PATTERN : 0;
 	depthBufferDescription.Usage = D3D11_USAGE_DEFAULT;
 	depthBufferDescription.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 	depthBufferDescription.CPUAccessFlags = 0;
@@ -492,7 +491,7 @@ extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowT
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 
 	swapChainDesc.SampleDesc.Count = renderer->fsaa ? MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT : 1;
-	swapChainDesc.SampleDesc.Quality = 0;
+	swapChainDesc.SampleDesc.Quality = renderer->fsaa ? D3D11_STANDARD_MULTISAMPLE_PATTERN : 0;
 
 	// Use one buffer for now, figure out fullscreen later
 	swapChainDesc.BufferCount = 1;
