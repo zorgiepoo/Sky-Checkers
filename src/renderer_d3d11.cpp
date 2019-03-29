@@ -25,6 +25,8 @@
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
 
+#define DEPTH_FORMAT DXGI_FORMAT_D24_UNORM_S8_UINT
+
 using namespace DirectX;
 
 extern "C" static void updateViewport_d3d11(Renderer *renderer);
@@ -90,8 +92,11 @@ extern "C" static void updateViewport_d3d11(Renderer *renderer)
 	}
 
 	// Create render target view with back buffer
+	D3D11_RENDER_TARGET_VIEW_DESC targetViewDescription;
+	ZeroMemory(&targetViewDescription, sizeof(targetViewDescription));
+	
 	ID3D11Device *device = (ID3D11Device *)renderer->d3d11Device;
-	HRESULT targetViewResult = device->CreateRenderTargetView(backBufferPtr, NULL, &renderTargetView);
+	HRESULT targetViewResult = device->CreateRenderTargetView(backBufferPtr, nullptr, &renderTargetView);
 	backBufferPtr->Release();
 	if (FAILED(targetViewResult))
 	{
@@ -109,9 +114,10 @@ extern "C" static void updateViewport_d3d11(Renderer *renderer)
 	depthBufferDescription.Height = renderer->drawableHeight;
 	depthBufferDescription.MipLevels = 1;
 	depthBufferDescription.ArraySize = 1;
-	depthBufferDescription.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthBufferDescription.Format = DEPTH_FORMAT;
 	// Assume no anti-aliasing for now
-	depthBufferDescription.SampleDesc.Count = 1;
+	depthBufferDescription.SampleDesc.Count = renderer->fsaa ? MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT : 1;
+	// D3D11_STANDARD_MULTISAMPLE_PATTERN
 	depthBufferDescription.SampleDesc.Quality = 0;
 	depthBufferDescription.Usage = D3D11_USAGE_DEFAULT;
 	depthBufferDescription.BindFlags = D3D11_BIND_DEPTH_STENCIL;
@@ -131,9 +137,10 @@ extern "C" static void updateViewport_d3d11(Renderer *renderer)
 	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDescription;
 	ZeroMemory(&depthStencilViewDescription, sizeof(depthStencilViewDescription));
 
-	depthStencilViewDescription.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	depthStencilViewDescription.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	depthStencilViewDescription.Format = DEPTH_FORMAT;
+	depthStencilViewDescription.ViewDimension = renderer->fsaa ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2D;
 	depthStencilViewDescription.Texture2D.MipSlice = 0;
+	depthStencilViewDescription.Flags = 0;
 
 	HRESULT depthStencilViewResult = device->CreateDepthStencilView(depthStencilBuffer, &depthStencilViewDescription, &depthStencilView);
 	if (FAILED(depthStencilViewResult))
@@ -423,8 +430,7 @@ extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowT
 
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 
-	// Assume no anti-aliasing for now
-	swapChainDesc.SampleDesc.Count = 1;
+	swapChainDesc.SampleDesc.Count = fsaa ? MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT : 1;
 	swapChainDesc.SampleDesc.Quality = 0;
 
 	// Use one buffer for now, figure out fullscreen later
@@ -456,6 +462,26 @@ extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowT
 		context = nullptr;
 
 		goto INIT_FAILURE;
+	}
+	
+	// Determine anti aliasing
+	if (fsaa)
+	{
+		UINT numberOfQualityLevels = 0;
+		HRESULT multisampleResult = device->CheckMultisampleQualityLevels(DEPTH_FORMAT, MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT, &numberOfQualityLevels);
+		if (FAILED(multisampleResult))
+		{
+			fprintf(stderr, "Error: failed to check multisample quality levels\n");
+			renderer->fsaa = SDL_FALSE;
+		}
+		else
+		{
+			renderer->fsaa = (SDL_bool)(numberOfQualityLevels > 0);
+		}
+	}
+	else
+	{
+		renderer->fsaa = SDL_FALSE;
 	}
 
 	// Create depth stencil state
@@ -562,14 +588,14 @@ extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowT
 	D3D11_RASTERIZER_DESC rasterDescription;
 	ZeroMemory(&rasterDescription, sizeof(rasterDescription));
 
-	rasterDescription.AntialiasedLineEnable = FALSE;
+	rasterDescription.AntialiasedLineEnable = renderer->fsaa;
 	rasterDescription.CullMode = D3D11_CULL_NONE;
 	rasterDescription.DepthBias = 0;
 	rasterDescription.DepthBiasClamp = 0.0f;
 	rasterDescription.DepthClipEnable = TRUE;
 	rasterDescription.FillMode = D3D11_FILL_SOLID;
 	rasterDescription.FrontCounterClockwise = FALSE;
-	rasterDescription.MultisampleEnable = FALSE;
+	rasterDescription.MultisampleEnable = renderer->fsaa;
 	rasterDescription.ScissorEnable = FALSE;
 	rasterDescription.SlopeScaledDepthBias = 0.0f;
 	
