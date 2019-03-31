@@ -19,7 +19,6 @@
 
 #include "renderer_d3d11.h"
 #include "renderer_types.h"
-#include "renderer_projection.h"
 
 #include <d3d11.h>
 #include <d3dcompiler.h>
@@ -183,6 +182,7 @@ extern "C" static void updateViewport_d3d11(Renderer *renderer, int32_t windowWi
 
 	context->RSSetViewports(1, &viewport);
 	
+	// The aspect ratio is not quite correct, which is a mistake I made a long time ago that is too troubling to fix properly
 	XMMATRIX projectionMatrix = XMMatrixPerspectiveFovRH(45.0f * ((float)M_PI / 180.0f), (float)(renderer->drawableWidth / renderer->drawableHeight), 10.0f, 300.0f);
 	memcpy(renderer->projectionMatrix, &projectionMatrix, sizeof(renderer->projectionMatrix));
 
@@ -676,6 +676,7 @@ extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowT
 		goto INIT_FAILURE;
 	}
 
+	// Not really NDC_TYPE_METAL, but might as well initialize the field
 	renderer->ndcType = NDC_TYPE_METAL;
 	renderer->d3d11Context = context;
 	renderer->d3d11SwapChain = swapChain;
