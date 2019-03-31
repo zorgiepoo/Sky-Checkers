@@ -431,15 +431,13 @@ extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowT
 #endif
 
 	renderer->vsync = vsync;
+	
+	D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1 };
 
-	// I should request for DX 10 and 9 feature levels too
-	D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_11_0;
-
-	HRESULT deviceResult = D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_HARDWARE, nullptr, deviceFlags, &featureLevel, 1, D3D11_SDK_VERSION, &device, nullptr, &context);
+	HRESULT deviceResult = D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_HARDWARE, nullptr, deviceFlags, featureLevels, sizeof(featureLevels) / sizeof(*featureLevels), D3D11_SDK_VERSION, &device, nullptr, &context);
 	if (FAILED(deviceResult))
 	{
 		fprintf(stderr, "Error: Failed to create D3D11 device: %d\n", deviceResult);
-		swapChain = nullptr;
 		device = nullptr;
 		context = nullptr;
 
