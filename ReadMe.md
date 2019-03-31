@@ -11,7 +11,7 @@ This game was originally written during my high school years. Recently, I've rew
 
 ## Features
 
-* 3-D graphics supporting OpenGL and Metal backends (in the master branch)
+* 3-D graphics supporting Metal, Direct3D 11, OpenGL backends
 * Local and [online (no audio)](https://zgcoder.net/zfw/skycheckers_play_noaudio.mov) battles with 1 - 4 players
 * Bots with an easy, medium, or hard difficulty
 * Gamepad support
