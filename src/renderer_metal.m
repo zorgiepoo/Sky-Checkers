@@ -35,7 +35,8 @@
 
 static void createPipelines(Renderer *renderer);
 
-static void updateViewport_metal(Renderer *renderer);
+void updateViewport_metal(Renderer *renderer, int32_t windowWidth, int32_t windowHeight);
+static void updateRealViewport(Renderer *renderer);
 
 void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *));
 
@@ -111,7 +112,7 @@ void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, float *modelVi
 	[super resizeWithOldSuperviewSize:oldSize];
 	[self updateDrawableSize];
 	
-	updateViewport_metal(_renderer);
+	updateRealViewport(_renderer);
 }
 
 - (void)viewDidChangeBackingProperties
@@ -126,7 +127,7 @@ void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, float *modelVi
 		{
 			createPipelines(_renderer);
 		}
-		updateViewport_metal(_renderer);
+		updateRealViewport(_renderer);
 	}
 }
 
@@ -212,7 +213,7 @@ static void createAndStorePipelineState(void **pipelineStates, id<MTLDevice> dev
 	pipelineStates[index] = (void *)CFBridgingRetain(pipelineState);
 }
 
-static void updateViewport_metal(Renderer *renderer)
+static void updateRealViewport(Renderer *renderer)
 {
 	CAMetalLayer *metalLayer = (__bridge CAMetalLayer *)(renderer->metalLayer);
 	
@@ -288,6 +289,17 @@ static void updateViewport_metal(Renderer *renderer)
 	renderer->metalDepthTestStencilState = (void *)CFBridgingRetain(depthStencilState);
 	
 	updateProjectionMatrix(renderer);
+}
+
+void updateViewport_metal(Renderer *renderer, int32_t windowWidth, int32_t windowHeight)
+{
+	// Only update the window width/height here if necessary
+	// We set up a handler if the viewport resizes independent from SDL
+	if (!renderer->macosInFullscreenTransition && !renderer->fullscreen)
+	{
+		renderer->windowWidth = windowWidth;
+		renderer->windowHeight = windowHeight;
+	}
 }
 
 static void createPipelines(Renderer *renderer)
@@ -453,7 +465,7 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		
 		// Update view port
 		renderer->ndcType = NDC_TYPE_METAL;
-		updateViewport_metal(renderer);
+		updateRealViewport(renderer);
 		
 		// Set up remaining renderer properties
 		
@@ -461,7 +473,7 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		renderer->metalCommandQueue = (void *)CFBridgingRetain(queue);
 		renderer->metalCurrentRenderCommandEncoder = NULL;
 		
-		renderer->updateViewportPtr = NULL;
+		renderer->updateViewportPtr = updateViewport_metal;
 		renderer->renderFramePtr = renderFrame_metal;
 		renderer->textureFromPixelDataPtr = textureFromPixelData_metal;
 		renderer->deleteTexturePtr = deleteTexture_metal;

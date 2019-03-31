@@ -90,12 +90,7 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 
 void updateViewport(Renderer *renderer, int32_t windowWidth, int32_t windowHeight)
 {	
-	// If updateViewportPtr is not NULL, then resizing the window is tied to
-	// resizing the view for this specific renderer
-	if (renderer->updateViewportPtr != NULL)
-	{
-		renderer->updateViewportPtr(renderer, windowWidth, windowHeight);
-	}
+	renderer->updateViewportPtr(renderer, windowWidth, windowHeight);
 }
 
 void renderFrame(Renderer *renderer, void (*drawFunc)(Renderer *))
