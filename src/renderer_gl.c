@@ -380,12 +380,7 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	// VSYNC
 	if (vsync)
 	{
-		// Try adaptive vsync first which works best on macOS
-		if (SDL_GL_SetSwapInterval(-1) == -1)
-		{
-			// Fallback to normal VSYNC
-			SDL_GL_SetSwapInterval(1);
-		}
+		SDL_GL_SetSwapInterval(1);
 	}
 	else
 	{
