@@ -25,7 +25,7 @@
 
 void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, SDL_bool fullscreen, SDL_bool vsync, SDL_bool fsaa);
 
-void updateViewport(Renderer *renderer);
+void updateViewport(Renderer *renderer, int32_t windowWidth, int32_t windowHeight);
 
 void renderFrame(Renderer *renderer, void (*drawFunc)(Renderer *));
 

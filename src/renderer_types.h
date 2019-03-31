@@ -200,9 +200,12 @@ typedef struct _Renderer
 #ifdef MAC_OS_X
 	SDL_bool macosInFullscreenTransition;
 #endif
+#ifdef WINDOWS
+	SDL_bool windowsNativeFullscreenToggling;
+#endif
 
 	// Private function pointers
-	void(*updateViewportPtr)(struct _Renderer *);
+	void(*updateViewportPtr)(struct _Renderer *, int32_t, int32_t);
 	void(*renderFramePtr)(struct _Renderer *, void(*)(struct _Renderer *));
 	TextureObject(*textureFromPixelDataPtr)(struct _Renderer *, const void *, int32_t, int32_t);
 	void(*deleteTexturePtr)(struct _Renderer *, TextureObject);

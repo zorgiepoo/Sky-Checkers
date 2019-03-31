@@ -29,7 +29,7 @@
 
 using namespace DirectX;
 
-extern "C" static void updateViewport_d3d11(Renderer *renderer);
+extern "C" static void updateViewport_d3d11(Renderer *renderer, int32_t windowWidth, int32_t windowHeight);
 
 extern "C" void renderFrame_d3d11(Renderer *renderer, void(*drawFunc)(Renderer *));
 
@@ -51,12 +51,31 @@ extern "C" void drawTextureWithVertices_d3d11(Renderer *renderer, float *modelVi
 
 extern "C" void drawTextureWithVerticesFromIndices_d3d11(Renderer *renderer, float *modelViewProjectionMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
 
-extern "C" static void updateViewport_d3d11(Renderer *renderer)
+extern "C" static void updateViewport_d3d11(Renderer *renderer, int32_t windowWidth, int32_t windowHeight)
 {
-	renderer->drawableWidth = renderer->windowWidth;
-	renderer->drawableHeight = renderer->windowHeight;
+	renderer->drawableWidth = windowWidth;
+	renderer->drawableHeight = windowHeight;
 
 	IDXGISwapChain *swapChain = (IDXGISwapChain *)renderer->d3d11SwapChain;
+
+	BOOL fullscreenState = SDL_FALSE;
+	HRESULT fullscreenStateResult = swapChain->GetFullscreenState(&fullscreenState, nullptr);
+	if (FAILED(fullscreenStateResult))
+	{
+		fprintf(stderr, "Error: Failed to retrieve fullscreen state: %d\n", fullscreenStateResult);
+		renderer->fullscreen = SDL_FALSE;
+	}
+	else
+	{
+		renderer->fullscreen = (SDL_bool)fullscreenState;
+	}
+
+	if (!renderer->fullscreen)
+	{
+		renderer->windowWidth = windowWidth;
+		renderer->windowHeight = windowHeight;
+	}
+
 	ID3D11DeviceContext *context = (ID3D11DeviceContext *)renderer->d3d11Context;
 
 	// Release previous render target view and resize swapchain if necessary
@@ -401,7 +420,9 @@ extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowT
 
 	SDL_GetWindowSize(renderer->window, &renderer->windowWidth, &renderer->windowHeight);
 
-	renderer->fullscreen = SDL_FALSE;
+	renderer->fullscreen = fullscreen;
+
+	renderer->windowsNativeFullscreenToggling = SDL_TRUE;
 
 	IDXGIAdapter *adapter = NULL; // use default adapter for now
 	UINT deviceFlags = D3D11_CREATE_DEVICE_SINGLETHREADED;
@@ -492,16 +513,10 @@ extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowT
 
 	swapChainDesc.SampleDesc.Count = renderer->fsaa ? MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT : 1;
 	swapChainDesc.SampleDesc.Quality = renderer->fsaa ? D3D11_STANDARD_MULTISAMPLE_PATTERN : 0;
-
-	// Use one buffer for now, figure out fullscreen later
+	
 	swapChainDesc.BufferCount = 1;
-
-	// figure out fullscreen later
 	swapChainDesc.Windowed = !renderer->fullscreen;
-
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-
-	// Will avoid setting flags for now, may need to revisit later for fullscreen
 	swapChainDesc.Flags = 0;
 
 	SDL_SysWMinfo systemInfo;
@@ -670,7 +685,7 @@ extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowT
 	renderer->d3d11RenderTargetView = nullptr;
 	renderer->d3d11DepthStencilView = nullptr;
 	renderer->d3d11DepthStencilBuffer = nullptr;
-	updateViewport_d3d11(renderer);
+	updateViewport_d3d11(renderer, renderer->windowWidth, renderer->windowHeight);
 
 	renderer->d3d11DepthStencilState = depthStencilState;
 	renderer->d3d11DisabledDepthStencilState = disabledDepthStencilState;

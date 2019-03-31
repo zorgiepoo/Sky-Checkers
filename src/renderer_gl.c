@@ -46,7 +46,7 @@
 #define GLSL_VERSION_330 330
 #define GLSL_VERSION_120 120
 
-static void updateViewport_gl(Renderer *renderer);
+static void updateViewport_gl(Renderer *renderer, int32_t windowWidth, int32_t windowHeight);
 
 void renderFrame_gl(Renderer *renderer, void (*drawFunc)(Renderer *));
 
@@ -310,8 +310,19 @@ static SDL_bool createOpenGLContext(SDL_Window **window, SDL_GLContext *glContex
 	return SDL_TRUE;
 }
 
-static void updateViewport_gl(Renderer *renderer)
+static void updateViewport_gl(Renderer *renderer, int32_t windowWidth, int32_t windowHeight)
 {
+#ifndef MAC_OS_X
+	if ((SDL_GetWindowFlags(renderer->window) & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)) == 0 && !renderer->fullscreen)
+#else
+	// macOS uses fullscreen toggling independent of SDL's flags
+	if (!renderer->macosInFullscreenTransition && !renderer->fullscreen)
+#endif
+	{
+		renderer->windowWidth = windowWidth;
+		renderer->windowHeight = windowHeight;
+	}
+
 	SDL_GL_GetDrawableSize(renderer->window, &renderer->drawableWidth, &renderer->drawableHeight);
 	
 	glViewport(0, 0, renderer->drawableWidth, renderer->drawableHeight);
@@ -334,6 +345,10 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 #else
 	renderer->fullscreen = SDL_FALSE;
 	renderer->macosInFullscreenTransition = SDL_FALSE;
+#endif
+
+#ifdef WINDOWS
+	renderer->windowsNativeFullscreenToggling = SDL_FALSE;
 #endif
 	
 	// Buffer sizes
@@ -405,7 +420,7 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	renderer->vsync = (value != 0);
 	
 	renderer->ndcType = NDC_TYPE_GL;
-	updateViewport_gl(renderer);
+	updateViewport_gl(renderer, renderer->windowWidth, renderer->windowHeight);
 	
 	// OpenGL Initialization
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
