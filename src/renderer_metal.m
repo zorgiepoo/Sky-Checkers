@@ -414,6 +414,7 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		renderer->fullscreen = SDL_FALSE;
 		
 		// Find the preffered device for our game which isn't integrated, headless, or external
+		// Maybe one day I will support external/removable GPUs but my game isn't very demanding
 		NSArray<id<MTLDevice>> *devices = MTLCopyAllDevices();
 		NSMutableArray<id<MTLDevice>> *preferredDevices = [NSMutableArray array];
 		for (id<MTLDevice> device in devices)
