@@ -413,8 +413,49 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		renderer->metalIgnoreFirstFullscreenTransition = SDL_FALSE;
 		renderer->fullscreen = SDL_FALSE;
 		
-		// TODO: Should I iterate through all the devices and pick the 'best' one?
-		id<MTLDevice> device = MTLCreateSystemDefaultDevice();
+		// Find the preffered device for our game which isn't integrated, headless, or external
+		NSArray<id<MTLDevice>> *devices = MTLCopyAllDevices();
+		NSMutableArray<id<MTLDevice>> *preferredDevices = [NSMutableArray array];
+		for (id<MTLDevice> device in devices)
+		{
+			BOOL removable;
+			if (@available(macOS 10.13, *))
+			{
+				removable = device.removable;
+			}
+			else
+			{
+				removable = NO;
+			}
+			
+			if (!device.lowPower && !removable && !device.headless)
+			{
+				[preferredDevices addObject:device];
+			}
+		}
+		
+		[preferredDevices sortUsingComparator:^NSComparisonResult(id<MTLDevice> _Nonnull device1, id<MTLDevice> _Nonnull device2) {
+			uint64_t device1Score = device1.recommendedMaxWorkingSetSize + device1.maxBufferLength;
+			
+			uint64_t device2Score = device2.recommendedMaxWorkingSetSize + device2.maxBufferLength;
+			
+			if (device1Score < device2Score)
+			{
+				return NSOrderedAscending;
+			}
+			else if (device1Score > device2Score)
+			{
+				return NSOrderedDescending;
+			}
+			else
+			{
+				return NSOrderedSame;
+			}
+		}];
+		
+		id<MTLDevice> preferredDevice = preferredDevices.lastObject;
+		
+		id<MTLDevice> device = (preferredDevice != nil) ? preferredDevice : MTLCreateSystemDefaultDevice();
 		if (device == nil)
 		{
 			fprintf(stderr, "Error: Failed to create metal device!\n");
