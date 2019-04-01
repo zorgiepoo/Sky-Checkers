@@ -207,6 +207,8 @@ typedef struct _Renderer
 #endif
 
 	// Private function pointers
+	// Note mat4_t is not passed in these function pointers or included in this file
+	// because the matrix library is not very C++ friendly, and the d3d renderer is C++
 	void(*updateViewportPtr)(struct _Renderer *, int32_t, int32_t);
 	void(*renderFramePtr)(struct _Renderer *, void(*)(struct _Renderer *));
 	TextureObject(*textureFromPixelDataPtr)(struct _Renderer *, const void *, int32_t, int32_t);

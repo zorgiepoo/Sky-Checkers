@@ -19,9 +19,6 @@
 
 #import "renderer_metal.h"
 
-// Note: the metal renderer, just like others, should avoid depending on any matrix operations
-// Updating the projection matrix uses renderer_projection.h
-
 #include "metal_indices.h"
 #include "renderer_projection.h"
 

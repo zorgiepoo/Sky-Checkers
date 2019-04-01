@@ -19,9 +19,6 @@
 
 #include "renderer_gl.h"
 
-// Note: the GL renderer, just like others, should avoid depending on any matrix operations
-// Updating the projection matrix uses renderer_projection.h
-
 #include "renderer_projection.h"
 #include "utilities.h"
 
