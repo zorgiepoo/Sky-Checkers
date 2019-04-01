@@ -755,7 +755,7 @@ extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowT
 		goto INIT_FAILURE;
 	}
 
-	renderer->ndcType = 0;
+	renderer->ndcType = NDC_TYPE_GL; // untrue, but should initialize this unused field
 	renderer->d3d11Context = context;
 	renderer->d3d11SwapChain = swapChain;
 
