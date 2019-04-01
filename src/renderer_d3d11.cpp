@@ -23,6 +23,7 @@
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
+#include <vector>
 
 #define DEPTH_FORMAT DXGI_FORMAT_D24_UNORM_S8_UINT
 
@@ -393,6 +394,65 @@ static bool createConstantBuffers(Renderer *renderer)
 	return true;
 }
 
+static int sortAdapters(const void *adapter1Ptr, const void *adapter2Ptr)
+{
+	IDXGIAdapter1 *adapter1 = (IDXGIAdapter1 *)adapter1Ptr;
+	IDXGIAdapter1 *adapter2 = (IDXGIAdapter1 *)adapter2Ptr;
+
+	if (adapter1 == nullptr)
+	{
+		return 1;
+	}
+
+	if (adapter2 == nullptr)
+	{
+		return -1;
+	}
+
+	DXGI_ADAPTER_DESC1 adapter1Desc;
+	HRESULT getAdapter1DescResult = adapter1->GetDesc1(&adapter1Desc);
+	if (FAILED(getAdapter1DescResult))
+	{
+		return 1;
+	}
+
+	DXGI_ADAPTER_DESC1 adapter2Desc;
+	HRESULT getAdapter2DescResult = adapter2->GetDesc1(&adapter2Desc);
+	if (FAILED(getAdapter2DescResult))
+	{
+		return -1;
+	}
+
+	bool adapter1Hardware = (adapter1Desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) == 0;
+	bool adapter2Hardware = (adapter2Desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) == 0;
+
+	if (adapter1Hardware != adapter2Hardware)
+	{
+		if (adapter1Hardware)
+		{
+			return -1;
+		}
+		else
+		{
+			return 1;
+		}
+	}
+
+	size_t adapter1Score = adapter1Desc.DedicatedSystemMemory + adapter1Desc.DedicatedVideoMemory + adapter1Desc.SharedSystemMemory;
+	size_t adapter2Score = adapter2Desc.DedicatedSystemMemory + adapter2Desc.DedicatedVideoMemory + adapter2Desc.SharedSystemMemory;
+
+	if (adapter1Score < adapter2Score)
+	{
+		return 1;
+	}
+	else if (adapter2Score > adapter1Score)
+	{
+		return -1;
+	}
+
+	return 0;
+}
+
 extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, SDL_bool fullscreen, SDL_bool vsync, SDL_bool fsaa)
 {
 	// Need to initialize D3D states here in order to goto INIT_FAILURE on failure
@@ -424,17 +484,94 @@ extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowT
 
 	renderer->windowsNativeFullscreenToggling = SDL_TRUE;
 
-	IDXGIAdapter *adapter = NULL; // use default adapter for now
+	// Initialize with default adapter
+	IDXGIAdapter *adapter = nullptr;
+	
+	// Find the best adapter possible
+	IDXGIFactory1 *factoryForAdapter = nullptr;
+	HRESULT createFactoryResult = CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void **)&factoryForAdapter);
+	if (FAILED(createFactoryResult))
+	{
+		factoryForAdapter = nullptr;
+	}
+	else
+	{
+		IDXGIAdapter1 *currentAdapter = nullptr;
+		UINT enumeratingAdapterIndex = 0;
+		UINT adapterInsertionIndex = 0;
+		INT maxScoreIndex = -1;
+		
+		const UINT maxAdaptersCount = 256;
+		IDXGIAdapter1 *adapters[maxAdaptersCount];
+		uint64_t adapterScores[maxAdaptersCount];
+
+		while (factoryForAdapter->EnumAdapters1(enumeratingAdapterIndex, &currentAdapter) != DXGI_ERROR_NOT_FOUND)
+		{
+			DXGI_ADAPTER_DESC1 adapter1Desc;
+			HRESULT getAdapter1DescResult = currentAdapter->GetDesc1(&adapter1Desc);
+			if (!FAILED(getAdapter1DescResult))
+			{
+				adapters[adapterInsertionIndex] = currentAdapter;
+
+				uint64_t hardwareScore = ((adapter1Desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) != DXGI_ADAPTER_FLAG_SOFTWARE) ? 10000000000000 : 0;
+				uint64_t score = hardwareScore + adapter1Desc.DedicatedSystemMemory + adapter1Desc.DedicatedVideoMemory + adapter1Desc.SharedSystemMemory;
+
+				adapterScores[adapterInsertionIndex] = score;
+
+				if (maxScoreIndex < 0 || score > adapterScores[maxScoreIndex])
+				{
+					maxScoreIndex = (INT)adapterInsertionIndex;
+				}
+
+				adapterInsertionIndex++;
+
+				if (adapterInsertionIndex >= maxAdaptersCount)
+				{
+					break;
+				}
+			}
+			else
+			{
+				currentAdapter->Release();
+			}
+
+			enumeratingAdapterIndex++;
+		}
+
+		for (UINT adapterIndex = 0; adapterIndex < adapterInsertionIndex; adapterIndex++)
+		{
+			if (maxScoreIndex == (INT)adapterIndex)
+			{
+				adapter = adapters[adapterIndex];
+			}
+			else
+			{
+				adapters[adapterIndex]->Release();
+			}
+		}
+	}
+
+	if (factoryForAdapter != nullptr)
+	{
+		factoryForAdapter->Release();
+		factoryForAdapter = nullptr;
+	}
+
 	UINT deviceFlags = D3D11_CREATE_DEVICE_SINGLETHREADED;
 #ifdef _DEBUG
 	deviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
-
-	renderer->vsync = vsync;
 	
 	D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1 };
 
-	HRESULT deviceResult = D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_HARDWARE, nullptr, deviceFlags, featureLevels, sizeof(featureLevels) / sizeof(*featureLevels), D3D11_SDK_VERSION, &device, nullptr, &context);
+	HRESULT deviceResult = D3D11CreateDevice(adapter, (adapter != nullptr ? D3D_DRIVER_TYPE_UNKNOWN : D3D_DRIVER_TYPE_HARDWARE), nullptr, deviceFlags, featureLevels, sizeof(featureLevels) / sizeof(*featureLevels), D3D11_SDK_VERSION, &device, nullptr, &context);
+	
+	if (adapter != nullptr)
+	{
+		adapter->Release();
+		adapter = nullptr;
+	}
+
 	if (FAILED(deviceResult))
 	{
 		fprintf(stderr, "Error: Failed to create D3D11 device: %d\n", deviceResult);
@@ -463,6 +600,8 @@ extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowT
 	{
 		renderer->fsaa = SDL_FALSE;
 	}
+
+	renderer->vsync = vsync;
 
 	// Retrieve factory from device
 	// See https://docs.microsoft.com/en-us/windows/desktop/api/dxgi/nn-dxgi-idxgifactory remarks

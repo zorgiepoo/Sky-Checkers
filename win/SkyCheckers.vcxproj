@@ -144,7 +144,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glew32.lib;opengl32.lib;d3d11.lib;SDL2.lib;SDL2main.lib;SDL2_ttf.lib;SDL2_mixer.lib;ws2_32.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32.lib;opengl32.lib;d3d11.lib;dxgi.lib;SDL2.lib;SDL2main.lib;SDL2_ttf.lib;SDL2_mixer.lib;ws2_32.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
@@ -175,7 +175,7 @@ xcopy /y /d "$(ProjectDir)SDL2_ttf-2.0.14\lib\x86\LICENSE.freetype.txt" "$(OutDi
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>glew32.lib;opengl32.lib;d3d11.lib;SDL2.lib;SDL2main.lib;SDL2_ttf.lib;SDL2_mixer.lib;ws2_32.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32.lib;opengl32.lib;d3d11.lib;dxgi.lib;SDL2.lib;SDL2main.lib;SDL2_ttf.lib;SDL2_mixer.lib;ws2_32.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
