@@ -393,65 +393,6 @@ static bool createConstantBuffers(Renderer *renderer)
 	return true;
 }
 
-static int sortAdapters(const void *adapter1Ptr, const void *adapter2Ptr)
-{
-	IDXGIAdapter1 *adapter1 = (IDXGIAdapter1 *)adapter1Ptr;
-	IDXGIAdapter1 *adapter2 = (IDXGIAdapter1 *)adapter2Ptr;
-
-	if (adapter1 == nullptr)
-	{
-		return 1;
-	}
-
-	if (adapter2 == nullptr)
-	{
-		return -1;
-	}
-
-	DXGI_ADAPTER_DESC1 adapter1Desc;
-	HRESULT getAdapter1DescResult = adapter1->GetDesc1(&adapter1Desc);
-	if (FAILED(getAdapter1DescResult))
-	{
-		return 1;
-	}
-
-	DXGI_ADAPTER_DESC1 adapter2Desc;
-	HRESULT getAdapter2DescResult = adapter2->GetDesc1(&adapter2Desc);
-	if (FAILED(getAdapter2DescResult))
-	{
-		return -1;
-	}
-
-	bool adapter1Hardware = (adapter1Desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) == 0;
-	bool adapter2Hardware = (adapter2Desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) == 0;
-
-	if (adapter1Hardware != adapter2Hardware)
-	{
-		if (adapter1Hardware)
-		{
-			return -1;
-		}
-		else
-		{
-			return 1;
-		}
-	}
-
-	size_t adapter1Score = adapter1Desc.DedicatedSystemMemory + adapter1Desc.DedicatedVideoMemory + adapter1Desc.SharedSystemMemory;
-	size_t adapter2Score = adapter2Desc.DedicatedSystemMemory + adapter2Desc.DedicatedVideoMemory + adapter2Desc.SharedSystemMemory;
-
-	if (adapter1Score < adapter2Score)
-	{
-		return 1;
-	}
-	else if (adapter2Score > adapter1Score)
-	{
-		return -1;
-	}
-
-	return 0;
-}
-
 extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, SDL_bool fullscreen, SDL_bool vsync, SDL_bool fsaa)
 {
 	// Need to initialize D3D states here in order to goto INIT_FAILURE on failure
