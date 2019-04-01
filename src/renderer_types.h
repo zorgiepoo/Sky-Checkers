@@ -122,8 +122,10 @@ typedef struct
 
 typedef enum
 {
-	NDC_TYPE_GL,
-	NDC_TYPE_METAL
+	NDC_TYPE_GL
+#ifdef MAC_OS_X
+	,NDC_TYPE_METAL
+#endif
 } NDCType;
 
 typedef struct _Renderer

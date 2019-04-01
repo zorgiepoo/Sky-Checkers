@@ -755,8 +755,7 @@ extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowT
 		goto INIT_FAILURE;
 	}
 
-	// Not really NDC_TYPE_METAL, but might as well initialize the field
-	renderer->ndcType = NDC_TYPE_METAL;
+	renderer->ndcType = 0;
 	renderer->d3d11Context = context;
 	renderer->d3d11SwapChain = swapChain;
 

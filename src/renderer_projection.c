@@ -30,7 +30,7 @@ void updateProjectionMatrix(Renderer *renderer)
 		case NDC_TYPE_GL:
 			memcpy(renderer->projectionMatrix, glProjectionMatrix.m, sizeof(glProjectionMatrix.m));
 			break;
-#ifndef linux
+#ifdef MAC_OS_X
 		case NDC_TYPE_METAL:
 		{
 			// https://metashapes.com/blog/opengl-metal-projection-matrix-problem/
