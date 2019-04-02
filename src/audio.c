@@ -26,7 +26,7 @@
 #define MENU_SOUND_VOLUME				32
 #define WHOOSH_SOUND_VOLUME				16
 #define TILE_FALLING_SOUND_VOLUME		32
-#define TILE_GRAY_STONE_SOUND_VOLUME	10
+#define TILE_DIEING_STONE_SOUND_VOLUME	10
 
 static Mix_Music *gMainMenuMusic = NULL;
 static Mix_Music *gGameMusic = NULL;
@@ -144,20 +144,20 @@ void playTileFallingSound(void)
 	}
 }
 
-void playGrayStoneColorSound(void)
+void playDieingStoneSound(void)
 {
-	static Mix_Chunk *grayStoneChunk = NULL;
-	if (!grayStoneChunk)
+	static Mix_Chunk *dieingStoneChunk = NULL;
+	if (!dieingStoneChunk)
 	{
-		grayStoneChunk = Mix_LoadWAV("Data/Audio/flock_of_birds.wav");
+		dieingStoneChunk = Mix_LoadWAV("Data/Audio/flock_of_birds.wav");
 	}
 	
 	static int channel = 2;
 	
 	if (Mix_Playing(channel) == 0)
 	{
-		Mix_Volume(channel, TILE_GRAY_STONE_SOUND_VOLUME);
-		Mix_PlayChannel(channel, grayStoneChunk, 0);
+		Mix_Volume(channel, TILE_DIEING_STONE_SOUND_VOLUME);
+		Mix_PlayChannel(channel, dieingStoneChunk, 0);
 	}
 	
 	channel++;

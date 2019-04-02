@@ -26,7 +26,7 @@
 #define TILE_TERMINATING_Z -105.0f
 #define NUMBER_OF_TILES 64
 
-#define GRAY_STONE_ID 5
+#define DIEING_STONE_ID 5
 
 typedef struct
 {
@@ -35,7 +35,7 @@ typedef struct
 	float z;
 	float red, green, blue;
 	
-	// ID of character that colored tile or GRAY_STONE_ID
+	// ID of character that colored tile or DIEING_STONE_ID
 	int coloredID;
 	uint32_t colorTime;
 	

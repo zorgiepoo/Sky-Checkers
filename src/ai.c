@@ -146,12 +146,12 @@ static void directCharacterBasedOnCollisions(Character *character, float current
 	avoidCharacter(character, characterC, currentTime);
 	avoidCharacter(character, characterD, currentTime);
 	
-	/* The AI should avoid dieing from the gray stones */
+	/* The AI should avoid dieing from the dieing stones */
 	
 	int tileLocation = getTileIndexLocation((int)character->x, (int)character->y);
 	if (tileLocation >= 0 && tileLocation < NUMBER_OF_TILES)
 	{
-		if (gTiles[tileLocation].coloredID == GRAY_STONE_ID)
+		if (gTiles[tileLocation].coloredID == DIEING_STONE_ID)
 		{
 			int row = rowOfCharacter(character);
 			int column = columnOfCharacter(character);
@@ -228,8 +228,8 @@ static void shootWeaponProjectile(Character *character, float currentTime)
 		return;
 	}
 	
-	// AI should be worrying about escaping from the falling gray stones
-	if (gTiles[tileIndex].coloredID == GRAY_STONE_ID)
+	// AI should be worrying about escaping from the falling dieing stones
+	if (gTiles[tileIndex].coloredID == DIEING_STONE_ID)
 	{
 		return;
 	}

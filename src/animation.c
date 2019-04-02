@@ -39,6 +39,11 @@
 
 #define ANIMATION_TIME_ELAPSED_INTERVAL 0.0177 // in seconds
 
+// Grayish color
+#define DIEING_STONE_COLOR_RED 0.31f
+#define DIEING_STONE_COLOR_GREEN 0.33f
+#define DIEING_STONE_COLOR_BLUE 0.36f
+
 static int gTilesLayer[28];
 
 typedef struct
@@ -455,20 +460,19 @@ static void animateTilesAndPlayerRecovery(double timeDelta, SDL_Window *window, 
  */
 static void firstTileLayerAnimation(SDL_Window *window)
 {
-	// Color the tiles gray
+	// Color the tiles dieing
 	if (gTileLayerStates[0].colorIndex != -1 && gTileLayerStates[0].animationTimer > BEGIN_TILE_LAYER_ANIMATION)
 	{
 		if (gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].coloredID == NO_CHARACTER)
 		{
-			// RGB { 0.31, 0.33, 0.36 } == Grayish color
-			gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].red = 0.31f;
-			gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].green = 0.33f;
-			gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].blue = 0.36f;
-			gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].coloredID = GRAY_STONE_ID;
+			gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].red = DIEING_STONE_COLOR_RED;
+			gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].green = DIEING_STONE_COLOR_GREEN;
+			gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].blue = DIEING_STONE_COLOR_BLUE;
+			gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].coloredID = DIEING_STONE_ID;
 			
 			if (((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 			{
-				playGrayStoneColorSound();
+				playDieingStoneSound();
 			}
 		}
 		else
@@ -524,20 +528,19 @@ static void firstTileLayerAnimation(SDL_Window *window)
  */
 static void secondTileLayerAnimation(SDL_Window *window)
 {
-	// Color the tiles gray
+	// Color the tiles dieing
 	if (gTileLayerStates[1].colorIndex != -1 && gTileLayerStates[1].animationTimer > BEGIN_TILE_LAYER_ANIMATION)
 	{
 		if (gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].coloredID == NO_CHARACTER)
 		{
-			// RGB { 0.31, 0.33, 0.36 } == Grayish color
-			gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].red = 0.31f;
-			gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].green = 0.33f;
-			gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].blue = 0.36f;
-			gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].coloredID = GRAY_STONE_ID;
+			gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].red = DIEING_STONE_COLOR_RED;
+			gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].green = DIEING_STONE_COLOR_GREEN;
+			gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].blue = DIEING_STONE_COLOR_BLUE;
+			gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].coloredID = DIEING_STONE_ID;
 			
 			if (((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 			{
-				playGrayStoneColorSound();
+				playDieingStoneSound();
 			}
 		}
 		else

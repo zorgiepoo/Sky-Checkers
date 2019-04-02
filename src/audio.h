@@ -35,4 +35,4 @@ SDL_bool isPlayingMainMenuMusic(void);
 void playMenuSound(void);
 void playShootingSound(void);
 void playTileFallingSound(void);
-void playGrayStoneColorSound(void);
+void playDieingStoneSound(void);
