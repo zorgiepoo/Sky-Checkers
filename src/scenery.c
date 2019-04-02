@@ -23,6 +23,14 @@
 #include "collision.h"
 #include "math_3d.h"
 
+#define TILE_TEXTURE1_RED 0.8f
+#define TILE_TEXTURE1_GREEN 0.8f
+#define TILE_TEXTURE1_BLUE 0.8f
+
+#define TILE_TEXTURE2_RED 0.682f
+#define TILE_TEXTURE2_GREEN 0.572f
+#define TILE_TEXTURE2_BLUE 0.329f
+
 static TextureObject gSkyTex;
 
 static TextureObject gTileTexture1;
@@ -49,15 +57,15 @@ void loadTiles(void)
 		
 		if ((((tileIndex / 8) % 2) ^ (tileIndex % 2)) != 0)
 		{
-			gTiles[tileIndex].red = 0.8f;
-			gTiles[tileIndex].green = 0.8f;
-			gTiles[tileIndex].blue = 0.8f;
+			gTiles[tileIndex].red = TILE_TEXTURE1_RED;
+			gTiles[tileIndex].green = TILE_TEXTURE1_GREEN;
+			gTiles[tileIndex].blue = TILE_TEXTURE1_BLUE;
 		}
 		else
 		{
-			gTiles[tileIndex].red = 0.682f;
-			gTiles[tileIndex].green = 0.572f;
-			gTiles[tileIndex].blue = 0.329f;
+			gTiles[tileIndex].red = TILE_TEXTURE2_RED;
+			gTiles[tileIndex].green = TILE_TEXTURE2_GREEN;
+			gTiles[tileIndex].blue = TILE_TEXTURE2_BLUE;
 		}
 	}
 }
@@ -66,15 +74,15 @@ void restoreDefaultTileColor(int tileIndex)
 {
 	if ((((tileIndex / 8) % 2) ^ (tileIndex % 2)) != 0)
 	{
-		gTiles[tileIndex].red = 0.8f;
-		gTiles[tileIndex].green = 0.8f;
-		gTiles[tileIndex].blue = 0.8f;
+		gTiles[tileIndex].red = TILE_TEXTURE1_RED;
+		gTiles[tileIndex].green = TILE_TEXTURE1_GREEN;
+		gTiles[tileIndex].blue = TILE_TEXTURE1_BLUE;
 	}
 	else
 	{
-		gTiles[tileIndex].red = 0.682f;
-		gTiles[tileIndex].green = 0.572f;
-		gTiles[tileIndex].blue = 0.329f;
+		gTiles[tileIndex].red = TILE_TEXTURE2_RED;
+		gTiles[tileIndex].green = TILE_TEXTURE2_GREEN;
+		gTiles[tileIndex].blue = TILE_TEXTURE2_BLUE;
 	}
 }
 
