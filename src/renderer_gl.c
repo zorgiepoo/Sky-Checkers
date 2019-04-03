@@ -375,14 +375,13 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	}
 	
 	// VSYNC
-	if (vsync)
-	{
-		SDL_GL_SetSwapInterval(1);
-	}
-	else
-	{
-		SDL_GL_SetSwapInterval(0);
-	}
+#ifdef MAC_OS_X
+	// The current SDL build we're using doesn't enable/disable vsync properly,
+	// so enable/disable vsync ourselves
+	setVsyncForGL(vsync);
+#else
+	SDL_GL_SetSwapInterval(!!vsync);
+#endif
 	
 #ifndef MAC_OS_X
 	glewExperimental = GL_TRUE;

@@ -24,3 +24,5 @@ FILE *getUserDataFile(const char *mode);
 void getDefaultUserName(char *defaultUserName, int maxLength);
 
 void registerForNativeFullscreenEvents(void *windowReference, Renderer *renderer, SDL_bool toggleFullscreen);
+
+void setVsyncForGL(SDL_bool enabled);
