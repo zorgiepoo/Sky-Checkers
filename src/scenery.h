@@ -54,6 +54,7 @@ Tile gTiles[NUMBER_OF_TILES];
 void loadTiles(void);
 
 void restoreDefaultTileColor(int tileIndex);
+void setDieingTileColor(int tileIndex);
 
 void clearPredictedColor(int tileIndex);
 void clearPredictedColorWithTime(int tileIndex, uint32_t currentTime);

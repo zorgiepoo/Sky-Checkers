@@ -39,11 +39,6 @@
 
 #define ANIMATION_TIME_ELAPSED_INTERVAL 0.0177 // in seconds
 
-// Grayish color
-#define DIEING_STONE_COLOR_RED 0.31f
-#define DIEING_STONE_COLOR_GREEN 0.33f
-#define DIEING_STONE_COLOR_BLUE 0.36f
-
 static int gTilesLayer[28];
 
 typedef struct
@@ -465,10 +460,7 @@ static void firstTileLayerAnimation(SDL_Window *window)
 	{
 		if (gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].coloredID == NO_CHARACTER)
 		{
-			gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].red = DIEING_STONE_COLOR_RED;
-			gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].green = DIEING_STONE_COLOR_GREEN;
-			gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].blue = DIEING_STONE_COLOR_BLUE;
-			gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].coloredID = DIEING_STONE_ID;
+			setDieingTileColor(gTilesLayer[gTileLayerStates[0].colorIndex]);
 			
 			if (((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 			{
@@ -533,10 +525,7 @@ static void secondTileLayerAnimation(SDL_Window *window)
 	{
 		if (gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].coloredID == NO_CHARACTER)
 		{
-			gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].red = DIEING_STONE_COLOR_RED;
-			gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].green = DIEING_STONE_COLOR_GREEN;
-			gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].blue = DIEING_STONE_COLOR_BLUE;
-			gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].coloredID = DIEING_STONE_ID;
+			setDieingTileColor(gTilesLayer[gTileLayerStates[1].colorIndex]);
 			
 			if (((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 			{

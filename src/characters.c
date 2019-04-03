@@ -136,8 +136,8 @@ void initCharacters(void)
 	gPinkBubbleGum.netName = NULL;
 	gPinkBubbleGum.backup_state = 0;
 	gPinkBubbleGum.red = 1.0f;
-	gPinkBubbleGum.green = 0.6f;
-	gPinkBubbleGum.blue = 0.6f;
+	gPinkBubbleGum.green = 0.7f;
+	gPinkBubbleGum.blue = 0.7f;
 	
 	// blueLightning
 	gBlueLightning.x = 0.0f;
@@ -147,14 +147,14 @@ void initCharacters(void)
 	gBlueLightning.weap = malloc(sizeof(Weapon));
 	initWeapon(gBlueLightning.weap);
 	gBlueLightning.weap->red = 0.09f;
-	gBlueLightning.weap->green = 0.4157f;
-	gBlueLightning.weap->blue = 0.5019f;
+	gBlueLightning.weap->green = 0.3157f;
+	gBlueLightning.weap->blue = 0.6019f;
 	gBlueLightning.netState = NETWORK_NO_STATE;
 	gBlueLightning.netName = NULL;
 	gBlueLightning.backup_state = 0;
-	gBlueLightning.red = 0.3f;
-	gBlueLightning.green = 0.5f;
-	gBlueLightning.blue = 0.6f;
+	gBlueLightning.red = 0.4f;
+	gBlueLightning.green = 0.6f;
+	gBlueLightning.blue = 0.7f;
 	
 	resetCharacterWins();
 }

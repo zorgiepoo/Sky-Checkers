@@ -23,13 +23,21 @@
 #include "collision.h"
 #include "math_3d.h"
 
-#define TILE_TEXTURE1_RED 0.8f
-#define TILE_TEXTURE1_GREEN 0.8f
-#define TILE_TEXTURE1_BLUE 0.8f
+#define TILE_TEXTURE1_RED 1.0f
+#define TILE_TEXTURE1_GREEN 1.0f
+#define TILE_TEXTURE1_BLUE 1.0f
 
-#define TILE_TEXTURE2_RED 0.682f
-#define TILE_TEXTURE2_GREEN 0.572f
-#define TILE_TEXTURE2_BLUE 0.329f
+#define TILE_TEXTURE2_RED 0.882f
+#define TILE_TEXTURE2_GREEN 0.772f
+#define TILE_TEXTURE2_BLUE 0.529f
+
+#define DIEING_STONE1_COLOR_RED 0.25f
+#define DIEING_STONE1_COLOR_GREEN 0.27f
+#define DIEING_STONE1_COLOR_BLUE 0.30f
+
+#define DIEING_STONE2_COLOR_RED 0.31f
+#define DIEING_STONE2_COLOR_GREEN 0.33f
+#define DIEING_STONE2_COLOR_BLUE 0.36f
 
 static TextureObject gSkyTex;
 
@@ -84,6 +92,24 @@ void restoreDefaultTileColor(int tileIndex)
 		gTiles[tileIndex].green = TILE_TEXTURE2_GREEN;
 		gTiles[tileIndex].blue = TILE_TEXTURE2_BLUE;
 	}
+}
+
+void setDieingTileColor(int tileIndex)
+{
+	if ((((tileIndex / 8) % 2) ^ (tileIndex % 2)) != 0)
+	{
+		gTiles[tileIndex].red = DIEING_STONE1_COLOR_RED;
+		gTiles[tileIndex].green = DIEING_STONE1_COLOR_GREEN;
+		gTiles[tileIndex].blue = DIEING_STONE1_COLOR_BLUE;
+	}
+	else
+	{
+		gTiles[tileIndex].red = DIEING_STONE2_COLOR_RED;
+		gTiles[tileIndex].green = DIEING_STONE2_COLOR_GREEN;
+		gTiles[tileIndex].blue = DIEING_STONE2_COLOR_BLUE;
+	}
+	
+	gTiles[tileIndex].coloredID = DIEING_STONE_ID;
 }
 
 void _clearPredictedColor(int tileIndex)
