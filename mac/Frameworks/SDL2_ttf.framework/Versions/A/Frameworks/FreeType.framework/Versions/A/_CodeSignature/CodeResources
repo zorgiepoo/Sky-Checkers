@@ -25,222 +25,371 @@
 	<key>files2</key>
 	<dict>
 		<key>Headers/freetype/config/ftconfig.h</key>
-		<data>
-		IgUN+mUfaRnrLXK4tLLkFvPQ4Ms=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			ii44OqswYCZ6O0mV6QCSeeWVuaMkyM1jvxqrfz8j9+c=
+			</data>
+		</dict>
 		<key>Headers/freetype/config/ftheader.h</key>
-		<data>
-		2jFK3NsAjNvuVkKSKq9NGlCT4c4=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			ZIac2Y0iUDl8dlOgUE7SULllneCynoxFg6Zb6CgTl0U=
+			</data>
+		</dict>
 		<key>Headers/freetype/config/ftmodule.h</key>
-		<data>
-		/VFWpGqay0U3Cqhy3/Z+jl1nO7M=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			Dgadi2klZ5YqXd2DIzPHkV7YqXbKCNLaAXtk4AGraDQ=
+			</data>
+		</dict>
 		<key>Headers/freetype/config/ftoption.h</key>
-		<data>
-		BE11UE8xkf1U6PDH4g5Ds7slk7c=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			cLtqqTwQOSF/l8qW6XxWknhV1K+ZT4mmMv2/t45whu0=
+			</data>
+		</dict>
 		<key>Headers/freetype/config/ftstdlib.h</key>
-		<data>
-		Ob0KM1cXj4sfQYEcomzOpH7ban8=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			7/e0zUfA367udzTP+hig27CYl6UzL5VhkDhFfQVonJA=
+			</data>
+		</dict>
 		<key>Headers/freetype/freetype.h</key>
-		<data>
-		uAFuavaH7Hv9IWDxvOw2Y+GGCdQ=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			+uISfLymGZkItfm2ygWogZ9K3SpANjSl/G75a3235Ds=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftadvanc.h</key>
-		<data>
-		W4BEJLT6MqJVTrn6IgJu5+QuPsU=
-		</data>
-		<key>Headers/freetype/ftautoh.h</key>
-		<data>
-		O9Sr866uYwpuFRqsF0JKu8A9yoA=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			N3Ti1qyvARnQvYwEf6FzrzcAbOOgvIOJsABCrWqPRTM=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftbbox.h</key>
-		<data>
-		wcUaEUCC/jQc64pkUnKcy/UCbxw=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			gF7Ga4aLvykJ0vfhq5LDagey+UXMFnzwjgICfEwqZ2k=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftbdf.h</key>
-		<data>
-		Mrbk8RWufglRhJaUnL9JR2Yc0zs=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			aJnf99F/B/HSKg6TaI3jfQ0udwzN+InlQcISSzSpdRM=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftbitmap.h</key>
-		<data>
-		mJpcx77mEwlxe0DpWR7n6qf9I3E=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			7AnoE1mGHNF5bMLIPRt0CKMZ5QUU77xk3G4S6xlNZck=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftbzip2.h</key>
-		<data>
-		0zIumPU7rJEm0+qelQ/ADLiBxco=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			XHkOvZAhM9wsyMFA0ITNGrqzzsxf4Ux7fi3aN586I+M=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftcache.h</key>
-		<data>
-		4wOCdmO52nozp97+mdKS1UoNoeM=
-		</data>
-		<key>Headers/freetype/ftcffdrv.h</key>
-		<data>
-		h48lFgQPI6O0ZrVxl4W57MXMV3k=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			j5gEshUTm2hssVVRarOMc6QlOGn7B833x+PCJ4k/guE=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftchapters.h</key>
-		<data>
-		bVFtkZE12Bd68SWfOvU6qgXfs40=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			4HmrUDpT5dkppdiu1Uaz/ok1BI+VBZNifNYzqi+eDg8=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftcid.h</key>
-		<data>
-		ICF//Mexs5sLMhY/Tka9bpDxTxk=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			/IMl/nBy+tSpEiT56uk0mFFHwgJTb6DlaHSdT7zn1+Y=
+			</data>
+		</dict>
+		<key>Headers/freetype/ftdriver.h</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			bx4DfXGnBYxWlbBkLSOtwylHiNSFhhqzvEwb1OpZtpQ=
+			</data>
+		</dict>
 		<key>Headers/freetype/fterrdef.h</key>
-		<data>
-		sMk7NMergiAfL9CbSuZtrilxZ7g=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			G8LZMdG2OIa/PAVZgMnBVjTGDFtIpwjBa5R5DpAw4no=
+			</data>
+		</dict>
 		<key>Headers/freetype/fterrors.h</key>
-		<data>
-		N/lWD4FFybwHLLKKw3rzGooSV8s=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			uKfe6Zh5qziNihWlB4z0zxf4ca0GuRSxC8TXA9iXo44=
+			</data>
+		</dict>
+		<key>Headers/freetype/ftfntfmt.h</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			hv9Jwwvs2cC3pAkiKIovkwqUjDfy77K7C5OVO+cKHDk=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftgasp.h</key>
-		<data>
-		MGs72CNFvIuRP91CbeO+k4pI8+8=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			hP8nOIRJQfiv7Ul+rFG83qsYoDeytmB88uTwpBS4q8g=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftglyph.h</key>
-		<data>
-		WCz+0nF3wS7FVy5PH1yJ/8bRq3s=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			8kmQULsTZAMEtU9XBsG2LA5vonm9xVNY+PKBQzZZzAQ=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftgxval.h</key>
-		<data>
-		qYUcR9WclsYxogidk76UHER4exo=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			qcJ2HMYFwDvB98mK1KnPXXPYqhGKWhHTLq5nvSanRsg=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftgzip.h</key>
-		<data>
-		Pvvo4oGQV5TH3wCZcpBFcJoGUqc=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			T4cjM0y69/j98GOuLdpDHQbs/QEKiXb8ktgmlh6Om3g=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftimage.h</key>
-		<data>
-		LW/KgoQmTd0hdO56GaqeDqy0MEU=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			1NsVTUw62v0nBw3QXS7IvLUpFup94yVcjdBx6tRc6ec=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftincrem.h</key>
-		<data>
-		byrNWBuzm0e3TmKOdb4C+ASJBcc=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			YnjDytEzybejBlqoV7xCBBI8ptd/HT+Nv/wxtCZrMZY=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftlcdfil.h</key>
-		<data>
-		GIQNJIB4AQpOXEdJOGeNScp5ViI=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			JgRBRSSxe/1fypki4av8CifYntpOVC15heRG6ZNocO8=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftlist.h</key>
-		<data>
-		K3+4G/rU5Ggvrw6xnI+/rJBRiIM=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			P0GFjO3Hu3GbxFSKjKXHer0DkKIRV3UL/T09m9cb3hE=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftlzw.h</key>
-		<data>
-		rA4cPk06XrFiNgTHnkFZyZYZ9u4=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			Sp2MQZOJOx2Tk58bCYvbqC3shMbzWR7glJknKhJT5VE=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftmac.h</key>
-		<data>
-		jSnOzZNU+9iZXpHo35weasso3kU=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			MKJAKPBAwhAHUkwylq3C+uiWlu96rBTvU4dd3buCAws=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftmm.h</key>
-		<data>
-		bp8Ab3Psb97BawHtE36QYpGHxAg=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			qW/nFZKHVt5BzjG9OQdVUO7TpCK1BSvQufrxXOmM68U=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftmodapi.h</key>
-		<data>
-		Li4iUQZP4LJpxJ92sq0+10QN5f4=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			FQAOqPdHcDKU0FmTixf6CyWA7zu629vOTRYB4pdCmN0=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftmoderr.h</key>
-		<data>
-		8XoRlE4UTRUvzWbuCqNrW5fCd14=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			b0NkwkaD+I3TaNC6xa5GEA5309p9LHb/07THyXRivwo=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftotval.h</key>
-		<data>
-		yes0q+uLKshlNPYbuefqwHKPYq8=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			i1tVudMs2cuyLiOTJX7IbliBBl9lT7pM2tU3c2z+Zys=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftoutln.h</key>
-		<data>
-		T0iks7jdm+lt/t9srAhQoZU5ptM=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			fnIqqoWkXFiEPotq+o7wSN1jnrROZLonySBf6Ypwhbs=
+			</data>
+		</dict>
+		<key>Headers/freetype/ftparams.h</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			KsIc+RhBt7zaa3/0XcKe8RTnHtyUhET/rxufmSPivGc=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftpfr.h</key>
-		<data>
-		RQQe4jkFBnQG6G0gXuIFKKRO1FQ=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			8svWMbEW5Zb8FbQO86jcB8wA9lo1LmZ2Yla4l7Qag5M=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftrender.h</key>
-		<data>
-		lcAYHTWsl9XAndp8i4NpfuZbh74=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			f1Dkxs0msHFJumAnSyuWY7jw4uugZW4xkgwPiNM4whI=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftsizes.h</key>
-		<data>
-		ZOf9ZF9NrzsqXMUgqci385ZQjsc=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			L8VaJOH/FNHCqAUAIGOXBS8/e9Ux2NF1i1l4Fey2BTU=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftsnames.h</key>
-		<data>
-		qyTD7mrpm5yu+JKsnSPC9afI7mY=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			L5l/ckLRcykw13cXi2i1+6VXmB+NbAO+qiQLGPoqrxA=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftstroke.h</key>
-		<data>
-		wQ2JQx1I1wnETNQqoMAzWlCe4aA=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			8VEOnPE0AIpRbAwWRZWru4ApDVXTBM9i29X7kx4/I9Q=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftsynth.h</key>
-		<data>
-		J9cNB7icVHzZ8Eo0HTfatjOpps4=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			T6ArKW3lj+8axy3kJr2E3bM019R4Cys0JQHTAhDp1bk=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftsystem.h</key>
-		<data>
-		KJPariBXjlxSGBwQfmXqaq1B5Vc=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			KhdFdd7T5vnqi6BG8x36oDzFL6Fvt0mMg/g/BUu3Ddo=
+			</data>
+		</dict>
 		<key>Headers/freetype/fttrigon.h</key>
-		<data>
-		Fkj9rUBJ4Y+Qc6R/X2E7mG2qeyY=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			MYzKF2xDzzkmZjud5RxghGPEfzzeXq22puQuuoca+z4=
+			</data>
+		</dict>
 		<key>Headers/freetype/fttypes.h</key>
-		<data>
-		qazQXL1/PaUTfpQ83mFXJU3ggH8=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			BxrNb/QHOaTm7KHw4sni0mYiUNLXdTHv3QHNUzLn6NQ=
+			</data>
+		</dict>
 		<key>Headers/freetype/ftwinfnt.h</key>
-		<data>
-		KGa9xVZwlT6GFHEkuTOkM4Ijo20=
-		</data>
-		<key>Headers/freetype/ftxf86.h</key>
-		<data>
-		GjYddKqZDMrrMO1ZXZ22IUmAcSY=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			PaZmX8yotzM/STNOeOV+O3M+lY93iWytoCRdfPDGSAI=
+			</data>
+		</dict>
 		<key>Headers/freetype/t1tables.h</key>
-		<data>
-		xCanb6wKPvgl6jGHZKrKHg26y6A=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			rdyBqfN1wCaaH9uKuIgdo33eyv32Dc4jtxoAjyfkb/Q=
+			</data>
+		</dict>
 		<key>Headers/freetype/ttnameid.h</key>
-		<data>
-		LbDSr+BZHy3grhPBeELQSg33u5Y=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			fsj4W7TJ8cznJ/qkmNrJUxEz/CxZskpm9gVIB2h1dVw=
+			</data>
+		</dict>
 		<key>Headers/freetype/tttables.h</key>
-		<data>
-		nZvRbwppaBwNAqDQ2IO9Doce67Q=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			cR9gEaRNfOCraWLZ4GhI69ryrkrzF5ze8FgfecVedh4=
+			</data>
+		</dict>
 		<key>Headers/freetype/tttags.h</key>
-		<data>
-		grDrNfYDhPEcGjXoCSMNA5vR5ME=
-		</data>
-		<key>Headers/freetype/ttunpat.h</key>
-		<data>
-		9NMNSHIZpzPmnheNO+g7TbkSBy4=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			/1A7piohdzpWBACeIvNwtc32AvuW30fgCqlSuSualIo=
+			</data>
+		</dict>
 		<key>Headers/ft2build.h</key>
-		<data>
-		gutnvSdF36ZXXehIUpYQGVjfmdc=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			7d2Bo9BdTHC7uz/IkAU9Edj9EWtopYhYwD3KtQJMDeU=
+			</data>
+		</dict>
 		<key>Resources/English.lproj/InfoPlist.strings</key>
 		<dict>
-			<key>hash</key>
+			<key>hash2</key>
 			<data>
-			HVTFMg5638sbz7hs64liIWXohnM=
+			pye1r8MDxlZwdXGVcJXkL7yCWVUL2EBKaPwboOik/Ys=
 			</data>
 			<key>optional</key>
 			<true/>
 		</dict>
 		<key>Resources/Info.plist</key>
-		<data>
-		1FPRdIH76VylC1rjdLR7Ib9yAoY=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			LgLWiOAfeKfElgJRbXLL9cgzUidG06AqyWs5IvYZyvg=
+			</data>
+		</dict>
 		<key>Resources/LICENSE.freetype.txt</key>
-		<data>
-		CFzqT4LNMTCORxPV3xOqm66oAiE=
-		</data>
+		<dict>
+			<key>hash2</key>
+			<data>
+			fovJndE7TC9qX3uBKeu1a+/6GIyAwTQSeqtkzn9T0iU=
+			</data>
+		</dict>
 	</dict>
 	<key>rules</key>
 	<dict>
@@ -259,6 +408,11 @@
 			<true/>
 			<key>weight</key>
 			<real>1100</real>
+		</dict>
+		<key>^Resources/Base\.lproj/</key>
+		<dict>
+			<key>weight</key>
+			<real>1010</real>
 		</dict>
 		<key>^version.plist$</key>
 		<true/>
@@ -318,6 +472,11 @@
 			<true/>
 			<key>weight</key>
 			<real>1100</real>
+		</dict>
+		<key>^Resources/Base\.lproj/</key>
+		<dict>
+			<key>weight</key>
+			<real>1010</real>
 		</dict>
 		<key>^[^/]+$</key>
 		<dict>

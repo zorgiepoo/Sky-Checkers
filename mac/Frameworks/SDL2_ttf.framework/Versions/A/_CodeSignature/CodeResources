@@ -6,7 +6,7 @@
 	<dict>
 		<key>Resources/Info.plist</key>
 		<data>
-		3q97vGKrENbEm3i6/SsxyHv5PsA=
+		IfLC5JMCapmKtefZrmJcxZV4NMA=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -15,19 +15,33 @@
 		<dict>
 			<key>cdhash</key>
 			<data>
-			7zziRY4oHMMxYsytZyIvMUQ7o2Q=
+			piLwXHQLHy7gG+FSYkPBI4sr89E=
 			</data>
 			<key>requirement</key>
-			<string>identifier FreeType and anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = EH385AYQ6F</string>
+			<string>cdhash H"a622f05c740b1f2ee01be1526243c1238b2bf3d1"</string>
 		</dict>
 		<key>Headers/SDL_ttf.h</key>
-		<data>
-		1YTtj3sS4hsaf6y62a8WhyD+/J0=
-		</data>
+		<dict>
+			<key>hash</key>
+			<data>
+			cDVQTTFmmTw5dpLXeVXP6xykLOs=
+			</data>
+			<key>hash2</key>
+			<data>
+			nSF57Fh6OtJdIL7HmMPMYZm07ewBZn00X0uk0mXaKzM=
+			</data>
+		</dict>
 		<key>Resources/Info.plist</key>
-		<data>
-		3q97vGKrENbEm3i6/SsxyHv5PsA=
-		</data>
+		<dict>
+			<key>hash</key>
+			<data>
+			IfLC5JMCapmKtefZrmJcxZV4NMA=
+			</data>
+			<key>hash2</key>
+			<data>
+			/IL1YRtl9s1fvhfRZrQYffaUK0FTRX5NjUZY5ahDouY=
+			</data>
+		</dict>
 	</dict>
 	<key>rules</key>
 	<dict>
@@ -46,6 +60,11 @@
 			<true/>
 			<key>weight</key>
 			<real>1100</real>
+		</dict>
+		<key>^Resources/Base\.lproj/</key>
+		<dict>
+			<key>weight</key>
+			<real>1010</real>
 		</dict>
 		<key>^version.plist$</key>
 		<true/>
@@ -105,6 +124,11 @@
 			<true/>
 			<key>weight</key>
 			<real>1100</real>
+		</dict>
+		<key>^Resources/Base\.lproj/</key>
+		<dict>
+			<key>weight</key>
+			<real>1010</real>
 		</dict>
 		<key>^[^/]+$</key>
 		<dict>
