@@ -1297,7 +1297,7 @@ static void drawScene(Renderer *renderer)
 		
 		// Title renders at -20.0f
 		mat4_t gameTitleModelViewMatrix = m4_translation((vec3_t){-0.2f, 5.4f, -20.0f});
-		drawStringScaled(renderer, gameTitleModelViewMatrix, (color4_t){0.3f, 0.2f, 1.0f, 0.4f}, 0.00592f, "Sky Checkers");
+		drawStringScaled(renderer, gameTitleModelViewMatrix, (color4_t){0.3f, 0.2f, 1.0f, 0.7f}, 0.00592f, "Sky Checkers");
 		
 		if (gGameState == GAME_STATE_CONNECTING)
 		{
