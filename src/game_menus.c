@@ -55,7 +55,7 @@ static char gKeyCode[64];
 char gServerAddressString[MAX_SERVER_ADDRESS_SIZE] = "localhost";
 int gServerAddressStringIndex = 9;
 
-char gUserNameString[MAX_USER_NAME_SIZE] = "Borg";
+char gUserNameString[MAX_USER_NAME_SIZE] = "Kale";
 int gUserNameStringIndex = 4;
 
 static char *convertKeyCodeToString(unsigned theKeyCode);

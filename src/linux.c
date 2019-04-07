@@ -42,10 +42,3 @@
 
 	return file;
  }
-
- void getDefaultUserName(char *defaultUserName, int maxLength)
- {
-	strncpy(defaultUserName, getenv("USER"), maxLength);
-	defaultUserName[0] = toupper(defaultUserName[0]);
- }
- 

@@ -567,11 +567,18 @@ read_input_cleanup:
 
 static void readDefaults(SDL_Joystick **joysticks)
 {
-	#ifndef WINDOWS
-		// this would be a good time to get the default user name
-		getDefaultUserName(gUserNameString, MAX_USER_NAME_SIZE - 1);
-		gUserNameStringIndex = strlen(gUserNameString);
-	#endif
+	// this would be a good time to get the default user name
+#ifdef MAC_OS_X
+	getDefaultUserName(gUserNameString, MAX_USER_NAME_SIZE - 1);
+	gUserNameStringIndex = strlen(gUserNameString);
+#else
+	char *randomNames[] = { "Tale", "Backer", "Hop", "Expel", "Rida", "Tao", "Eyez", "Phia", "Sync", "Witty", "Poet", "Roost", "Kuro", "Spot", "Carb", "Unow", "Gil", "Needle", "Oxy", "Kale" };
+	
+	int randomNameIndex = (int)(mt_random() % (sizeof(randomNames) / sizeof(randomNames[0])));
+	char *randomName = randomNames[randomNameIndex];
+	
+	strncpy(gUserNameString, randomName, MAX_USER_NAME_SIZE - 1);
+#endif
 
 	FILE *fp = getUserDataFile("rb");
 
@@ -2021,6 +2028,9 @@ int main(int argc, char *argv[])
 	{
 		return -3;
 	};
+	
+	// init random number generator
+	mt_init();
 
 	readDefaults(joysticks);
 
@@ -2040,8 +2050,6 @@ int main(int argc, char *argv[])
 	}
 	
 	// Initialize game related things
-	// init random number generator
-	mt_init();
 	
 #ifdef _PROFILING
 	gDrawFPS = SDL_TRUE;
