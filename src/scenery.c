@@ -23,21 +23,21 @@
 #include "collision.h"
 #include "math_3d.h"
 
-#define TILE_TEXTURE1_RED 1.0f
-#define TILE_TEXTURE1_GREEN 1.0f
-#define TILE_TEXTURE1_BLUE 1.0f
+#define TILE_TEXTURE1_RED 0.8f
+#define TILE_TEXTURE1_GREEN 0.8f
+#define TILE_TEXTURE1_BLUE 0.8f
 
-#define TILE_TEXTURE2_RED 0.882f
-#define TILE_TEXTURE2_GREEN 0.772f
-#define TILE_TEXTURE2_BLUE 0.529f
+#define TILE_TEXTURE2_RED 0.682f
+#define TILE_TEXTURE2_GREEN 0.572f
+#define TILE_TEXTURE2_BLUE 0.329f
 
-#define DIEING_STONE1_COLOR_RED 0.25f
-#define DIEING_STONE1_COLOR_GREEN 0.27f
-#define DIEING_STONE1_COLOR_BLUE 0.30f
+#define DIEING_STONE1_COLOR_RED 0.15f
+#define DIEING_STONE1_COLOR_GREEN 0.17f
+#define DIEING_STONE1_COLOR_BLUE 0.20f
 
-#define DIEING_STONE2_COLOR_RED 0.31f
-#define DIEING_STONE2_COLOR_GREEN 0.33f
-#define DIEING_STONE2_COLOR_BLUE 0.36f
+#define DIEING_STONE2_COLOR_RED 0.21f
+#define DIEING_STONE2_COLOR_GREEN 0.23f
+#define DIEING_STONE2_COLOR_BLUE 0.26f
 
 static TextureObject gSkyTex;
 
@@ -279,7 +279,7 @@ void drawSky(Renderer *renderer, RendererOptions options)
 	
 	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 0.0f, -38.0f});
 	
-	drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, gSkyTex, RENDERER_TRIANGLE_MODE, vertexAndTextureArrayObject, indicesBufferObject, 6, (color4_t){1.0f, 1.0f, 1.0f, 0.9f}, options);
+	drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, gSkyTex, RENDERER_TRIANGLE_MODE, vertexAndTextureArrayObject, indicesBufferObject, 6, (color4_t){1.0f, 1.0f, 1.0f, 0.75f}, options);
 }
 
 void drawTiles(Renderer *renderer)

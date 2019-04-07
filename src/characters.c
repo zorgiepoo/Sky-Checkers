@@ -146,9 +146,9 @@ void initCharacters(void)
 	loadCharacter(&gBlueLightning);
 	gBlueLightning.weap = malloc(sizeof(Weapon));
 	initWeapon(gBlueLightning.weap);
-	gBlueLightning.weap->red = 0.09f;
-	gBlueLightning.weap->green = 0.3157f;
-	gBlueLightning.weap->blue = 0.6019f;
+	gBlueLightning.weap->red = 30.0f / 255.0f;
+	gBlueLightning.weap->green = 144.0f / 255.0f;
+	gBlueLightning.weap->blue = 255.0f / 255.0f;
 	gBlueLightning.netState = NETWORK_NO_STATE;
 	gBlueLightning.netName = NULL;
 	gBlueLightning.backup_state = 0;
