@@ -27,6 +27,9 @@
 
 #define MAX_PACKET_SIZE 500
 
+// If we make an incompatible network change, bump this
+#define NETWORK_VERSION 1
+
 #define CAN_I_PLAY_MESSAGE_TAG 1 // previously "cp"
 #define REQUEST_MOVEMENT_MESSAGE_TAG 2 // previously "rm"
 #define SHOOT_WEAPON_MESSAGE_TAG 3 // previously "sw"
@@ -1229,17 +1232,19 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						if (messageTag == CAN_I_PLAY_MESSAGE_TAG)
 						{
 							uint32_t packetNumber = 0;
+							uint8_t networkVersion = 0;
 							
-							if (buffer + sizeof(packetNumber) + (MAX_USER_NAME_SIZE - 1) <= packetBuffer + numberOfBytes)
+							if (buffer + sizeof(packetNumber) + sizeof(networkVersion) + (MAX_USER_NAME_SIZE - 1) <= packetBuffer + numberOfBytes)
 							{
 								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+								ADVANCE_RECEIVE_BUFFER(&buffer, networkVersion);
 								
 								char *netName = calloc(MAX_USER_NAME_SIZE, 1);
 								strncpy(netName, buffer, MAX_USER_NAME_SIZE - 1);
 								buffer += (MAX_USER_NAME_SIZE - 1);
 								
 								uint8_t existingCharacterID = characterIDForClientAddress(&address);
-								if ((packetNumber == 1 && existingCharacterID == NO_CHARACTER && numberOfPlayersToWaitFor > 0) || (packetNumber == 1 && existingCharacterID != NO_CHARACTER))
+								if (networkVersion == NETWORK_VERSION && ((packetNumber == 1 && existingCharacterID == NO_CHARACTER && numberOfPlayersToWaitFor > 0) || (packetNumber == 1 && existingCharacterID != NO_CHARACTER)))
 								{
 									int addressIndex;
 									if (existingCharacterID == NO_CHARACTER)
@@ -1499,7 +1504,8 @@ int clientNetworkThread(void *context)
 	// tell the server we exist
 	GameMessage welcomeMessage;
 	welcomeMessage.type = WELCOME_MESSAGE_TO_SERVER_MESSAGE_TYPE;
-	welcomeMessage.weclomeMessage.netName = gUserNameString;
+	welcomeMessage.welcomeMessage.version = NETWORK_VERSION;
+	welcomeMessage.welcomeMessage.netName = gUserNameString;
 	sendToServer(welcomeMessage);
 	
 	uint32_t lastPongReceivedTimestamp = SDL_GetTicks();
@@ -1575,7 +1581,8 @@ int clientNetworkThread(void *context)
 					{
 						advanceSendBufferForInitialMessage(&sendBufferPtr, CAN_I_PLAY_MESSAGE_TAG, message.packetNumber);
 						
-						advanceSendBuffer(&sendBufferPtr, gUserNameString, MAX_USER_NAME_SIZE - 1);
+						ADVANCE_SEND_BUFFER(&sendBufferPtr, message.welcomeMessage.version);
+						advanceSendBuffer(&sendBufferPtr, message.welcomeMessage.netName, MAX_USER_NAME_SIZE - 1);
 						
 						sendAndResetBufferIfNeeded(sendBuffer, sizeof(sendBuffer), &sendBufferPtr, &gNetworkConnection->hostAddress);
 						

@@ -137,6 +137,7 @@ typedef struct
 typedef struct
 {
 	char *netName;
+	uint8_t version;
 } WelcomeMessage;
 
 typedef struct
@@ -175,7 +176,7 @@ typedef struct
 		FirstServerResponse firstServerResponse;
 		FirstClientResponse firstClientResponse;
 		FirstDataToClient firstDataToClient;
-		WelcomeMessage weclomeMessage;
+		WelcomeMessage welcomeMessage;
 		ColorTileMessage colorTile;
 		FallingTileMessage fallingTile;
 		RecoverTileMessage recoverTile;
