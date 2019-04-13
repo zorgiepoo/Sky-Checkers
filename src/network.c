@@ -259,6 +259,11 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 						strncpy(character->netName, "DISCON", sizeof(disconnectedMessage) + 1);
 					}
 					
+					if (gNetworkConnection->type == NETWORK_SERVER_TYPE)
+					{
+						character->state = CHARACTER_AI_STATE;
+					}
+					
 					break;
 				}
 				case CHARACTER_DIED_UPDATE_MESSAGE_TYPE:
