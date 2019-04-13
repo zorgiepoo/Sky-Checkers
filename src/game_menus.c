@@ -276,6 +276,7 @@ void networkServerPlayMenuAction(void *context)
 	gNetworkConnection->numberOfPlayersToWaitFor += (gBlueLightning.netState == NETWORK_PENDING_STATE);
 	
 	gCurrentSlot = 0;
+	memset(gClientStates, 0, sizeof(gClientStates));
 	
 	initGame();
 	

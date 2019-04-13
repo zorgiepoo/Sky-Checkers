@@ -28,7 +28,7 @@
 #define MAX_PACKET_SIZE 500
 
 // If we make an incompatible network change, bump this
-#define NETWORK_VERSION 1
+#define NETWORK_VERSION 2
 
 #define CAN_I_PLAY_MESSAGE_TAG 1 // previously "cp"
 #define REQUEST_MOVEMENT_MESSAGE_TAG 2 // previously "rm"
@@ -50,10 +50,14 @@
 #define TILE_FALLING_MESSAGE_TAG 18 // previously "tf"
 #define RECOVER_TILE_MESSAGE_TAG 19 // previously "rt"
 #define NEW_GAME_MESSAGE_TAG 20 // previously "ng"
+#define LAGGED_OUT_MESSAGE_TAG 21
+
+#define CLIENT_STATE_ALIVE 0
+#define CLIENT_STATE_DEAD 1
 
 NetworkConnection *gNetworkConnection = NULL;
 
-static SDL_mutex *gCurrentSlotMutex;
+static SDL_mutex *gCurrentSlotAndClientStatesMutex;
 
 static void pushNetworkMessage(GameMessageArray *messageArray, GameMessage message);
 static void depleteNetworkMessages(GameMessageArray *messageArray);
@@ -241,6 +245,19 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					float compensation = (halfPing > 110 ? 110.0f : (float)halfPing) / 1000.0f;
 					
 					prepareFiringCharacterWeapon(character, character->x, character->y, character->pointing_direction, compensation);
+					
+					break;
+				}
+				case LAGGED_OUT_MESSAGE_TYPE:
+				{
+					uint8_t characterID = message.laggedUpdate.characterID;
+					Character *character = getCharacter(characterID);
+					
+					if (character->netName != NULL)
+					{
+						char disconnectedMessage[] = "DISCON";
+						strncpy(character->netName, "DISCON", sizeof(disconnectedMessage) + 1);
+					}
 					
 					break;
 				}
@@ -762,7 +779,6 @@ static void advanceReceiveBuffer(char **buffer, void *receiveData, size_t receiv
 
 int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 {
-	gCurrentSlot = 0;
 	uint8_t numberOfPlayersToWaitFor = *(uint8_t *)initialNumberOfPlayersToWaitForPtr;
 	
 	uint32_t triggerOutgoingPacketNumbers[] = {1, 1, 1};
@@ -773,6 +789,8 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 	uint32_t receivedAckPacketNumbers[3][256] = {{0}, {0}, {0}};
 	size_t receivedAckPacketsCapacity = sizeof(receivedAckPacketNumbers[0]) / sizeof(*receivedAckPacketNumbers[0]);
 	uint32_t receivedAckPacketCount = 0;
+	
+	uint32_t lastPongReceivedTimestamps[3] = {0, 0, 0};
 	
 	SDL_bool needsToQuit = SDL_FALSE;
 	
@@ -1015,6 +1033,17 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						
 						break;
 					}
+					case LAGGED_OUT_MESSAGE_TYPE:
+					{
+						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], LAGGED_OUT_MESSAGE_TAG, message.packetNumber);
+						
+						uint8_t flags = message.laggedUpdate.characterID - 1;
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], flags);
+						
+						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
+						
+						break;
+					}
 					case CHARACTER_MOVED_UPDATE_MESSAGE_TYPE:
 					{
 						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], MOVEMENT_MESSAGE_TAG, message.packetNumber);
@@ -1197,6 +1226,31 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 			}
 		}
 		
+		// 4 seconds is a long time without hearing back from a client
+		uint32_t currentTime = SDL_GetTicks();
+		for (int addressIndex = 0; addressIndex < (int)(sizeof(lastPongReceivedTimestamps) / sizeof(lastPongReceivedTimestamps[0])); addressIndex++)
+		{
+			if (lastPongReceivedTimestamps[addressIndex] != 0 && currentTime - lastPongReceivedTimestamps[addressIndex] >= 4000)
+			{
+				SDL_LockMutex(gCurrentSlotAndClientStatesMutex);
+				
+				gClientStates[addressIndex] = CLIENT_STATE_DEAD;
+				
+				SDL_UnlockMutex(gCurrentSlotAndClientStatesMutex);
+				
+				GameMessage message;
+				message.type = LAGGED_OUT_MESSAGE_TYPE;
+				message.laggedUpdate.characterID = addressIndex + 1;
+				sendToClients(addressIndex + 1, &message);
+				
+				pushNetworkMessage(&gGameMessagesFromNet, message);
+				
+				lastPongReceivedTimestamps[addressIndex] = 0;
+				
+				memset(&gNetworkConnection->clientAddresses[addressIndex], 0, sizeof(gNetworkConnection->clientAddresses[addressIndex]));
+			}
+		}
+		
 		while (!needsToQuit)
 		{
 			fd_set socketSet;
@@ -1254,10 +1308,11 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 										addressIndex = gCurrentSlot;
 										gNetworkConnection->clientAddresses[addressIndex] = address;
 										triggerIncomingPacketNumbers[addressIndex]++;
+										lastPongReceivedTimestamps[addressIndex] = SDL_GetTicks();
 										
-										SDL_LockMutex(gCurrentSlotMutex);
+										SDL_LockMutex(gCurrentSlotAndClientStatesMutex);
 										gCurrentSlot++;
-										SDL_UnlockMutex(gCurrentSlotMutex);
+										SDL_UnlockMutex(gCurrentSlotAndClientStatesMutex);
 										
 										numberOfPlayersToWaitFor--;
 										
@@ -1451,6 +1506,8 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 									message.addressIndex = addressIndex;
 									message.pongTimestamp = timestamp;
 									pushNetworkMessage(&gGameMessagesFromNet, message);
+									
+									lastPongReceivedTimestamps[addressIndex] = SDL_GetTicks();
 								}
 							}
 						}
@@ -1667,6 +1724,8 @@ int clientNetworkThread(void *context)
 					case CHARACTER_MOVED_UPDATE_MESSAGE_TYPE:
 						break;
 					case CHARACTER_KILLED_UPDATE_MESSAGE_TYPE:
+						break;
+					case LAGGED_OUT_MESSAGE_TYPE:
 						break;
 					case GAME_RESET_MESSAGE_TYPE:
 						break;
@@ -2154,6 +2213,37 @@ int clientNetworkThread(void *context)
 								}
 							}
 						}
+						else if (messageTag == LAGGED_OUT_MESSAGE_TAG)
+						{
+							uint32_t packetNumber = 0;
+							uint8_t flags = 0;
+							
+							if (buffer + sizeof(packetNumber) + sizeof(flags) <= packetBuffer + numberOfBytes)
+							{
+								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+								ADVANCE_RECEIVE_BUFFER(&buffer, flags);
+								
+								uint8_t characterID = flags + 1;
+								
+								if (packetNumber == triggerIncomingPacketNumber + 1 && characterID > NO_CHARACTER && characterID <= PINK_BUBBLE_GUM)
+								{
+									triggerIncomingPacketNumber++;
+									
+									GameMessage message;
+									message.type = LAGGED_OUT_MESSAGE_TYPE;
+									message.laggedUpdate.characterID = characterID;
+									pushNetworkMessage(&gGameMessagesFromNet, message);
+								}
+								
+								if (packetNumber <= triggerIncomingPacketNumber)
+								{
+									GameMessage ackMessage;
+									ackMessage.type = ACK_MESSAGE_TYPE;
+									ackMessage.packetNumber = packetNumber;
+									pushNetworkMessage(&gGameMessagesToNet, ackMessage);
+								}
+							}
+						}
 						else if (messageTag == NEW_GAME_MESSAGE_TAG)
 						{
 							// new game
@@ -2280,7 +2370,7 @@ void initializeNetworkBuffers(void)
 	initializeGameBuffer(&gGameMessagesFromNet);
 	initializeGameBuffer(&gGameMessagesToNet);
 	
-	gCurrentSlotMutex = SDL_CreateMutex();
+	gCurrentSlotAndClientStatesMutex = SDL_CreateMutex();
 }
 
 static void _pushNetworkMessage(GameMessageArray *messageArray, GameMessage message)
@@ -2412,14 +2502,14 @@ static void cleanupStateFromNetwork(void)
 
 void sendToClients(int exception, GameMessage *message)
 {
-	SDL_LockMutex(gCurrentSlotMutex);
+	SDL_LockMutex(gCurrentSlotAndClientStatesMutex);
 	SDL_LockMutex(gGameMessagesToNet.mutex);
 	
 	message->packetNumber = 0;
 	
 	for (int clientIndex = 0; clientIndex < gCurrentSlot; clientIndex++)
 	{
-		if (clientIndex + 1 != exception)
+		if (clientIndex + 1 != exception && gClientStates[clientIndex] == CLIENT_STATE_ALIVE)
 		{
 			message->addressIndex = clientIndex;
 			_pushNetworkMessage(&gGameMessagesToNet, *message);
@@ -2434,7 +2524,7 @@ void sendToClients(int exception, GameMessage *message)
 	}
 	
 	SDL_UnlockMutex(gGameMessagesToNet.mutex);
-	SDL_UnlockMutex(gCurrentSlotMutex);
+	SDL_UnlockMutex(gCurrentSlotAndClientStatesMutex);
 }
 
 void sendToServer(GameMessage message)

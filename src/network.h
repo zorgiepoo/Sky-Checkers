@@ -60,8 +60,9 @@ typedef enum
 	COLOR_TILE_MESSAGE_TYPE = 17,
 	TILE_FALLING_DOWN_MESSAGE_TYPE = 18,
 	RECOVER_TILE_MESSAGE_TYPE = 19,
-	PING_MESSAGE_TYPE = 20,
-	PONG_MESSAGE_TYPE = 21
+	LAGGED_OUT_MESSAGE_TYPE = 20,
+	PING_MESSAGE_TYPE = 21,
+	PONG_MESSAGE_TYPE = 22
 } MessageType;
 
 typedef struct
@@ -159,6 +160,11 @@ typedef struct
 
 typedef struct
 {
+	uint8_t characterID;
+} LaggedOutMessage;
+
+typedef struct
+{
 	MessageType type;
 	uint32_t packetNumber;
 	int addressIndex;
@@ -180,6 +186,7 @@ typedef struct
 		ColorTileMessage colorTile;
 		FallingTileMessage fallingTile;
 		RecoverTileMessage recoverTile;
+		LaggedOutMessage laggedUpdate;
 		uint32_t pingTimestamp;
 		uint32_t pongTimestamp;
 		
@@ -261,9 +268,9 @@ typedef struct
 	};
 } NetworkConnection;
 
-
-// For the server.. This should be initialized to zero before creating the server thread.
+// For the server.. These should be initialized to zero before creating the server thread.
 uint8_t gCurrentSlot;
+uint8_t gClientStates[3];
 
 GameMessageArray gGameMessagesFromNet;
 GameMessageArray gGameMessagesToNet;
