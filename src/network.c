@@ -777,6 +777,26 @@ static void advanceReceiveBuffer(char **buffer, void *receiveData, size_t receiv
 
 #define ADVANCE_RECEIVE_BUFFER(buffer, data) advanceReceiveBuffer(buffer, &(data), sizeof((data)))
 
+static void disconnectClient(uint8_t addressIndex, uint32_t *lastPongReceivedTimestamps)
+{
+	SDL_LockMutex(gCurrentSlotAndClientStatesMutex);
+	
+	gClientStates[addressIndex] = CLIENT_STATE_DEAD;
+	
+	SDL_UnlockMutex(gCurrentSlotAndClientStatesMutex);
+	
+	GameMessage message;
+	message.type = LAGGED_OUT_MESSAGE_TYPE;
+	message.laggedUpdate.characterID = addressIndex + 1;
+	sendToClients(addressIndex + 1, &message);
+	
+	pushNetworkMessage(&gGameMessagesFromNet, message);
+	
+	lastPongReceivedTimestamps[addressIndex] = 0;
+	
+	memset(&gNetworkConnection->clientAddresses[addressIndex], 0, sizeof(gNetworkConnection->clientAddresses[addressIndex]));
+}
+
 int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 {
 	uint8_t numberOfPlayersToWaitFor = *(uint8_t *)initialNumberOfPlayersToWaitForPtr;
@@ -1228,26 +1248,11 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 		
 		// 4 seconds is a long time without hearing back from a client
 		uint32_t currentTime = SDL_GetTicks();
-		for (int addressIndex = 0; addressIndex < (int)(sizeof(lastPongReceivedTimestamps) / sizeof(lastPongReceivedTimestamps[0])); addressIndex++)
+		for (uint8_t addressIndex = 0; addressIndex < (int)(sizeof(lastPongReceivedTimestamps) / sizeof(lastPongReceivedTimestamps[0])); addressIndex++)
 		{
 			if (lastPongReceivedTimestamps[addressIndex] != 0 && currentTime - lastPongReceivedTimestamps[addressIndex] >= 4000)
 			{
-				SDL_LockMutex(gCurrentSlotAndClientStatesMutex);
-				
-				gClientStates[addressIndex] = CLIENT_STATE_DEAD;
-				
-				SDL_UnlockMutex(gCurrentSlotAndClientStatesMutex);
-				
-				GameMessage message;
-				message.type = LAGGED_OUT_MESSAGE_TYPE;
-				message.laggedUpdate.characterID = addressIndex + 1;
-				sendToClients(addressIndex + 1, &message);
-				
-				pushNetworkMessage(&gGameMessagesFromNet, message);
-				
-				lastPongReceivedTimestamps[addressIndex] = 0;
-				
-				memset(&gNetworkConnection->clientAddresses[addressIndex], 0, sizeof(gNetworkConnection->clientAddresses[addressIndex]));
+				disconnectClient(addressIndex, lastPongReceivedTimestamps);
 			}
 		}
 		
@@ -1514,14 +1519,12 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 						
 						else if (messageTag == QUIT_MESSAGE_TAG)
 						{
-							GameMessage message;
-							message.type = QUIT_MESSAGE_TYPE;
-							
 							uint8_t characterID = characterIDForClientAddress(&address);
-							
 							if (characterID != NO_CHARACTER)
 							{
-								sendToClients(characterID, &message);
+								uint8_t addressIndex = characterID - 1;
+								
+								disconnectClient(addressIndex, lastPongReceivedTimestamps);
 							}
 						}
 					}
