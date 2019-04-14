@@ -217,6 +217,8 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					depleteNetworkMessages(&gGameMessagesFromNet);
 					depleteNetworkMessages(&gGameMessagesToNet);
 					
+					setNormalAudioVolume();
+					
 					if (thread != NULL)
 					{
 						// We need to wait for the thread to exit, otherwise we'll have a resource leak
