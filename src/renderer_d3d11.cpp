@@ -50,6 +50,12 @@ extern "C" void drawTextureWithVertices_d3d11(Renderer *renderer, float *modelVi
 
 extern "C" void drawTextureWithVerticesFromIndices_d3d11(Renderer *renderer, float *modelViewProjectionMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
 
+typedef struct
+{
+	ID3D11ShaderResourceView *resourceView;
+	ID3D11Texture2D *texture;
+} D3D11TextureDataObject;
+
 extern "C" static void updateViewport_d3d11(Renderer *renderer, int32_t windowWidth, int32_t windowHeight)
 {
 	renderer->drawableWidth = windowWidth;
@@ -907,15 +913,26 @@ extern "C" TextureObject textureFromPixelData_d3d11(Renderer *renderer, const vo
 		abort();
 	}
 
+	D3D11TextureDataObject *textureDataObject = (D3D11TextureDataObject *)malloc(sizeof(*textureDataObject));
+	textureDataObject->resourceView = resourceView;
+	textureDataObject->texture = texture;
+
 	TextureObject textureObject;
-	textureObject.d3d11Object = resourceView;
+	textureObject.d3d11Object = textureDataObject;
 	return textureObject;
 }
 
 extern "C" void deleteTexture_d3d11(Renderer *renderer, TextureObject textureObject)
 {
-	ID3D11ShaderResourceView *textureResourceView = (ID3D11ShaderResourceView *)textureObject.d3d11Object;
+	D3D11TextureDataObject *textureDataObject = (D3D11TextureDataObject *)textureObject.d3d11Object;
+
+	ID3D11ShaderResourceView *textureResourceView = textureDataObject->resourceView;
 	textureResourceView->Release();
+
+	ID3D11Texture2D *texture = textureDataObject->texture;
+	texture->Release();
+
+	free(textureDataObject);
 }
 
 static ID3D11Buffer *createVertexBuffer(ID3D11Device *device, const void *data, uint32_t size, D3D11_BIND_FLAG bindFlags)
@@ -1078,7 +1095,8 @@ static void encodeTexture(Renderer *renderer, TextureObject texture)
 {
 	ID3D11DeviceContext *context = (ID3D11DeviceContext *)renderer->d3d11Context;
 
-	ID3D11ShaderResourceView *resourceView = (ID3D11ShaderResourceView *)texture.d3d11Object;
+	D3D11TextureDataObject *textureDataObject = (D3D11TextureDataObject *)texture.d3d11Object;
+	ID3D11ShaderResourceView *resourceView = textureDataObject->resourceView;
 	context->PSSetShaderResources(0, 1, &resourceView);
 
 	ID3D11SamplerState *samplerState = (ID3D11SamplerState *)renderer->d3d11SamplerState;
