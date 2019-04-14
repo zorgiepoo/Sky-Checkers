@@ -61,6 +61,12 @@ extern "C" static void updateViewport_d3d11(Renderer *renderer, int32_t windowWi
 	renderer->drawableWidth = windowWidth;
 	renderer->drawableHeight = windowHeight;
 
+	float aspectRatio = (float)(renderer->drawableWidth / renderer->drawableHeight);
+	if (aspectRatio <= 0.001f)
+	{
+		return;
+	}
+
 	IDXGISwapChain *swapChain = (IDXGISwapChain *)renderer->d3d11SwapChain;
 
 	BOOL fullscreenState = SDL_FALSE;
@@ -189,7 +195,7 @@ extern "C" static void updateViewport_d3d11(Renderer *renderer, int32_t windowWi
 	context->RSSetViewports(1, &viewport);
 	
 	// The aspect ratio is not quite correct, which is a mistake I made a long time ago that is too troubling to fix properly
-	XMMATRIX projectionMatrix = XMMatrixPerspectiveFovRH(45.0f * ((float)M_PI / 180.0f), (float)(renderer->drawableWidth / renderer->drawableHeight), 10.0f, 300.0f);
+	XMMATRIX projectionMatrix = XMMatrixPerspectiveFovRH(45.0f * ((float)M_PI / 180.0f), aspectRatio, 10.0f, 300.0f);
 	memcpy(renderer->projectionMatrix, &projectionMatrix, sizeof(renderer->projectionMatrix));
 
 	renderer->d3d11RenderTargetView = renderTargetView;
