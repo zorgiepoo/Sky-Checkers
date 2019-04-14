@@ -21,15 +21,35 @@
 #include "audio.h"
 #include "utilities.h"
 
-#define MUSIC_CHANNEL					1
 #define MUSIC_VOLUME					64
 #define MENU_SOUND_VOLUME				32
-#define WHOOSH_SOUND_VOLUME				16
+#define SHOOTING_SOUND_VOLUME			16
 #define TILE_FALLING_SOUND_VOLUME		32
 #define TILE_DIEING_STONE_SOUND_VOLUME	10
 
+#define MENU_SOUND_CHANNEL 0
+#define SHOOTING_SOUND_MIN_CHANNEL 1
+#define SHOOTING_SOUND_MAX_CHANNEL 4
+#define TILE_FALLING_SOUND_MIN_CHANNEL 5
+#define TILE_FALLING_SOUND_MAX_CHANNEL 52
+#define DIEING_STONE_SOUND_MIN_CHANNEL 53
+#define DIEING_STONE_SOUND_MAX_CHANNEL 80
+#define MAX_CHANNELS (DIEING_STONE_SOUND_MAX_CHANNEL + 1)
+
 static Mix_Music *gMainMenuMusic = NULL;
 static Mix_Music *gGameMusic = NULL;
+static Mix_Chunk *gMenuSoundChunk = NULL;
+static Mix_Chunk *gShootingSoundChunk = NULL;
+static Mix_Chunk *gTileFallingChunk = NULL;
+static Mix_Chunk *gDieingStoneChunk = NULL;
+
+static void setVolume(int volume, int minChannel, int maxChannel)
+{
+	for (int channel = minChannel; channel <= maxChannel; channel++)
+	{
+		Mix_Volume(channel, volume);
+	}
+}
 
 SDL_bool initAudio(void)
 {
@@ -37,6 +57,20 @@ SDL_bool initAudio(void)
 	if (success)
 	{
 		Mix_VolumeMusic(MUSIC_VOLUME);
+		
+		Mix_AllocateChannels(MAX_CHANNELS);
+		
+		gMenuSoundChunk = Mix_LoadWAV("Data/Audio/sound6.wav");
+		Mix_Volume(MENU_SOUND_CHANNEL, MENU_SOUND_VOLUME);
+		
+		gShootingSoundChunk = Mix_LoadWAV("Data/Audio/whoosh.wav");
+		setVolume(SHOOTING_SOUND_VOLUME, SHOOTING_SOUND_MIN_CHANNEL, SHOOTING_SOUND_MAX_CHANNEL);
+		
+		gTileFallingChunk = Mix_LoadWAV("Data/Audio/object_falls.wav");
+		setVolume(TILE_FALLING_SOUND_VOLUME, TILE_FALLING_SOUND_MIN_CHANNEL, TILE_FALLING_SOUND_MAX_CHANNEL);
+		
+		gDieingStoneChunk = Mix_LoadWAV("Data/Audio/flock_of_birds.wav");
+		setVolume(TILE_DIEING_STONE_SOUND_VOLUME, DIEING_STONE_SOUND_MIN_CHANNEL, DIEING_STONE_SOUND_MAX_CHANNEL);
 	}
 	
 	return success;
@@ -99,71 +133,56 @@ SDL_bool isPlayingMainMenuMusic(void)
 
 void playMenuSound(void)
 {
-	static Mix_Chunk *menuSoundChunk = NULL;
-	if (!menuSoundChunk)
+	if (gMenuSoundChunk != NULL)
 	{
-		menuSoundChunk = Mix_LoadWAV("Data/Audio/sound6.wav");
-		Mix_Volume(1, MENU_SOUND_VOLUME);
+		Mix_PlayChannel(MENU_SOUND_CHANNEL, gMenuSoundChunk, 0);
 	}
-	
-	Mix_PlayChannel(1, menuSoundChunk, 0);
+}
+
+static int availableChannel(int minChannel, int maxChannel)
+{
+	for (int channel = minChannel; channel <= maxChannel; channel++)
+	{
+		if (Mix_Playing(channel) == 0)
+		{
+			return channel;
+		}
+	}
+	return -1;
 }
 
 void playShootingSound(void)
 {
-	static Mix_Chunk *whooshChunk = NULL;
-	if (!whooshChunk)
+	if (gShootingSoundChunk != NULL)
 	{
-		whooshChunk = Mix_LoadWAV("Data/Audio/whoosh.wav");
-		Mix_Volume(1, WHOOSH_SOUND_VOLUME);
+		int channel = availableChannel(SHOOTING_SOUND_MIN_CHANNEL, SHOOTING_SOUND_MAX_CHANNEL);
+		if (channel != -1)
+		{
+			Mix_PlayChannel(channel, gShootingSoundChunk, 0);
+		}
 	}
-	
-	Mix_PlayChannel(1, whooshChunk, 0);
 }
 
 void playTileFallingSound(void)
 {
-	static Mix_Chunk *tileFallingChunk = NULL;
-	if (!tileFallingChunk)
+	if (gTileFallingChunk != NULL)
 	{
-		tileFallingChunk = Mix_LoadWAV("Data/Audio/object_falls.wav");
-	}
-	
-	static int channel = 2;
-	
-	if (Mix_Playing(channel) == 0)
-	{
-		Mix_Volume(channel, TILE_FALLING_SOUND_VOLUME);
-		Mix_PlayChannel(channel, tileFallingChunk, 0);
-	}
-	
-	channel++;
-	if (channel == 7)
-	{
-		channel = 2;
+		int channel = availableChannel(TILE_FALLING_SOUND_MIN_CHANNEL, TILE_FALLING_SOUND_MAX_CHANNEL);
+		if (channel != -1)
+		{
+			Mix_PlayChannel(channel, gTileFallingChunk, 0);
+		}
 	}
 }
 
 void playDieingStoneSound(void)
 {
-	static Mix_Chunk *dieingStoneChunk = NULL;
-	if (!dieingStoneChunk)
+	if (gDieingStoneChunk != NULL)
 	{
-		dieingStoneChunk = Mix_LoadWAV("Data/Audio/flock_of_birds.wav");
-	}
-	
-	static int channel = 2;
-	
-	if (Mix_Playing(channel) == 0)
-	{
-		Mix_Volume(channel, TILE_DIEING_STONE_SOUND_VOLUME);
-		Mix_PlayChannel(channel, dieingStoneChunk, 0);
-	}
-	
-	channel++;
-	if (channel == 7)
-	{
-		channel = 2;
+		int channel = availableChannel(DIEING_STONE_SOUND_MIN_CHANNEL, DIEING_STONE_SOUND_MAX_CHANNEL);
+		if (channel != -1)
+		{
+			Mix_PlayChannel(channel, gDieingStoneChunk, 0);
+		}
 	}
 }
-
