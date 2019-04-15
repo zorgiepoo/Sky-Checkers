@@ -22,7 +22,7 @@
 #include "utilities.h"
 
 // Volumes should be divisible by 8
-#define MUSIC_VOLUME					32
+#define MUSIC_VOLUME					40
 #define MENU_SOUND_VOLUME				32
 #define SHOOTING_SOUND_VOLUME			16
 #define TILE_FALLING_SOUND_VOLUME		32
