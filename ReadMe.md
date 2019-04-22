@@ -12,7 +12,7 @@ This game is based on an old N64 Kirby mini-game and was originally written duri
 ## Features
 
 * 3-D graphics supporting Metal, Direct3D 11, OpenGL backends
-* Local and [online](https://zgcoder.net/zfw/skycheckers_play.mov) battles with 1 - 4 players
+* Local and [online (no audio)](https://zgcoder.net/zfw/skycheckers_play_no_audio.mov) battles with 1 - 4 players
 * Bots with an easy, medium, or hard difficulty
 * Gamepad support
 
