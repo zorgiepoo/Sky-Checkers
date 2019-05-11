@@ -165,8 +165,7 @@ typedef struct _Renderer
 			void *metalLayer;
 			void *metalCommandQueue;
 			void *metalCurrentRenderCommandEncoder;
-			void *metalDepthTexture;
-			void *metalMultisampleTexture;
+			void *metalRenderPassDescriptor;
 			void *metalDepthTestStencilState;
 			void *metalPipelineStates[MAX_PIPELINE_COUNT];
 			void *metalShaderFunctions;

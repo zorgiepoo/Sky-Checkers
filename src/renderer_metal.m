@@ -220,12 +220,9 @@ static void updateRealViewport(Renderer *renderer)
 	
 	// Configure Anti Aliasing
 	
-	if (renderer->metalMultisampleTexture != NULL)
-	{
-		CFRelease(renderer->metalMultisampleTexture);
-	}
-	
 	id<MTLDevice> device = metalLayer.device;
+	
+	id<MTLTexture> multisampleTexture;
 	if (renderer->fsaa)
 	{
 		MTLTextureDescriptor *multisampleTextureDescriptor = [MTLTextureDescriptor new];
@@ -237,20 +234,14 @@ static void updateRealViewport(Renderer *renderer)
 		multisampleTextureDescriptor.sampleCount = renderer->sampleCount;
 		multisampleTextureDescriptor.textureType = MTLTextureType2DMultisample;
 		
-		id<MTLTexture> multisampleTexture = [device newTextureWithDescriptor:multisampleTextureDescriptor];
-		renderer->metalMultisampleTexture = (void *)CFBridgingRetain(multisampleTexture);
+		multisampleTexture = [device newTextureWithDescriptor:multisampleTextureDescriptor];
 	}
 	else
 	{
-		renderer->metalMultisampleTexture = NULL;
+		multisampleTexture = nil;
 	}
 	
 	// Set up depth stencil
-	
-	if (renderer->metalDepthTexture != NULL)
-	{
-		CFRelease(renderer->metalDepthTexture);
-	}
 	
 	if (renderer->metalDepthTestStencilState != NULL)
 	{
@@ -282,7 +273,40 @@ static void updateRealViewport(Renderer *renderer)
 	
 	id<MTLTexture> depthTexture = [device newTextureWithDescriptor:depthTextureDescriptor];
 	
-	renderer->metalDepthTexture = (void *)CFBridgingRetain(depthTexture);
+	// Set up render pass descriptor
+	
+	if (renderer->metalRenderPassDescriptor != NULL)
+	{
+		CFRelease(renderer->metalRenderPassDescriptor);
+	}
+	
+	MTLClearColor clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 1.0);
+	
+	MTLRenderPassDescriptor *renderPassDescriptor = [MTLRenderPassDescriptor renderPassDescriptor];
+	
+	MTLRenderPassColorAttachmentDescriptor *primaryColorAttachment = renderPassDescriptor.colorAttachments[0];
+	
+	primaryColorAttachment.clearColor = clearColor;
+	primaryColorAttachment.loadAction  = MTLLoadActionClear;
+	
+	if (renderer->fsaa)
+	{
+		primaryColorAttachment.storeAction = MTLStoreActionMultisampleResolve;
+		primaryColorAttachment.texture = multisampleTexture;
+	}
+	else
+	{
+		primaryColorAttachment.storeAction = MTLStoreActionStore;
+	}
+	
+	renderPassDescriptor.depthAttachment.clearDepth = 1.0;
+	renderPassDescriptor.depthAttachment.loadAction = MTLLoadActionClear;
+	renderPassDescriptor.depthAttachment.storeAction = MTLStoreActionDontCare;
+	
+	renderPassDescriptor.depthAttachment.texture = depthTexture;
+	
+	renderer->metalRenderPassDescriptor = (void *)CFBridgingRetain(renderPassDescriptor);
+	
 	renderer->metalDepthTestStencilState = (void *)CFBridgingRetain(depthStencilState);
 	
 	updateProjectionMatrix(renderer);
@@ -402,9 +426,8 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		
 		renderer->metalLayer = NULL;
 		renderer->metalCreatedInitialPipelines = SDL_FALSE;
-		renderer->metalDepthTexture = NULL;
+		renderer->metalRenderPassDescriptor = NULL;
 		renderer->metalDepthTestStencilState = NULL;
-		renderer->metalMultisampleTexture = NULL;
 		renderer->metalShaderFunctions = NULL;
 		renderer->macosInFullscreenTransition = SDL_FALSE;
 		renderer->metalIgnoreFirstFullscreenTransition = SDL_FALSE;
@@ -555,38 +578,22 @@ void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *))
 		
 		if (drawable != nil)
 		{
-			MTLClearColor clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 1.0);
+			id<MTLCommandBuffer> commandBuffer = [queue commandBuffer];
 			
-			MTLRenderPassDescriptor *passDescriptor = [MTLRenderPassDescriptor renderPassDescriptor];
+			MTLRenderPassDescriptor *renderPassDescriptor = (__bridge MTLRenderPassDescriptor *)renderer->metalRenderPassDescriptor;
 			
-			MTLRenderPassColorAttachmentDescriptor *primaryColorAttachment = passDescriptor.colorAttachments[0];
-			
-			primaryColorAttachment.clearColor = clearColor;
-			primaryColorAttachment.loadAction  = MTLLoadActionClear;
+			MTLRenderPassColorAttachmentDescriptor *primaryColorAttachment = renderPassDescriptor.colorAttachments[0];
 			
 			if (renderer->fsaa)
 			{
-				primaryColorAttachment.storeAction = MTLStoreActionMultisampleResolve;
-				
-				id<MTLTexture> multisampleTexture = (__bridge id<MTLTexture>)(renderer->metalMultisampleTexture);
-				primaryColorAttachment.texture = multisampleTexture;
 				primaryColorAttachment.resolveTexture = drawable.texture;
 			}
 			else
 			{
-				primaryColorAttachment.storeAction = MTLStoreActionStore;
 				primaryColorAttachment.texture = drawable.texture;
 			}
 			
-			passDescriptor.depthAttachment.clearDepth = 1.0;
-			passDescriptor.depthAttachment.loadAction = MTLLoadActionClear;
-			passDescriptor.depthAttachment.storeAction = MTLStoreActionDontCare;
-			
-			id<MTLTexture> depthTexture = (__bridge id<MTLTexture>)(renderer->metalDepthTexture);
-			passDescriptor.depthAttachment.texture = depthTexture;
-			
-			id<MTLCommandBuffer> commandBuffer = [queue commandBuffer];
-			id<MTLRenderCommandEncoder> renderCommandEncoder = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
+			id<MTLRenderCommandEncoder> renderCommandEncoder = [commandBuffer renderCommandEncoderWithDescriptor:renderPassDescriptor];
 			
 			[renderCommandEncoder setViewport:(MTLViewport){0.0, 0.0, (double)renderer->drawableWidth, (double)renderer->drawableHeight, -1.0, 1.0 }];
 			renderer->metalCurrentRenderCommandEncoder = (__bridge void *)(renderCommandEncoder);
