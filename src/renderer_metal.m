@@ -456,9 +456,14 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		}
 		
 		[preferredDevices sortUsingComparator:^NSComparisonResult(id<MTLDevice> _Nonnull device1, id<MTLDevice> _Nonnull device2) {
-			uint64_t device1Score = device1.recommendedMaxWorkingSetSize + device1.maxBufferLength;
+			uint64_t device1Score = device1.recommendedMaxWorkingSetSize;
+			uint64_t device2Score = device2.recommendedMaxWorkingSetSize;
 			
-			uint64_t device2Score = device2.recommendedMaxWorkingSetSize + device2.maxBufferLength;
+			if (@available(macOS 10.14, *))
+			{
+				device1Score += device1.maxBufferLength;
+				device2Score += device2.maxBufferLength;
+			}
 			
 			if (device1Score < device2Score)
 			{
