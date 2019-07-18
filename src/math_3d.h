@@ -174,7 +174,7 @@ static inline mat4_t mat4(
 						  float m03, float m13, float m23, float m33
 						  );
 
-static inline mat4_t m4_identity     ();
+static inline mat4_t m4_identity     (void);
 static inline mat4_t m4_translation  (vec3_t offset);
 static inline mat4_t m4_scaling      (vec3_t scale);
 static inline mat4_t m4_rotation_x   (float angle_in_rad);

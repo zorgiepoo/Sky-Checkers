@@ -30,7 +30,7 @@
 int mt_index;
 unsigned long mt_buffer[MT_LEN];
 
-void mt_init() {
+void mt_init(void) {
     srand((unsigned int)time(NULL));
 	int i;
     for (i = 0; i < MT_LEN; i++)
@@ -46,7 +46,7 @@ void mt_init() {
 #define TWIST(b,i,j)    ((b)[i] & UPPER_MASK) | ((b)[j] & LOWER_MASK)
 #define MAGIC(s)        (((s)&1)*MATRIX_A)
 
-unsigned long mt_random() {
+unsigned long mt_random(void) {
     unsigned long * b = mt_buffer;
     int idx = mt_index;
     unsigned long s;

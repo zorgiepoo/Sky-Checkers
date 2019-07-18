@@ -570,7 +570,7 @@ static void readDefaults(SDL_Joystick **joysticks)
 	// this would be a good time to get the default user name
 #ifdef MAC_OS_X
 	getDefaultUserName(gUserNameString, MAX_USER_NAME_SIZE - 1);
-	gUserNameStringIndex = strlen(gUserNameString);
+	gUserNameStringIndex = (int)strlen(gUserNameString);
 #else
 	char *randomNames[] = { "Tale", "Backer", "Hop", "Expel", "Rida", "Tao", "Eyez", "Phia", "Sync", "Witty", "Poet", "Roost", "Kuro", "Spot", "Carb", "Unow", "Gil", "Needle", "Oxy", "Kale" };
 	
@@ -731,12 +731,12 @@ static void readDefaults(SDL_Joystick **joysticks)
 	if (!scanExpectedString(fp, "Server IP Address: ")) goto cleanup;
 	if (!scanLineTerminatingString(fp, gServerAddressString, sizeof(gServerAddressString))) goto cleanup;
 	
-	gServerAddressStringIndex = strlen(gServerAddressString);
+	gServerAddressStringIndex = (int)strlen(gServerAddressString);
 	
 	if (!scanExpectedString(fp, "\nNet name: ")) goto cleanup;
 	if (!scanLineTerminatingString(fp, gUserNameString, sizeof(gUserNameString))) goto cleanup;
 	
-	gUserNameStringIndex = strlen(gUserNameString);
+	gUserNameStringIndex = (int)strlen(gUserNameString);
 	
 	int audioEffectsFlag = 0;
 	if (fscanf(fp, "\nAudio effects: %i\n", &audioEffectsFlag) < 1) goto cleanup;
@@ -987,7 +987,7 @@ static void drawPings(Renderer *renderer)
 					lastPingDisplayTime = currentTime;
 				}
 				
-				int length = strlen(pingString);
+				size_t length = strlen(pingString);
 				if (length > 0)
 				{
 					drawString(renderer, modelViewMatrix, (color4_t){character->red, character->green, character->blue, 1.0f}, 0.16f * length, 0.5f, pingString);
@@ -1015,7 +1015,7 @@ static void drawPings(Renderer *renderer)
 						lastPingDisplayTime = currentTime;
 					}
 					
-					int length = strlen(pingStrings[pingAddressIndex]);
+					size_t length = strlen(pingStrings[pingAddressIndex]);
 					if (length > 0)
 					{
 						drawString(renderer, modelViewMatrix, (color4_t){character->red, character->green, character->blue, 1.0f}, 0.16f * length, 0.5f, pingStrings[pingAddressIndex]);

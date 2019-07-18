@@ -269,11 +269,11 @@ typedef struct
 } NetworkConnection;
 
 // For the server.. These should be initialized to zero before creating the server thread.
-uint8_t gCurrentSlot;
-uint8_t gClientStates[3];
+extern uint8_t gCurrentSlot;
+extern uint8_t gClientStates[3];
 
-GameMessageArray gGameMessagesFromNet;
-GameMessageArray gGameMessagesToNet;
+extern GameMessageArray gGameMessagesFromNet;
+extern GameMessageArray gGameMessagesToNet;
 
 extern NetworkConnection *gNetworkConnection;
 

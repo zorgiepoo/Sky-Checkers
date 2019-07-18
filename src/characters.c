@@ -344,9 +344,9 @@ void buildCharacterModels(Renderer *renderer)
 	
 	buildSphere(characterVerticesAndTextureCoordinates, characterVerticesAndTextureCoordinates + characterVerticesSize / sizeof(*characterVerticesAndTextureCoordinates), characterIndices, 30, 30, 0.6f);
 	
-	gCharacterVertexAndTextureCoordinateArrayObject = createVertexAndTextureCoordinateArrayObject(renderer, characterVerticesAndTextureCoordinates, characterVerticesSize, characterTextureCoordinatesSize);
+	gCharacterVertexAndTextureCoordinateArrayObject = createVertexAndTextureCoordinateArrayObject(renderer, characterVerticesAndTextureCoordinates, (uint32_t)characterVerticesSize, (uint32_t)characterTextureCoordinatesSize);
 	
-	gCharacterIndicesBufferObject = createBufferObject(renderer, characterIndices, characterIndicesSize);
+	gCharacterIndicesBufferObject = createBufferObject(renderer, characterIndices, (uint32_t)characterIndicesSize);
 	
 	free(characterVerticesAndTextureCoordinates);
 	free(characterIndices);
@@ -360,7 +360,7 @@ void buildCharacterModels(Renderer *renderer)
 	
 	buildCircle(iconVerticesAndTextureCoordinates, iconVerticesAndTextureCoordinates + iconVerticesSize / sizeof(*iconVerticesAndTextureCoordinates), 0.4f, 400);
 	
-	gIconVertexAndTextureCoordinateArrayObject = createVertexAndTextureCoordinateArrayObject(renderer, iconVerticesAndTextureCoordinates, iconVerticesSize, iconTextureCoordinatesSize);
+	gIconVertexAndTextureCoordinateArrayObject = createVertexAndTextureCoordinateArrayObject(renderer, iconVerticesAndTextureCoordinates, (uint32_t)iconVerticesSize, (uint32_t)iconTextureCoordinatesSize);
 	
 	free(iconVerticesAndTextureCoordinates);
 }
