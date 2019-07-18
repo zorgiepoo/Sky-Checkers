@@ -432,6 +432,7 @@
 				MTL_LANGUAGE_REVISION = UseDeploymentTarget;
 				MTL_OPTIMIZATION_LEVEL = 3;
 				OTHER_CFLAGS = "-D_PROFILING";
+				PRODUCT_BUNDLE_IDENTIFIER = com.zgcoder.SkyCheckers;
 				PRODUCT_NAME = SkyCheckers;
 				WARNING_CFLAGS = (
 					"-Wall",
@@ -465,6 +466,7 @@
 				MTL_LANGUAGE_REVISION = UseDeploymentTarget;
 				MTL_OPTIMIZATION_LEVEL = 0;
 				OTHER_CFLAGS = "-D_DEBUG";
+				PRODUCT_BUNDLE_IDENTIFIER = com.zgcoder.SkyCheckers;
 				PRODUCT_NAME = SkyCheckers;
 				RUN_CLANG_STATIC_ANALYZER = NO;
 				WARNING_CFLAGS = (
@@ -496,6 +498,7 @@
 				MTL_FAST_MATH = YES;
 				MTL_LANGUAGE_REVISION = UseDeploymentTarget;
 				MTL_OPTIMIZATION_LEVEL = 3;
+				PRODUCT_BUNDLE_IDENTIFIER = com.zgcoder.SkyCheckers;
 				PRODUCT_NAME = SkyCheckers;
 				WARNING_CFLAGS = (
 					"-Wall",
