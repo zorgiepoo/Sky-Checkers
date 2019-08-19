@@ -31,7 +31,7 @@
 typedef SOCKET socket_t;
 typedef int socket_size_t;
 #else
-typdef int socket_t;
+typedef int socket_t;
 typedef size_t socket_size_t;
 #endif
 
