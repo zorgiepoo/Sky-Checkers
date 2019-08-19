@@ -225,7 +225,12 @@ void networkServerPlayMenuAction(void *context)
 			continue;
 		}
 		
-		if (bind(gNetworkConnection->socket, serverInfo->ai_addr, serverInfo->ai_addrlen) == -1)
+#ifdef WINDOWS
+		int addressLength = (int)serverInfo->ai_addrlen;
+#else
+		socklen_t addressLength = serverInfo->ai_addrlen;
+#endif
+		if (bind(gNetworkConnection->socket, serverInfo->ai_addr, addressLength) == -1)
 		{
 			perror("server: bind");
 			closeSocket(gNetworkConnection->socket);

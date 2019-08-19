@@ -27,6 +27,14 @@
 
 #define NETWORK_PORT "4893"
 
+#ifdef WINDOWS
+typedef SOCKET socket_t;
+typedef int socket_size_t;
+#else
+typdef int socket_t;
+typedef size_t socket_size_t;
+#endif
+
 typedef struct
 {
 	float x, y;
@@ -217,7 +225,7 @@ typedef struct
 {
 	// Only writable before threads are created
 	int type;
-	int socket;
+	socket_t socket;
 	
 	// Writable & readable from main thread only
 	Character *character;
@@ -294,4 +302,4 @@ void sendToClients(int exception, GameMessage *message);
 
 void sendToServer(GameMessage message);
 
-void closeSocket(int sockfd);
+void closeSocket(socket_t sockfd);

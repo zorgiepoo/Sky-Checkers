@@ -719,16 +719,16 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 	}
 }
 
-static void sendData(int socket, void *data, size_t size, SocketAddress *address)
+static void sendData(socket_t socket, void *data, size_t size, SocketAddress *address)
 {
 	// Don't use sa_len to get the size because it could not be portable
 	if (address->sa.sa_family == AF_INET)
 	{
-		sendto(socket, data, size, 0, &address->sa, sizeof(address->sa_in));
+		sendto(socket, data, (socket_size_t)size, 0, &address->sa, sizeof(address->sa_in));
 	}
 	else if (address->sa.sa_family == AF_INET6)
 	{
-		sendto(socket, data, size, 0, &address->sa, sizeof(address->sa_in6));
+		sendto(socket, data, (socket_size_t)size, 0, &address->sa, sizeof(address->sa_in6));
 	}
 }
 
@@ -737,11 +737,11 @@ static int
 #else
 static ssize_t
 #endif
-receiveData(int socket, void *buffer, size_t length, SocketAddress *address)
+receiveData(socket_t socket, void *buffer, size_t length, SocketAddress *address)
 {
 	memset(address, 0, sizeof(*address));
 	socklen_t addressLength = sizeof(*address);
-	return recvfrom(socket, buffer, length, 0, &address->sa, &addressLength);
+	return recvfrom(socket, buffer, (socket_size_t)length, 0, &address->sa, &addressLength);
 }
 
 static uint8_t characterIDForClientAddress(SocketAddress *address)
@@ -1279,7 +1279,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 			waitValue.tv_sec = 0;
 			waitValue.tv_usec = 0;
 			
-			if (select(gNetworkConnection->socket + 1, &socketSet, NULL, NULL, &waitValue) <= 0)
+			if (select((int)(gNetworkConnection->socket + 1), &socketSet, NULL, NULL, &waitValue) <= 0)
 			{
 				break;
 			}
@@ -1792,7 +1792,7 @@ int clientNetworkThread(void *context)
 			waitValue.tv_sec = 0;
 			waitValue.tv_usec = 0;
 			
-			if (select(gNetworkConnection->socket + 1, &socketSet, NULL, NULL, &waitValue) <= 0)
+			if (select((int)(gNetworkConnection->socket + 1), &socketSet, NULL, NULL, &waitValue) <= 0)
 			{
 				break;
 			}
@@ -2549,7 +2549,7 @@ void sendToServer(GameMessage message)
 	pushNetworkMessage(&gGameMessagesToNet, message);
 }
 
-void closeSocket(int sockfd)
+void closeSocket(socket_t sockfd)
 {
 #ifdef WINDOWS
 	closesocket(sockfd);
