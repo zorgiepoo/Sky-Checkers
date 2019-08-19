@@ -39,6 +39,8 @@
 #define DIEING_STONE2_COLOR_GREEN 0.23f
 #define DIEING_STONE2_COLOR_BLUE 0.26f
 
+Tile gTiles[NUMBER_OF_TILES];
+
 static TextureObject gSkyTex;
 
 static TextureObject gTileTexture1;

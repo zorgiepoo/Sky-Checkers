@@ -49,7 +49,7 @@ typedef struct
 	double recovery_timer;
 } Tile;
 
-Tile gTiles[NUMBER_OF_TILES];
+extern Tile gTiles[NUMBER_OF_TILES];
 
 void loadTiles(void);
 

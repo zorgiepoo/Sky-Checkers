@@ -55,6 +55,12 @@
 #define CLIENT_STATE_ALIVE 0
 #define CLIENT_STATE_DEAD 1
 
+uint8_t gCurrentSlot;
+uint8_t gClientStates[3];
+
+GameMessageArray gGameMessagesFromNet;
+GameMessageArray gGameMessagesToNet;
+
 NetworkConnection *gNetworkConnection = NULL;
 
 static SDL_mutex *gCurrentSlotAndClientStatesMutex;
@@ -903,7 +909,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					else if (message.type != CHARACTER_MOVED_UPDATE_MESSAGE_TYPE)
 					{
 						SDL_bool foundAck = SDL_FALSE;
-						uint32_t maxPacketCount = receivedAckPacketCount < receivedAckPacketsCapacity ? receivedAckPacketCount : receivedAckPacketsCapacity;
+						uint32_t maxPacketCount = receivedAckPacketCount < (uint32_t)receivedAckPacketsCapacity ? receivedAckPacketCount : (uint32_t)receivedAckPacketsCapacity;
 						for (uint32_t packetIndex = 0; packetIndex < maxPacketCount; packetIndex++)
 						{
 							if (message.packetNumber == receivedAckPacketNumbers[addressIndex][packetIndex])
@@ -1282,7 +1288,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 				char packetBuffer[MAX_PACKET_SIZE];
 				SocketAddress address;
 				int numberOfBytes;
-				if ((numberOfBytes = receiveData(gNetworkConnection->socket, packetBuffer, sizeof(packetBuffer), &address)) == -1)
+				if ((numberOfBytes = (int)receiveData(gNetworkConnection->socket, packetBuffer, sizeof(packetBuffer), &address)) == -1)
 				{
 					// Ignore it and continue on
 					fprintf(stderr, "receiveData() actually returned -1\n");
@@ -1461,7 +1467,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 									uint8_t addressIndex = characterID - 1;
 									
 									SDL_bool foundAck = SDL_FALSE;
-									uint32_t maxPacketCount = receivedAckPacketCount < receivedAckPacketsCapacity ? receivedAckPacketCount : receivedAckPacketsCapacity;
+									uint32_t maxPacketCount = receivedAckPacketCount < (uint32_t)receivedAckPacketsCapacity ? receivedAckPacketCount : (uint32_t)receivedAckPacketsCapacity;
 									for (uint32_t packetIndex = 0; packetIndex < maxPacketCount; packetIndex++)
 									{
 										if (packetNumber == receivedAckPacketNumbers[addressIndex][packetIndex])
@@ -1620,7 +1626,7 @@ int clientNetworkThread(void *context)
 					else
 					{
 						SDL_bool foundAck = SDL_FALSE;
-						uint32_t maxPacketCount = receivedAckPacketCount < receivedAckPacketsCapacity ? receivedAckPacketCount + 1 : receivedAckPacketsCapacity;
+						uint32_t maxPacketCount = receivedAckPacketCount < (uint32_t)receivedAckPacketsCapacity ? receivedAckPacketCount + 1 : (uint32_t)receivedAckPacketsCapacity;
 						for (uint32_t packetIndex = 0; packetIndex < maxPacketCount; packetIndex++)
 						{
 							if (message.packetNumber == receivedAckPacketNumbers[packetIndex])
@@ -1794,7 +1800,7 @@ int clientNetworkThread(void *context)
 			{
 				char packetBuffer[MAX_PACKET_SIZE];
 				int numberOfBytes;
-				if ((numberOfBytes = receiveData(gNetworkConnection->socket, packetBuffer, sizeof(packetBuffer), &gNetworkConnection->hostAddress)) == -1)
+				if ((numberOfBytes = (int)receiveData(gNetworkConnection->socket, packetBuffer, sizeof(packetBuffer), &gNetworkConnection->hostAddress)) == -1)
 				{
 					fprintf(stderr, "receiveData() actually returned -1\n");
 				}
@@ -2289,7 +2295,7 @@ int clientNetworkThread(void *context)
 								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
 								
 								SDL_bool foundAck = SDL_FALSE;
-								uint32_t maxPacketCount = receivedAckPacketCount < receivedAckPacketsCapacity ? receivedAckPacketCount : receivedAckPacketsCapacity;
+								uint32_t maxPacketCount = receivedAckPacketCount < (uint32_t)receivedAckPacketsCapacity ? receivedAckPacketCount : (uint32_t)receivedAckPacketsCapacity;
 								for (uint32_t packetIndex = 0; packetIndex < maxPacketCount; packetIndex++)
 								{
 									if (packetNumber == receivedAckPacketNumbers[packetIndex])

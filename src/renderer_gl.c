@@ -94,7 +94,7 @@ static SDL_bool compileShader(GLuint *shader, uint16_t glslVersion, GLenum type,
 	
 	GLchar versionLine[256] = {0};
 	snprintf(versionLine, sizeof(versionLine) - 1, "#version %u\n", glslVersion);
-	glShaderSource(*shader, 2, (const GLchar *[]){versionLine, source}, (GLint []){strlen(versionLine), fileSize});
+	glShaderSource(*shader, 2, (const GLchar *[]){versionLine, source}, (GLint []){(GLint)strlen(versionLine), fileSize});
 	
 	glCompileShader(*shader);
 	
