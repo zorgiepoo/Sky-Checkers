@@ -1311,34 +1311,6 @@ static void drawScene(Renderer *renderer)
 		{
 			// Menus render at z = -20.0f
 			drawMenus(renderer);
-			
-			if (isChildBeingDrawn(&gJoyStickConfig[0][1]) /* pinkBubbleGumConfigRightJoyStick */	||
-				isChildBeingDrawn(&gJoyStickConfig[1][1]) /* redRoverConfigRightJoyStick */			||
-				isChildBeingDrawn(&gJoyStickConfig[2][1]) /* greenTreeRightgJoyStickConfig */		||
-				isChildBeingDrawn(&gJoyStickConfig[3][1]) /* blueLightningConfigJoyStick */)
-			{
-				mat4_t translationMatrix = m4_translation((vec3_t){-1.0f / 14.0f, 50.0f / 14.0f, -280.0f / 14.0f});
-				
-				color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 1.0f};
-				
-				drawString(renderer, translationMatrix, textColor, 100.0f / 14.0f, 5.0f / 14.0f, "Enter: map controller input; Escape: cancel; Spacebar: clear.");
-				
-				mat4_t noticeModelViewMatrix = m4_mul(translationMatrix, m4_translation((vec3_t){0.0f / 14.0f, -20.0f / 14.0f, 0.0f / 14.0f}));
-				
-				drawString(renderer, noticeModelViewMatrix, textColor, 50.0f / 16.0f, 5.0f / 16.0f, "(Controllers only work in-game)");
-			}
-			
-			else if (isChildBeingDrawn(&gCharacterConfigureKeys[0][1]) /* pinkBubbleGum */	||
-					 isChildBeingDrawn(&gCharacterConfigureKeys[1][1]) /* redRover */		||
-					 isChildBeingDrawn(&gCharacterConfigureKeys[2][1]) /* greenTree */		||
-					 isChildBeingDrawn(&gCharacterConfigureKeys[3][1]) /* blueLightning */)
-			{
-				mat4_t translationMatrix = m4_translation((vec3_t){-1.0f / 14.0f, 50.0f / 14.0f, -280.0f / 14.0f});
-				
-				color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 1.0f};
-				
-				drawString(renderer, translationMatrix, textColor, 70.0f / 14.0f, 5.0f / 14.0f, "Enter: map keyboard input; Escape: cancel.");
-			}
 		}
 		
 		if (gDrawFPS)

@@ -26,10 +26,6 @@
 #include "math_3d.h"
 #include "renderer.h"
 
-// Four characters that each have five configured menu actions (right, up, left, down, fire/slicing knife)
-Menu gCharacterConfigureKeys[4][6];
-Menu gJoyStickConfig[4][6];
-
 Menu *gConfigureLivesMenu;
 Menu *gScreenResolutionVideoOptionMenu;
 Menu *gRefreshRateVideoOptionMenu;
@@ -726,8 +722,24 @@ void configureKey(unsigned *id)
 }
 
 // start configuration menus
+
+static void drawKeyboardConfigurationInstructions(Renderer *renderer)
+{
+	mat4_t translationMatrix = m4_translation((vec3_t){-1.0f / 14.0f, 50.0f / 14.0f, -280.0f / 14.0f});
+	
+	color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 1.0f};
+	
+	drawString(renderer, translationMatrix, textColor, 100.0f / 14.0f, 5.0f / 14.0f, "Enter: map controller input; Escape: cancel; Spacebar: clear.");
+	
+	mat4_t noticeModelViewMatrix = m4_mul(translationMatrix, m4_translation((vec3_t){0.0f / 14.0f, -20.0f / 14.0f, 0.0f / 14.0f}));
+	
+	drawString(renderer, noticeModelViewMatrix, textColor, 50.0f / 16.0f, 5.0f / 16.0f, "(Controllers only work in-game)");
+}
+
 void drawPinkBubbleGumConfigRightKey(Renderer *renderer, color4_t preferredColor)
 {
+	drawKeyboardConfigurationInstructions(renderer);
+	
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 1.07f, -20.00f});	
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Right: %s", convertKeyCodeToString(gPinkBubbleGumInput.r_id));
 }
@@ -783,6 +795,8 @@ void pinkBubbleGumFireKeyMenuAction(void *context)
 
 void drawRedRoverConfigRightKey(Renderer *renderer, color4_t preferredColor)
 {
+	drawKeyboardConfigurationInstructions(renderer);
+	
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 1.07f, -20.00f});	
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Right: %s", convertKeyCodeToString(gRedRoverInput.r_id));
 }
@@ -838,6 +852,8 @@ void redRoverFireKeyMenuAction(void *context)
 
 void drawGreenTreeConfigRightKey(Renderer *renderer, color4_t preferredColor)
 {
+	drawKeyboardConfigurationInstructions(renderer);
+	
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 1.07f, -20.00f});	
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Right: %s", convertKeyCodeToString(gGreenTreeInput.r_id));
 }
@@ -893,6 +909,8 @@ void greenTreeFireKeyMenuAction(void *context)
 
 void drawBlueLightningConfigRightKey(Renderer *renderer, color4_t preferredColor)
 {
+	drawKeyboardConfigurationInstructions(renderer);
+	
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 1.07f, -20.00f});	
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Right: %s", convertKeyCodeToString(gBlueLightningInput.r_id));
 }
@@ -1164,8 +1182,23 @@ void configureJoyStick(Input *input, int type)
 	}
 }
 
-void drawPinkBubbleGumRightgJoyStickConfig(Renderer *renderer, color4_t preferredColor)
-{	
+static void drawJoyStickConfigurationInstructions(Renderer *renderer)
+{
+	mat4_t translationMatrix = m4_translation((vec3_t){-1.0f / 14.0f, 50.0f / 14.0f, -280.0f / 14.0f});
+	
+	color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 1.0f};
+	
+	drawString(renderer, translationMatrix, textColor, 100.0f / 14.0f, 5.0f / 14.0f, "Enter: map controller input; Escape: cancel; Spacebar: clear.");
+	
+	mat4_t noticeModelViewMatrix = m4_mul(translationMatrix, m4_translation((vec3_t){0.0f / 14.0f, -20.0f / 14.0f, 0.0f / 14.0f}));
+	
+	drawString(renderer, noticeModelViewMatrix, textColor, 50.0f / 16.0f, 5.0f / 16.0f, "(Controllers only work in-game)");
+}
+
+void drawPinkBubbleGumRightJoyStickConfig(Renderer *renderer, color4_t preferredColor)
+{
+	drawJoyStickConfigurationInstructions(renderer);
+	
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 1.07f, -20.00f});	
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Right: %s", gPinkBubbleGumInput.joy_right);
 }
@@ -1175,7 +1208,7 @@ void pinkBubbleGumConfigRightJoyStickAction(void *context)
 	configureJoyStick(&gPinkBubbleGumInput, RIGHT);
 }
 
-void drawPinkBubbleGumLeftgJoyStickConfig(Renderer *renderer, color4_t preferredColor)
+void drawPinkBubbleGumLeftJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.00f, -20.00f});	
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Left: %s", gPinkBubbleGumInput.joy_left);
@@ -1186,7 +1219,7 @@ void pinkBubbleGumConfigLeftJoyStickAction(void *context)
 	configureJoyStick(&gPinkBubbleGumInput, LEFT);
 }
 
-void drawPinkBubbleGumUpgJoyStickConfig(Renderer *renderer, color4_t preferredColor)
+void drawPinkBubbleGumUpJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -1.07f, -20.00f});	
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Up: %s", gPinkBubbleGumInput.joy_up);
@@ -1197,7 +1230,7 @@ void pinkBubbleGumConfigUpJoyStickAction(void *context)
 	configureJoyStick(&gPinkBubbleGumInput, UP);
 }
 
-void drawPinkBubbleGumDowngJoyStickConfig(Renderer *renderer, color4_t preferredColor)
+void drawPinkBubbleGumDownJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -2.14f, -20.00f});	
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Down: %s", gPinkBubbleGumInput.joy_down);
@@ -1208,7 +1241,7 @@ void pinkBubbleGumConfigDownJoyStickAction(void *context)
 	configureJoyStick(&gPinkBubbleGumInput, DOWN);
 }
 
-void drawPinkBubbleGumFiregJoyStickConfig(Renderer *renderer, color4_t preferredColor)
+void drawPinkBubbleGumFireJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -3.21f, -20.00f});	
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Fire: %s", gPinkBubbleGumInput.joy_weap);
@@ -1231,8 +1264,10 @@ void redRoverConfigJoyStickAction(void *context)
 	changeMenu(RIGHT);
 }
 
-void drawRedRoverRightgJoyStickConfig(Renderer *renderer, color4_t preferredColor)
-{	
+void drawRedRoverRightJoyStickConfig(Renderer *renderer, color4_t preferredColor)
+{
+	drawJoyStickConfigurationInstructions(renderer);
+	
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 1.07f, -20.00f});	
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Right: %s", gRedRoverInput.joy_right);
 }
@@ -1242,7 +1277,7 @@ void redRoverConfigRightJoyStickAction(void *context)
 	configureJoyStick(&gRedRoverInput, RIGHT);
 }
 
-void drawRedRoverLeftgJoyStickConfig(Renderer *renderer, color4_t preferredColor)
+void drawRedRoverLeftJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.00f, -20.00f});	
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Left: %s", gRedRoverInput.joy_left);
@@ -1253,7 +1288,7 @@ void redRoverConfigLeftJoyStickAction(void *context)
 	configureJoyStick(&gRedRoverInput, LEFT);
 }
 
-void drawRedRoverUpgJoyStickConfig(Renderer *renderer, color4_t preferredColor)
+void drawRedRoverUpJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -1.07f, -20.00f});	
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Up: %s", gRedRoverInput.joy_up);
@@ -1264,7 +1299,7 @@ void redRoverConfigUpJoyStickAction(void *context)
 	configureJoyStick(&gRedRoverInput, UP);
 }
 
-void drawRedRoverDowngJoyStickConfig(Renderer *renderer, color4_t preferredColor)
+void drawRedRoverDownJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -2.14f, -20.00f});	
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Down: %s", gRedRoverInput.joy_down);
@@ -1275,7 +1310,7 @@ void redRoverConfigDownJoyStickAction(void *context)
 	configureJoyStick(&gRedRoverInput, DOWN);
 }
 
-void drawRedRoverFiregJoyStickConfig(Renderer *renderer, color4_t preferredColor)
+void drawRedRoverFireJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -3.21f, -20.00f});	
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Fire: %s", gRedRoverInput.joy_weap);
@@ -1298,8 +1333,10 @@ void greenTreeConfigJoyStickAction(void *context)
 	changeMenu(RIGHT);
 }
 
-void drawGreenTreeRightgJoyStickConfig(Renderer *renderer, color4_t preferredColor)
-{	
+void drawGreenTreeRightJoyStickConfig(Renderer *renderer, color4_t preferredColor)
+{
+	drawJoyStickConfigurationInstructions(renderer);
+	
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 1.07f, -20.00f});	
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Right: %s", gGreenTreeInput.joy_right);
 }
@@ -1309,7 +1346,7 @@ void greenTreeConfigRightJoyStickAction(void *context)
 	configureJoyStick(&gGreenTreeInput, RIGHT);
 }
 
-void drawGreenTreeLeftgJoyStickConfig(Renderer *renderer, color4_t preferredColor)
+void drawGreenTreeLeftJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.00f, -20.00f});	
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Left: %s", gGreenTreeInput.joy_left);
@@ -1320,7 +1357,7 @@ void greenTreeConfigLeftJoyStickAction(void *context)
 	configureJoyStick(&gGreenTreeInput, LEFT);
 }
 
-void drawGreenTreeUpgJoyStickConfig(Renderer *renderer, color4_t preferredColor)
+void drawGreenTreeUpJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -1.07f, -20.00f});	
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Up: %s", gGreenTreeInput.joy_up);
@@ -1331,7 +1368,7 @@ void greenTreeConfigUpJoyStickAction(void *context)
 	configureJoyStick(&gGreenTreeInput, UP);
 }
 
-void drawGreenTreeDowngJoyStickConfig(Renderer *renderer, color4_t preferredColor)
+void drawGreenTreeDownJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -2.14f, -20.00f});	
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Down: %s", gGreenTreeInput.joy_down);
@@ -1342,7 +1379,7 @@ void greenTreeConfigDownJoyStickAction(void *context)
 	configureJoyStick(&gGreenTreeInput, DOWN);
 }
 
-void drawGreenTreeFiregJoyStickConfig(Renderer *renderer, color4_t preferredColor)
+void drawGreenTreeFireJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -3.21f, -20.00f});	
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Fire: %s", gGreenTreeInput.joy_weap);
@@ -1365,8 +1402,10 @@ void blueLightningConfigJoyStickAction(void *context)
 	changeMenu(RIGHT);
 }
 
-void drawBlueLightningRightgJoyStickConfig(Renderer *renderer, color4_t preferredColor)
-{	
+void drawBlueLightningRightJoyStickConfig(Renderer *renderer, color4_t preferredColor)
+{
+	drawJoyStickConfigurationInstructions(renderer);
+	
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 1.07f, -20.00f});	
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Right: %s", gBlueLightningInput.joy_right);
 }
@@ -1376,7 +1415,7 @@ void blueLightningConfigRightJoyStickAction(void *context)
 	configureJoyStick(&gBlueLightningInput, RIGHT);
 }
 
-void drawBlueLightningLeftgJoyStickConfig(Renderer *renderer, color4_t preferredColor)
+void drawBlueLightningLeftJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.00f, -20.00f});	
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Left: %s", gBlueLightningInput.joy_left);
@@ -1387,7 +1426,7 @@ void blueLightningConfigLeftJoyStickAction(void *context)
 	configureJoyStick(&gBlueLightningInput, LEFT);
 }
 
-void drawBlueLightningUpgJoyStickConfig(Renderer *renderer, color4_t preferredColor)
+void drawBlueLightningUpJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -1.07f, -20.00f});	
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Up: %s", gBlueLightningInput.joy_up);
@@ -1398,7 +1437,7 @@ void blueLightningConfigUpJoyStickAction(void *context)
 	configureJoyStick(&gBlueLightningInput, UP);
 }
 
-void drawBlueLightningDowngJoyStickConfig(Renderer *renderer, color4_t preferredColor)
+void drawBlueLightningDownJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -2.14f, -20.00f});	
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Down: %s", gBlueLightningInput.joy_down);
@@ -1409,7 +1448,7 @@ void blueLightningConfigDownJoyStickAction(void *context)
 	configureJoyStick(&gBlueLightningInput, DOWN);
 }
 
-void drawBlueLightningFiregJoyStickConfig(Renderer *renderer, color4_t preferredColor)
+void drawBlueLightningFireJoyStickConfig(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -3.21f, -20.00f});	
 	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Fire: %s", gBlueLightningInput.joy_weap);
@@ -1510,6 +1549,9 @@ void initMenus(void)
 	gConfigureLivesMenu =						malloc(sizeof(Menu));
 	Menu *configureKeysMenu =					malloc(sizeof(Menu));
 	Menu *configureJoySticksMenu =				malloc(sizeof(Menu));
+	// Four characters that each have their own menu + five configured menu actions (right, up, left, down, fire)
+	Menu *characterConfigureKeys = 				malloc(sizeof(Menu) * 4 * 6);
+	Menu *joyStickConfig =						malloc(sizeof(Menu) * 4 * 6);
 	Menu *audioOptionsMenu =					malloc(sizeof(Menu));
 	Menu *audioEffectsOptionsMenu =				malloc(sizeof(Menu));
 	Menu *audioMusicOptionsMenu =				malloc(sizeof(Menu));
@@ -1593,159 +1635,160 @@ void initMenus(void)
 	quitMenu->action = quitMenuAction;
 	
 	// character config menu keys
-	gCharacterConfigureKeys[0][0].draw = drawPinkBubbleGumConfigKey;
-	gCharacterConfigureKeys[0][0].action = pinkBubbleGumKeyMenuAction;
-	
-	gCharacterConfigureKeys[1][0].draw = drawRedRoverConfigKey;
-	gCharacterConfigureKeys[1][0].action = redRoverKeyMenuAction;
-	
-	gCharacterConfigureKeys[2][0].draw = drawGreenTreeConfigKey;
-	gCharacterConfigureKeys[2][0].action = greenTreeKeyMenuAction;
-	
-	gCharacterConfigureKeys[3][0].draw = drawBlueLightningConfigKey;
-	gCharacterConfigureKeys[3][0].action = blueLightningKeyMenuAction;
 	
 	// pinkBubbleGum configs
-	gCharacterConfigureKeys[0][1].draw = drawPinkBubbleGumConfigRightKey;
-	gCharacterConfigureKeys[0][1].action = pinkBubbleGumRightKeyMenuAction;
+	characterConfigureKeys[0].draw = drawPinkBubbleGumConfigKey;
+	characterConfigureKeys[0].action = pinkBubbleGumKeyMenuAction;
 	
-	gCharacterConfigureKeys[0][2].draw = drawPinkBubbleGumConfigLeftKey;
-	gCharacterConfigureKeys[0][2].action = pinkBubbleGumLeftKeyMenuAction;
+	characterConfigureKeys[1].draw = drawPinkBubbleGumConfigRightKey;
+	characterConfigureKeys[1].action = pinkBubbleGumRightKeyMenuAction;
 	
-	gCharacterConfigureKeys[0][3].draw = drawPinkBubbleGumConfigUpKey;
-	gCharacterConfigureKeys[0][3].action = pinkBubbleGumUpKeyMenuAction;
+	characterConfigureKeys[2].draw = drawPinkBubbleGumConfigLeftKey;
+	characterConfigureKeys[2].action = pinkBubbleGumLeftKeyMenuAction;
 	
-	gCharacterConfigureKeys[0][4].draw = drawPinkBubbleGumConfigDownKey;
-	gCharacterConfigureKeys[0][4].action = pinkBubbleGumDownKeyMenuAction;
+	characterConfigureKeys[3].draw = drawPinkBubbleGumConfigUpKey;
+	characterConfigureKeys[3].action = pinkBubbleGumUpKeyMenuAction;
 	
-	gCharacterConfigureKeys[0][5].draw = drawPinkBubbleGumConfigFireKey;
-	gCharacterConfigureKeys[0][5].action = pinkBubbleGumFireKeyMenuAction;
+	characterConfigureKeys[4].draw = drawPinkBubbleGumConfigDownKey;
+	characterConfigureKeys[4].action = pinkBubbleGumDownKeyMenuAction;
+	
+	characterConfigureKeys[5].draw = drawPinkBubbleGumConfigFireKey;
+	characterConfigureKeys[5].action = pinkBubbleGumFireKeyMenuAction;
 	
 	// redRover configs
-	gCharacterConfigureKeys[1][1].draw = drawRedRoverConfigRightKey;
-	gCharacterConfigureKeys[1][1].action = redRoverRightKeyMenuAction;
+	characterConfigureKeys[6].draw = drawRedRoverConfigKey;
+	characterConfigureKeys[6].action = redRoverKeyMenuAction;
 	
-	gCharacterConfigureKeys[1][2].draw = drawRedRoverConfigLeftKey;
-	gCharacterConfigureKeys[1][2].action = redRoverLeftKeyMenuAction;
+	characterConfigureKeys[7].draw = drawRedRoverConfigRightKey;
+	characterConfigureKeys[7].action = redRoverRightKeyMenuAction;
 	
-	gCharacterConfigureKeys[1][3].draw = drawRedRoverConfigUpKey;
-	gCharacterConfigureKeys[1][3].action = redRoverUpKeyMenuAction;
+	characterConfigureKeys[8].draw = drawRedRoverConfigLeftKey;
+	characterConfigureKeys[8].action = redRoverLeftKeyMenuAction;
 	
-	gCharacterConfigureKeys[1][4].draw = drawRedRoverConfigDownKey;
-	gCharacterConfigureKeys[1][4].action = redRoverDownKeyMenuAction;
+	characterConfigureKeys[9].draw = drawRedRoverConfigUpKey;
+	characterConfigureKeys[9].action = redRoverUpKeyMenuAction;
 	
-	gCharacterConfigureKeys[1][5].draw = drawRedRoverConfigFireKey;
-	gCharacterConfigureKeys[1][5].action = redRoverFireKeyMenuAction;
+	characterConfigureKeys[10].draw = drawRedRoverConfigDownKey;
+	characterConfigureKeys[10].action = redRoverDownKeyMenuAction;
+	
+	characterConfigureKeys[11].draw = drawRedRoverConfigFireKey;
+	characterConfigureKeys[11].action = redRoverFireKeyMenuAction;
 	
 	// GreenTree configs
-	gCharacterConfigureKeys[2][1].draw = drawGreenTreeConfigRightKey;
-	gCharacterConfigureKeys[2][1].action = greenTreeRightKeyMenuAction;
+	characterConfigureKeys[12].draw = drawGreenTreeConfigKey;
+	characterConfigureKeys[12].action = greenTreeKeyMenuAction;
 	
-	gCharacterConfigureKeys[2][2].draw = drawGreenTreeConfigLeftKey;
-	gCharacterConfigureKeys[2][2].action = greenTreeLeftKeyMenuAction;
+	characterConfigureKeys[13].draw = drawGreenTreeConfigRightKey;
+	characterConfigureKeys[13].action = greenTreeRightKeyMenuAction;
 	
-	gCharacterConfigureKeys[2][3].draw = drawGreenTreeConfigUpKey;
-	gCharacterConfigureKeys[2][3].action = greenTreeUpKeyMenuAction;
+	characterConfigureKeys[14].draw = drawGreenTreeConfigLeftKey;
+	characterConfigureKeys[14].action = greenTreeLeftKeyMenuAction;
 	
-	gCharacterConfigureKeys[2][4].draw = drawGreenTreeConfigDownKey;
-	gCharacterConfigureKeys[2][4].action = greenTreeDownKeyMenuAction;
+	characterConfigureKeys[15].draw = drawGreenTreeConfigUpKey;
+	characterConfigureKeys[15].action = greenTreeUpKeyMenuAction;
 	
-	gCharacterConfigureKeys[2][5].draw = drawGreenTreeConfigFireKey;
-	gCharacterConfigureKeys[2][5].action = greenTreeFireKeyMenuAction;
+	characterConfigureKeys[16].draw = drawGreenTreeConfigDownKey;
+	characterConfigureKeys[16].action = greenTreeDownKeyMenuAction;
+	
+	characterConfigureKeys[17].draw = drawGreenTreeConfigFireKey;
+	characterConfigureKeys[17].action = greenTreeFireKeyMenuAction;
 	
 	// blueLightning configs
-	gCharacterConfigureKeys[3][1].draw = drawBlueLightningConfigRightKey;
-	gCharacterConfigureKeys[3][1].action = blueLightningRightKeyMenuAction;
+	characterConfigureKeys[18].draw = drawBlueLightningConfigKey;
+	characterConfigureKeys[18].action = blueLightningKeyMenuAction;
 	
-	gCharacterConfigureKeys[3][2].draw = drawBlueLightningConfigLeftKey;
-	gCharacterConfigureKeys[3][2].action = blueLightningLeftKeyMenuAction;
+	characterConfigureKeys[19].draw = drawBlueLightningConfigRightKey;
+	characterConfigureKeys[19].action = blueLightningRightKeyMenuAction;
 	
-	gCharacterConfigureKeys[3][3].draw = drawBlueLightningConfigUpKey;
-	gCharacterConfigureKeys[3][3].action = blueLightningUpKeyMenuAction;
+	characterConfigureKeys[20].draw = drawBlueLightningConfigLeftKey;
+	characterConfigureKeys[20].action = blueLightningLeftKeyMenuAction;
 	
-	gCharacterConfigureKeys[3][4].draw = drawBlueLightningConfigDownKey;
-	gCharacterConfigureKeys[3][4].action = blueLightningDownKeyMenuAction;
+	characterConfigureKeys[21].draw = drawBlueLightningConfigUpKey;
+	characterConfigureKeys[21].action = blueLightningUpKeyMenuAction;
 	
-	gCharacterConfigureKeys[3][5].draw = drawBlueLightningConfigFireKey;
-	gCharacterConfigureKeys[3][5].action = blueLightningFireKeyMenuAction;
+	characterConfigureKeys[22].draw = drawBlueLightningConfigDownKey;
+	characterConfigureKeys[22].action = blueLightningDownKeyMenuAction;
+	
+	characterConfigureKeys[23].draw = drawBlueLightningConfigFireKey;
+	characterConfigureKeys[23].action = blueLightningFireKeyMenuAction;
 	
 	// Joystick menus
 	
 	// PinkBubbleGum configs
-	gJoyStickConfig[0][0].draw = drawPinkBubbleGumConfigJoyStick;
-	gJoyStickConfig[0][0].action = pinkBubbleGumConfigJoyStickAction;
+	joyStickConfig[0].draw = drawPinkBubbleGumConfigJoyStick;
+	joyStickConfig[0].action = pinkBubbleGumConfigJoyStickAction;
 	
-	gJoyStickConfig[0][1].draw = drawPinkBubbleGumRightgJoyStickConfig;
-	gJoyStickConfig[0][1].action = pinkBubbleGumConfigRightJoyStickAction;
+	joyStickConfig[1].draw = drawPinkBubbleGumRightJoyStickConfig;
+	joyStickConfig[1].action = pinkBubbleGumConfigRightJoyStickAction;
 	
-	gJoyStickConfig[0][2].draw = drawPinkBubbleGumLeftgJoyStickConfig;
-	gJoyStickConfig[0][2].action = pinkBubbleGumConfigLeftJoyStickAction;
+	joyStickConfig[2].draw = drawPinkBubbleGumLeftJoyStickConfig;
+	joyStickConfig[2].action = pinkBubbleGumConfigLeftJoyStickAction;
 	
-	gJoyStickConfig[0][3].draw = drawPinkBubbleGumUpgJoyStickConfig;
-	gJoyStickConfig[0][3].action = pinkBubbleGumConfigUpJoyStickAction;
+	joyStickConfig[3].draw = drawPinkBubbleGumUpJoyStickConfig;
+	joyStickConfig[3].action = pinkBubbleGumConfigUpJoyStickAction;
 	
-	gJoyStickConfig[0][4].draw = drawPinkBubbleGumDowngJoyStickConfig;
-	gJoyStickConfig[0][4].action = pinkBubbleGumConfigDownJoyStickAction;
+	joyStickConfig[4].draw = drawPinkBubbleGumDownJoyStickConfig;
+	joyStickConfig[4].action = pinkBubbleGumConfigDownJoyStickAction;
 	
-	gJoyStickConfig[0][5].draw = drawPinkBubbleGumFiregJoyStickConfig;
-	gJoyStickConfig[0][5].action = pinkBubbleGumConfigFireJoyStickAction;
+	joyStickConfig[5].draw = drawPinkBubbleGumFireJoyStickConfig;
+	joyStickConfig[5].action = pinkBubbleGumConfigFireJoyStickAction;
 	
 	// RedRover configs
-	gJoyStickConfig[1][0].draw = drawRedRoverConfigJoyStick;
-	gJoyStickConfig[1][0].action = redRoverConfigJoyStickAction;
+	joyStickConfig[6].draw = drawRedRoverConfigJoyStick;
+	joyStickConfig[6].action = redRoverConfigJoyStickAction;
 	
-	gJoyStickConfig[1][1].draw = drawRedRoverRightgJoyStickConfig;
-	gJoyStickConfig[1][1].action = redRoverConfigRightJoyStickAction;
+	joyStickConfig[7].draw = drawRedRoverRightJoyStickConfig;
+	joyStickConfig[7].action = redRoverConfigRightJoyStickAction;
 	
-	gJoyStickConfig[1][2].draw = drawRedRoverLeftgJoyStickConfig;
-	gJoyStickConfig[1][2].action = redRoverConfigLeftJoyStickAction;
+	joyStickConfig[8].draw = drawRedRoverLeftJoyStickConfig;
+	joyStickConfig[8].action = redRoverConfigLeftJoyStickAction;
 	
-	gJoyStickConfig[1][3].draw = drawRedRoverUpgJoyStickConfig;
-	gJoyStickConfig[1][3].action = redRoverConfigUpJoyStickAction;
+	joyStickConfig[9].draw = drawRedRoverUpJoyStickConfig;
+	joyStickConfig[9].action = redRoverConfigUpJoyStickAction;
 	
-	gJoyStickConfig[1][4].draw = drawRedRoverDowngJoyStickConfig;
-	gJoyStickConfig[1][4].action = redRoverConfigDownJoyStickAction;
+	joyStickConfig[10].draw = drawRedRoverDownJoyStickConfig;
+	joyStickConfig[10].action = redRoverConfigDownJoyStickAction;
 	
-	gJoyStickConfig[1][5].draw = drawRedRoverFiregJoyStickConfig;
-	gJoyStickConfig[1][5].action = redRoverConfigFireJoyStickAction;
+	joyStickConfig[11].draw = drawRedRoverFireJoyStickConfig;
+	joyStickConfig[11].action = redRoverConfigFireJoyStickAction;
 	
 	// GreenTree configs
-	gJoyStickConfig[2][0].draw = drawGreenTreeConfigJoyStick;
-	gJoyStickConfig[2][0].action = greenTreeConfigJoyStickAction;
+	joyStickConfig[12].draw = drawGreenTreeConfigJoyStick;
+	joyStickConfig[12].action = greenTreeConfigJoyStickAction;
 	
-	gJoyStickConfig[2][1].draw = drawGreenTreeRightgJoyStickConfig;
-	gJoyStickConfig[2][1].action = greenTreeConfigRightJoyStickAction;
+	joyStickConfig[13].draw = drawGreenTreeRightJoyStickConfig;
+	joyStickConfig[13].action = greenTreeConfigRightJoyStickAction;
 	
-	gJoyStickConfig[2][2].draw = drawGreenTreeLeftgJoyStickConfig;
-	gJoyStickConfig[2][2].action = greenTreeConfigLeftJoyStickAction;
+	joyStickConfig[14].draw = drawGreenTreeLeftJoyStickConfig;
+	joyStickConfig[14].action = greenTreeConfigLeftJoyStickAction;
 	
-	gJoyStickConfig[2][3].draw = drawGreenTreeUpgJoyStickConfig;
-	gJoyStickConfig[2][3].action = greenTreeConfigUpJoyStickAction;
+	joyStickConfig[15].draw = drawGreenTreeUpJoyStickConfig;
+	joyStickConfig[15].action = greenTreeConfigUpJoyStickAction;
 	
-	gJoyStickConfig[2][4].draw = drawGreenTreeDowngJoyStickConfig;
-	gJoyStickConfig[2][4].action = greenTreeConfigDownJoyStickAction;
+	joyStickConfig[16].draw = drawGreenTreeDownJoyStickConfig;
+	joyStickConfig[16].action = greenTreeConfigDownJoyStickAction;
 	
-	gJoyStickConfig[2][5].draw = drawGreenTreeFiregJoyStickConfig;
-	gJoyStickConfig[2][5].action = greenTreeConfigFireJoyStickAction;
+	joyStickConfig[17].draw = drawGreenTreeFireJoyStickConfig;
+	joyStickConfig[17].action = greenTreeConfigFireJoyStickAction;
 	
 	// BlueLightning configs
-	gJoyStickConfig[3][0].draw = drawBlueLightningConfigJoyStick;
-	gJoyStickConfig[3][0].action = blueLightningConfigJoyStickAction;
+	joyStickConfig[18].draw = drawBlueLightningConfigJoyStick;
+	joyStickConfig[18].action = blueLightningConfigJoyStickAction;
 	
-	gJoyStickConfig[3][1].draw = drawBlueLightningRightgJoyStickConfig;
-	gJoyStickConfig[3][1].action = blueLightningConfigRightJoyStickAction;
+	joyStickConfig[19].draw = drawBlueLightningRightJoyStickConfig;
+	joyStickConfig[19].action = blueLightningConfigRightJoyStickAction;
 	
-	gJoyStickConfig[3][2].draw = drawBlueLightningLeftgJoyStickConfig;
-	gJoyStickConfig[3][2].action = blueLightningConfigLeftJoyStickAction;
+	joyStickConfig[20].draw = drawBlueLightningLeftJoyStickConfig;
+	joyStickConfig[20].action = blueLightningConfigLeftJoyStickAction;
 	
-	gJoyStickConfig[3][3].draw = drawBlueLightningUpgJoyStickConfig;
-	gJoyStickConfig[3][3].action = blueLightningConfigUpJoyStickAction;
+	joyStickConfig[21].draw = drawBlueLightningUpJoyStickConfig;
+	joyStickConfig[21].action = blueLightningConfigUpJoyStickAction;
 	
-	gJoyStickConfig[3][4].draw = drawBlueLightningDowngJoyStickConfig;
-	gJoyStickConfig[3][4].action = blueLightningConfigDownJoyStickAction;
+	joyStickConfig[22].draw = drawBlueLightningDownJoyStickConfig;
+	joyStickConfig[22].action = blueLightningConfigDownJoyStickAction;
 	
-	gJoyStickConfig[3][5].draw = drawBlueLightningFiregJoyStickConfig;
-	gJoyStickConfig[3][5].action = blueLightningConfigFireJoyStickAction;
+	joyStickConfig[23].draw = drawBlueLightningFireJoyStickConfig;
+	joyStickConfig[23].action = blueLightningConfigFireJoyStickAction;
 	
 	// Add Menus
 	addSubMenu(&gMainMenu, playMenu);
@@ -1780,77 +1823,18 @@ void initMenus(void)
 	addSubMenu(audioOptionsMenu, audioEffectsOptionsMenu);
 	addSubMenu(audioOptionsMenu, audioMusicOptionsMenu);
 	
-	// characters key config menu
-	addSubMenu(configureKeysMenu, &gCharacterConfigureKeys[0][0]);
-	addSubMenu(configureKeysMenu, &gCharacterConfigureKeys[1][0]);
-	addSubMenu(configureKeysMenu, &gCharacterConfigureKeys[2][0]);
-	addSubMenu(configureKeysMenu, &gCharacterConfigureKeys[3][0]);
-	
-	// characters joy stick config menu
-	addSubMenu(configureJoySticksMenu, &gJoyStickConfig[0][0]);
-	addSubMenu(configureJoySticksMenu, &gJoyStickConfig[1][0]);
-	addSubMenu(configureJoySticksMenu, &gJoyStickConfig[2][0]);
-	addSubMenu(configureJoySticksMenu, &gJoyStickConfig[3][0]);
-	
-	// keys config sub menus
-	
-	// pinkBubbleGum
-	addSubMenu(&gCharacterConfigureKeys[0][0], &gCharacterConfigureKeys[0][1]);
-	addSubMenu(&gCharacterConfigureKeys[0][0], &gCharacterConfigureKeys[0][2]);
-	addSubMenu(&gCharacterConfigureKeys[0][0], &gCharacterConfigureKeys[0][3]);
-	addSubMenu(&gCharacterConfigureKeys[0][0], &gCharacterConfigureKeys[0][4]);
-	addSubMenu(&gCharacterConfigureKeys[0][0], &gCharacterConfigureKeys[0][5]);
-	
-	// redRover
-	addSubMenu(&gCharacterConfigureKeys[1][0], &gCharacterConfigureKeys[1][1]);
-	addSubMenu(&gCharacterConfigureKeys[1][0], &gCharacterConfigureKeys[1][2]);
-	addSubMenu(&gCharacterConfigureKeys[1][0], &gCharacterConfigureKeys[1][3]);
-	addSubMenu(&gCharacterConfigureKeys[1][0], &gCharacterConfigureKeys[1][4]);
-	addSubMenu(&gCharacterConfigureKeys[1][0], &gCharacterConfigureKeys[1][5]);
-	
-	// greenTree
-	addSubMenu(&gCharacterConfigureKeys[2][0], &gCharacterConfigureKeys[2][1]);
-	addSubMenu(&gCharacterConfigureKeys[2][0], &gCharacterConfigureKeys[2][2]);
-	addSubMenu(&gCharacterConfigureKeys[2][0], &gCharacterConfigureKeys[2][3]);
-	addSubMenu(&gCharacterConfigureKeys[2][0], &gCharacterConfigureKeys[2][4]);
-	addSubMenu(&gCharacterConfigureKeys[2][0], &gCharacterConfigureKeys[2][5]);
-	
-	// blueLightning
-	addSubMenu(&gCharacterConfigureKeys[3][0], &gCharacterConfigureKeys[3][1]);
-	addSubMenu(&gCharacterConfigureKeys[3][0], &gCharacterConfigureKeys[3][2]);
-	addSubMenu(&gCharacterConfigureKeys[3][0], &gCharacterConfigureKeys[3][3]);
-	addSubMenu(&gCharacterConfigureKeys[3][0], &gCharacterConfigureKeys[3][4]);
-	addSubMenu(&gCharacterConfigureKeys[3][0], &gCharacterConfigureKeys[3][5]);
-	
-	// joy stick config sub menus
-	
-	// PinkBubbleGum
-	addSubMenu(&gJoyStickConfig[0][0], &gJoyStickConfig[0][1]);
-	addSubMenu(&gJoyStickConfig[0][0], &gJoyStickConfig[0][2]);
-	addSubMenu(&gJoyStickConfig[0][0], &gJoyStickConfig[0][3]);
-	addSubMenu(&gJoyStickConfig[0][0], &gJoyStickConfig[0][4]);
-	addSubMenu(&gJoyStickConfig[0][0], &gJoyStickConfig[0][5]);
-	
-	// RedRover
-	addSubMenu(&gJoyStickConfig[1][0], &gJoyStickConfig[1][1]);
-	addSubMenu(&gJoyStickConfig[1][0], &gJoyStickConfig[1][2]);
-	addSubMenu(&gJoyStickConfig[1][0], &gJoyStickConfig[1][3]);
-	addSubMenu(&gJoyStickConfig[1][0], &gJoyStickConfig[1][4]);
-	addSubMenu(&gJoyStickConfig[1][0], &gJoyStickConfig[1][5]);
-	
-	// GreenTree
-	addSubMenu(&gJoyStickConfig[2][0], &gJoyStickConfig[2][1]);
-	addSubMenu(&gJoyStickConfig[2][0], &gJoyStickConfig[2][2]);
-	addSubMenu(&gJoyStickConfig[2][0], &gJoyStickConfig[2][3]);
-	addSubMenu(&gJoyStickConfig[2][0], &gJoyStickConfig[2][4]);
-	addSubMenu(&gJoyStickConfig[2][0], &gJoyStickConfig[2][5]);
-	
-	// BlueLightning
-	addSubMenu(&gJoyStickConfig[3][0], &gJoyStickConfig[3][1]);
-	addSubMenu(&gJoyStickConfig[3][0], &gJoyStickConfig[3][2]);
-	addSubMenu(&gJoyStickConfig[3][0], &gJoyStickConfig[3][3]);
-	addSubMenu(&gJoyStickConfig[3][0], &gJoyStickConfig[3][4]);
-	addSubMenu(&gJoyStickConfig[3][0], &gJoyStickConfig[3][5]);
+	// Configure keys and joy stick submenus
+	for (int characterIndex = 0; characterIndex < 4; characterIndex++)
+	{
+		addSubMenu(configureKeysMenu, &characterConfigureKeys[characterIndex * 6]);
+		addSubMenu(configureJoySticksMenu, &joyStickConfig[characterIndex * 6]);
+		
+		for (int submenuIndex = 1; submenuIndex < 6; submenuIndex++)
+		{
+			addSubMenu(&characterConfigureKeys[characterIndex * 6], &characterConfigureKeys[characterIndex * 6 + submenuIndex]);
+			addSubMenu(&joyStickConfig[characterIndex * 6], &joyStickConfig[characterIndex * 6 + submenuIndex]);
+		}
+	}
 }
 
 static char *convertKeyCodeToString(unsigned theKeyCode)

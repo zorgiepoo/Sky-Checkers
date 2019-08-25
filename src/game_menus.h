@@ -30,9 +30,6 @@ extern int gServerAddressStringIndex;
 extern char gUserNameString[MAX_USER_NAME_SIZE];
 extern int gUserNameStringIndex;
 
-extern Menu gCharacterConfigureKeys[4][6];
-extern Menu gJoyStickConfig[4][6];
-
 extern Menu *gConfigureLivesMenu;
 extern Menu *gScreenResolutionVideoOptionMenu;
 extern Menu *gRefreshRateVideoOptionMenu;
