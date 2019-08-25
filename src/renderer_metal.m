@@ -309,7 +309,7 @@ static void updateRealViewport(Renderer *renderer)
 	
 	renderer->metalDepthTestStencilState = (void *)CFBridgingRetain(depthStencilState);
 	
-	updateProjectionMatrix(renderer);
+	updateMetalProjectionMatrix(renderer);
 }
 
 void updateViewport_metal(Renderer *renderer, int32_t windowWidth, int32_t windowHeight)
@@ -531,7 +531,6 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		createPipelines(renderer);
 		
 		// Update view port
-		renderer->ndcType = NDC_TYPE_METAL;
 		updateRealViewport(renderer);
 		
 		// Set up remaining renderer properties

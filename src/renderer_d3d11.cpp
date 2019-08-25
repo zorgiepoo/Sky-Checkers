@@ -19,6 +19,7 @@
 
 #include "renderer_d3d11.h"
 #include "renderer_types.h"
+#include "renderer_projection.h"
 
 #include <d3d11.h>
 #include <d3dcompiler.h>
@@ -61,7 +62,7 @@ extern "C" static void updateViewport_d3d11(Renderer *renderer, int32_t windowWi
 	renderer->drawableWidth = windowWidth;
 	renderer->drawableHeight = windowHeight;
 
-	float aspectRatio = (float)(renderer->drawableWidth / renderer->drawableHeight);
+	float aspectRatio = computeProjectionAspectRatio(renderer);
 	if (aspectRatio <= 0.001f)
 	{
 		return;
@@ -194,8 +195,7 @@ extern "C" static void updateViewport_d3d11(Renderer *renderer, int32_t windowWi
 
 	context->RSSetViewports(1, &viewport);
 	
-	// The aspect ratio is not quite correct, which is a mistake I made a long time ago that is too troubling to fix properly
-	XMMATRIX projectionMatrix = XMMatrixPerspectiveFovRH(45.0f * ((float)M_PI / 180.0f), aspectRatio, 10.0f, 300.0f);
+	XMMATRIX projectionMatrix = XMMatrixPerspectiveFovRH(PROJECTION_FOV_ANGLE * ((float)M_PI / 180.0f), aspectRatio, PROJECTION_NEAR_VIEW_DISTANCE, PROJECTION_FAR_VIEW_DISTANCE);
 	memcpy(renderer->projectionMatrix, &projectionMatrix, sizeof(renderer->projectionMatrix));
 
 	renderer->d3d11RenderTargetView = renderTargetView;
@@ -767,7 +767,6 @@ extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowT
 		goto INIT_FAILURE;
 	}
 
-	renderer->ndcType = NDC_TYPE_GL; // untrue, but should initialize this unused field
 	renderer->d3d11Context = context;
 	renderer->d3d11SwapChain = swapChain;
 

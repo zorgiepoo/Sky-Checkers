@@ -26,7 +26,17 @@ extern "C" {
 #include "maincore.h"
 #include "renderer_types.h"
 
-void updateProjectionMatrix(Renderer *renderer);
+#define PROJECTION_FOV_ANGLE 45.0f // in degrees
+#define PROJECTION_NEAR_VIEW_DISTANCE 10.0f
+#define PROJECTION_FAR_VIEW_DISTANCE 300.0f
+
+float computeProjectionAspectRatio(Renderer *renderer);
+
+void updateGLProjectionMatrix(Renderer *renderer);
+
+#ifdef MAC_OS_X
+void updateMetalProjectionMatrix(Renderer *renderer);
+#endif
 
 #ifdef __cplusplus
 }

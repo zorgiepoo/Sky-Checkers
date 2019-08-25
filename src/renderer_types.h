@@ -120,14 +120,6 @@ typedef struct
 
 #define MAX_PIPELINE_COUNT 6
 
-typedef enum
-{
-	NDC_TYPE_GL
-#ifdef MAC_OS_X
-	,NDC_TYPE_METAL
-#endif
-} NDCType;
-
 typedef struct _Renderer
 {
 	SDL_Window *window;
@@ -146,8 +138,6 @@ typedef struct _Renderer
 	SDL_bool fullscreen;
 	SDL_bool vsync;
 	SDL_bool fsaa;
-
-	NDCType ndcType;
 
 	union
 	{

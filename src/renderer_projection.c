@@ -20,32 +20,39 @@
 #include "renderer_projection.h"
 #include "math_3d.h"
 
-void updateProjectionMatrix(Renderer *renderer)
+float computeProjectionAspectRatio(Renderer *renderer)
 {
 	// The aspect ratio is not quite correct, which is a mistake I made a long time ago that is too troubling to fix properly
-	mat4_t glProjectionMatrix = m4_perspective(45.0f, (float)(renderer->drawableWidth / renderer->drawableHeight), 10.0f, 300.0f);
-	
-	switch (renderer->ndcType)
-	{
-		case NDC_TYPE_GL:
-			memcpy(renderer->projectionMatrix, glProjectionMatrix.m, sizeof(glProjectionMatrix.m));
-			break;
-#ifdef MAC_OS_X
-		case NDC_TYPE_METAL:
-		{
-			// https://metashapes.com/blog/opengl-metal-projection-matrix-problem/
-			mat4_t metalProjectionAdjustMatrix =
-			mat4(
-				 1.0f, 0.0f, 0.0f, 0.0f,
-				 0.0f, 1.0f, 0.0f, 0.0f,
-				 0.0f, 0.0f, 0.5f, 0.5f,
-				 0.0f, 0.0f, 0.0f, 1.0f
-				 );
-			mat4_t finalProjectionMatrix = m4_mul(metalProjectionAdjustMatrix, glProjectionMatrix);
-			memcpy(renderer->projectionMatrix, finalProjectionMatrix.m, sizeof(finalProjectionMatrix.m));
-			
-			break;
-		}
-#endif
-	}
+	return (float)(renderer->drawableWidth / renderer->drawableHeight);
 }
+
+static mat4_t computeGLProjectionMatrix(Renderer *renderer)
+{
+	return m4_perspective(PROJECTION_FOV_ANGLE, computeProjectionAspectRatio(renderer), PROJECTION_NEAR_VIEW_DISTANCE, PROJECTION_FAR_VIEW_DISTANCE);
+}
+
+void updateGLProjectionMatrix(Renderer *renderer)
+{
+	mat4_t glProjectionMatrix = computeGLProjectionMatrix(renderer);
+	
+	memcpy(renderer->projectionMatrix, glProjectionMatrix.m, sizeof(glProjectionMatrix.m));
+}
+
+#ifdef MAC_OS_X
+void updateMetalProjectionMatrix(Renderer *renderer)
+{
+	mat4_t glProjectionMatrix = computeGLProjectionMatrix(renderer);
+	
+	// https://metashapes.com/blog/opengl-metal-projection-matrix-problem/
+	mat4_t metalProjectionAdjustMatrix =
+	mat4(
+		 1.0f, 0.0f, 0.0f, 0.0f,
+		 0.0f, 1.0f, 0.0f, 0.0f,
+		 0.0f, 0.0f, 0.5f, 0.5f,
+		 0.0f, 0.0f, 0.0f, 1.0f
+		 );
+	mat4_t finalProjectionMatrix = m4_mul(metalProjectionAdjustMatrix, glProjectionMatrix);
+	
+	memcpy(renderer->projectionMatrix, finalProjectionMatrix.m, sizeof(finalProjectionMatrix.m));
+}
+#endif

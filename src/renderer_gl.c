@@ -324,7 +324,7 @@ static void updateViewport_gl(Renderer *renderer, int32_t windowWidth, int32_t w
 	
 	glViewport(0, 0, renderer->drawableWidth, renderer->drawableHeight);
 	
-	updateProjectionMatrix(renderer);
+	updateGLProjectionMatrix(renderer);
 }
 
 void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, SDL_bool fullscreen, SDL_bool vsync, SDL_bool fsaa)
@@ -410,7 +410,6 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	value = SDL_GL_GetSwapInterval();
 	renderer->vsync = (value != 0);
 	
-	renderer->ndcType = NDC_TYPE_GL;
 	updateViewport_gl(renderer, renderer->windowWidth, renderer->windowHeight);
 	
 	// OpenGL Initialization
