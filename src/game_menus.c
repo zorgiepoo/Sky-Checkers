@@ -285,8 +285,6 @@ void networkServerPlayMenuAction(void *context)
 	gBlueLightningInput.character = gNetworkConnection->character;
 	gGreenTreeInput.character = gNetworkConnection->character;
 	
-	setLowerAudioVolume();
-	
 	gNetworkConnection->thread = SDL_CreateThread(serverNetworkThread, "server-thread", &gNetworkConnection->numberOfPlayersToWaitFor);
 }
 
@@ -482,8 +480,6 @@ void connectToNetworkGameMenuAction(void *context)
 	
 	GameState *gameState = context;
 	*gameState = GAME_STATE_CONNECTING;
-	
-	setLowerAudioVolume();
 	
 	gNetworkConnection->thread = SDL_CreateThread(clientNetworkThread, "client-thread", NULL);
 }

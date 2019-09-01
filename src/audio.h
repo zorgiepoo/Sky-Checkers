@@ -23,9 +23,6 @@
 
 SDL_bool initAudio(void);
 
-void setLowerAudioVolume(void);
-void setNormalAudioVolume(void);
-
 void playMainMenuMusic(void);
 void playGameMusic(void);
 
