@@ -54,24 +54,31 @@ static void setVolume(int volume, int minChannel, int maxChannel)
 
 SDL_bool initAudio(void)
 {
-	SDL_bool success = Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, AUDIO_S16SYS, 2, 1024) == 0;
-	if (success)
+	if (SDL_Init(SDL_INIT_AUDIO) < 0)
 	{
-		Mix_AllocateChannels(MAX_CHANNELS);
-		
-		gMenuSoundChunk = Mix_LoadWAV("Data/Audio/sound6.wav");
-		gShootingSoundChunk = Mix_LoadWAV("Data/Audio/whoosh.wav");
-		gTileFallingChunk = Mix_LoadWAV("Data/Audio/object_falls.wav");
-		gDieingStoneChunk = Mix_LoadWAV("Data/Audio/flock_of_birds.wav");
-		
-		Mix_VolumeMusic(MUSIC_VOLUME);
-		Mix_Volume(MENU_SOUND_CHANNEL, MENU_SOUND_VOLUME);
-		setVolume(SHOOTING_SOUND_VOLUME, SHOOTING_SOUND_MIN_CHANNEL, SHOOTING_SOUND_MAX_CHANNEL);
-		setVolume(TILE_FALLING_SOUND_VOLUME, TILE_FALLING_SOUND_MIN_CHANNEL, TILE_FALLING_SOUND_MAX_CHANNEL);
-		setVolume(TILE_DIEING_STONE_SOUND_VOLUME, DIEING_STONE_SOUND_MIN_CHANNEL, DIEING_STONE_SOUND_MAX_CHANNEL);
+		fprintf(stderr, "Couldn't initialize SDL audio: %s\n", SDL_GetError());
+		return SDL_FALSE;
 	}
 	
-	return success;
+	if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, AUDIO_S16SYS, 2, 1024) != 0)
+	{
+		return SDL_FALSE;
+	}
+	
+	Mix_AllocateChannels(MAX_CHANNELS);
+	
+	gMenuSoundChunk = Mix_LoadWAV("Data/Audio/sound6.wav");
+	gShootingSoundChunk = Mix_LoadWAV("Data/Audio/whoosh.wav");
+	gTileFallingChunk = Mix_LoadWAV("Data/Audio/object_falls.wav");
+	gDieingStoneChunk = Mix_LoadWAV("Data/Audio/flock_of_birds.wav");
+	
+	Mix_VolumeMusic(MUSIC_VOLUME);
+	Mix_Volume(MENU_SOUND_CHANNEL, MENU_SOUND_VOLUME);
+	setVolume(SHOOTING_SOUND_VOLUME, SHOOTING_SOUND_MIN_CHANNEL, SHOOTING_SOUND_MAX_CHANNEL);
+	setVolume(TILE_FALLING_SOUND_VOLUME, TILE_FALLING_SOUND_MIN_CHANNEL, TILE_FALLING_SOUND_MAX_CHANNEL);
+	setVolume(TILE_DIEING_STONE_SOUND_VOLUME, DIEING_STONE_SOUND_MIN_CHANNEL, DIEING_STONE_SOUND_MAX_CHANNEL);
+	
+	return SDL_TRUE;
 }
 
 void playMainMenuMusic(void)
