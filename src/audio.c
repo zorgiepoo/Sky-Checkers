@@ -83,7 +83,7 @@ SDL_bool initAudio(void)
 
 void playMainMenuMusic(void)
 {
-	gMainMenuMusic = Mix_LoadMUS("Data/Audio/main_menu.ogg");
+	gMainMenuMusic = Mix_LoadMUS("Data/Audio/main_menu.wav");
 	if (gMainMenuMusic)
 	{
 		Mix_PlayMusic(gMainMenuMusic, -1);
