@@ -17,25 +17,17 @@
  * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "audio.h"
-#include "utilities.h"
 
-// Volumes should be divisible by 8
-#define MUSIC_VOLUME					40
-#define MENU_SOUND_VOLUME				32
-#define SHOOTING_SOUND_VOLUME			16
-#define TILE_FALLING_SOUND_VOLUME		32
-#define TILE_DIEING_STONE_SOUND_VOLUME	8
+#ifdef WINDOWS
+#include "SDL_mixer.h"
+#endif
 
-#define MENU_SOUND_CHANNEL 0
-#define SHOOTING_SOUND_MIN_CHANNEL 1
-#define SHOOTING_SOUND_MAX_CHANNEL 4
-#define TILE_FALLING_SOUND_MIN_CHANNEL 5
-#define TILE_FALLING_SOUND_MAX_CHANNEL 52
-#define DIEING_STONE_SOUND_MIN_CHANNEL 53
-#define DIEING_STONE_SOUND_MAX_CHANNEL 80
-#define MAX_CHANNELS (DIEING_STONE_SOUND_MAX_CHANNEL + 1)
+#ifdef linux
+#include <SDL2/SDL_mixer.h>
+#endif
+
+static SDL_bool gInitializedAudio = SDL_FALSE;
 
 static Mix_Music *gMainMenuMusic = NULL;
 static Mix_Music *gGameMusic = NULL;
@@ -52,17 +44,18 @@ static void setVolume(int volume, int minChannel, int maxChannel)
 	}
 }
 
-SDL_bool initAudio(void)
+void initAudio(void)
 {
 	if (SDL_Init(SDL_INIT_AUDIO) < 0)
 	{
 		fprintf(stderr, "Couldn't initialize SDL audio: %s\n", SDL_GetError());
-		return SDL_FALSE;
+		return;
 	}
 	
-	if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, AUDIO_S16SYS, 2, 1024) != 0)
+	if (Mix_OpenAudio(AUDIO_FORMAT_SAMPLE_RATE, AUDIO_F32SYS, AUDIO_FORMAT_NUM_CHANNELS, 1024) != 0)
 	{
-		return SDL_FALSE;
+		fprintf(stderr, "Mix_OpenAudio() failed: %s\n", Mix_GetError());
+		return;
 	}
 	
 	Mix_AllocateChannels(MAX_CHANNELS);
@@ -70,7 +63,7 @@ SDL_bool initAudio(void)
 	gMenuSoundChunk = Mix_LoadWAV("Data/Audio/sound6.wav");
 	gShootingSoundChunk = Mix_LoadWAV("Data/Audio/whoosh.wav");
 	gTileFallingChunk = Mix_LoadWAV("Data/Audio/object_falls.wav");
-	gDieingStoneChunk = Mix_LoadWAV("Data/Audio/flock_of_birds.wav");
+	gDieingStoneChunk = Mix_LoadWAV("Data/Audio/dieing_stone.wav");
 	
 	Mix_VolumeMusic(MUSIC_VOLUME);
 	Mix_Volume(MENU_SOUND_CHANNEL, MENU_SOUND_VOLUME);
@@ -78,29 +71,43 @@ SDL_bool initAudio(void)
 	setVolume(TILE_FALLING_SOUND_VOLUME, TILE_FALLING_SOUND_MIN_CHANNEL, TILE_FALLING_SOUND_MAX_CHANNEL);
 	setVolume(TILE_DIEING_STONE_SOUND_VOLUME, DIEING_STONE_SOUND_MIN_CHANNEL, DIEING_STONE_SOUND_MAX_CHANNEL);
 	
-	return SDL_TRUE;
+	gInitializedAudio = SDL_TRUE;
 }
 
-void playMainMenuMusic(void)
+void playMainMenuMusic(SDL_bool paused)
 {
+	if (!gInitializedAudio) return;
+	
 	gMainMenuMusic = Mix_LoadMUS("Data/Audio/main_menu.wav");
 	if (gMainMenuMusic)
 	{
 		Mix_PlayMusic(gMainMenuMusic, -1);
+		if (paused)
+		{
+			pauseMusic();
+		}
 	}
 }
 
-void playGameMusic(void)
+void playGameMusic(SDL_bool paused)
 {
+	if (!gInitializedAudio) return;
+	
 	gGameMusic = Mix_LoadMUS("Data/Audio/fast-track.wav");
 	if (gGameMusic)
 	{
 		Mix_PlayMusic(gGameMusic, -1);
+		if (paused)
+		{
+			pauseMusic();
+		}
 	}
 }
 
 void stopMusic(void)
 {
+	if (!gInitializedAudio) return;
+	
 	Mix_HaltMusic();
 	
 	if (gMainMenuMusic)
@@ -118,76 +125,67 @@ void stopMusic(void)
 
 void pauseMusic(void)
 {
+	if (!gInitializedAudio) return;
+	
 	Mix_PauseMusic();
 }
 
 void unPauseMusic(void)
 {
+	if (!gInitializedAudio) return;
+	
 	Mix_ResumeMusic();
-}
-
-SDL_bool isPlayingGameMusic(void)
-{
-	return gGameMusic != NULL;
-}
-
-SDL_bool isPlayingMainMenuMusic(void)
-{
-	return gMainMenuMusic != NULL;
 }
 
 void playMenuSound(void)
 {
+	if (!gInitializedAudio) return;
+	
 	if (gMenuSoundChunk != NULL)
 	{
 		Mix_PlayChannel(MENU_SOUND_CHANNEL, gMenuSoundChunk, 0);
 	}
 }
 
-static int availableChannel(int minChannel, int maxChannel)
+void playShootingSound(int soundIndex)
 {
-	for (int channel = minChannel; channel <= maxChannel; channel++)
-	{
-		if (Mix_Playing(channel) == 0)
-		{
-			return channel;
-		}
-	}
-	return -1;
-}
-
-void playShootingSound(void)
-{
+	if (!gInitializedAudio) return;
+	
 	if (gShootingSoundChunk != NULL)
 	{
-		int channel = availableChannel(SHOOTING_SOUND_MIN_CHANNEL, SHOOTING_SOUND_MAX_CHANNEL);
-		if (channel != -1)
-		{
-			Mix_PlayChannel(channel, gShootingSoundChunk, 0);
-		}
+		int channel = SHOOTING_SOUND_MIN_CHANNEL + soundIndex;
+		Mix_PlayChannel(channel, gShootingSoundChunk, 0);
 	}
 }
 
 void playTileFallingSound(void)
 {
+	if (!gInitializedAudio) return;
+	
 	if (gTileFallingChunk != NULL)
 	{
-		int channel = availableChannel(TILE_FALLING_SOUND_MIN_CHANNEL, TILE_FALLING_SOUND_MAX_CHANNEL);
-		if (channel != -1)
-		{
-			Mix_PlayChannel(channel, gTileFallingChunk, 0);
-		}
+		static int currentSoundIndex = 0;
+		
+		int channel = currentSoundIndex + TILE_FALLING_SOUND_MIN_CHANNEL;
+		
+		Mix_PlayChannel(channel, gTileFallingChunk, 0);
+		
+		currentSoundIndex = (currentSoundIndex + 1) % (TILE_FALLING_SOUND_MAX_CHANNEL - TILE_FALLING_SOUND_MIN_CHANNEL + 1);
 	}
 }
 
 void playDieingStoneSound(void)
 {
+	if (!gInitializedAudio) return;
+	
 	if (gDieingStoneChunk != NULL)
 	{
-		int channel = availableChannel(DIEING_STONE_SOUND_MIN_CHANNEL, DIEING_STONE_SOUND_MAX_CHANNEL);
-		if (channel != -1)
-		{
-			Mix_PlayChannel(channel, gDieingStoneChunk, 0);
-		}
+		static int currentSoundIndex = 0;
+		
+		int channel = currentSoundIndex + DIEING_STONE_SOUND_MIN_CHANNEL;
+		
+		Mix_PlayChannel(channel, gDieingStoneChunk, 0);
+		
+		currentSoundIndex = (currentSoundIndex + 1) % (DIEING_STONE_SOUND_MIN_CHANNEL - DIEING_STONE_SOUND_MAX_CHANNEL + 1);
 	}
 }

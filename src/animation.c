@@ -308,7 +308,7 @@ static void animateTilesAndPlayerRecovery(double timeDelta, SDL_Window *window, 
 	{
 		if (player->animation_timer == 0.0 && ((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 		{
-			playShootingSound();
+			playShootingSound(IDOfCharacter(player) - 1);
 		}
 		player->animation_timer += timeDelta;
 		

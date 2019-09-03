@@ -34,7 +34,6 @@
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_syswm.h"
 #include "SDL2_ttf/SDL_ttf.h"
-#include "SDL2_mixer/SDL_mixer.h"
 
 #include <unistd.h>
 #include <errno.h>
@@ -57,7 +56,6 @@
 #include "SDL.h"
 #include "SDL_syswm.h"
 #include "SDL_ttf.h"
-#include "SDL_mixer.h"
 
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -70,7 +68,6 @@
 #ifdef linux
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_ttf.h>
 
 #include <unistd.h>
@@ -94,8 +91,14 @@ typedef enum
 	GAME_STATE_CONNECTING = 2
 } GameState;
 
-void initGame(void);
-void endGame(void);
+typedef struct
+{
+	GameState *gameState;
+	SDL_Window *window;
+} GameMenuContext;
+
+void initGame(SDL_Window *window, SDL_bool firstGame);
+void endGame(SDL_Window *window, SDL_bool lastGame);
 
 extern SDL_bool gGameHasStarted;
 extern SDL_bool gGameShouldReset;

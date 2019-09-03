@@ -95,7 +95,9 @@ void drawPlayMenu(Renderer *renderer, color4_t preferredColor)
 
 void playGameAction(void *context)
 {
-	initGame();
+	GameMenuContext *menuContext = context;
+	
+	initGame(menuContext->window, SDL_TRUE);
 }
 
 void drawNetworkPlayMenu(Renderer *renderer, color4_t preferredColor)
@@ -279,7 +281,8 @@ void networkServerPlayMenuAction(void *context)
 	gCurrentSlot = 0;
 	memset(gClientStates, 0, sizeof(gClientStates));
 	
-	initGame();
+	GameMenuContext *menuContext = context;
+	initGame(menuContext->window, SDL_TRUE);
 	
 	gRedRoverInput.character = gNetworkConnection->character;
 	gBlueLightningInput.character = gNetworkConnection->character;
@@ -478,7 +481,8 @@ void connectToNetworkGameMenuAction(void *context)
 	
 	freeaddrinfo(serverInfoList);
 	
-	GameState *gameState = context;
+	GameMenuContext *menuContext = context;
+	GameState *gameState = menuContext->gameState;
 	*gameState = GAME_STATE_CONNECTING;
 	
 	gNetworkConnection->thread = SDL_CreateThread(clientNetworkThread, "client-thread", NULL);
@@ -1504,6 +1508,12 @@ void audioMusicOptionsMenuAction(void *context)
 	if (!gAudioMusicFlag)
 	{
 		stopMusic();
+	}
+	else
+	{
+		GameMenuContext *menuContext = context;
+		SDL_bool windowFocus = (SDL_GetWindowFlags(menuContext->window) & SDL_WINDOW_INPUT_FOCUS) != 0;
+		playMainMenuMusic(!windowFocus);
 	}
 }
 

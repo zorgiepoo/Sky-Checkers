@@ -207,7 +207,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 				case PING_MESSAGE_TYPE:
 					break;
 				case QUIT_MESSAGE_TYPE:
-					endGame();
+					endGame(window, SDL_TRUE);
 					cleanupStateFromNetwork();
 					
 					closeSocket(gNetworkConnection->socket);
@@ -506,7 +506,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					// server is pending
 					gPinkBubbleGum.netState = NETWORK_PENDING_STATE;
 					
-					initGame();
+					initGame(window, SDL_TRUE);
 					
 					gPinkBubbleGum.lives = gNetworkConnection->characterLives;
 					gRedRover.lives = gNetworkConnection->characterLives;

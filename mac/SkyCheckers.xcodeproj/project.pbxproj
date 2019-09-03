@@ -15,11 +15,11 @@
 		721A007721AB11CD0099D093 /* shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 721A007621AB11CC0099D093 /* shaders.metal */; };
 		721B0022204A47C1005AF984 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721B0021204A47C1005AF984 /* SDL2.framework */; };
 		721B0026204A482D005AF984 /* SDL2_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721B0025204A482D005AF984 /* SDL2_ttf.framework */; };
-		721B0028204A4855005AF984 /* SDL2_mixer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721B0027204A4855005AF984 /* SDL2_mixer.framework */; };
-		721B0029204A4861005AF984 /* SDL2_mixer.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 721B0027204A4855005AF984 /* SDL2_mixer.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		721B002A204A4861005AF984 /* SDL2_ttf.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 721B0025204A482D005AF984 /* SDL2_ttf.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		721B002C204A4861005AF984 /* SDL2.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 721B0021204A47C1005AF984 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		7272B29E21E5CBEB00C305D3 /* renderer_projection.c in Sources */ = {isa = PBXBuildFile; fileRef = 7272B29D21E5CBEB00C305D3 /* renderer_projection.c */; };
+		7282C625231CEC640063D3CB /* audio_osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 7282C624231CEC640063D3CB /* audio_osx.m */; };
+		7282C627231CEE3C0063D3CB /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7282C626231CEE3C0063D3CB /* AVFoundation.framework */; };
 		72A14F3121A71C6900606E14 /* renderer.c in Sources */ = {isa = PBXBuildFile; fileRef = 72A14F2F21A71C6700606E14 /* renderer.c */; };
 		72BE1BF2225708E000E3192A /* container-migration.plist in Resources */ = {isa = PBXBuildFile; fileRef = 72BE1BF1225708E000E3192A /* container-migration.plist */; };
 		770FFA0810B8F465009FD46A /* osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 770FFA0710B8F465009FD46A /* osx.m */; };
@@ -38,7 +38,6 @@
 		778FA7910D0656FA002A3C26 /* ai.c in Sources */ = {isa = PBXBuildFile; fileRef = 778FA7900D0656FA002A3C26 /* ai.c */; };
 		77C7A2640CFA8C6500295420 /* Data in Resources */ = {isa = PBXBuildFile; fileRef = 77C7A2630CFA8C6500295420 /* Data */; };
 		77C7A4FC0CFD292600295420 /* game_menus.c in Sources */ = {isa = PBXBuildFile; fileRef = 77C7A4FB0CFD292600295420 /* game_menus.c */; };
-		77CBEDEB10B3B3EB0006B1BE /* audio.c in Sources */ = {isa = PBXBuildFile; fileRef = 77CBEDEA10B3B3EB0006B1BE /* audio.c */; };
 		77CCC2AF0BA4D36B007F9F3A /* console.c in Sources */ = {isa = PBXBuildFile; fileRef = 77DC8A510B2FA1DD0080334C /* console.c */; };
 		77CCC2B30BA4D374007F9F3A /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
@@ -51,7 +50,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				721B0029204A4861005AF984 /* SDL2_mixer.framework in Copy Frameworks into .app bundle */,
 				721B002A204A4861005AF984 /* SDL2_ttf.framework in Copy Frameworks into .app bundle */,
 				721B002C204A4861005AF984 /* SDL2.framework in Copy Frameworks into .app bundle */,
 			);
@@ -76,9 +74,10 @@
 		721A007821AB96C60099D093 /* metal_indices.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = metal_indices.h; path = ../src/metal_indices.h; sourceTree = "<group>"; };
 		721B0021204A47C1005AF984 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = Frameworks/SDL2.framework; sourceTree = "<group>"; };
 		721B0025204A482D005AF984 /* SDL2_ttf.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_ttf.framework; path = Frameworks/SDL2_ttf.framework; sourceTree = "<group>"; };
-		721B0027204A4855005AF984 /* SDL2_mixer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_mixer.framework; path = Frameworks/SDL2_mixer.framework; sourceTree = "<group>"; };
 		7272B29C21E5CBEB00C305D3 /* renderer_projection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = renderer_projection.h; path = ../src/renderer_projection.h; sourceTree = "<group>"; };
 		7272B29D21E5CBEB00C305D3 /* renderer_projection.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = renderer_projection.c; path = ../src/renderer_projection.c; sourceTree = "<group>"; };
+		7282C624231CEC640063D3CB /* audio_osx.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = audio_osx.m; path = ../src/audio_osx.m; sourceTree = "<group>"; };
+		7282C626231CEE3C0063D3CB /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		72A14F1721A5E26200606E14 /* math_3d.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = math_3d.h; path = ../src/math_3d.h; sourceTree = "<group>"; };
 		72A14F2F21A71C6700606E14 /* renderer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = renderer.c; path = ../src/renderer.c; sourceTree = "<group>"; };
 		72A14F3021A71C6800606E14 /* renderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = renderer.h; path = ../src/renderer.h; sourceTree = "<group>"; };
@@ -116,7 +115,6 @@
 		77C7A4FA0CFD292600295420 /* game_menus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = game_menus.h; path = ../src/game_menus.h; sourceTree = "<group>"; };
 		77C7A4FB0CFD292600295420 /* game_menus.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = game_menus.c; path = ../src/game_menus.c; sourceTree = "<group>"; };
 		77CBEDE910B3B3EB0006B1BE /* audio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = audio.h; path = ../src/audio.h; sourceTree = "<group>"; };
-		77CBEDEA10B3B3EB0006B1BE /* audio.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = audio.c; path = ../src/audio.c; sourceTree = "<group>"; };
 		77DC8A500B2FA1DD0080334C /* console.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = console.h; path = ../src/console.h; sourceTree = "<group>"; };
 		77DC8A510B2FA1DD0080334C /* console.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = console.c; path = ../src/console.c; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -128,13 +126,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7282C627231CEE3C0063D3CB /* AVFoundation.framework in Frameworks */,
 				721A007521AA7D350099D093 /* QuartzCore.framework in Frameworks */,
 				721A007321AA7CBE0099D093 /* Metal.framework in Frameworks */,
 				002F3C0109D093BD00EBEB88 /* OpenGL.framework in Frameworks */,
 				77CCC2B30BA4D374007F9F3A /* Cocoa.framework in Frameworks */,
 				721B0022204A47C1005AF984 /* SDL2.framework in Frameworks */,
 				721B0026204A482D005AF984 /* SDL2_ttf.framework in Frameworks */,
-				721B0028204A4855005AF984 /* SDL2_mixer.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -144,7 +142,6 @@
 		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				721B0027204A4855005AF984 /* SDL2_mixer.framework */,
 				721B0025204A482D005AF984 /* SDL2_ttf.framework */,
 				721B0021204A47C1005AF984 /* SDL2.framework */,
 				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
@@ -208,7 +205,7 @@
 				778FA78F0D0656FA002A3C26 /* ai.h */,
 				778FA7900D0656FA002A3C26 /* ai.c */,
 				77CBEDE910B3B3EB0006B1BE /* audio.h */,
-				77CBEDEA10B3B3EB0006B1BE /* audio.c */,
+				7282C624231CEC640063D3CB /* audio_osx.m */,
 				772B6A830D15CBA000A216BD /* network.h */,
 				772B6A840D15CBA000A216BD /* network.c */,
 				77DC8A500B2FA1DD0080334C /* console.h */,
@@ -249,6 +246,7 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				7282C626231CEE3C0063D3CB /* AVFoundation.framework */,
 				721A007421AA7D350099D093 /* QuartzCore.framework */,
 				721A007221AA7CBE0099D093 /* Metal.framework */,
 				1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */,
@@ -374,9 +372,9 @@
 				77C7A4FC0CFD292600295420 /* game_menus.c in Sources */,
 				778FA7910D0656FA002A3C26 /* ai.c in Sources */,
 				772B6A850D15CBA000A216BD /* network.c in Sources */,
-				77CBEDEB10B3B3EB0006B1BE /* audio.c in Sources */,
 				72A14F3121A71C6900606E14 /* renderer.c in Sources */,
 				721A007121AA7B420099D093 /* renderer_metal.m in Sources */,
+				7282C625231CEC640063D3CB /* audio_osx.m in Sources */,
 				770FFA0810B8F465009FD46A /* osx.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

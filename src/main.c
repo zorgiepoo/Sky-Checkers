@@ -77,8 +77,6 @@ static uint32_t gEscapeHeldDownTimer;
 
 #define MAX_SUPPORTED_JOYSTICKS 32
 
-void initGame(void);
-
 static void initScene(Renderer *renderer);
 
 static void readDefaults(SDL_Joystick **joysticks);
@@ -852,7 +850,7 @@ static void writeDefaults(Renderer *renderer)
 	fclose(fp);
 }
 
-void initGame(void)
+void initGame(SDL_Window *window, SDL_bool firstGame)
 {
 	loadTiles();
 
@@ -888,9 +886,15 @@ void initGame(void)
 	gGameStartNumber = NEW_GAME_WILL_BEGIN_DELAY;
 	
 	gEscapeHeldDownTimer = 0;
+	
+	if (firstGame && gAudioMusicFlag)
+	{
+		SDL_bool windowFocus = (SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0;
+		playGameMusic(!windowFocus);
+	}
 }
 
-void endGame(void)
+void endGame(SDL_Window *window, SDL_bool lastGame)
 {
 	gGameHasStarted = SDL_FALSE;
 
@@ -900,12 +904,18 @@ void endGame(void)
 
 	gGameWinner = NO_CHARACTER;
 	gGameShouldReset = SDL_FALSE;
+	
+	if (lastGame && gAudioMusicFlag)
+	{
+		SDL_bool windowFocus = (SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0;
+		playMainMenuMusic(!windowFocus);
+	}
 }
 
-static void exitGame(void)
+static void exitGame(SDL_Window *window)
 {
 	resetCharacterWins();
-	endGame();
+	endGame(window, SDL_TRUE);
 	
 	if (gNetworkConnection)
 	{
@@ -1445,7 +1455,11 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 
 				else if (gGameState == GAME_STATE_OFF)
 				{
-					invokeMenu(&gGameState);
+					GameMenuContext menuContext;
+					menuContext.gameState = &gGameState;
+					menuContext.window = window;
+					
+					invokeMenu(&menuContext);
 				}
 
 				else if (gConsoleActivated)
@@ -1649,7 +1663,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 					}
 					else if (gGameWinner != NO_CHARACTER && (gNetworkConnection == NULL || gNetworkConnection->type == NETWORK_SERVER_TYPE))
 					{
-						exitGame();
+						exitGame(window);
 					}
 					else if (gEscapeHeldDownTimer == 0)
 					{
@@ -1753,7 +1767,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 	
 	if (gGameState == GAME_STATE_ON && gEscapeHeldDownTimer > 0 && SDL_GetTicks() - gEscapeHeldDownTimer > 700)
 	{
-		exitGame();
+		exitGame(window);
 	}
 
 	/*
@@ -1825,8 +1839,8 @@ static void eventLoop(Renderer *renderer, SDL_Joystick **joysticks)
 			
 			if (gGameShouldReset)
 			{
-				endGame();
-				initGame();
+				endGame(renderer->window, SDL_FALSE);
+				initGame(renderer->window, SDL_FALSE);
 			}
 		}
 		
@@ -1864,26 +1878,6 @@ static void eventLoop(Renderer *renderer, SDL_Joystick **joysticks)
 			}
 
 			SDL_Delay(delay);
-		}
-
-		// deal with what music to play
-		if (gAudioMusicFlag)
-		{
-			if (gGameState == GAME_STATE_OFF && !isPlayingMainMenuMusic())
-			{
-				stopMusic();
-#ifndef _PROFILING
-				if (hasAppFocus)
-#endif
-				{
-					playMainMenuMusic();
-				}
-			}
-			else if (gGameState == GAME_STATE_ON && !isPlayingGameMusic())
-			{
-				stopMusic();
-				playGameMusic();
-			}
 		}
 	}
 }
@@ -1996,10 +1990,7 @@ int main(int argc, char *argv[])
 	SDL_Joystick *joysticks[MAX_SUPPORTED_JOYSTICKS] = {0};
 	initJoySticks(joysticks);
 
-	if (!initAudio())
-	{
-		return -3;
-	};
+	initAudio();
 	
 	// init random number generator
 	mt_init();
@@ -2041,6 +2032,12 @@ int main(int argc, char *argv[])
 	
 	// Create netcode buffers and mutex's in case we need them later
 	initializeNetworkBuffers();
+	
+	if (gAudioMusicFlag)
+	{
+		SDL_bool windowFocus = (SDL_GetWindowFlags(renderer.window) & SDL_WINDOW_INPUT_FOCUS) != 0;
+		playMainMenuMusic(!windowFocus);
+	}
 
 	// Start the game event loop
 	eventLoop(&renderer, joysticks);

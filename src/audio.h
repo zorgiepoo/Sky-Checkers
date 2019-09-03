@@ -21,18 +21,35 @@
 
 #include "maincore.h"
 
-SDL_bool initAudio(void);
+#define MUSIC_VOLUME					32
+#define MENU_SOUND_VOLUME				32
+#define SHOOTING_SOUND_VOLUME			16
+#define TILE_FALLING_SOUND_VOLUME		32
+#define TILE_DIEING_STONE_SOUND_VOLUME	8
+#define MAX_VOLUME						128
 
-void playMainMenuMusic(void);
-void playGameMusic(void);
+#define MENU_SOUND_CHANNEL 0
+#define SHOOTING_SOUND_MIN_CHANNEL 1
+#define SHOOTING_SOUND_MAX_CHANNEL 4
+#define TILE_FALLING_SOUND_MIN_CHANNEL 5
+#define TILE_FALLING_SOUND_MAX_CHANNEL 52
+#define DIEING_STONE_SOUND_MIN_CHANNEL 53
+#define DIEING_STONE_SOUND_MAX_CHANNEL 80
+#define MAX_CHANNELS (DIEING_STONE_SOUND_MAX_CHANNEL + 1)
+
+#define AUDIO_FORMAT_SAMPLE_RATE 22050
+#define AUDIO_FORMAT_NUM_CHANNELS 2
+
+void initAudio(void);
+
+void playMainMenuMusic(SDL_bool paused);
+void playGameMusic(SDL_bool paused);
 
 void stopMusic(void);
 void pauseMusic(void);
 void unPauseMusic(void);
-SDL_bool isPlayingGameMusic(void);
-SDL_bool isPlayingMainMenuMusic(void);
 
 void playMenuSound(void);
-void playShootingSound(void);
+void playShootingSound(int soundIndex);
 void playTileFallingSound(void);
 void playDieingStoneSound(void);
