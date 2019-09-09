@@ -480,7 +480,7 @@ static GLuint glTextureFromPixelData(Renderer *renderer, const void *pixels, int
 				 GL_RGBA,
 				 width, height,
 				 0,
-				 GL_RGBA,
+				 GL_BGRA,
 				 GL_UNSIGNED_BYTE,
 				 pixels);
 	

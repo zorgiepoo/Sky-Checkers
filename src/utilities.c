@@ -82,68 +82,60 @@ unsigned long mt_random(void) {
 	 */
 }
 
-static SDL_Surface *createSurfaceImage(int32_t width, int32_t height)
+static void *create8BitPixelDataWithAlpha(SDL_Surface *surface)
 {
-	SDL_Surface *image = SDL_CreateRGBSurface(
-											  SDL_SWSURFACE,
-											  width, height,
-											  32,
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN /* RGBA masks */
-											  0x000000FF,
-											  0x0000FF00,
-											  0x00FF0000,
-											  0xFF000000
-#else
-											  0xFF000000,
-											  0x00FF0000,
-											  0x0000FF00,
-											  0x000000FF
-#endif
-											  );
-	if (image == NULL)
+	uint8_t bytesPerPixel = surface->format->BytesPerPixel;
+	const uint8_t newBytesPerPixel = 4;
+	
+	uint8_t *pixelData = calloc(surface->h, newBytesPerPixel * sizeof(uint8_t) * surface->w);
+	if (pixelData == NULL)
 	{
-		fprintf(stderr, "Failed to create SDL RGB surface..\n");
-		SDL_Quit();
+		fprintf(stderr, "Error: failed to allocate pixel data\n");
+		abort();
 	}
 	
-	return image;
+	uint8_t *surfacePixelData = surface->pixels;
+	for (uint32_t pixelIndex = 0; pixelIndex < (uint32_t)(surface->w * surface->h); pixelIndex++)
+	{
+		memcpy(pixelData + newBytesPerPixel * pixelIndex, surfacePixelData + bytesPerPixel * pixelIndex, bytesPerPixel);
+		pixelData[newBytesPerPixel * pixelIndex + (newBytesPerPixel - 1)] = 0xFF;
+	}
+	
+	return pixelData;
 }
 
 TextureObject surfaceToTexture(Renderer *renderer, SDL_Surface *surface)
 {
-	SDL_Surface *image = createSurfaceImage(surface->w, surface->h);
-	
-	// Set alpha property to max
-	SDL_SetSurfaceAlphaMod(surface, 255);
-	
-	// Copy the surface into the texture image
-	SDL_Rect area = {.x = 0, .y = 0, .w = surface->w, .h = surface->h};
-	SDL_BlitSurface(surface, NULL, image, &area);
+	void *pixelData = NULL;
+	SDL_bool sourceMissingAlpha = (surface->format->BytesPerPixel == 3);
+	if (sourceMissingAlpha)
+	{
+		pixelData = create8BitPixelDataWithAlpha(surface);
+	}
+	else
+	{
+		pixelData = surface->pixels;
+	}
 	
 	// Create texture from texture image data
-	TextureObject texture = textureFromPixelData(renderer, image->pixels, surface->w, surface->h);
+	TextureObject texture = textureFromPixelData(renderer, pixelData, surface->w, surface->h);
 	
-	SDL_FreeSurface(image);
+	if (sourceMissingAlpha)
+	{
+		free(pixelData);
+	}
 	
 	return texture;
 }
 
-static SDL_Surface *surfaceFromImage(const char *filePath)
+TextureObject loadTexture(Renderer *renderer, const char *filePath)
 {
 	SDL_Surface *texImage = SDL_LoadBMP(filePath);
-	
 	if (texImage == NULL)
 	{
 		fprintf(stderr, "Couldn't load texture: %s\n", filePath);
 		SDL_Quit();
 	}
-	
-	return texImage;
-}
-
-TextureObject loadTexture(Renderer *renderer, const char *filePath)
-{
-	SDL_Surface *texImage = surfaceFromImage(filePath);
 	
 	TextureObject texture = surfaceToTexture(renderer, texImage);
 	

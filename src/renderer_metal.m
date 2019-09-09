@@ -620,7 +620,7 @@ TextureObject textureFromPixelData_metal(Renderer *renderer, const void *pixels,
 	id<MTLDevice> device = metalLayer.device;
 	
 	MTLTextureDescriptor *textureDescriptor = [[MTLTextureDescriptor alloc] init];
-	textureDescriptor.pixelFormat = MTLPixelFormatRGBA8Unorm;
+	textureDescriptor.pixelFormat = MTLPixelFormatBGRA8Unorm;
 	textureDescriptor.width = (NSUInteger)width;
 	textureDescriptor.height = (NSUInteger)height;
 	

@@ -893,7 +893,7 @@ extern "C" TextureObject textureFromPixelData_d3d11(Renderer *renderer, const vo
 	textureDescription.Height = height;
 	textureDescription.MipLevels = 1;
 	textureDescription.ArraySize = 1;
-	textureDescription.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDescription.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
 	textureDescription.SampleDesc.Count = 1;
 	textureDescription.SampleDesc.Quality = 0;
 	textureDescription.Usage = D3D11_USAGE_DEFAULT;
