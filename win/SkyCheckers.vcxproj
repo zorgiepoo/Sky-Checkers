@@ -46,11 +46,11 @@
   <ItemGroup>
     <ClCompile Include="..\src\ai.c" />
     <ClCompile Include="..\src\animation.c" />
-    <ClCompile Include="..\src\audio.c" />
+    <ClCompile Include="..\src\audio_sdl.c" />
     <ClCompile Include="..\src\characters.c" />
     <ClCompile Include="..\src\collision.c" />
     <ClCompile Include="..\src\console.c" />
-    <ClCompile Include="..\src\font.c" />
+    <ClCompile Include="..\src\font_sdl.c" />
     <ClCompile Include="..\src\game_menus.c" />
     <ClCompile Include="..\src\input.c" />
     <ClCompile Include="..\src\main.c" />
@@ -61,6 +61,7 @@
     <ClCompile Include="..\src\renderer_gl.c" />
     <ClCompile Include="..\src\renderer_projection.c" />
     <ClCompile Include="..\src\scenery.c" />
+    <ClCompile Include="..\src\text.c" />
     <ClCompile Include="..\src\utilities.c" />
     <ClCompile Include="..\src\weapon.c" />
     <ClCompile Include="..\src\windows.c" />

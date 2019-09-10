@@ -95,16 +95,10 @@
     <ClCompile Include="..\src\animation.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\audio.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\collision.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\console.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\font.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\game_menus.c">
@@ -147,6 +141,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\renderer_d3d11.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\audio_sdl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\font_sdl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\text.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
