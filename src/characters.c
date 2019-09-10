@@ -19,7 +19,7 @@
 
 #include "characters.h"
 #include "collision.h"
-#include "font.h"
+#include "text.h"
 #include "network.h"
 #include "utilities.h"
 

@@ -24,7 +24,7 @@
 #include "console.h"
 #include "animation.h"
 #include "weapon.h"
-#include "font.h"
+#include "text.h"
 #include "audio.h"
 #include "game_menus.h"
 #include "network.h"
@@ -2007,10 +2007,7 @@ int main(int argc, char *argv[])
 	Renderer renderer;
 	createRenderer(&renderer, gWindowWidth, gWindowHeight, gFullscreenFlag, vsync, gFsaaFlag);
 	
-	if (!initFont(&renderer))
-	{
-		return -2;
-	}
+	initText(&renderer);
 	
 	// Initialize game related things
 	

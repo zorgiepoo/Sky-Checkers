@@ -33,7 +33,6 @@
 
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_syswm.h"
-#include "SDL2_ttf/SDL_ttf.h"
 
 #include <unistd.h>
 #include <errno.h>
@@ -55,7 +54,6 @@
 
 #include "SDL.h"
 #include "SDL_syswm.h"
-#include "SDL_ttf.h"
 
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -68,7 +66,6 @@
 #ifdef linux
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
 
 #include <unistd.h>
 #include <errno.h>

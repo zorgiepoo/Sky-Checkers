@@ -19,7 +19,7 @@
 
 #include "game_menus.h"
 #include "input.h"
-#include "font.h"
+#include "text.h"
 #include "network.h"
 #include "audio.h"
 #include "utilities.h" // for SDL_Terminate()

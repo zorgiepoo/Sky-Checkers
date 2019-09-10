@@ -45,7 +45,7 @@
 #include "characters.h"
 #include "scenery.h"
 #include "network.h"
-#include "font.h"
+#include "text.h"
 #include "utilities.h"
 
 // "scc~: " length == 6

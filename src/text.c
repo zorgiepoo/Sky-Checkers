@@ -17,10 +17,8 @@
  * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "text.h"
 #include "font.h"
-#include "utilities.h"
-
-TextureObject loadString(Renderer *renderer, const char *string);
 
 typedef struct
 {
@@ -30,8 +28,6 @@ typedef struct
 	int height;
 } TextRendering;
 
-static TTF_Font *gFont;
-
 #define MAX_TEXT_RENDERING_COUNT 256
 
 static int gTextRenderingCount = 0;
@@ -40,23 +36,9 @@ static TextRendering *gTextRenderings;
 static BufferArrayObject gFontVertexAndTextureBufferObject;
 static BufferObject gFontIndicesBufferObject;
 
-SDL_bool initFont(Renderer *renderer)
+void initText(Renderer *renderer)
 {
-	if (TTF_Init() == -1)
-	{
-		fprintf(stderr, "TTF_Init: %s or %s\n", TTF_GetError(), SDL_GetError());
-		return SDL_FALSE;
-	}
-	
-	// This font is "goodfish.ttf" and is intentionally obfuscated in source by author's request
-	// A license to embed the font was acquired (for me, Mayur, only) from http://typodermicfonts.com/goodfish/
-	gFont = TTF_OpenFont("Data/Fonts/typelib.dat", 144);
-	
-	if (gFont == NULL)
-	{
-		fprintf(stderr, "loading font error! %s\n", TTF_GetError());
-		SDL_Quit();
-	}
+	initFont();
 	
 	gTextRenderings = calloc(MAX_TEXT_RENDERING_COUNT, sizeof(*gTextRenderings));
 	
@@ -84,30 +66,6 @@ SDL_bool initFont(Renderer *renderer)
 	gFontVertexAndTextureBufferObject = createVertexAndTextureCoordinateArrayObject(renderer, verticesAndTextureCoordinates, 12 * sizeof(*verticesAndTextureCoordinates), 8 * sizeof(*verticesAndTextureCoordinates));
 	
 	gFontIndicesBufferObject = createBufferObject(renderer, indices, sizeof(indices));
-	
-	return SDL_TRUE;
-}
-
-// returns a texture to draw for the string.
-TextureObject loadString(Renderer *renderer, const char *string)
-{
-	SDL_Color color = {255, 255, 255, 0};
-	
-	// TTF_RenderText_Solid always returns NULL for me, so use TTF_RenderText_Blended.
-	SDL_Surface *fontSurface = TTF_RenderText_Blended(gFont, string, color);
-	
-	if (fontSurface == NULL)
-	{
-		fprintf(stderr, "font surface is null: %s", TTF_GetError());
-		SDL_Quit();
-	}
-	
-	TextureObject texture = surfaceToTexture(renderer, fontSurface);
-	
-	// Cleanup
-	SDL_FreeSurface(fontSurface);
-	
-	return texture;
 }
 
 void drawStringf(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, float width, float height, const char *format, ...)
@@ -219,9 +177,12 @@ int cacheString(Renderer *renderer, const char *string)
 			gTextRenderings[insertionIndex].text = newText;
 			strncpy(gTextRenderings[insertionIndex].text, string, MAX_TEXT_LENGTH - 1);
 			
-			gTextRenderings[insertionIndex].texture = loadString(renderer, gTextRenderings[insertionIndex].text);
+			TextData textData = createTextData(newText);
+			gTextRenderings[insertionIndex].width = getTextDataWidth(textData);
+			gTextRenderings[insertionIndex].height = getTextDataHeight(textData);
+			gTextRenderings[insertionIndex].texture = textureFromPixelData(renderer, getTextDataPixels(textData), gTextRenderings[insertionIndex].width, gTextRenderings[insertionIndex].height);
 			
-			TTF_SizeUTF8(gFont, gTextRenderings[insertionIndex].text, &gTextRenderings[insertionIndex].width, &gTextRenderings[insertionIndex].height);
+			releaseTextData(textData);
 			
 			cachedIndex = insertionIndex;
 			gTextRenderingCount++;
