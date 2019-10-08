@@ -59,7 +59,7 @@ TextData createTextData(const char *string)
 	
 	CGBitmapInfo bitmapInfo = (CGBitmapInfo)kCGImageAlphaPremultipliedLast;
 
-	CGContextRef context = CGBitmapContextCreate(NULL, (size_t)frameSize.width, (size_t)frameSize.height, 8, (size_t)frameSize.width * 4, gRGBColorSpace, bitmapInfo);
+	CGContextRef context = CGBitmapContextCreate(NULL, (size_t)ceil(frameSize.width), (size_t)ceil(frameSize.height), 8, (size_t)ceil(frameSize.width) * 4, gRGBColorSpace, bitmapInfo);
 
 	CGContextSetRGBFillColor(context, 1.0, 1.0, 1.0, 1.0);
 	CTFrameDraw(frame, context);
