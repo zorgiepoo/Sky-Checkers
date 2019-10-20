@@ -21,6 +21,7 @@
 
 #include "metal_indices.h"
 #include "renderer_projection.h"
+#include "quit.h"
 
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
@@ -199,7 +200,7 @@ static void createAndStorePipelineState(void **pipelineStates, id<MTLDevice> dev
 	if (pipelineState == nil)
 	{
 		NSLog(@"Pipeline state error: %@", pipelineError);
-		SDL_Quit();
+		ZGQuit();
 	}
 	
 	uint8_t index = pipelineIndex(shaderPairIndex, pipelineOptionIndex);
@@ -256,7 +257,7 @@ static void updateRealViewport(Renderer *renderer)
 	if (depthStencilState == nil)
 	{
 		fprintf(stderr, "Depth stencil state failed to be created\n");
-		SDL_Quit();
+		ZGQuit();
 	}
 	
 	MTLTextureDescriptor *depthTextureDescriptor = [MTLTextureDescriptor new];
@@ -370,7 +371,7 @@ static void createPipelines(Renderer *renderer)
 		if (defaultLibrary == nil)
 		{
 			fprintf(stderr, "Failed to find default metal library\n");
-			SDL_Quit();
+			ZGQuit();
 		}
 		
 		NSArray<NSString *> *shaderFunctionNames = @[@"positionVertexShader", @"positionFragmentShader", @"texturePositionVertexShader", @"texturePositionFragmentShader"];
@@ -628,7 +629,7 @@ TextureObject textureFromPixelData_metal(Renderer *renderer, const void *pixels,
 	if (texture == nil)
 	{
 		fprintf(stderr, "Failed to create texture in textureFromPixelData_metal\n");
-		SDL_Quit();
+		ZGQuit();
 	}
 	
 	MTLRegion region = MTLRegionMake2D(0, 0, (NSUInteger)width, (NSUInteger)height);
@@ -653,7 +654,7 @@ static id<MTLBuffer> createBuffer(Renderer *renderer, const void *data, uint32_t
 	if (buffer == nil)
 	{
 		fprintf(stderr, "Failed to create buffer object in createBuffer\n");
-		SDL_Quit();
+		ZGQuit();
 	}
 	
 	return buffer;

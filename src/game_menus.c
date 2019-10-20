@@ -25,6 +25,7 @@
 #include "math_3d.h"
 #include "renderer.h"
 #include <stdbool.h>
+#include "quit.h"
 
 Menu *gConfigureLivesMenu;
 Menu *gScreenResolutionVideoOptionMenu;
@@ -1525,9 +1526,7 @@ void drawQuitMenu(Renderer *renderer, color4_t preferredColor)
 
 void quitMenuAction(void *context)
 {
-	SDL_Event event;
-	event.type = SDL_QUIT;
-	SDL_PushEvent(&event);
+	ZGQuit();
 }
 
 void initMenus(void)

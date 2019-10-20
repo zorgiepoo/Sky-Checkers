@@ -21,6 +21,7 @@
 
 #include "renderer_projection.h"
 #include "texture.h"
+#include "quit.h"
 
 #ifdef WINDOWS
 #include <GL/glew.h>
@@ -155,21 +156,21 @@ static void compileAndLinkShader(Shader_gl *shader, uint16_t glslVersion, const 
 	if (!compileShader(&vertexShader, glslVersion, GL_VERTEX_SHADER, vertexShaderPath))
 	{
 		fprintf(stderr, "Error: Failed to compile vertex shader: %s..\n", vertexShaderPath);
-		exit(2);
+		ZGQuit();
 	}
 	
 	GLuint fragmentShader = 0;
 	if (!compileShader(&fragmentShader, glslVersion, GL_FRAGMENT_SHADER, fragmentShaderPath))
 	{
 		fprintf(stderr, "Error: Failed to compile fragment shader: %s..\n", fragmentShaderPath);
-		exit(2);
+		ZGQuit();
 	}
 	
 	GLuint shaderProgram = glCreateProgram();
 	if (shaderProgram == 0)
 	{
 		fprintf(stderr, "Failed to create a shader program.. Odd.\n");
-		exit(1);
+		ZGQuit();
 	}
 	
 	glAttachShader(shaderProgram, vertexShader);
@@ -193,14 +194,14 @@ static void compileAndLinkShader(Shader_gl *shader, uint16_t glslVersion, const 
 	if (!linkProgram(shaderProgram))
 	{
 		fprintf(stderr, "Failed to link shader program\n");
-		exit(2);
+		ZGQuit();
 	}
 	
 	GLint modelViewProjectionMatrixUniformLocation = glGetUniformLocation(shaderProgram, modelViewProjectionUniform);
 	if (modelViewProjectionMatrixUniformLocation == -1)
 	{
 		fprintf(stderr, "Failed to find %s uniform\n", modelViewProjectionUniform);
-		exit(1);
+		ZGQuit();
 	}
 	shader->modelViewProjectionMatrixUniformLocation = modelViewProjectionMatrixUniformLocation;
 	
@@ -208,7 +209,7 @@ static void compileAndLinkShader(Shader_gl *shader, uint16_t glslVersion, const 
 	if (colorUniformLocation == -1)
 	{
 		fprintf(stderr, "Failed to find %s uniform\n", colorUniform);
-		exit(1);
+		ZGQuit();
 	}
 	shader->colorUniformLocation = colorUniformLocation;
 	
@@ -218,7 +219,7 @@ static void compileAndLinkShader(Shader_gl *shader, uint16_t glslVersion, const 
 		if (textureUniformLocation == -1)
 		{
 			fprintf(stderr, "Failed to find %s uniform\n", textureSampleUniform);
-			exit(1);
+			ZGQuit();
 		}
 		shader->textureUniformLocation = textureUniformLocation;
 	}
@@ -253,7 +254,7 @@ static bool createOpenGLContext(SDL_Window **window, SDL_GLContext *glContext, u
 			break;
 		default:
 			fprintf(stderr, "Invalid glsl version passed..\n");
-			exit(1);
+			ZGQuit();
 	}
 	
 	// Anti aliasing
@@ -363,7 +364,7 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 			if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, windowTitle, windowWidth, windowHeight, videoFlags, fsaa))
 			{
 				fprintf(stderr, "Failed to create OpenGL context with even glsl version %d\n", glslVersion);
-				exit(1);
+				ZGQuit();
 			}
 		}
 	}
@@ -371,7 +372,7 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	if (SDL_GL_MakeCurrent(renderer->window, glContext) != 0)
 	{
 		fprintf(stderr, "Couldn't make OpenGL context current: %s\n", SDL_GetError());
-		exit(9);
+		ZGQuit();
 	}
 	
 	// VSYNC
@@ -389,7 +390,7 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	if (glewError != GLEW_OK)
 	{
 		fprintf(stderr, "Failed to initialize GLEW: %s\n", glewGetErrorString(glewError));
-		exit(6);
+		ZGQuit();
 	}
 #endif
 	

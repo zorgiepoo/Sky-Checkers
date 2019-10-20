@@ -29,6 +29,7 @@
 #include "game_menus.h"
 #include "network.h"
 #include "mt_random.h"
+#include "quit.h"
 
 #define MATH_3D_IMPLEMENTATION
 #include "math_3d.h"
@@ -1974,7 +1975,7 @@ int main(int argc, char *argv[])
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
 	{
         fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
-		return -1;
+		ZGQuit();
 	}
 	
 #ifdef MAC_OS_X
@@ -1983,7 +1984,7 @@ int main(int argc, char *argv[])
 	if (baseDirectory != NULL && chdir(baseDirectory) != 0)
 	{
 		fprintf(stderr, "Failed to change current working directory to %s\n", baseDirectory);
-		return -4;
+		ZGQuit();
 	}
 #endif
 
@@ -2067,6 +2068,6 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	SDL_Quit();
+	ZGQuit();
     return 0;
 }

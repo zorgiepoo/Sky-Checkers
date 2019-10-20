@@ -18,6 +18,7 @@
  */
 
 #include "texture.h"
+#include "quit.h"
 
 static void *create8BitPixelDataWithAlpha(SDL_Surface *surface)
 {
@@ -28,7 +29,7 @@ static void *create8BitPixelDataWithAlpha(SDL_Surface *surface)
 	if (pixelData == NULL)
 	{
 		fprintf(stderr, "Error: failed to allocate pixel data\n");
-		abort();
+		ZGQuit();
 	}
 	
 	uint8_t *surfacePixelData = surface->pixels;
@@ -71,7 +72,7 @@ TextureObject loadTexture(Renderer *renderer, const char *filePath)
 	if (texImage == NULL)
 	{
 		fprintf(stderr, "Couldn't load texture: %s\n", filePath);
-		SDL_Quit();
+		ZGQuit();
 	}
 	
 	TextureObject texture = surfaceToTexture(renderer, texImage);
