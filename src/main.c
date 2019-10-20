@@ -30,6 +30,7 @@
 #include "network.h"
 #include "mt_random.h"
 #include "quit.h"
+#include "time.h"
 
 #define MATH_3D_IMPLEMENTATION
 #include "math_3d.h"
@@ -945,11 +946,11 @@ void drawFramesPerSecond(Renderer *renderer)
 
     if (last_frame_time < 0.0)
 	{
-		last_frame_time = SDL_GetTicks() / 1000.0;
+		last_frame_time = ZGGetTicks() / 1000.0;
         last_fps_time = last_frame_time;
     }
 
-	now = SDL_GetTicks() / 1000.0;
+	now = ZGGetTicks() / 1000.0;
     last_frame_time = now;
     dt_fps = now - last_fps_time;
 
@@ -978,7 +979,7 @@ static void drawPings(Renderer *renderer)
 {
 	if (gNetworkConnection != NULL)
 	{
-		double currentTime = SDL_GetTicks() / 1000.0;
+		double currentTime = ZGGetTicks() / 1000.0;
 		static double lastPingDisplayTime = -1.0;
 		
 		if (gNetworkConnection->type == NETWORK_CLIENT_TYPE)
@@ -1668,7 +1669,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawSc
 					}
 					else if (gEscapeHeldDownTimer == 0)
 					{
-						gEscapeHeldDownTimer = SDL_GetTicks();
+						gEscapeHeldDownTimer = ZGGetTicks();
 					}
 				}
 			}
@@ -1766,7 +1767,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawSc
 			break;
 	}
 	
-	if (gGameState == GAME_STATE_ON && gEscapeHeldDownTimer > 0 && SDL_GetTicks() - gEscapeHeldDownTimer > 700)
+	if (gGameState == GAME_STATE_ON && gEscapeHeldDownTimer > 0 && ZGGetTicks() - gEscapeHeldDownTimer > 700)
 	{
 		exitGame(window);
 	}
@@ -1819,7 +1820,7 @@ static void eventLoop(Renderer *renderer, SDL_Joystick **joysticks)
 		static double lastFrameTime = 0.0;
 		static double cyclesLeftOver = 0.0;
 		
-		double currentTime = SDL_GetTicks() / 1000.0;
+		double currentTime = ZGGetTicks() / 1000.0;
 		double updateIterations = ((currentTime - lastFrameTime) + cyclesLeftOver);
 		
 		if (updateIterations > MAX_ITERATIONS)
@@ -1866,7 +1867,7 @@ static void eventLoop(Renderer *renderer, SDL_Joystick **joysticks)
 			// time how long each draw-swap-delay cycle takes and adjust the delay to get closer to target framerate
 			if (thenTicks > 0)
 			{
-				nowTicks = SDL_GetTicks();
+				nowTicks = ZGGetTicks();
 				delay += (1000 / fps - (nowTicks - thenTicks));
 				thenTicks = nowTicks;
 
@@ -1875,7 +1876,7 @@ static void eventLoop(Renderer *renderer, SDL_Joystick **joysticks)
 			}
 			else
 			{
-				thenTicks = SDL_GetTicks();
+				thenTicks = ZGGetTicks();
 			}
 
 			SDL_Delay(delay);

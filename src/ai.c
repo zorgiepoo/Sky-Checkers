@@ -23,6 +23,7 @@
 #include "network.h"
 #include "mt_random.h"
 #include "scenery.h"
+#include "time.h"
 
 static void setNewDirection(Character *character);
 static void directCharacterBasedOnCollisions(Character *character, float currentTime);
@@ -235,7 +236,7 @@ static void shootWeaponProjectile(Character *character, float currentTime)
 	}
 	
 	// If the tile the AI is on has been colored for a while, don't let them react fast enough to fire back
-	uint32_t ticks = SDL_GetTicks();
+	uint32_t ticks = ZGGetTicks();
 	if (gTiles[tileIndex].colorTime > 0 && ticks >= gTiles[tileIndex].colorTime + 350)
 	{
 		return;

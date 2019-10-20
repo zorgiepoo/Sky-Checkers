@@ -23,6 +23,7 @@
 #include "ai.h"
 #include "network.h"
 #include "audio.h"
+#include "time.h"
 
 #define TILE_FALLING_SPEED 25.4237f
 
@@ -203,7 +204,7 @@ static void sendPing(void)
 	{
 		GameMessage message;
 		message.type = PING_MESSAGE_TYPE;
-		message.pingTimestamp = SDL_GetTicks();
+		message.pingTimestamp = ZGGetTicks();
 		
 		if (gNetworkConnection->type == NETWORK_CLIENT_TYPE)
 		{
@@ -220,7 +221,7 @@ static void clearPredictedColors(void)
 {
 	if (gNetworkConnection != NULL && gNetworkConnection->type == NETWORK_CLIENT_TYPE)
 	{
-		uint32_t currentTime = SDL_GetTicks();
+		uint32_t currentTime = ZGGetTicks();
 		
 		for (int tileIndex = 0; tileIndex < NUMBER_OF_TILES; tileIndex++)
 		{
@@ -242,7 +243,7 @@ static void colorTile(int tileIndex, Character *character)
 		gTiles[tileIndex].blue = weap->blue;
 		gTiles[tileIndex].green = weap->green;
 		
-		uint32_t currentTime = SDL_GetTicks();
+		uint32_t currentTime = ZGGetTicks();
 		
 		if (gNetworkConnection != NULL)
 		{

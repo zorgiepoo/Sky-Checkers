@@ -21,6 +21,7 @@
 #include "animation.h"
 #include "game_menus.h"
 #include "audio.h"
+#include "time.h"
 
 #include <inttypes.h>
 
@@ -72,7 +73,7 @@ static void cleanupStateFromNetwork(void);
 void setPredictedDirection(Character *character, int direction)
 {
 	character->predictedDirection = direction;
-	character->predictedDirectionTime = SDL_GetTicks() + gNetworkConnection->serverHalfPing;
+	character->predictedDirectionTime = ZGGetTicks() + gNetworkConnection->serverHalfPing;
 }
 
 // previousMovement->ticks <= renderTime < nextMovement->ticks
@@ -287,7 +288,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 							gNetworkConnection->characterTriggerMessages = malloc(sizeof(*gNetworkConnection->characterTriggerMessages) * gNetworkConnection->characterTriggerMessagesCapacity);
 						}
 						
-						message.ticks = SDL_GetTicks() - gNetworkConnection->serverHalfPing;
+						message.ticks = ZGGetTicks() - gNetworkConnection->serverHalfPing;
 						
 						bool foundReusableMessage = false;
 						for (uint32_t messageIndex = 0; messageIndex < gNetworkConnection->characterTriggerMessagesCount; messageIndex++)
@@ -334,7 +335,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					break;
 				case PONG_MESSAGE_TYPE:
 				{
-					uint32_t currentTicks = SDL_GetTicks();
+					uint32_t currentTicks = ZGGetTicks();
 					uint32_t halfPingTime = (uint32_t)((currentTicks - message.pongTimestamp) / 2.0f);
 					
 					if (gNetworkConnection->type == NETWORK_CLIENT_TYPE)
@@ -401,7 +402,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 				}
 				case CHARACTER_MOVED_UPDATE_MESSAGE_TYPE:
 				{
-					uint32_t currentTicks = SDL_GetTicks();
+					uint32_t currentTicks = ZGGetTicks();
 					
 					if (!gGameShouldReset && currentTicks >= gNetworkConnection->serverHalfPing)
 					{
@@ -546,7 +547,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 	
 	if (gNetworkConnection != NULL && gNetworkConnection->type == NETWORK_CLIENT_TYPE)
 	{
-		uint32_t currentTime = SDL_GetTicks();
+		uint32_t currentTime = ZGGetTicks();
 		if (currentTime > 0)
 		{
 			uint32_t renderTime = currentTime - (uint32_t)(3 * gNetworkConnection->serverHalfPing);
@@ -826,7 +827,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 	
 	while (!needsToQuit)
 	{
-		uint32_t timeBeforeProcessing = SDL_GetTicks();
+		uint32_t timeBeforeProcessing = ZGGetTicks();
 		
 		uint32_t messagesCount = 0;
 		GameMessage *messagesAvailable = popNetworkMessages(&gGameMessagesToNet, &messagesCount);
@@ -1257,7 +1258,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 		}
 		
 		// 4 seconds is a long time without hearing back from a client
-		uint32_t currentTime = SDL_GetTicks();
+		uint32_t currentTime = ZGGetTicks();
 		for (uint8_t addressIndex = 0; addressIndex < (int)(sizeof(lastPongReceivedTimestamps) / sizeof(lastPongReceivedTimestamps[0])); addressIndex++)
 		{
 			if (lastPongReceivedTimestamps[addressIndex] != 0 && currentTime - lastPongReceivedTimestamps[addressIndex] >= 4000)
@@ -1323,7 +1324,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 										addressIndex = gCurrentSlot;
 										gNetworkConnection->clientAddresses[addressIndex] = address;
 										triggerIncomingPacketNumbers[addressIndex]++;
-										lastPongReceivedTimestamps[addressIndex] = SDL_GetTicks();
+										lastPongReceivedTimestamps[addressIndex] = ZGGetTicks();
 										
 										SDL_LockMutex(gCurrentSlotAndClientStatesMutex);
 										gCurrentSlot++;
@@ -1522,7 +1523,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 									message.pongTimestamp = timestamp;
 									pushNetworkMessage(&gGameMessagesFromNet, message);
 									
-									lastPongReceivedTimestamps[addressIndex] = SDL_GetTicks();
+									lastPongReceivedTimestamps[addressIndex] = ZGGetTicks();
 								}
 							}
 						}
@@ -1544,7 +1545,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 		
 		if (!needsToQuit)
 		{
-			uint32_t timeAfterProcessing = SDL_GetTicks();
+			uint32_t timeAfterProcessing = ZGGetTicks();
 			uint32_t deltaProcessingTime = timeAfterProcessing - timeBeforeProcessing;
 			const uint32_t targetDelay = 5;
 			
@@ -1578,13 +1579,13 @@ int clientNetworkThread(void *context)
 	welcomeMessage.welcomeMessage.netName = gUserNameString;
 	sendToServer(welcomeMessage);
 	
-	uint32_t lastPongReceivedTimestamp = SDL_GetTicks();
+	uint32_t lastPongReceivedTimestamp = ZGGetTicks();
 	
 	bool needsToQuit = false;
 	
 	while (!needsToQuit)
 	{
-		uint32_t timeBeforeProcessing = SDL_GetTicks();
+		uint32_t timeBeforeProcessing = ZGGetTicks();
 		
 		uint32_t messagesCount = 0;
 		GameMessage *messagesAvailable = popNetworkMessages(&gGameMessagesToNet, &messagesCount);
@@ -1770,7 +1771,7 @@ int clientNetworkThread(void *context)
 		}
 		
 		// 4 seconds is a long time without hearing back from server
-		if (SDL_GetTicks() - lastPongReceivedTimestamp >= 4000)
+		if (ZGGetTicks() - lastPongReceivedTimestamp >= 4000)
 		{
 			GameMessage message;
 			message.type = QUIT_MESSAGE_TYPE;
@@ -2335,7 +2336,7 @@ int clientNetworkThread(void *context)
 								message.pongTimestamp = timestamp;
 								pushNetworkMessage(&gGameMessagesFromNet, message);
 								
-								lastPongReceivedTimestamp = SDL_GetTicks();
+								lastPongReceivedTimestamp = ZGGetTicks();
 							}
 						}
 						else if (messageTag == QUIT_MESSAGE_TAG)
@@ -2356,7 +2357,7 @@ int clientNetworkThread(void *context)
 		
 		if (!needsToQuit)
 		{
-			uint32_t timeAfterProcessing = SDL_GetTicks();
+			uint32_t timeAfterProcessing = ZGGetTicks();
 			uint32_t deltaProcessingTime = timeAfterProcessing - timeBeforeProcessing;
 			const uint32_t targetDelay = 5;
 			
