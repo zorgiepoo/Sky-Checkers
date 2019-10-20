@@ -20,7 +20,6 @@
 #include "network.h"
 #include "animation.h"
 #include "game_menus.h"
-#include "utilities.h"
 #include "audio.h"
 
 #include <inttypes.h>

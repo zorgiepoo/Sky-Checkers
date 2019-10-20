@@ -22,7 +22,6 @@
 #include "text.h"
 #include "network.h"
 #include "audio.h"
-#include "utilities.h" // for SDL_Terminate()
 #include "math_3d.h"
 #include "renderer.h"
 

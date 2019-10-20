@@ -22,7 +22,6 @@
 
 #ifdef MAC_OS_X
 #include "renderer_metal.h"
-#include "utilities.h"
 #endif
 
 #ifdef WINDOWS

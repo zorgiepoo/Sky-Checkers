@@ -21,7 +21,8 @@
 #include "collision.h"
 #include "text.h"
 #include "network.h"
-#include "utilities.h"
+#include "texture.h"
+#include "mt_random.h"
 
 int gAIMode;
 int gAINetMode = 5; // AI_EASY_MODE

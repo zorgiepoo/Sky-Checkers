@@ -18,10 +18,10 @@
  */
 
 #include "scenery.h"
-#include "utilities.h"
 #include "console.h"
 #include "collision.h"
 #include "math_3d.h"
+#include "texture.h"
 
 #define TILE_TEXTURE1_RED 0.8f
 #define TILE_TEXTURE1_GREEN 0.8f

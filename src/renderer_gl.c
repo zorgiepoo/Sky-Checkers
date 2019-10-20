@@ -20,7 +20,7 @@
 #include "renderer_gl.h"
 
 #include "renderer_projection.h"
-#include "utilities.h"
+#include "texture.h"
 
 #ifdef WINDOWS
 #include <GL/glew.h>

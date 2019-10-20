@@ -19,6 +19,7 @@
 		721B0022204A47C1005AF984 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721B0021204A47C1005AF984 /* SDL2.framework */; };
 		721B002C204A4861005AF984 /* SDL2.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 721B0021204A47C1005AF984 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		7272B29E21E5CBEB00C305D3 /* renderer_projection.c in Sources */ = {isa = PBXBuildFile; fileRef = 7272B29D21E5CBEB00C305D3 /* renderer_projection.c */; };
+		727DAE23235BFFBB0030B29D /* mt_random.c in Sources */ = {isa = PBXBuildFile; fileRef = 727DAE22235BFFBB0030B29D /* mt_random.c */; };
 		7282C625231CEC640063D3CB /* audio_osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 7282C624231CEC640063D3CB /* audio_osx.m */; };
 		7282C627231CEE3C0063D3CB /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7282C626231CEE3C0063D3CB /* AVFoundation.framework */; };
 		72A14F3121A71C6900606E14 /* renderer.c in Sources */ = {isa = PBXBuildFile; fileRef = 72A14F2F21A71C6700606E14 /* renderer.c */; };
@@ -30,7 +31,7 @@
 		774686A20B750F7200F73E92 /* animation.c in Sources */ = {isa = PBXBuildFile; fileRef = 774686A00B750F7200F73E92 /* animation.c */; };
 		774A44200B2BEA58000C04D9 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 774A441E0B2BEA57000C04D9 /* main.c */; };
 		774A44610B2BEB46000C04D9 /* scenery.c in Sources */ = {isa = PBXBuildFile; fileRef = 774A445F0B2BEB46000C04D9 /* scenery.c */; };
-		774A450F0B2BF1FC000C04D9 /* utilities.c in Sources */ = {isa = PBXBuildFile; fileRef = 774A450D0B2BF1FC000C04D9 /* utilities.c */; };
+		774A450F0B2BF1FC000C04D9 /* texture.c in Sources */ = {isa = PBXBuildFile; fileRef = 774A450D0B2BF1FC000C04D9 /* texture.c */; };
 		774A47460B2C8A7E000C04D9 /* characters.c in Sources */ = {isa = PBXBuildFile; fileRef = 774A47440B2C8A7E000C04D9 /* characters.c */; };
 		774F33D90BB48A9A00884B83 /* menu.c in Sources */ = {isa = PBXBuildFile; fileRef = 774F33D70BB48A9A00884B83 /* menu.c */; };
 		776592650BA35B4300167AF7 /* text.c in Sources */ = {isa = PBXBuildFile; fileRef = 776592630BA35B4300167AF7 /* text.c */; };
@@ -79,6 +80,8 @@
 		721B0021204A47C1005AF984 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = Frameworks/SDL2.framework; sourceTree = "<group>"; };
 		7272B29C21E5CBEB00C305D3 /* renderer_projection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = renderer_projection.h; path = ../src/renderer_projection.h; sourceTree = "<group>"; };
 		7272B29D21E5CBEB00C305D3 /* renderer_projection.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = renderer_projection.c; path = ../src/renderer_projection.c; sourceTree = "<group>"; };
+		727DAE21235BFFBB0030B29D /* mt_random.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = mt_random.h; path = ../src/mt_random.h; sourceTree = "<group>"; };
+		727DAE22235BFFBB0030B29D /* mt_random.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = mt_random.c; path = ../src/mt_random.c; sourceTree = "<group>"; };
 		7282C624231CEC640063D3CB /* audio_osx.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = audio_osx.m; path = ../src/audio_osx.m; sourceTree = "<group>"; };
 		7282C626231CEE3C0063D3CB /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		72A14F1721A5E26200606E14 /* math_3d.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = math_3d.h; path = ../src/math_3d.h; sourceTree = "<group>"; };
@@ -100,8 +103,8 @@
 		774A441F0B2BEA57000C04D9 /* maincore.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = maincore.h; path = ../src/maincore.h; sourceTree = "<group>"; };
 		774A445E0B2BEB46000C04D9 /* scenery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = scenery.h; path = ../src/scenery.h; sourceTree = "<group>"; };
 		774A445F0B2BEB46000C04D9 /* scenery.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = scenery.c; path = ../src/scenery.c; sourceTree = "<group>"; };
-		774A450C0B2BF1FC000C04D9 /* utilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = utilities.h; path = ../src/utilities.h; sourceTree = "<group>"; };
-		774A450D0B2BF1FC000C04D9 /* utilities.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = utilities.c; path = ../src/utilities.c; sourceTree = "<group>"; };
+		774A450C0B2BF1FC000C04D9 /* texture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = texture.h; path = ../src/texture.h; sourceTree = "<group>"; };
+		774A450D0B2BF1FC000C04D9 /* texture.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = texture.c; path = ../src/texture.c; sourceTree = "<group>"; };
 		774A47430B2C8A7E000C04D9 /* characters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = characters.h; path = ../src/characters.h; sourceTree = "<group>"; };
 		774A47440B2C8A7E000C04D9 /* characters.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = characters.c; path = ../src/characters.c; sourceTree = "<group>"; };
 		774F33D60BB48A9A00884B83 /* menu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = menu.h; path = ../src/menu.h; sourceTree = "<group>"; };
@@ -224,8 +227,10 @@
 				7272B29C21E5CBEB00C305D3 /* renderer_projection.h */,
 				7272B29D21E5CBEB00C305D3 /* renderer_projection.c */,
 				721A007621AB11CC0099D093 /* shaders.metal */,
-				774A450C0B2BF1FC000C04D9 /* utilities.h */,
-				774A450D0B2BF1FC000C04D9 /* utilities.c */,
+				774A450C0B2BF1FC000C04D9 /* texture.h */,
+				774A450D0B2BF1FC000C04D9 /* texture.c */,
+				727DAE21235BFFBB0030B29D /* mt_random.h */,
+				727DAE22235BFFBB0030B29D /* mt_random.c */,
 				776592620BA35B4300167AF7 /* text.h */,
 				776592630BA35B4300167AF7 /* text.c */,
 				72011848232758ED004C2532 /* font.h */,
@@ -342,7 +347,7 @@
 			files = (
 				774A44200B2BEA58000C04D9 /* main.c in Sources */,
 				774A44610B2BEB46000C04D9 /* scenery.c in Sources */,
-				774A450F0B2BF1FC000C04D9 /* utilities.c in Sources */,
+				774A450F0B2BF1FC000C04D9 /* texture.c in Sources */,
 				774A47460B2C8A7E000C04D9 /* characters.c in Sources */,
 				776E48CE0B2E53E100AA3B6F /* input.c in Sources */,
 				7744BFA40B33736900BD1D5D /* collision.c in Sources */,
@@ -360,6 +365,7 @@
 				772B6A850D15CBA000A216BD /* network.c in Sources */,
 				72A14F3121A71C6900606E14 /* renderer.c in Sources */,
 				721A007121AA7B420099D093 /* renderer_metal.m in Sources */,
+				727DAE23235BFFBB0030B29D /* mt_random.c in Sources */,
 				7282C625231CEC640063D3CB /* audio_osx.m in Sources */,
 				770FFA0810B8F465009FD46A /* osx.m in Sources */,
 			);

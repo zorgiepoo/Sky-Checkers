@@ -28,7 +28,7 @@
 #include "audio.h"
 #include "game_menus.h"
 #include "network.h"
-#include "utilities.h"
+#include "mt_random.h"
 
 #define MATH_3D_IMPLEMENTATION
 #include "math_3d.h"

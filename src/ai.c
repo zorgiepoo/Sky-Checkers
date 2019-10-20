@@ -21,7 +21,7 @@
 #include "characters.h"
 #include "collision.h"
 #include "network.h"
-#include "utilities.h"
+#include "mt_random.h"
 #include "scenery.h"
 
 static void setNewDirection(Character *character);

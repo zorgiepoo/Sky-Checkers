@@ -21,7 +21,6 @@
 
 #include "menu.h"
 #include "characters.h" // for constants RIGHT, LEFT, UP, DOWN
-#include "utilities.h"
 #include "audio.h"
 
 /*

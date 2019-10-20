@@ -19,7 +19,6 @@
 
 #include "animation.h"
 #include "collision.h"
-#include "utilities.h"
 #include "weapon.h"
 #include "ai.h"
 #include "network.h"

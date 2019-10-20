@@ -22,9 +22,6 @@
 #include "maincore.h"
 #include "renderer.h"
 
-void mt_init(void);
-unsigned long mt_random(void);
-
 TextureObject loadTexture(Renderer *renderer, const char *filePath);
 
 TextureObject surfaceToTexture(Renderer *renderer, SDL_Surface *surface);
