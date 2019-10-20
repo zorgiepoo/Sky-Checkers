@@ -77,31 +77,31 @@ void getDefaultUserName(char *defaultUserName, int maxLength)
 
 - (void)windowWillEnterFullScreen:(NSNotification *)notification
 {
-	_renderer->macosInFullscreenTransition = SDL_TRUE;
+	_renderer->macosInFullscreenTransition = true;
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification *)notification
 {
-	_renderer->macosInFullscreenTransition = SDL_FALSE;
-	_renderer->fullscreen = SDL_TRUE;
+	_renderer->macosInFullscreenTransition = false;
+	_renderer->fullscreen = true;
 }
 
 - (void)windowWillExitFullScreen:(NSNotification *)notification
 {
-	_renderer->macosInFullscreenTransition = SDL_TRUE;
+	_renderer->macosInFullscreenTransition = true;
 }
 
 - (void)windowDidExitFullScreen:(NSNotification *)notification
 {
-	_renderer->macosInFullscreenTransition = SDL_FALSE;
-	_renderer->fullscreen = SDL_FALSE;
+	_renderer->macosInFullscreenTransition = false;
+	_renderer->fullscreen = false;
 }
 
 @end
 
 static ZGFullscreenHandler *gFullscreenHandler;
 
-void registerForNativeFullscreenEvents(void *windowReference, Renderer *renderer, SDL_bool toggleFullscreen)
+void registerForNativeFullscreenEvents(void *windowReference, Renderer *renderer, bool toggleFullscreen)
 {
 	NSWindow *window = (__bridge NSWindow *)windowReference;
 	
@@ -124,7 +124,7 @@ void registerForNativeFullscreenEvents(void *windowReference, Renderer *renderer
 	}
 }
 
-void setVsyncForGL(SDL_bool enabled)
+void setVsyncForGL(bool enabled)
 {
 	NSOpenGLContext *context = [NSOpenGLContext currentContext];
 	GLint value = !!enabled;

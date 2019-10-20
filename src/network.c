@@ -78,20 +78,20 @@ void setPredictedDirection(Character *character, int direction)
 // previousMovement->ticks <= renderTime < nextMovement->ticks
 static void interpolateCharacter(Character *character, CharacterMovement *previousMovement, CharacterMovement *nextMovement, uint32_t renderTime)
 {
-	SDL_bool characterAlive = CHARACTER_IS_ALIVE(character);
-	SDL_bool characterShouldBeAlive = !previousMovement->dead;
+	bool characterAlive = CHARACTER_IS_ALIVE(character);
+	bool characterShouldBeAlive = !previousMovement->dead;
 	if (characterAlive || characterShouldBeAlive)
 	{
 		if (characterShouldBeAlive && !characterAlive)
 		{
-			character->active = SDL_TRUE;
+			character->active = true;
 		}
 		else if (!characterShouldBeAlive && characterAlive)
 		{
-			character->active = SDL_FALSE;
+			character->active = false;
 		}
 		
-		SDL_bool checkDiscrepancy = SDL_TRUE;
+		bool checkDiscrepancy = true;
 		// Alter the previous movement to our prediction
 		if (character->predictedDirectionTime > 0)
 		{
@@ -116,7 +116,7 @@ static void interpolateCharacter(Character *character, CharacterMovement *previo
 					character->predictedDirectionTime = 0;
 				}
 				
-				checkDiscrepancy = SDL_FALSE;
+				checkDiscrepancy = false;
 			}
 		}
 		
@@ -206,7 +206,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 				case PING_MESSAGE_TYPE:
 					break;
 				case QUIT_MESSAGE_TYPE:
-					endGame(window, SDL_TRUE);
+					endGame(window, true);
 					cleanupStateFromNetwork();
 					
 					closeSocket(gNetworkConnection->socket);
@@ -289,14 +289,14 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 						
 						message.ticks = SDL_GetTicks() - gNetworkConnection->serverHalfPing;
 						
-						SDL_bool foundReusableMessage = SDL_FALSE;
+						bool foundReusableMessage = false;
 						for (uint32_t messageIndex = 0; messageIndex < gNetworkConnection->characterTriggerMessagesCount; messageIndex++)
 						{
 							if (gNetworkConnection->characterTriggerMessages[messageIndex].ticks == 0)
 							{
 								// Found a message we can reuse
 								gNetworkConnection->characterTriggerMessages[messageIndex] = message;
-								foundReusableMessage = SDL_TRUE;
+								foundReusableMessage = true;
 								break;
 							}
 						}
@@ -405,7 +405,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					
 					if (!gGameShouldReset && currentTicks >= gNetworkConnection->serverHalfPing)
 					{
-						SDL_bool shouldSetCharacterPosition = SDL_FALSE;
+						bool shouldSetCharacterPosition = false;
 						if (gNetworkConnection->serverHalfPing > 0)
 						{
 							CharacterMovement newMovement;
@@ -422,25 +422,25 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 							
 							if (gNetworkConnection->characterMovementCounts[characterIndex] == 0)
 							{
-								shouldSetCharacterPosition = SDL_TRUE;
+								shouldSetCharacterPosition = true;
 							}
 							
 							gNetworkConnection->characterMovementCounts[characterIndex]++;
 						}
 						else
 						{
-							shouldSetCharacterPosition = SDL_TRUE;
+							shouldSetCharacterPosition = true;
 						}
 						
 						if (shouldSetCharacterPosition)
 						{
 							Character *character = getCharacter(message.movedUpdate.characterID);
 							
-							character->active = SDL_TRUE;
+							character->active = true;
 							character->x = message.movedUpdate.x;
 							character->y = message.movedUpdate.y;
 							
-							SDL_bool characterIsDead = !CHARACTER_IS_ALIVE(character);
+							bool characterIsDead = !CHARACTER_IS_ALIVE(character);
 							if (characterIsDead != message.movedUpdate.dead)
 							{
 								if (!characterIsDead)
@@ -467,7 +467,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					break;
 				}
 				case GAME_RESET_MESSAGE_TYPE:
-					gGameShouldReset = SDL_TRUE;
+					gGameShouldReset = true;
 					
 					memset(gNetworkConnection->characterMovements, 0, sizeof(gNetworkConnection->characterMovements));
 					memset(gNetworkConnection->characterMovementCounts, 0, sizeof(gNetworkConnection->characterMovementCounts));
@@ -505,7 +505,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					// server is pending
 					gPinkBubbleGum.netState = NETWORK_PENDING_STATE;
 					
-					initGame(window, SDL_TRUE);
+					initGame(window, true);
 					
 					gPinkBubbleGum.lives = gNetworkConnection->characterLives;
 					gRedRover.lives = gNetworkConnection->characterLives;
@@ -586,11 +586,11 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 						uint8_t tileIndex = message->fallingTile.tileIndex;
 						if (message->fallingTile.dead)
 						{
-							gTiles[tileIndex].isDead = SDL_TRUE;
+							gTiles[tileIndex].isDead = true;
 						}
 						else
 						{
-							gTiles[tileIndex].state = SDL_FALSE;
+							gTiles[tileIndex].state = false;
 						}
 						
 						gTiles[tileIndex].z -= OBJECT_FALLING_STEP;
@@ -822,7 +822,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 	
 	uint32_t lastPongReceivedTimestamps[3] = {0, 0, 0};
 	
-	SDL_bool needsToQuit = SDL_FALSE;
+	bool needsToQuit = false;
 	
 	while (!needsToQuit)
 	{
@@ -905,13 +905,13 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					}
 					else if (message.type != CHARACTER_MOVED_UPDATE_MESSAGE_TYPE)
 					{
-						SDL_bool foundAck = SDL_FALSE;
+						bool foundAck = false;
 						uint32_t maxPacketCount = receivedAckPacketCount < (uint32_t)receivedAckPacketsCapacity ? receivedAckPacketCount : (uint32_t)receivedAckPacketsCapacity;
 						for (uint32_t packetIndex = 0; packetIndex < maxPacketCount; packetIndex++)
 						{
 							if (message.packetNumber == receivedAckPacketNumbers[addressIndex][packetIndex])
 							{
-								foundAck = SDL_TRUE;
+								foundAck = true;
 								break;
 							}
 						}
@@ -945,7 +945,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							sendData(gNetworkConnection->socket, &tag, sizeof(tag), address);
 						}
 						
-						needsToQuit = SDL_TRUE;
+						needsToQuit = true;
 						
 						break;
 					}
@@ -1463,13 +1463,13 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 								{
 									uint8_t addressIndex = characterID - 1;
 									
-									SDL_bool foundAck = SDL_FALSE;
+									bool foundAck = false;
 									uint32_t maxPacketCount = receivedAckPacketCount < (uint32_t)receivedAckPacketsCapacity ? receivedAckPacketCount : (uint32_t)receivedAckPacketsCapacity;
 									for (uint32_t packetIndex = 0; packetIndex < maxPacketCount; packetIndex++)
 									{
 										if (packetNumber == receivedAckPacketNumbers[addressIndex][packetIndex])
 										{
-											foundAck = SDL_TRUE;
+											foundAck = true;
 											break;
 										}
 									}
@@ -1580,7 +1580,7 @@ int clientNetworkThread(void *context)
 	
 	uint32_t lastPongReceivedTimestamp = SDL_GetTicks();
 	
-	SDL_bool needsToQuit = SDL_FALSE;
+	bool needsToQuit = false;
 	
 	while (!needsToQuit)
 	{
@@ -1622,13 +1622,13 @@ int clientNetworkThread(void *context)
 					}
 					else
 					{
-						SDL_bool foundAck = SDL_FALSE;
+						bool foundAck = false;
 						uint32_t maxPacketCount = receivedAckPacketCount < (uint32_t)receivedAckPacketsCapacity ? receivedAckPacketCount + 1 : (uint32_t)receivedAckPacketsCapacity;
 						for (uint32_t packetIndex = 0; packetIndex < maxPacketCount; packetIndex++)
 						{
 							if (message.packetNumber == receivedAckPacketNumbers[packetIndex])
 							{
-								foundAck = SDL_TRUE;
+								foundAck = true;
 								break;
 							}
 						}
@@ -1663,7 +1663,7 @@ int clientNetworkThread(void *context)
 						uint8_t quitTag = QUIT_MESSAGE_TAG;
 						sendData(gNetworkConnection->socket, &quitTag, sizeof(quitTag), &gNetworkConnection->hostAddress);
 						
-						needsToQuit = SDL_TRUE;
+						needsToQuit = true;
 						
 						break;
 					}
@@ -1776,7 +1776,7 @@ int clientNetworkThread(void *context)
 			message.type = QUIT_MESSAGE_TYPE;
 			pushNetworkMessage(&gGameMessagesFromNet, message);
 			
-			needsToQuit = SDL_TRUE;
+			needsToQuit = true;
 		}
 		
 		while (!needsToQuit)
@@ -1815,7 +1815,7 @@ int clientNetworkThread(void *context)
 							message.type = QUIT_MESSAGE_TYPE;
 							pushNetworkMessage(&gGameMessagesFromNet, message);
 							
-							needsToQuit = SDL_TRUE;
+							needsToQuit = true;
 							
 							break;
 						}
@@ -2291,13 +2291,13 @@ int clientNetworkThread(void *context)
 							{
 								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
 								
-								SDL_bool foundAck = SDL_FALSE;
+								bool foundAck = false;
 								uint32_t maxPacketCount = receivedAckPacketCount < (uint32_t)receivedAckPacketsCapacity ? receivedAckPacketCount : (uint32_t)receivedAckPacketsCapacity;
 								for (uint32_t packetIndex = 0; packetIndex < maxPacketCount; packetIndex++)
 								{
 									if (packetNumber == receivedAckPacketNumbers[packetIndex])
 									{
-										foundAck = SDL_TRUE;
+										foundAck = true;
 										break;
 									}
 								}
@@ -2345,7 +2345,7 @@ int clientNetworkThread(void *context)
 							message.type = QUIT_MESSAGE_TYPE;
 							pushNetworkMessage(&gGameMessagesFromNet, message);
 							
-							needsToQuit = SDL_TRUE;
+							needsToQuit = true;
 							
 							break;
 						}
@@ -2388,14 +2388,14 @@ void initializeNetworkBuffers(void)
 
 static void _pushNetworkMessage(GameMessageArray *messageArray, GameMessage message)
 {
-	SDL_bool appending = SDL_TRUE;
+	bool appending = true;
 	
 	if (messageArray->messages == NULL)
 	{
 		messageArray->messages = malloc(messageArray->capacity * sizeof(message));
 		if (messageArray->messages == NULL)
 		{
-			appending = SDL_FALSE;
+			appending = false;
 		}
 	}
 	
@@ -2405,7 +2405,7 @@ static void _pushNetworkMessage(GameMessageArray *messageArray, GameMessage mess
 		void *newBuffer = realloc(messageArray->messages, messageArray->capacity * sizeof(message));
 		if (newBuffer == NULL)
 		{
-			appending = SDL_FALSE;
+			appending = false;
 		}
 		else
 		{

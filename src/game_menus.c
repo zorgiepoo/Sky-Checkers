@@ -24,6 +24,7 @@
 #include "audio.h"
 #include "math_3d.h"
 #include "renderer.h"
+#include <stdbool.h>
 
 Menu *gConfigureLivesMenu;
 Menu *gScreenResolutionVideoOptionMenu;
@@ -36,13 +37,13 @@ Menu *gRedRoverPlayerOptionsMenu;
 Menu *gGreenTreePlayerOptionsMenu;
 Menu *gBlueLightningPlayerOptionsMenu;
 
-SDL_bool gDrawArrowsForCharacterLivesFlag =		SDL_FALSE;
-SDL_bool gDrawArrowsForAIModeFlag =				SDL_FALSE;
-SDL_bool gDrawArrowsForNumberOfNetHumansFlag =	SDL_FALSE;
-SDL_bool gDrawArrowsForNetPlayerLivesFlag =		SDL_FALSE;
+bool gDrawArrowsForCharacterLivesFlag =		false;
+bool gDrawArrowsForAIModeFlag =				false;
+bool gDrawArrowsForNumberOfNetHumansFlag =	false;
+bool gDrawArrowsForNetPlayerLivesFlag =		false;
 
-SDL_bool gNetworkAddressFieldIsActive =			SDL_FALSE;
-SDL_bool gNetworkUserNameFieldIsActive =		SDL_FALSE;
+bool gNetworkAddressFieldIsActive =			false;
+bool gNetworkUserNameFieldIsActive =		false;
 
 // Variable that holds a keyCode for configuring keys (see convertKeyCodeToString() and menu configuration implementations)
 static char gKeyCode[64];
@@ -55,12 +56,12 @@ int gUserNameStringIndex = 4;
 
 static char *convertKeyCodeToString(unsigned theKeyCode);
 static unsigned getKey(void);
-static unsigned int getJoyStickTrigger(Sint16 *value, Uint8 *axis, Uint8 *hat, int *joy_id, SDL_bool *clear);
+static unsigned int getJoyStickTrigger(Sint16 *value, Uint8 *axis, Uint8 *hat, int *joy_id, bool *clear);
 
 static void drawUpAndDownArrowTriangles(Renderer *renderer, mat4_t modelViewMatrix)
 {
 	static BufferArrayObject vertexArrayObject;
-	static SDL_bool initializedBuffer;
+	static bool initializedBuffer;
 	if (!initializedBuffer)
 	{
 		float vertices[] =
@@ -75,7 +76,7 @@ static void drawUpAndDownArrowTriangles(Renderer *renderer, mat4_t modelViewMatr
 		};
 		
 		vertexArrayObject = createVertexArrayObject(renderer, vertices, sizeof(vertices));
-		initializedBuffer = SDL_TRUE;
+		initializedBuffer = true;
 	}
 	
 	// Because all opaque objects should be rendered first, we will draw a transparent object
@@ -96,7 +97,7 @@ void playGameAction(void *context)
 {
 	GameMenuContext *menuContext = context;
 	
-	initGame(menuContext->window, SDL_TRUE);
+	initGame(menuContext->window, true);
 }
 
 void drawNetworkPlayMenu(Renderer *renderer, color4_t preferredColor)
@@ -281,7 +282,7 @@ void networkServerPlayMenuAction(void *context)
 	memset(gClientStates, 0, sizeof(gClientStates));
 	
 	GameMenuContext *menuContext = context;
-	initGame(menuContext->window, SDL_TRUE);
+	initGame(menuContext->window, true);
 	
 	gRedRoverInput.character = gNetworkConnection->character;
 	gBlueLightningInput.character = gNetworkConnection->character;
@@ -1043,7 +1044,7 @@ void configureJoyStick(Input *input, int type)
 	Uint8 axis;
 	Uint8 hat;
 	int joy_id = -1;
-	SDL_bool clear;
+	bool clear;
 	
 	unsigned int trigger = getJoyStickTrigger(&value, &axis, &hat, &joy_id, &clear);
 	
@@ -1511,7 +1512,7 @@ void audioMusicOptionsMenuAction(void *context)
 	else
 	{
 		GameMenuContext *menuContext = context;
-		SDL_bool windowFocus = (SDL_GetWindowFlags(menuContext->window) & SDL_WINDOW_INPUT_FOCUS) != 0;
+		bool windowFocus = (SDL_GetWindowFlags(menuContext->window) & SDL_WINDOW_INPUT_FOCUS) != 0;
 		playMainMenuMusic(!windowFocus);
 	}
 }
@@ -2032,7 +2033,7 @@ static char *convertKeyCodeToString(unsigned theKeyCode)
 static unsigned getKey(void)
 {
 	SDL_Event event;
-	SDL_bool quit = SDL_FALSE;
+	bool quit = false;
 	unsigned key = 0;
 	
 	while (!quit)
@@ -2048,7 +2049,7 @@ static unsigned getKey(void)
 						key = event.key.keysym.scancode;
 					}
 					
-					quit = SDL_TRUE;
+					quit = true;
 					break;
 			}
 		}
@@ -2057,7 +2058,7 @@ static unsigned getKey(void)
 	return key;
 }
 
-unsigned int getJoyStickTrigger(Sint16 *value, Uint8 *axis, Uint8 *hat, int *joy_id, SDL_bool *clear)
+unsigned int getJoyStickTrigger(Sint16 *value, Uint8 *axis, Uint8 *hat, int *joy_id, bool *clear)
 {
 	SDL_Event event;
 	unsigned int trigger = JOY_NONE;
@@ -2065,13 +2066,13 @@ unsigned int getJoyStickTrigger(Sint16 *value, Uint8 *axis, Uint8 *hat, int *joy
 	*axis = JOY_AXIS_NONE;
 	*value = JOY_NONE;
 	*hat = JOY_HAT_NONE;
-	*clear = SDL_FALSE;
+	*clear = false;
 	
 	/*
 	 * When we are finished, end the execution of the function by returning the trigger.
 	 * The reason why we end the function instead of waiting for the loop to end with a boolean is that sometimes event.type can be both SDL_JOYAXISMOTION and SDL_JOYBUTTONDOWN when the user configures their controller
 	 */
-	while (SDL_TRUE)
+	while (true)
 	{
 		while (SDL_PollEvent(&event))
 		{
@@ -2083,7 +2084,7 @@ unsigned int getJoyStickTrigger(Sint16 *value, Uint8 *axis, Uint8 *hat, int *joy
 				
 				if (event.key.keysym.scancode == SDL_SCANCODE_SPACE)
 				{
-					*clear = SDL_TRUE;
+					*clear = true;
 					return trigger;
 				}
 				

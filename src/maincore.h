@@ -24,6 +24,7 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#include <stdbool.h>
 
 /* macOS */
 
@@ -94,18 +95,18 @@ typedef struct
 	SDL_Window *window;
 } GameMenuContext;
 
-void initGame(SDL_Window *window, SDL_bool firstGame);
-void endGame(SDL_Window *window, SDL_bool lastGame);
+void initGame(SDL_Window *window, bool firstGame);
+void endGame(SDL_Window *window, bool lastGame);
 
-extern SDL_bool gGameHasStarted;
-extern SDL_bool gGameShouldReset;
+extern bool gGameHasStarted;
+extern bool gGameShouldReset;
 extern int gGameWinner;
 extern int32_t gGameStartNumber;
-extern SDL_bool gDrawFPS;
-extern SDL_bool gDrawPings;
+extern bool gDrawFPS;
+extern bool gDrawPings;
 
 extern int gCharacterLives;
 extern int gCharacterNetLives;
 
-extern SDL_bool gAudioEffectsFlag;
-extern SDL_bool gAudioMusicFlag;
+extern bool gAudioEffectsFlag;
+extern bool gAudioMusicFlag;

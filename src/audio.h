@@ -42,8 +42,8 @@
 
 void initAudio(void);
 
-void playMainMenuMusic(SDL_bool paused);
-void playGameMusic(SDL_bool paused);
+void playMainMenuMusic(bool paused);
+void playGameMusic(bool paused);
 
 void stopMusic(void);
 void pauseMusic(void);

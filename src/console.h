@@ -32,7 +32,7 @@ void drawConsole(Renderer *renderer);
 
 void writeConsoleText(Uint8 text);
 
-SDL_bool performConsoleBackspace(void);
+bool performConsoleBackspace(void);
 
 void drawConsoleText(Renderer *renderer);
 

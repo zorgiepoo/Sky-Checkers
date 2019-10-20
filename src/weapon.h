@@ -29,11 +29,11 @@ typedef struct
 	float initialX, initialY;
 	float compensation;
 	
-	SDL_bool drawingState;
-	SDL_bool animationState;
+	bool drawingState;
+	bool animationState;
 	
 	int direction;
-	SDL_bool fired;
+	bool fired;
 } Weapon;
 
 void initWeapon(Weapon *weap);

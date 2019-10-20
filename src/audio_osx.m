@@ -182,7 +182,7 @@ void initAudio(void)
 	}
 }
 
-static void playMusicBuffer(SDL_bool paused, AVAudioPCMBuffer *buffer)
+static void playMusicBuffer(bool paused, AVAudioPCMBuffer *buffer)
 {
 	if (paused)
 	{
@@ -197,14 +197,14 @@ static void playMusicBuffer(SDL_bool paused, AVAudioPCMBuffer *buffer)
 	}
 }
 
-void playMainMenuMusic(SDL_bool paused)
+void playMainMenuMusic(bool paused)
 {
 	if (gAudioEngine == nil) return;
 
 	playMusicBuffer(paused, gMainMusicBuffer);
 }
 
-void playGameMusic(SDL_bool paused)
+void playGameMusic(bool paused)
 {
 	if (gAudioEngine == nil) return;
 

@@ -36,36 +36,36 @@
 // in seconds
 static const int NEW_GAME_WILL_BEGIN_DELAY =	3;
 
-SDL_bool gGameHasStarted;
-SDL_bool gGameShouldReset;
+bool gGameHasStarted;
+bool gGameShouldReset;
 int32_t gGameStartNumber;
 int gGameWinner;
 
 // Console flag indicating if we can use the console
-SDL_bool gConsoleFlag = SDL_FALSE;
+bool gConsoleFlag = false;
 
 // audio flags
-SDL_bool gAudioEffectsFlag = SDL_TRUE;
-SDL_bool gAudioMusicFlag = SDL_TRUE;
+bool gAudioEffectsFlag = true;
+bool gAudioMusicFlag = true;
 
 // video flags
-static SDL_bool gFpsFlag = SDL_FALSE;
-static SDL_bool gFullscreenFlag = SDL_FALSE;
-static SDL_bool gVsyncFlag = SDL_TRUE;
-static SDL_bool gFsaaFlag = SDL_TRUE;
+static bool gFpsFlag = false;
+static bool gFullscreenFlag = false;
+static bool gVsyncFlag = true;
+static bool gFsaaFlag = true;
 static int32_t gWindowWidth = 800;
 static int32_t gWindowHeight = 500;
 
-SDL_bool gValidDefaults = SDL_FALSE;
+bool gValidDefaults = false;
 
 // Lives
 int gCharacterLives =							5;
 int gCharacterNetLives =						5;
 
 // Fullscreen video state.
-static SDL_bool gConsoleActivated =				SDL_FALSE;
-SDL_bool gDrawFPS =								SDL_FALSE;
-SDL_bool gDrawPings = SDL_FALSE;
+static bool gConsoleActivated =				false;
+bool gDrawFPS =								false;
+bool gDrawPings = false;
 
 static GameState gGameState;
 
@@ -91,7 +91,7 @@ static void drawBlackBox(Renderer *renderer)
 {
 	static BufferArrayObject vertexArrayObject;
 	static BufferObject indicesBufferObject;
-	static SDL_bool initializedBuffers;
+	static bool initializedBuffers;
 	
 	if (!initializedBuffers)
 	{
@@ -112,7 +112,7 @@ static void drawBlackBox(Renderer *renderer)
 		vertexArrayObject = createVertexArrayObject(renderer, vertices, sizeof(vertices));
 		indicesBufferObject = createBufferObject(renderer, indices, sizeof(indices));
 		
-		initializedBuffers = SDL_TRUE;
+		initializedBuffers = true;
 	}
 	
 	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 0.0f, -22.0f});
@@ -176,27 +176,27 @@ static void initScene(Renderer *renderer)
 }
 
 #define MAX_EXPECTED_SCAN_LENGTH 512
-static SDL_bool scanExpectedString(FILE *fp, const char *expectedString)
+static bool scanExpectedString(FILE *fp, const char *expectedString)
 {
 	size_t expectedStringLength = strlen(expectedString);
 	if (expectedStringLength > MAX_EXPECTED_SCAN_LENGTH - 1)
 	{
-		return SDL_FALSE;
+		return false;
 	}
 	
 	char buffer[MAX_EXPECTED_SCAN_LENGTH] = {0};
 	if (fread(buffer, expectedStringLength, 1, fp) < 1)
 	{
-		return SDL_FALSE;
+		return false;
 	}
 	
 	return (strcmp(buffer, expectedString) == 0);
 }
 
-static SDL_bool scanLineTerminatingString(FILE *fp, char *destBuffer, size_t maxBufferSize)
+static bool scanLineTerminatingString(FILE *fp, char *destBuffer, size_t maxBufferSize)
 {
 	char *safeBuffer = calloc(maxBufferSize, 1);
-	if (safeBuffer == NULL) return SDL_FALSE;
+	if (safeBuffer == NULL) return false;
 	
 	size_t safeBufferIndex = 0;
 	while (safeBufferIndex < maxBufferSize - 1 && ferror(fp) == 0)
@@ -207,15 +207,15 @@ static SDL_bool scanLineTerminatingString(FILE *fp, char *destBuffer, size_t max
 		safeBuffer[safeBufferIndex++] = (char)byte;
 	}
 	
-	SDL_bool success;
+	bool success;
 	if (ferror(fp) != 0 || feof(fp) != 0 || safeBufferIndex >= maxBufferSize - 1)
 	{
-		success = SDL_FALSE;
+		success = false;
 	}
 	else
 	{
 		memcpy(destBuffer, safeBuffer, maxBufferSize);
-		success = SDL_TRUE;
+		success = true;
 	}
 	
 	free(safeBuffer);
@@ -223,32 +223,32 @@ static SDL_bool scanLineTerminatingString(FILE *fp, char *destBuffer, size_t max
 	return success;
 }
 
-static SDL_bool scanJoyGuidAndDescriptionString(FILE *fp, char *guidBuffer, char *descriptionBuffer)
+static bool scanJoyGuidAndDescriptionString(FILE *fp, char *guidBuffer, char *descriptionBuffer)
 {
 	char tempBuffer[MAX_JOY_GUID_BUFFER_LENGTH + MAX_JOY_DESCRIPTION_BUFFER_LENGTH + 2] = {0};
-	if (!scanLineTerminatingString(fp, tempBuffer, sizeof(tempBuffer))) return SDL_FALSE;
+	if (!scanLineTerminatingString(fp, tempBuffer, sizeof(tempBuffer))) return false;
 	
 	size_t length = strlen(tempBuffer);
-	if (length <= 3) return SDL_FALSE; // () + space at least
+	if (length <= 3) return false; // () + space at least
 	
-	if (tempBuffer[length - 1] != ')') return SDL_FALSE;
+	if (tempBuffer[length - 1] != ')') return false;
 	
 	char *lastOpenParenPtr = strrchr(tempBuffer, '(');
-	if (lastOpenParenPtr == NULL || lastOpenParenPtr >= &tempBuffer[length - 1]) return SDL_FALSE;
+	if (lastOpenParenPtr == NULL || lastOpenParenPtr >= &tempBuffer[length - 1]) return false;
 	
-	if (lastOpenParenPtr - tempBuffer < 1) return SDL_FALSE;
-	if (lastOpenParenPtr - tempBuffer - 1 >= MAX_JOY_GUID_BUFFER_LENGTH) return SDL_FALSE;
+	if (lastOpenParenPtr - tempBuffer < 1) return false;
+	if (lastOpenParenPtr - tempBuffer - 1 >= MAX_JOY_GUID_BUFFER_LENGTH) return false;
 	
 	size_t guidLength = lastOpenParenPtr - tempBuffer - 1;
 	memcpy(guidBuffer, tempBuffer, guidLength);
 	guidBuffer[guidLength] = '\0';
 	
 	size_t descriptionLength = tempBuffer + length - lastOpenParenPtr - 2;
-	if (descriptionLength >= MAX_JOY_DESCRIPTION_BUFFER_LENGTH) return SDL_FALSE;
+	if (descriptionLength >= MAX_JOY_DESCRIPTION_BUFFER_LENGTH) return false;
 	memcpy(descriptionBuffer, lastOpenParenPtr + 1, descriptionLength);
 	descriptionBuffer[descriptionLength] = '\0';
 	
-	return SDL_TRUE;
+	return true;
 }
 
 static void setJoystickIdFromGuid(SDL_Joystick **joysticks, int *joystickId, char *guidString)
@@ -406,9 +406,9 @@ static SDL_Scancode scanCodeFromKeyCode1_2(int keyCode)
 	return SDL_SCANCODE_UNKNOWN;
 }
 
-static SDL_bool readCharacterInputDefaults(FILE *fp, const char *characterName, Input *input, SDL_Joystick **joysticks, int defaultsVersion)
+static bool readCharacterInputDefaults(FILE *fp, const char *characterName, Input *input, SDL_Joystick **joysticks, int defaultsVersion)
 {
-	SDL_bool readInputDefaults = SDL_FALSE;
+	bool readInputDefaults = false;
 	
 	input->joy_right = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
 	input->joy_left = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
@@ -524,7 +524,7 @@ static SDL_bool readCharacterInputDefaults(FILE *fp, const char *characterName, 
 	
 	if (!scanExpectedString(fp, "\n")) goto read_input_cleanup;
 	
-	readInputDefaults = SDL_TRUE;
+	readInputDefaults = true;
 	
 read_input_cleanup:
 	if (!readInputDefaults)
@@ -629,7 +629,7 @@ static void readDefaults(SDL_Joystick **joysticks)
 	}
 	else
 	{
-		gVsyncFlag = SDL_TRUE;
+		gVsyncFlag = true;
 	}
 	
 	int fpsFlag = 0;
@@ -640,7 +640,7 @@ static void readDefaults(SDL_Joystick **joysticks)
 	
 	if (defaultsVersion < 2)
 	{
-		gFsaaFlag = SDL_TRUE;
+		gFsaaFlag = true;
 	}
 	else
 	{
@@ -651,7 +651,7 @@ static void readDefaults(SDL_Joystick **joysticks)
 	if (fscanf(fp, "Fullscreen flag: %d\n", &fullscreenFlag) < 1) goto cleanup;
 	if (defaultsVersion < 2)
 	{
-		gFullscreenFlag = SDL_FALSE;
+		gFullscreenFlag = false;
 	}
 	else
 	{
@@ -744,7 +744,7 @@ static void readDefaults(SDL_Joystick **joysticks)
 	if (fscanf(fp, "Music: %i\n", &audioMusicFlag) < 1) goto cleanup;
 	gAudioMusicFlag = (audioMusicFlag != 0);
 
-	gValidDefaults = SDL_TRUE;
+	gValidDefaults = true;
 cleanup:
 	fclose(fp);
 }
@@ -850,7 +850,7 @@ static void writeDefaults(Renderer *renderer)
 	fclose(fp);
 }
 
-void initGame(SDL_Window *window, SDL_bool firstGame)
+void initGame(SDL_Window *window, bool firstGame)
 {
 	loadTiles();
 
@@ -889,25 +889,25 @@ void initGame(SDL_Window *window, SDL_bool firstGame)
 	
 	if (firstGame && gAudioMusicFlag)
 	{
-		SDL_bool windowFocus = (SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0;
+		bool windowFocus = (SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0;
 		playGameMusic(!windowFocus);
 	}
 }
 
-void endGame(SDL_Window *window, SDL_bool lastGame)
+void endGame(SDL_Window *window, bool lastGame)
 {
-	gGameHasStarted = SDL_FALSE;
+	gGameHasStarted = false;
 
 	endAnimation();
 
 	gGameState = GAME_STATE_OFF;
 
 	gGameWinner = NO_CHARACTER;
-	gGameShouldReset = SDL_FALSE;
+	gGameShouldReset = false;
 	
 	if (lastGame && gAudioMusicFlag)
 	{
-		SDL_bool windowFocus = (SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0;
+		bool windowFocus = (SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0;
 		playMainMenuMusic(!windowFocus);
 	}
 }
@@ -915,7 +915,7 @@ void endGame(SDL_Window *window, SDL_bool lastGame)
 static void exitGame(SDL_Window *window)
 {
 	resetCharacterWins();
-	endGame(window, SDL_TRUE);
+	endGame(window, true);
 	
 	if (gNetworkConnection)
 	{
@@ -1008,7 +1008,7 @@ static void drawPings(Renderer *renderer)
 		{
 			static char pingStrings[3][256] = {{0}, {0}, {0}};
 			
-			SDL_bool rebuildStrings = (lastPingDisplayTime < 0.0 || currentTime - lastPingDisplayTime >= 1.0);
+			bool rebuildStrings = (lastPingDisplayTime < 0.0 || currentTime - lastPingDisplayTime >= 1.0);
 			
 			for (uint32_t pingAddressIndex = 0; pingAddressIndex < 3; pingAddressIndex++)
 			{
@@ -1180,7 +1180,7 @@ static void drawScene(Renderer *renderer)
 				
 				else if (gGameStartNumber == 0)
 				{
-					gGameHasStarted = SDL_TRUE;
+					gGameHasStarted = true;
 				}
 			}
 			
@@ -1358,7 +1358,7 @@ static void writeTextInput(const char *text, uint8_t maxSize)
 	}
 }
 
-static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDrawScene, SDL_Joystick **joysticks, SDL_bool *quit)
+static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawScene, SDL_Joystick **joysticks, bool *quit)
 {
 	SDL_Window *window = renderer->window;
 	
@@ -1395,7 +1395,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 						}
 						else
 						{
-							renderer->fullscreen = SDL_TRUE;
+							renderer->fullscreen = true;
 						}
 					}
 					else
@@ -1406,7 +1406,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 						}
 						else
 						{
-							renderer->fullscreen = SDL_FALSE;
+							renderer->fullscreen = false;
 #ifdef WINDOWS
 							// Not sure why but on Windows at least a resize event isn't sent when exiting fullscreen
 							updateViewport(renderer, renderer->windowWidth, renderer->windowHeight);
@@ -1430,7 +1430,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 						message.type = GAME_RESET_MESSAGE_TYPE;
 						sendToClients(0, &message);
 					}
-					gGameShouldReset = SDL_TRUE;
+					gGameShouldReset = true;
 				}
 			}
 			else if (event->key.keysym.sym == SDLK_RETURN || event->key.keysym.sym == SDLK_KP_ENTER)
@@ -1627,27 +1627,27 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 					{
 						if (gNetworkAddressFieldIsActive)
 						{
-							gNetworkAddressFieldIsActive = SDL_FALSE;
+							gNetworkAddressFieldIsActive = false;
 						}
 						else if (gNetworkUserNameFieldIsActive)
 						{
-							gNetworkUserNameFieldIsActive = SDL_FALSE;
+							gNetworkUserNameFieldIsActive = false;
 						}
 						else if (gDrawArrowsForCharacterLivesFlag)
 						{
-							gDrawArrowsForCharacterLivesFlag = SDL_FALSE;
+							gDrawArrowsForCharacterLivesFlag = false;
 						}
 						else if (gDrawArrowsForNetPlayerLivesFlag)
 						{
-							gDrawArrowsForNetPlayerLivesFlag = SDL_FALSE;
+							gDrawArrowsForNetPlayerLivesFlag = false;
 						}
 						else if (gDrawArrowsForAIModeFlag)
 						{
-							gDrawArrowsForAIModeFlag = SDL_FALSE;
+							gDrawArrowsForAIModeFlag = false;
 						}
 						else if (gDrawArrowsForNumberOfNetHumansFlag)
 						{
-							gDrawArrowsForNumberOfNetHumansFlag = SDL_FALSE;
+							gDrawArrowsForNumberOfNetHumansFlag = false;
 						}
 						else
 						{
@@ -1678,11 +1678,11 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 				{
 					if (gConsoleActivated)
 					{
-						gConsoleActivated = SDL_FALSE;
+						gConsoleActivated = false;
 					}
 					else
 					{
-						gConsoleActivated = SDL_TRUE;
+						gConsoleActivated = true;
 					}
 				}
 			}
@@ -1725,7 +1725,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 						message.type = GAME_RESET_MESSAGE_TYPE;
 						sendToClients(0, &message);
 					}
-					gGameShouldReset = SDL_TRUE;
+					gGameShouldReset = true;
 				}
 			}
 
@@ -1749,11 +1749,11 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 			}
 			else if (event->window.event == SDL_WINDOWEVENT_HIDDEN)
 			{
-				*needsToDrawScene = SDL_FALSE;
+				*needsToDrawScene = false;
 			}
 			else if (event->window.event == SDL_WINDOWEVENT_SHOWN)
 			{
-				*needsToDrawScene = SDL_TRUE;
+				*needsToDrawScene = true;
 			}
 			else if (event->window.event == SDL_WINDOWEVENT_RESIZED)
 			{
@@ -1761,7 +1761,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 			}
 			break;
 		case SDL_QUIT:
-			*quit = SDL_TRUE;
+			*quit = true;
 			break;
 	}
 	
@@ -1798,8 +1798,8 @@ static void eventInput(SDL_Event *event, Renderer *renderer, SDL_bool *needsToDr
 static void eventLoop(Renderer *renderer, SDL_Joystick **joysticks)
 {
 	SDL_Event event;
-	SDL_bool needsToDrawScene = SDL_TRUE;
-	SDL_bool done = SDL_FALSE;
+	bool needsToDrawScene = true;
+	bool done = false;
 
 	int fps = 30;
 	int delay = 1000 / fps;
@@ -1839,8 +1839,8 @@ static void eventLoop(Renderer *renderer, SDL_Joystick **joysticks)
 			
 			if (gGameShouldReset)
 			{
-				endGame(renderer->window, SDL_FALSE);
-				initGame(renderer->window, SDL_FALSE);
+				endGame(renderer->window, false);
+				initGame(renderer->window, false);
 			}
 		}
 		
@@ -1853,7 +1853,7 @@ static void eventLoop(Renderer *renderer, SDL_Joystick **joysticks)
 		}
 		
 #ifndef _PROFILING
-		SDL_bool hasAppFocus = (SDL_GetWindowFlags(renderer->window) & SDL_WINDOW_INPUT_FOCUS) != 0;
+		bool hasAppFocus = (SDL_GetWindowFlags(renderer->window) & SDL_WINDOW_INPUT_FOCUS) != 0;
 		// Restrict game to 30 fps when the fps flag is enabled as well as when we don't have app focus
 		// This will allow the game to use less processing power when it's in the background,
 		// which fixes a bug on macOS where the game can have huge CPU spikes when the window is completly obscured
@@ -1999,9 +1999,9 @@ int main(int argc, char *argv[])
 
 	// Create renderer
 #ifdef _PROFILING
-	SDL_bool vsync = SDL_FALSE;
+	bool vsync = false;
 #else
-	SDL_bool vsync = gVsyncFlag;
+	bool vsync = gVsyncFlag;
 #endif
 	
 	Renderer renderer;
@@ -2012,7 +2012,7 @@ int main(int argc, char *argv[])
 	// Initialize game related things
 	
 #ifdef _PROFILING
-	gDrawFPS = SDL_TRUE;
+	gDrawFPS = true;
 #endif
 	
 	initScene(&renderer);
@@ -2032,7 +2032,7 @@ int main(int argc, char *argv[])
 	
 	if (gAudioMusicFlag)
 	{
-		SDL_bool windowFocus = (SDL_GetWindowFlags(renderer.window) & SDL_WINDOW_INPUT_FOCUS) != 0;
+		bool windowFocus = (SDL_GetWindowFlags(renderer.window) & SDL_WINDOW_INPUT_FOCUS) != 0;
 		playMainMenuMusic(!windowFocus);
 	}
 

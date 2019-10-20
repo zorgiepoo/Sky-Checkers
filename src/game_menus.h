@@ -41,13 +41,13 @@ extern Menu *gRedRoverPlayerOptionsMenu;
 extern Menu *gGreenTreePlayerOptionsMenu;
 extern Menu *gBlueLightningPlayerOptionsMenu;
 
-extern SDL_bool gDrawArrowsForCharacterLivesFlag;
-extern SDL_bool gDrawArrowsForAIModeFlag;
-extern SDL_bool gDrawArrowsForNumberOfNetHumansFlag;
-extern SDL_bool gDrawArrowsForNetPlayerLivesFlag;
+extern bool gDrawArrowsForCharacterLivesFlag;
+extern bool gDrawArrowsForAIModeFlag;
+extern bool gDrawArrowsForNumberOfNetHumansFlag;
+extern bool gDrawArrowsForNetPlayerLivesFlag;
 
-extern SDL_bool gNetworkAddressFieldIsActive;
-extern SDL_bool gNetworkUserNameFieldIsActive;
+extern bool gNetworkAddressFieldIsActive;
+extern bool gNetworkUserNameFieldIsActive;
 
 void initMenus(void);
 

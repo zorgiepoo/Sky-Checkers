@@ -53,7 +53,7 @@ void initMainMenu(void);
 
 void addSubMenu(Menu *parentMenu, Menu *childMenu);
 
-SDL_bool isChildBeingDrawn(Menu *child);
+bool isChildBeingDrawn(Menu *child);
 
 // need to call these yourself.
 void invokeMenu(void *context);

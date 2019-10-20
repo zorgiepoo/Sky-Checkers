@@ -24,6 +24,7 @@ extern "C" {
 #endif
 
 #include "maincore.h"
+#include <stdbool.h>
 
 #define MSAA_PREFERRED_RETINA_SAMPLE_COUNT 2
 #define MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT 4
@@ -135,9 +136,9 @@ typedef struct _Renderer
 
 	uint32_t sampleCount;
 
-	SDL_bool fullscreen;
-	SDL_bool vsync;
-	SDL_bool fsaa;
+	bool fullscreen;
+	bool vsync;
+	bool fsaa;
 
 	union
 	{
@@ -159,9 +160,9 @@ typedef struct _Renderer
 			void *metalDepthTestStencilState;
 			void *metalPipelineStates[MAX_PIPELINE_COUNT];
 			void *metalShaderFunctions;
-			SDL_bool metalWantsFsaa;
-			SDL_bool metalCreatedInitialPipelines;
-			SDL_bool metalIgnoreFirstFullscreenTransition;
+			bool metalWantsFsaa;
+			bool metalCreatedInitialPipelines;
+			bool metalIgnoreFirstFullscreenTransition;
 		};
 #endif
 
@@ -189,10 +190,10 @@ typedef struct _Renderer
 	};
 
 #ifdef MAC_OS_X
-	SDL_bool macosInFullscreenTransition;
+	bool macosInFullscreenTransition;
 #endif
 #ifdef WINDOWS
-	SDL_bool windowsNativeFullscreenToggling;
+	bool windowsNativeFullscreenToggling;
 #endif
 
 	// Private function pointers

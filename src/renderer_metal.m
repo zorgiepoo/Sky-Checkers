@@ -166,7 +166,7 @@ static PipelineOptionIndex rendererOptionsToPipelineOptionIndex(RendererOptions 
 	}
 }
 
-static void createAndStorePipelineState(void **pipelineStates, id<MTLDevice> device, MTLPixelFormat pixelFormat, NSArray<id<MTLFunction>> *shaderFunctions, ShaderFunctionPairIndex shaderPairIndex, PipelineOptionIndex pipelineOptionIndex, SDL_bool fsaa, uint32_t fsaaSampleCount)
+static void createAndStorePipelineState(void **pipelineStates, id<MTLDevice> device, MTLPixelFormat pixelFormat, NSArray<id<MTLFunction>> *shaderFunctions, ShaderFunctionPairIndex shaderPairIndex, PipelineOptionIndex pipelineOptionIndex, bool fsaa, uint32_t fsaaSampleCount)
 {
 	MTLRenderPipelineDescriptor *pipelineStateDescriptor = [MTLRenderPipelineDescriptor new];
 	pipelineStateDescriptor.vertexFunction = shaderFunctions[shaderPairIndex * 2];
@@ -336,13 +336,13 @@ static void createPipelines(Renderer *renderer)
 			if ([device supportsTextureSampleCount:MSAA_PREFERRED_RETINA_SAMPLE_COUNT])
 			{
 				renderer->sampleCount = MSAA_PREFERRED_RETINA_SAMPLE_COUNT;
-				renderer->fsaa = SDL_TRUE;
+				renderer->fsaa = true;
 			}
 			else
 			{
 				// No AA is good enough in this case for retina displays
 				renderer->sampleCount = 0;
-				renderer->fsaa = SDL_FALSE;
+				renderer->fsaa = false;
 			}
 		}
 		else
@@ -351,14 +351,14 @@ static void createPipelines(Renderer *renderer)
 			if ([device supportsTextureSampleCount:MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT])
 			{
 				renderer->sampleCount = MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT;
-				renderer->fsaa = SDL_TRUE;
+				renderer->fsaa = true;
 			}
 		}
 	}
 	else
 	{
 		renderer->sampleCount = 0;
-		renderer->fsaa = SDL_FALSE;
+		renderer->fsaa = false;
 	}
 	
 	NSArray<id<MTLFunction>> *shaderFunctions;
@@ -405,10 +405,10 @@ static void createPipelines(Renderer *renderer)
 	
 	createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_TEXTURE_PAIR_INDEX, PIPELINE_OPTION_BLENDING_ONE_MINUS_SOURCE_ALPHA_INDEX, renderer->fsaa, renderer->sampleCount);
 	
-	renderer->metalCreatedInitialPipelines = SDL_TRUE;
+	renderer->metalCreatedInitialPipelines = true;
 }
 
-SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, SDL_bool fullscreen, SDL_bool vsync, SDL_bool fsaa)
+bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, bool fullscreen, bool vsync, bool fsaa)
 {
 	@autoreleasepool
 	{
@@ -418,20 +418,20 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		}
 		else
 		{
-			return SDL_FALSE;
+			return false;
 		}
 		
 		renderer->windowWidth = windowWidth;
 		renderer->windowHeight = windowHeight;
 		
 		renderer->metalLayer = NULL;
-		renderer->metalCreatedInitialPipelines = SDL_FALSE;
+		renderer->metalCreatedInitialPipelines = false;
 		renderer->metalRenderPassDescriptor = NULL;
 		renderer->metalDepthTestStencilState = NULL;
 		renderer->metalShaderFunctions = NULL;
-		renderer->macosInFullscreenTransition = SDL_FALSE;
-		renderer->metalIgnoreFirstFullscreenTransition = SDL_FALSE;
-		renderer->fullscreen = SDL_FALSE;
+		renderer->macosInFullscreenTransition = false;
+		renderer->metalIgnoreFirstFullscreenTransition = false;
+		renderer->fullscreen = false;
 		
 		// Find the preffered device for our game which isn't integrated, headless, or external
 		// Maybe one day I will support external/removable GPUs but my game isn't very demanding
@@ -485,7 +485,7 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		if (device == nil)
 		{
 			fprintf(stderr, "Error: Failed to create metal device!\n");
-			return SDL_FALSE;
+			return false;
 		}
 		
 		uint32_t videoFlags = SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE;
@@ -493,7 +493,7 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		
 		if (renderer->window == NULL)
 		{
-			return SDL_FALSE;
+			return false;
 		}
 		
 		SDL_SysWMinfo systemInfo;
@@ -521,7 +521,7 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		}
 		else
 		{
-			renderer->vsync = SDL_TRUE;
+			renderer->vsync = true;
 		}
 		
 		// Create pipelines
@@ -556,7 +556,7 @@ SDL_bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32
 		registerForNativeFullscreenEvents((__bridge void *)window, renderer, fullscreen);
 	}
 	
-	return SDL_TRUE;
+	return true;
 }
 
 void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *))
@@ -565,7 +565,7 @@ void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *))
 	{
 		if (renderer->fullscreen)
 		{
-			renderer->metalIgnoreFirstFullscreenTransition = SDL_FALSE;
+			renderer->metalIgnoreFirstFullscreenTransition = false;
 		}
 		else
 		{

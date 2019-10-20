@@ -28,7 +28,7 @@
 #include "renderer_d3d11.h"
 #endif
 
-void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, SDL_bool fullscreen, SDL_bool vsync, SDL_bool fsaa)
+void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, bool fullscreen, bool vsync, bool fsaa)
 {
 	SDL_ShowCursor(SDL_DISABLE);
 	
@@ -38,21 +38,21 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 	const char *windowTitle = "";
 #endif
 	
-	SDL_bool createdRenderer = SDL_FALSE;
+	bool createdRenderer = false;
 	
 	char *forceDisablingFSAAEnvironmentVariable = getenv("FORCE_DISABLE_AA");
 	if (forceDisablingFSAAEnvironmentVariable != NULL && strlen(forceDisablingFSAAEnvironmentVariable) > 0 && (tolower(forceDisablingFSAAEnvironmentVariable[0]) == 'y' || forceDisablingFSAAEnvironmentVariable[0] == '1'))
 	{
-		fsaa = SDL_FALSE;
+		fsaa = false;
 		fprintf(stderr, "NOTICE: Force disabling anti-aliasing usage!!\n");
 	}
 	
 #ifndef linux
-	SDL_bool forcingOpenGL = SDL_FALSE;
+	bool forcingOpenGL = false;
 	char *forceOpenGLEnvironmentVariable = getenv("FORCE_OPENGL");
 	if (forceOpenGLEnvironmentVariable != NULL && strlen(forceOpenGLEnvironmentVariable) > 0 && (tolower(forceOpenGLEnvironmentVariable[0]) == 'y' || forceOpenGLEnvironmentVariable[0] == '1'))
 	{
-		forcingOpenGL = SDL_TRUE;
+		forcingOpenGL = true;
 	}
 #endif
 	
@@ -83,7 +83,7 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 	if (!createdRenderer)
 	{
 		createRenderer_gl(renderer, windowTitle, windowWidth, windowHeight, fullscreen, vsync, fsaa);
-		createdRenderer = SDL_TRUE;
+		createdRenderer = true;
 	}
 }
 

@@ -47,7 +47,7 @@ typedef struct
 	Character *character;
 	
 	// Is the weapon button being held down?
-	SDL_bool weap;
+	bool weap;
 	
 	// This is a bitmask for a lack of a better name.
 	// Normally zero which means we pick the direction with latest timestamp
@@ -128,4 +128,4 @@ void performUpAction(Input *input, SDL_Event *event);
 void updateCharacterFromInput(Input *input);
 void updateCharacterFromAnyInput(void);
 
-SDL_bool joyButtonEventMatchesMovementFromInput(SDL_JoyButtonEvent *buttonEvent, Input *input);
+bool joyButtonEventMatchesMovementFromInput(SDL_JoyButtonEvent *buttonEvent, Input *input);

@@ -23,57 +23,57 @@
 
 /*
  * Checks to see if character a intersects with character b given the direction character a is moving towards.
- * Returns SDL_FALSE if we can't move, otherwise returns SDL_TRUE if we can move
+ * Returns false if we can't move, otherwise returns true if we can move
  */
-SDL_bool checkCharacterColl(Character *a, Character *b, int direction)
+bool checkCharacterColl(Character *a, Character *b, int direction)
 {
 	if (!a->lives || !b->lives)
-		return SDL_TRUE;
+		return true;
 	
 	// we don't check collision if they're in different dimensions
 	if (a->z != b->z)
-		return SDL_TRUE;
+		return true;
 	
 	if (direction == UP && a->y < b->y &&
 		(a->x < b->x + 0.8f && a->x > b->x - 0.8f) &&
 		a->y > b->y - 1.0f)
-		return SDL_FALSE;
+		return false;
 	
 	if (direction == DOWN && a->y > b->y &&
 		(a->x < b->x + 0.8f && a->x > b->x - 0.8f) &&
 		a->y < b->y + 1.0f)
-		return SDL_FALSE;
+		return false;
 	
 	if (direction == RIGHT && a->x < b->x &&
 		(a->y < b->y + 0.8f && a->y > b->y - 0.8f) &&
 		a->x > b->x - 1.1f)
-		return SDL_FALSE;
+		return false;
 	
 	if (direction == LEFT && a->x > b->x &&
 		(a->y < b->y + 0.8f && a->y > b->y - 0.8f) &&
 		a->x < b->x + 1.1f)
-		return SDL_FALSE;
+		return false;
 	
-	return SDL_TRUE;
+	return true;
 }
 
 /* 
  * Checks if characterA with a given direction is colliding with characterB, characterC, or characterD.
- * Returns SDL_TRUE if the characterA can move without colliding into character B, C, or D; otherwise, it returns SDL_FALSE
+ * Returns true if the characterA can move without colliding into character B, C, or D; otherwise, it returns false
  */
-SDL_bool checkCharacterCollision(int direction, Character *characterA, Character *characterB, Character *characterC, Character *characterD)
+bool checkCharacterCollision(int direction, Character *characterA, Character *characterB, Character *characterC, Character *characterD)
 {	
 	if (characterA->direction == NO_DIRECTION || !checkCharacterColl(characterA, characterB, direction) || !checkCharacterColl(characterA, characterC, direction) || !checkCharacterColl(characterA, characterD, direction))
-		return SDL_FALSE;
+		return false;
 	
-	return SDL_TRUE;
+	return true;
 }
 
 /*
  * Checks if the character will be out of bounds of the checkerboard if it moves within the given direction.
- * Returns SDL_FALSE if character can't move, otherwise returns SDL_TRUE
+ * Returns false if character can't move, otherwise returns true
  */
-SDL_bool characterCanMove(int direction, Character *character)
+bool characterCanMove(int direction, Character *character)
 {	
 	int x;
 	int y;
@@ -88,7 +88,7 @@ SDL_bool characterCanMove(int direction, Character *character)
 	
 	if (index < 0 || index >= NUMBER_OF_TILES)
 	{
-		return SDL_FALSE;
+		return false;
 	}
 	
 	int nextTileIndex;
@@ -103,31 +103,31 @@ SDL_bool characterCanMove(int direction, Character *character)
 		 */
 		
 		if (character->x < (gTiles[index].x + 7.0f) - 0.7f)
-			return SDL_FALSE;
+			return false;
 	}
 	
 	else if (direction == RIGHT && ((nextTileIndex = rightTileIndex(index)) == -1 || !gTiles[nextTileIndex].state || gTiles[nextTileIndex].isDead || gTiles[nextTileIndex].coloredID == IDOfCharacter(character)))
 	{
 		
 		if (character->x > (gTiles[index].x + 7.0f) + 0.7f)
-			return SDL_FALSE;
+			return false;
 	}
 	
 	else if (direction == DOWN && ((nextTileIndex = downTileIndex(index)) == -1 || !gTiles[nextTileIndex].state || gTiles[nextTileIndex].isDead || gTiles[nextTileIndex].coloredID == IDOfCharacter(character)))
 	{
 		
 		if (character->y < ((gTiles[index].y - 18.5f) + 6.0f) - 0.7f)
-			return SDL_FALSE;
+			return false;
 	}
 	
 	else if (direction == UP && ((nextTileIndex = upTileIndex(index)) == -1 || !gTiles[nextTileIndex].state || gTiles[nextTileIndex].isDead || gTiles[nextTileIndex].coloredID == IDOfCharacter(character)))
 	{
 		
 		if (character->y > ((gTiles[index].y - 18.5f) + 6.0f) + 0.7f)
-			return SDL_FALSE;
+			return false;
 	}
 	
-	return SDL_TRUE;
+	return true;
 }
 
 /* x, y arguements are the specified character's x and y values */

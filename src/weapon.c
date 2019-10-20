@@ -32,8 +32,8 @@ void initWeapon(Weapon *weap)
 	
 	weap->compensation = 0.0f;
 	
-	weap->drawingState = SDL_FALSE;
-	weap->animationState = SDL_FALSE;
+	weap->drawingState = false;
+	weap->animationState = false;
 	weap->direction = NO_DIRECTION;
 }
 
@@ -44,7 +44,7 @@ void drawWeapon(Renderer *renderer, Weapon *weap)
 	
 	static BufferArrayObject vertexArrayObject;
 	static BufferObject indicesBufferObject;
-	static SDL_bool initializedBuffers;
+	static bool initializedBuffers;
 	
 	if (!initializedBuffers)
 	{
@@ -157,7 +157,7 @@ void drawWeapon(Renderer *renderer, Weapon *weap)
 		vertexArrayObject = createVertexArrayObject(renderer, vertices, sizeof(vertices));
 		indicesBufferObject = createBufferObject(renderer, indices, sizeof(indices));
 		
-		initializedBuffers = SDL_TRUE;
+		initializedBuffers = true;
 	}
 	
 	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((float)M_PI / 180.0f));

@@ -367,7 +367,7 @@ static void animateTilesAndPlayerRecovery(double timeDelta, SDL_Window *window, 
 					}
 				}
 				
-				player->coloredTiles = SDL_TRUE;
+				player->coloredTiles = true;
 			}
 		}
 		
@@ -376,10 +376,10 @@ static void animateTilesAndPlayerRecovery(double timeDelta, SDL_Window *window, 
 		if (player->needTileLoc && player->animation_timer >= (BEGIN_DESTROYING_TILES - player->weap->compensation) && player->player_loc != -1)
 		{
 			player->destroyedTileIndex = player->player_loc;
-			player->needTileLoc = SDL_FALSE;
+			player->needTileLoc = false;
 			
 			// no need to draw the weapon anymore
-			player->weap->drawingState = SDL_FALSE;
+			player->weap->drawingState = false;
 		}
 		
 		if (player->destroyedTileIndex != -1 && (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE))
@@ -403,7 +403,7 @@ static void animateTilesAndPlayerRecovery(double timeDelta, SDL_Window *window, 
 			
 			if (player->destroyedTileIndex != -1 && gTiles[player->destroyedTileIndex].coloredID == IDOfCharacter(player))
 			{
-				gTiles[player->destroyedTileIndex].state = SDL_FALSE;
+				gTiles[player->destroyedTileIndex].state = false;
 				gTiles[player->destroyedTileIndex].z -= OBJECT_FALLING_STEP;
 				
 				if (((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
@@ -414,7 +414,7 @@ static void animateTilesAndPlayerRecovery(double timeDelta, SDL_Window *window, 
 				GameMessage fallingMessage;
 				fallingMessage.type = TILE_FALLING_DOWN_MESSAGE_TYPE;
 				fallingMessage.fallingTile.tileIndex = player->destroyedTileIndex;
-				fallingMessage.fallingTile.dead = SDL_FALSE;
+				fallingMessage.fallingTile.dead = false;
 				sendToClients(0, &fallingMessage);
 				
 				/*
@@ -428,18 +428,18 @@ static void animateTilesAndPlayerRecovery(double timeDelta, SDL_Window *window, 
 		
 		if (player->animation_timer >= (CHARACTER_REGAIN_MOVEMENT - player->weap->compensation) && CHARACTER_IS_ALIVE(player))
 		{
-			player->active = SDL_TRUE;
+			player->active = true;
 		}
 		
 		// end the animation
 		if (player->animation_timer >= (END_CHARACTER_ANIMATION - player->weap->compensation))
 		{
-			player->weap->animationState = SDL_FALSE;
+			player->weap->animationState = false;
 			player->animation_timer = 0;
 			
 			player->alpha = 1.0f;
-			player->needTileLoc = SDL_TRUE;
-			player->coloredTiles = SDL_FALSE;
+			player->needTileLoc = true;
+			player->coloredTiles = false;
 			player->destroyedTileIndex = -1;
 			player->player_loc = -1;
 			// A character can only destroy 7 tiles at once.
@@ -468,7 +468,7 @@ static void firstTileLayerAnimation(SDL_Window *window)
 		}
 		else
 		{
-			gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].isDead = SDL_TRUE;
+			gTiles[gTilesLayer[gTileLayerStates[0].colorIndex]].isDead = true;
 		}
 		
 		gTileLayerStates[0].colorIndex++;
@@ -485,7 +485,7 @@ static void firstTileLayerAnimation(SDL_Window *window)
 		if (!gTiles[gTilesLayer[gTileLayerStates[0].deathIndex]].isDead)
 		{
 			gTiles[gTilesLayer[gTileLayerStates[0].deathIndex]].z -= OBJECT_FALLING_STEP;
-			gTiles[gTilesLayer[gTileLayerStates[0].deathIndex]].isDead = SDL_TRUE;
+			gTiles[gTilesLayer[gTileLayerStates[0].deathIndex]].isDead = true;
 			
 			if (((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 			{
@@ -495,7 +495,7 @@ static void firstTileLayerAnimation(SDL_Window *window)
 			GameMessage fallingMessage;
 			fallingMessage.type = TILE_FALLING_DOWN_MESSAGE_TYPE;
 			fallingMessage.fallingTile.tileIndex = gTilesLayer[gTileLayerStates[0].deathIndex];
-			fallingMessage.fallingTile.dead = SDL_TRUE;
+			fallingMessage.fallingTile.dead = true;
 			sendToClients(0, &fallingMessage);
 		}
 		
@@ -533,7 +533,7 @@ static void secondTileLayerAnimation(SDL_Window *window)
 		}
 		else
 		{
-			gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].isDead = SDL_TRUE;
+			gTiles[gTilesLayer[gTileLayerStates[1].colorIndex]].isDead = true;
 		}
 		
 		gTileLayerStates[1].colorIndex++;
@@ -550,7 +550,7 @@ static void secondTileLayerAnimation(SDL_Window *window)
 		if (!gTiles[gTilesLayer[gTileLayerStates[1].deathIndex]].isDead)
 		{
 			gTiles[gTilesLayer[gTileLayerStates[1].deathIndex]].z -= OBJECT_FALLING_STEP;
-			gTiles[gTilesLayer[gTileLayerStates[1].deathIndex]].isDead = SDL_TRUE;
+			gTiles[gTilesLayer[gTileLayerStates[1].deathIndex]].isDead = true;
 			
 			if (((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
 			{
@@ -560,7 +560,7 @@ static void secondTileLayerAnimation(SDL_Window *window)
 			GameMessage fallingMessage;
 			fallingMessage.type = TILE_FALLING_DOWN_MESSAGE_TYPE;
 			fallingMessage.fallingTile.tileIndex = gTilesLayer[gTileLayerStates[1].deathIndex];
-			fallingMessage.fallingTile.dead = SDL_TRUE;
+			fallingMessage.fallingTile.dead = true;
 			sendToClients(0, &fallingMessage);
 		}
 		
@@ -596,7 +596,7 @@ void recoverDestroyedTile(int tileIndex)
 	gTiles[tileIndex].coloredID = NO_CHARACTER;
 	gTiles[tileIndex].colorTime = 0;
 	gTiles[tileIndex].z = TILE_ALIVE_Z;
-	gTiles[tileIndex].state = SDL_TRUE;
+	gTiles[tileIndex].state = true;
 	gTiles[tileIndex].recovery_timer = 0.0;
 }
 
@@ -680,7 +680,7 @@ void decideWhetherToMakeAPlayerAWinner(Character *player)
 		{
 			// check if the winner is really about to die, in that case, we'll need to see who is the highest up to determine the winner
 			int winnerTileIndex = getTileIndexLocation((int)winnerCharacter->x, (int)winnerCharacter->y);
-			SDL_bool winnerIsReadyForDeath = (winnerTileIndex >= 0 && winnerTileIndex < NUMBER_OF_TILES && gTiles[winnerTileIndex].z < TILE_ALIVE_Z && winnerCharacter->z > CHARACTER_TERMINATING_Z && winnerCharacter->lives == 1);
+			bool winnerIsReadyForDeath = (winnerTileIndex >= 0 && winnerTileIndex < NUMBER_OF_TILES && gTiles[winnerTileIndex].z < TILE_ALIVE_Z && winnerCharacter->z > CHARACTER_TERMINATING_Z && winnerCharacter->lives == 1);
 			if (winnerIsReadyForDeath)
 			{
 				if (winnerCharacter != &gRedRover && gRedRover.z > winnerCharacter->z)
@@ -713,7 +713,7 @@ void decideWhetherToMakeAPlayerAWinner(Character *player)
 
 void prepareCharactersDeath(Character *player)
 {	
-	player->active = SDL_FALSE;
+	player->active = false;
 }
 
 /*
@@ -733,7 +733,7 @@ static void killCharacter(Input *characterInput, double timeDelta)
 		player->time_alive = 0.0f;
 		
 		player->lives--;
-		player->active = SDL_FALSE;
+		player->active = false;
 		
 		if (gNetworkConnection && gNetworkConnection->type == NETWORK_SERVER_TYPE)
 		{
@@ -810,7 +810,7 @@ static void recoverCharacter(Character *player)
 		if (player->lives)
 		{
 			spawnCharacter(player);
-			player->active = SDL_TRUE;
+			player->active = true;
 		}
 		
 		player->recovery_timer = 0;
@@ -901,17 +901,17 @@ void endAnimation(void)
 	gTileLayerStates[1].animationTimer = 0;
 	
 	// stop weapon animation and drawing
-	gRedRover.weap->drawingState = SDL_FALSE;
-	gRedRover.weap->animationState = SDL_FALSE;
+	gRedRover.weap->drawingState = false;
+	gRedRover.weap->animationState = false;
 	
-	gGreenTree.weap->drawingState = SDL_FALSE;
-	gGreenTree.weap->animationState = SDL_FALSE;
+	gGreenTree.weap->drawingState = false;
+	gGreenTree.weap->animationState = false;
 	
-	gPinkBubbleGum.weap->drawingState = SDL_FALSE;
-	gPinkBubbleGum.weap->animationState = SDL_FALSE;
+	gPinkBubbleGum.weap->drawingState = false;
+	gPinkBubbleGum.weap->animationState = false;
 	
-	gBlueLightning.weap->drawingState = SDL_FALSE;
-	gBlueLightning.weap->animationState = SDL_FALSE;
+	gBlueLightning.weap->drawingState = false;
+	gBlueLightning.weap->animationState = false;
 	
 	gStatsTimer = 0;
 	gCurrentWinner = 0;

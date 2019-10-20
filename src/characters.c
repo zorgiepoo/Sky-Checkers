@@ -53,15 +53,15 @@ void loadCharacter(Character *character)
 	}
 	else if (gNetworkConnection && gNetworkConnection->type == NETWORK_CLIENT_TYPE)
 	{
-		character->active = SDL_TRUE;
+		character->active = true;
 	}
 	
 	character->alpha = 1.0f;
 	character->speed = INITIAL_CHARACTER_SPEED;
 	character->recovery_timer = 0;
 	character->animation_timer = 0;
-	character->coloredTiles = SDL_FALSE;
-	character->needTileLoc = SDL_TRUE;
+	character->coloredTiles = false;
+	character->needTileLoc = true;
 	character->recovery_time_delay = INITIAL_RECOVERY_TIME_DELAY;
 	character->player_loc = -1;
 	character->destroyedTileIndex = -1;
@@ -390,7 +390,7 @@ static mat4_t modelViewMatrixForCharacter(Character *character, mat4_t worldMatr
 	return m4_mul(m4_mul(worldMatrix, modelTranslationMatrix), modelRotationMatrix);
 }
 
-static SDL_bool characterIsBlended(Character *character)
+static bool characterIsBlended(Character *character)
 {
 	return (fabsf(1.0f - character->alpha) > 0.001f);
 }
@@ -609,7 +609,7 @@ void spawnCharacter(Character *character)
 	character->x = (availableTileIndexes[randomIndex] % 8) * 2.0f;
 	character->y = (availableTileIndexes[randomIndex] / 8) * 2.0f;
 	character->z = CHARACTER_ALIVE_Z;
-	character->active = SDL_TRUE;
+	character->active = true;
 	character->direction = NO_DIRECTION;
 }
 
@@ -735,15 +735,15 @@ void fireCharacterWeapon(Character *character)
 				}
 				
 				// make sure character can't move while firing the weapon
-				character->active = SDL_FALSE;
+				character->active = false;
 				
-				character->weap->drawingState = SDL_TRUE;
-				character->weap->animationState = SDL_TRUE;
+				character->weap->drawingState = true;
+				character->weap->animationState = true;
 				character->animation_timer = 0;
 			}
 		}
 	}
-	character->weap->fired = SDL_FALSE;
+	character->weap->fired = false;
 }
 
 #define INITIAL_WEAPON_DISPLACEMENT 2.0f
@@ -779,6 +779,6 @@ void prepareFiringCharacterWeapon(Character *character, float x, float y, int di
 		character->weap->compensation = compensation;
 		character->weap->direction = direction;
 		
-		character->weap->fired = SDL_TRUE;
+		character->weap->fired = true;
 	}
 }

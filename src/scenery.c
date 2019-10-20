@@ -50,9 +50,9 @@ void loadTiles(void)
 {
 	for (int tileIndex = 0; tileIndex < NUMBER_OF_TILES; tileIndex++)
 	{
-		gTiles[tileIndex].state = SDL_TRUE;
+		gTiles[tileIndex].state = true;
 		gTiles[tileIndex].recovery_timer = 0;
-		gTiles[tileIndex].isDead = SDL_FALSE;
+		gTiles[tileIndex].isDead = false;
 		gTiles[tileIndex].coloredID = NO_CHARACTER;
 		gTiles[tileIndex].colorTime = 0;
 		gTiles[tileIndex].predictedColorID = NO_CHARACTER;
@@ -197,43 +197,43 @@ int downTileIndex(int tileIndex)
 }
 
 // Tests if a tile is suitable for a spawning location
-SDL_bool availableTileIndex(int tileIndex)
+bool availableTileIndex(int tileIndex)
 {
 	int tile_loc = tileIndex;
 	
-	if (gTiles[tile_loc].state == SDL_FALSE)
-		return SDL_FALSE;
+	if (gTiles[tile_loc].state == false)
+		return false;
 	
 	if (gTiles[tile_loc].z < TILE_ALIVE_Z)
-		return SDL_FALSE;
+		return false;
 	
 	if (gTiles[tile_loc].coloredID != NO_CHARACTER)
-		return SDL_FALSE;
+		return false;
 	
 	int column = tile_loc % 8;
 	int row = tile_loc / 8;
 	
 	if (CHARACTER_IS_ALIVE(&gRedRover) && (columnOfCharacter(&gRedRover) == column || rowOfCharacter(&gRedRover) == row))
 	{
-		return SDL_FALSE;
+		return false;
 	}
 	
 	if (CHARACTER_IS_ALIVE(&gGreenTree) && (columnOfCharacter(&gGreenTree) == column || rowOfCharacter(&gGreenTree) == row))
 	{
-		return SDL_FALSE;
+		return false;
 	}
 	
 	if (CHARACTER_IS_ALIVE(&gPinkBubbleGum) && (columnOfCharacter(&gPinkBubbleGum) == column || rowOfCharacter(&gPinkBubbleGum) == row))
 	{
-		return SDL_FALSE;
+		return false;
 	}
 	
 	if (CHARACTER_IS_ALIVE(&gBlueLightning) && (columnOfCharacter(&gBlueLightning) == column || rowOfCharacter(&gBlueLightning) == row))
 	{
-		return SDL_FALSE;
+		return false;
 	}
 	
-	return SDL_TRUE;
+	return true;
 }
 
 void loadSceneryTextures(Renderer *renderer)
@@ -248,7 +248,7 @@ void drawSky(Renderer *renderer, RendererOptions options)
 {
 	static BufferArrayObject vertexAndTextureArrayObject;
 	static BufferObject indicesBufferObject;
-	static SDL_bool initializedBuffers;
+	static bool initializedBuffers;
 	
 	if (!initializedBuffers)
 	{
@@ -276,7 +276,7 @@ void drawSky(Renderer *renderer, RendererOptions options)
 		vertexAndTextureArrayObject = createVertexAndTextureCoordinateArrayObject(renderer, vertexAndTextureCoordinates, 12 * sizeof(*vertexAndTextureCoordinates), 8 * sizeof(*vertexAndTextureCoordinates));
 		indicesBufferObject = createBufferObject(renderer, indices, sizeof(indices));
 		
-		initializedBuffers = SDL_TRUE;
+		initializedBuffers = true;
 	}
 	
 	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 0.0f, -38.0f});
@@ -288,7 +288,7 @@ void drawTiles(Renderer *renderer)
 {
 	static BufferArrayObject vertexAndTextureCoordinateArrayObject;
 	static BufferObject indicesBufferObject;
-	static SDL_bool initializedBuffers;
+	static bool initializedBuffers;
 	
 	if (!initializedBuffers)
 	{
@@ -369,7 +369,7 @@ void drawTiles(Renderer *renderer)
 		
 		indicesBufferObject = createBufferObject(renderer, indices, sizeof(indices));
 		
-		initializedBuffers = SDL_TRUE;
+		initializedBuffers = true;
 	}
 	
 	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((float)M_PI / 180.0f));

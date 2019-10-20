@@ -22,11 +22,11 @@
 #include "maincore.h"
 #include "characters.h"
 
-SDL_bool characterCanMove(int direction, Character *character);
+bool characterCanMove(int direction, Character *character);
 int getTileIndexLocation(int x, int y);
 
 int rowOfCharacter(Character *character);
 int columnOfCharacter(Character *character);
 
-SDL_bool checkCharacterColl(Character *a, Character *b, int direction);
-SDL_bool checkCharacterCollision(int direction, Character *characterA, Character *characterB, Character *characterC, Character *characterD);
+bool checkCharacterColl(Character *a, Character *b, int direction);
+bool checkCharacterCollision(int direction, Character *characterA, Character *characterB, Character *characterC, Character *characterD);

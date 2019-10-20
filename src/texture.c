@@ -44,7 +44,7 @@ static void *create8BitPixelDataWithAlpha(SDL_Surface *surface)
 TextureObject surfaceToTexture(Renderer *renderer, SDL_Surface *surface)
 {
 	void *pixelData = NULL;
-	SDL_bool sourceMissingAlpha = (surface->format->BytesPerPixel == 3);
+	bool sourceMissingAlpha = (surface->format->BytesPerPixel == 3);
 	if (sourceMissingAlpha)
 	{
 		pixelData = create8BitPixelDataWithAlpha(surface);

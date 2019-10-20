@@ -68,10 +68,10 @@ static void setNewDirection(Character *character)
 	
 	if (row >= 0 && row < 8 && column >= 0 && column < 8)
 	{
-		SDL_bool unableToMoveLeft = column == 0 || !gTiles[row * 8 + (column - 1)].state || gTiles[row * 8 + (column - 1)].isDead;
-		SDL_bool unableToMoveRight = column == 7 || !gTiles[row * 8 + (column + 1)].state || gTiles[row * 8 + (column + 1)].isDead;
-		SDL_bool unableToMoveDown = row == 0 || !gTiles[(row - 1) * 8 + column].state || gTiles[(row - 1) * 8 + column].isDead;
-		SDL_bool unableToMoveUp = row == 7 || !gTiles[(row + 1) * 8 + column].state || gTiles[(row + 1) * 8 + column].isDead;
+		bool unableToMoveLeft = column == 0 || !gTiles[row * 8 + (column - 1)].state || gTiles[row * 8 + (column - 1)].isDead;
+		bool unableToMoveRight = column == 7 || !gTiles[row * 8 + (column + 1)].state || gTiles[row * 8 + (column + 1)].isDead;
+		bool unableToMoveDown = row == 0 || !gTiles[(row - 1) * 8 + column].state || gTiles[(row - 1) * 8 + column].isDead;
+		bool unableToMoveUp = row == 7 || !gTiles[(row + 1) * 8 + column].state || gTiles[(row + 1) * 8 + column].isDead;
 		
 		if (unableToMoveLeft && unableToMoveRight && unableToMoveDown && unableToMoveUp)
 		{

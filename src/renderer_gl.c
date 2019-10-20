@@ -65,7 +65,7 @@ void drawTextureWithVertices_gl(Renderer *renderer, float *modelViewProjectionMa
 
 void drawTextureWithVerticesFromIndices_gl(Renderer *renderer, float *modelViewProjectionMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
 
-static SDL_bool compileShader(GLuint *shader, uint16_t glslVersion, GLenum type, const char *filepath)
+static bool compileShader(GLuint *shader, uint16_t glslVersion, GLenum type, const char *filepath)
 {
 	GLint status;
 	
@@ -73,7 +73,7 @@ static SDL_bool compileShader(GLuint *shader, uint16_t glslVersion, GLenum type,
 	if (sourceFile == NULL)
 	{
 		fprintf(stderr, "Shader doesn't exist at: %s\n", filepath);
-		return SDL_FALSE;
+		return false;
 	}
 	
 	fseek(sourceFile, 0, SEEK_END);
@@ -85,7 +85,7 @@ static SDL_bool compileShader(GLuint *shader, uint16_t glslVersion, GLenum type,
 	{
 		fprintf(stderr, "Failed to fread entire contents of shader: %s\n", filepath);
 		fclose(sourceFile);
-		return SDL_FALSE;
+		return false;
 	}
 	
 	fclose(sourceFile);
@@ -116,13 +116,13 @@ static SDL_bool compileShader(GLuint *shader, uint16_t glslVersion, GLenum type,
 	if (status == 0)
 	{
 		glDeleteShader(*shader);
-		return SDL_FALSE;
+		return false;
 	}
 	
-	return SDL_TRUE;
+	return true;
 }
 
-static SDL_bool linkProgram(GLuint prog)
+static bool linkProgram(GLuint prog)
 {
 	GLint status;
 	glLinkProgram(prog);
@@ -142,13 +142,13 @@ static SDL_bool linkProgram(GLuint prog)
 	glGetProgramiv(prog, GL_LINK_STATUS, &status);
 	if (status == 0)
 	{
-		return SDL_FALSE;
+		return false;
 	}
 	
-	return SDL_TRUE;
+	return true;
 }
 
-static void compileAndLinkShader(Shader_gl *shader, uint16_t glslVersion, const char *vertexShaderPath, const char *fragmentShaderPath, SDL_bool textured, const char *modelViewProjectionUniform, const char *colorUniform, const char *textureSampleUniform)
+static void compileAndLinkShader(Shader_gl *shader, uint16_t glslVersion, const char *vertexShaderPath, const char *fragmentShaderPath, bool textured, const char *modelViewProjectionUniform, const char *colorUniform, const char *textureSampleUniform)
 {
 	// Create a pair of shaders
 	GLuint vertexShader = 0;
@@ -232,7 +232,7 @@ static void compileAndLinkShader(Shader_gl *shader, uint16_t glslVersion, const 
 	glDeleteShader(fragmentShader);
 }
 
-static SDL_bool createOpenGLContext(SDL_Window **window, SDL_GLContext *glContext, uint16_t glslVersion, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, SDL_bool fsaa)
+static bool createOpenGLContext(SDL_Window **window, SDL_GLContext *glContext, uint16_t glslVersion, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, bool fsaa)
 {
 	switch (glslVersion)
 	{
@@ -275,7 +275,7 @@ static SDL_bool createOpenGLContext(SDL_Window **window, SDL_GLContext *glContex
 			{
 				SDL_DestroyWindow(*window);
 			}
-			return SDL_FALSE;
+			return false;
 		}
 		else
 		{
@@ -292,7 +292,7 @@ static SDL_bool createOpenGLContext(SDL_Window **window, SDL_GLContext *glContex
 			
 			if (*window == NULL)
 			{
-				return SDL_FALSE;
+				return false;
 			}
 			
 			*glContext = SDL_GL_CreateContext(*window);
@@ -300,11 +300,11 @@ static SDL_bool createOpenGLContext(SDL_Window **window, SDL_GLContext *glContex
 			{
 				SDL_DestroyWindow(*window);
 				
-				return SDL_FALSE;
+				return false;
 			}
 		}
 	}
-	return SDL_TRUE;
+	return true;
 }
 
 static void updateViewport_gl(Renderer *renderer, int32_t windowWidth, int32_t windowHeight)
@@ -327,7 +327,7 @@ static void updateViewport_gl(Renderer *renderer, int32_t windowWidth, int32_t w
 	updateGLProjectionMatrix(renderer);
 }
 
-void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, SDL_bool fullscreen, SDL_bool vsync, SDL_bool fsaa)
+void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, bool fullscreen, bool vsync, bool fsaa)
 {
 	renderer->windowWidth = windowWidth;
 	renderer->windowHeight = windowHeight;
@@ -340,12 +340,12 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	}
 	renderer->fullscreen = fullscreen;
 #else
-	renderer->fullscreen = SDL_FALSE;
-	renderer->macosInFullscreenTransition = SDL_FALSE;
+	renderer->fullscreen = false;
+	renderer->macosInFullscreenTransition = false;
 #endif
 
 #ifdef WINDOWS
-	renderer->windowsNativeFullscreenToggling = SDL_FALSE;
+	renderer->windowsNativeFullscreenToggling = false;
 #endif
 	
 	// Buffer sizes
@@ -424,9 +424,9 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 		glEnable(GL_MULTISAMPLE);
 	}
 	
-	compileAndLinkShader(&renderer->glPositionShader, glslVersion, "Data/Shaders/position.vsh", "Data/Shaders/position.fsh", SDL_FALSE, "modelViewProjectionMatrix", "color", NULL);
+	compileAndLinkShader(&renderer->glPositionShader, glslVersion, "Data/Shaders/position.vsh", "Data/Shaders/position.fsh", false, "modelViewProjectionMatrix", "color", NULL);
 	
-	compileAndLinkShader(&renderer->glPositionTextureShader, glslVersion, "Data/Shaders/texture-position.vsh", "Data/Shaders/texture-position.fsh", SDL_TRUE, "modelViewProjectionMatrix", "color", "textureSample");
+	compileAndLinkShader(&renderer->glPositionTextureShader, glslVersion, "Data/Shaders/texture-position.vsh", "Data/Shaders/texture-position.fsh", true, "modelViewProjectionMatrix", "color", "textureSample");
 	
 	renderer->updateViewportPtr = updateViewport_gl;
 	renderer->renderFramePtr = renderFrame_gl;
@@ -570,15 +570,15 @@ BufferArrayObject createVertexAndTextureCoordinateArrayObject_gl(Renderer *rende
 
 static void beginDrawingVertices(Shader_gl *shader, BufferArrayObject vertexArrayObject, RendererOptions options)
 {
-	SDL_bool disableDepthTest = (options & RENDERER_OPTION_DISABLE_DEPTH_TEST) != 0;
+	bool disableDepthTest = (options & RENDERER_OPTION_DISABLE_DEPTH_TEST) != 0;
 	if (disableDepthTest)
 	{
 		glDisable(GL_DEPTH_TEST);
 	}
 	
-	SDL_bool blendingAlpha = (options & RENDERER_OPTION_BLENDING_ALPHA) != 0;
-	SDL_bool blendingOneMinusAlpha = (options & RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA) != 0;
-	SDL_bool blending = (blendingAlpha || blendingOneMinusAlpha);
+	bool blendingAlpha = (options & RENDERER_OPTION_BLENDING_ALPHA) != 0;
+	bool blendingOneMinusAlpha = (options & RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA) != 0;
+	bool blending = (blendingAlpha || blendingOneMinusAlpha);
 	if (blending)
 	{
 		glEnable(GL_BLEND);
@@ -608,15 +608,15 @@ static void endDrawingVerticesAndTextures(RendererOptions options)
 {
 	glBindVertexArray(0);
 	
-	SDL_bool blendingAlpha = (options & RENDERER_OPTION_BLENDING_ALPHA) != 0;
-	SDL_bool blendingOneMinusAlpha = (options & RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA) != 0;
-	SDL_bool blending = (blendingAlpha || blendingOneMinusAlpha);
+	bool blendingAlpha = (options & RENDERER_OPTION_BLENDING_ALPHA) != 0;
+	bool blendingOneMinusAlpha = (options & RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA) != 0;
+	bool blending = (blendingAlpha || blendingOneMinusAlpha);
 	if (blending)
 	{
 		glDisable(GL_BLEND);
 	}
 	
-	SDL_bool disableDepthTest = (options & RENDERER_OPTION_DISABLE_DEPTH_TEST) != 0;
+	bool disableDepthTest = (options & RENDERER_OPTION_DISABLE_DEPTH_TEST) != 0;
 	if (disableDepthTest)
 	{
 		glEnable(GL_DEPTH_TEST);

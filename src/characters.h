@@ -115,7 +115,7 @@ typedef struct _Character
 	char *netName;
 	
 	Weapon *weap;
-	SDL_bool active;
+	bool active;
 	
 	/*
 	 * Each character holds data for animation purposes, including stuff with tiles.
@@ -127,9 +127,9 @@ typedef struct _Character
 	// character recovery timer
 	int recovery_timer;
 	// flag that tells us if the character 'colored' a tile
-	SDL_bool coloredTiles;
+	bool coloredTiles;
 	// flag to tell us if we need a tile location in order for us to know which tiles to destroy
-	SDL_bool needTileLoc;
+	bool needTileLoc;
 	// recovery time delay for the tiles
 	double recovery_time_delay;
 	// the character's location on the checkerboard

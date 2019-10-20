@@ -53,7 +53,7 @@ static char gConsoleString[100];
 static unsigned int gConsoleStringIndex;
 
 static float getConsoleValue(void);
-static float setConsoleValue(SDL_bool *errorFlag);
+static float setConsoleValue(bool *errorFlag);
 
 void initConsole(void)
 {
@@ -74,7 +74,7 @@ void drawConsole(Renderer *renderer)
 {
 	static BufferArrayObject vertexArrayObject;
 	static BufferObject indicesBufferObject;
-	static SDL_bool initializedBuffers;
+	static bool initializedBuffers;
 	
 	if (!initializedBuffers)
 	{
@@ -95,7 +95,7 @@ void drawConsole(Renderer *renderer)
 		vertexArrayObject = createVertexArrayObject(renderer, vertices, sizeof(vertices));
 		indicesBufferObject = createBufferObject(renderer, indices, sizeof(indices));
 		
-		initializedBuffers = SDL_TRUE;
+		initializedBuffers = true;
 	}
 	
 	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 9.0f, -25.0f});
@@ -116,17 +116,17 @@ void writeConsoleText(Uint8 text)
 
 // returns true if it could perform a backspace
 // otherwise, it returns false.
-SDL_bool performConsoleBackspace(void)
+bool performConsoleBackspace(void)
 {	
 	if (gConsoleStringIndex > MIN_CONSOLE_STRING_LENGTH)
 	{
 		gConsoleStringIndex--;
 		gConsoleString[gConsoleStringIndex] = '\0';
 		
-		return SDL_TRUE;
+		return true;
 	}
 	
-	return SDL_FALSE;
+	return false;
 }
 
 void drawConsoleText(Renderer *renderer)
@@ -153,7 +153,7 @@ void executeConsoleCommand(void)
 	// set command
 	else
 	{
-		SDL_bool errorFlag;
+		bool errorFlag;
 		float value = setConsoleValue(&errorFlag);
 		if (!errorFlag)
 		{
@@ -393,9 +393,9 @@ static float getConsoleValue(void)
 	return value;
 }
 
-static float setConsoleValue(SDL_bool *errorFlag)
+static float setConsoleValue(bool *errorFlag)
 {
-	*errorFlag = SDL_FALSE;
+	*errorFlag = false;
 	
 	// syntax:
 	// scc~: object(arg).property value
@@ -404,21 +404,21 @@ static float setConsoleValue(SDL_bool *errorFlag)
 	float value = 0.0f;
 	unsigned int i;
 	unsigned int len = 0;
-	SDL_bool valueExists = SDL_FALSE;
+	bool valueExists = false;
 	
 	// find the space and set len to that index.
 	for (i = MIN_CONSOLE_STRING_LENGTH; !valueExists && i < strlen(gConsoleString); i++)
 	{
 		if (isspace(gConsoleString[i]))
 		{
-			valueExists = SDL_TRUE;
+			valueExists = true;
 			len = i;
 		}
 	}
 	
 	if (len == gConsoleStringIndex - 1)
 	{
-		*errorFlag = SDL_TRUE;
+		*errorFlag = true;
 		return 0.0f;
 	}
 	
@@ -435,19 +435,19 @@ static float setConsoleValue(SDL_bool *errorFlag)
 		
 		if (value == 0.0f && num[0] != '0')
 		{
-			*errorFlag = SDL_TRUE;
+			*errorFlag = true;
 			return value;
 		}
-		valueExists = SDL_TRUE;
+		valueExists = true;
 	}
 	else
 	{
 		strcpy(input, gConsoleString);
-		valueExists = SDL_FALSE;
+		valueExists = false;
 		
 		if (strcmp(input, "scc~: game_reset") != 0 && strcmp(input, "scc~: fps") != 0 && strcmp(input, "scc~: ping") != 0)
 		{
-			*errorFlag = SDL_TRUE;
+			*errorFlag = true;
 			return 0.0;
 		}
 	}
@@ -466,7 +466,7 @@ static float setConsoleValue(SDL_bool *errorFlag)
 			arg_val = atoi(number);
 			
 			if (arg_val >= NUMBER_OF_TILES)
-				return SDL_TRUE;
+				return true;
 			
 			if (arg_val > 9)
 				stringIndexCount++;
@@ -492,13 +492,13 @@ static float setConsoleValue(SDL_bool *errorFlag)
 			else if (strcmp(property, ".recovery_timer") == 0)
 				gTiles[arg_val].recovery_timer = (int)value;
 			else if (strcmp(property, ".state") == 0)
-				gTiles[arg_val].state = (SDL_bool)value;
+				gTiles[arg_val].state = (bool)value;
 			else if (strcmp(property, ".is_dead") == 0)
-				gTiles[arg_val].isDead = (SDL_bool)value;
+				gTiles[arg_val].isDead = (bool)value;
 			else
 			{
 				// No value was set
-				*errorFlag = SDL_TRUE;
+				*errorFlag = true;
 			}
 			
 			return value;
@@ -553,11 +553,11 @@ static float setConsoleValue(SDL_bool *errorFlag)
 		}
 		else if (strcmp(input, "scc~: redRover.weapon.drawing_state") == 0)
 		{
-			gRedRover.weap->drawingState = (SDL_bool)value;
+			gRedRover.weap->drawingState = (bool)value;
 		}
 		else if (strcmp(input, "scc~: redRover.weapon.animation_state") == 0)
 		{
-			gRedRover.weap->animationState = (SDL_bool)value;
+			gRedRover.weap->animationState = (bool)value;
 		}
 		else if (strcmp(input, "scc~: redRover.weapon.red") == 0)
 		{
@@ -619,11 +619,11 @@ static float setConsoleValue(SDL_bool *errorFlag)
 		}
 		else if (strcmp(input, "scc~: greenTree.weapon.drawing_state") == 0)
 		{
-			gGreenTree.weap->drawingState = (SDL_bool)value;
+			gGreenTree.weap->drawingState = (bool)value;
 		}
 		else if (strcmp(input, "scc~: greenTree.weapon.animation_state") == 0)
 		{
-			gGreenTree.weap->animationState = (SDL_bool)value;
+			gGreenTree.weap->animationState = (bool)value;
 		}
 		else if (strcmp(input, "scc~: greenTree.weapon.red") == 0)
 		{
@@ -685,11 +685,11 @@ static float setConsoleValue(SDL_bool *errorFlag)
 		}
 		else if (strcmp(input, "scc~: pinkBubbleGum.weapon.drawing_state") == 0)
 		{
-			gPinkBubbleGum.weap->drawingState = (SDL_bool)value;
+			gPinkBubbleGum.weap->drawingState = (bool)value;
 		}
 		else if (strcmp(input, "scc~: pinkBubbleGum.weapon.animation_state") == 0)
 		{
-			gPinkBubbleGum.weap->animationState = (SDL_bool)value;
+			gPinkBubbleGum.weap->animationState = (bool)value;
 		}
 		else if (strcmp(input, "scc~: pinkBubbleGum.weapon.red") == 0)
 		{
@@ -751,11 +751,11 @@ static float setConsoleValue(SDL_bool *errorFlag)
 		}
 		else if (strcmp(input, "scc~: blueLightning.weapon.drawing_state") == 0)
 		{
-			gBlueLightning.weap->drawingState = (SDL_bool)value;
+			gBlueLightning.weap->drawingState = (bool)value;
 		}
 		else if (strcmp(input, "scc~: blueLightning.weapon.animation_state") == 0)
 		{
-			gBlueLightning.weap->animationState = (SDL_bool)value;
+			gBlueLightning.weap->animationState = (bool)value;
 		}
 		else if (strcmp(input, "scc~: blueLightning.weapon.red") == 0)
 		{
@@ -790,7 +790,7 @@ static float setConsoleValue(SDL_bool *errorFlag)
 				}
 				else
 				{
-					gGameShouldReset = SDL_TRUE;
+					gGameShouldReset = true;
 					value = gGameShouldReset;
 				}
 
@@ -809,7 +809,7 @@ static float setConsoleValue(SDL_bool *errorFlag)
 	{
 		if (valueExists)
 		{
-			gDrawFPS = (SDL_bool)value;
+			gDrawFPS = (bool)value;
 		}
 		else
 		{
@@ -821,7 +821,7 @@ static float setConsoleValue(SDL_bool *errorFlag)
 	{
 		if (valueExists)
 		{
-			gDrawPings = (SDL_bool)value;
+			gDrawPings = (bool)value;
 		}
 		else
 		{

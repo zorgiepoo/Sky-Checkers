@@ -43,8 +43,8 @@ typedef struct
 	int predictedColorID;
 	uint32_t predictedColorTime;
 	
-	SDL_bool state;
-	SDL_bool isDead;
+	bool state;
+	bool isDead;
 	
 	double recovery_timer;
 } Tile;
@@ -66,7 +66,7 @@ int leftTileIndex(int tileIndex);
 int upTileIndex(int tileIndex);
 int downTileIndex(int tileIndex);
 
-SDL_bool availableTileIndex(int tileIndex);
+bool availableTileIndex(int tileIndex);
 
 void loadSceneryTextures(Renderer *renderer);
 

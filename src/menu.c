@@ -95,7 +95,7 @@ void addSubMenu(Menu *parentMenu, Menu *childMenu)
 	childMenu->parent = parentMenu;
 }
 
-SDL_bool isChildBeingDrawn(Menu *child)
+bool isChildBeingDrawn(Menu *child)
 {
 	return child->parent == gCurrentMenu->parent;
 }

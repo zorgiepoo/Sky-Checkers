@@ -33,7 +33,7 @@ void initInput(Input *input, int right, int left, int up, int down, int weapon)
 	input->left_ticks = 0;
 	input->up_ticks = 0;
 	input->down_ticks = 0;
-	input->weap = SDL_FALSE;
+	input->weap = false;
 	
 	input->priority = 0;
 	
@@ -132,7 +132,7 @@ void performDownAction(Input *input, SDL_Event *event)
 		{
 			if (gGameHasStarted)
 			{
-				input->weap = SDL_TRUE;
+				input->weap = true;
 			}
 		}
 		
@@ -310,7 +310,7 @@ void performDownAction(Input *input, SDL_Event *event)
 				{
 					if (gGameHasStarted)
 					{
-						input->weap = SDL_TRUE;
+						input->weap = true;
 					}
 				}
 			}
@@ -320,7 +320,7 @@ void performDownAction(Input *input, SDL_Event *event)
 				{
 					if (gGameHasStarted)
 					{
-						input->weap = SDL_TRUE;
+						input->weap = true;
 					}
 				}
 			}
@@ -335,7 +335,7 @@ void performDownAction(Input *input, SDL_Event *event)
 		{
 			
 			if (gGameHasStarted)
-				input->weap = SDL_TRUE;
+				input->weap = true;
 		}
 		
 		else if (event->jbutton.which == input->joy_up_id && event->jbutton.button == input->ujs_id && input->ujs_axis_id == JOY_AXIS_NONE)
@@ -365,7 +365,7 @@ void performDownAction(Input *input, SDL_Event *event)
 			if (event->jhat.which == input->joy_weap_id && event->jhat.hat == input->weapjs_hat_id && event->jhat.value == input->weapjs_id && input->weapjs_axis_id == JOY_AXIS_NONE && !input->character->weap->animationState && !input->weap)
 			{
 				if (gGameHasStarted)
-					input->weap = SDL_TRUE;
+					input->weap = true;
 			}
 			
 			else if (event->jhat.which == input->joy_up_id && event->jhat.hat == input->ujs_hat_id && event->jhat.value == input->ujs_id && input->ujs_axis_id == JOY_AXIS_NONE)
@@ -426,7 +426,7 @@ void performUpAction(Input *input, SDL_Event *event)
 			{
 				prepareFiringFromInput(input);
 			}
-			input->weap = SDL_FALSE;
+			input->weap = false;
 		}
 	}
 	else if (event->type == SDL_JOYBUTTONUP)
@@ -458,7 +458,7 @@ void performUpAction(Input *input, SDL_Event *event)
 			{
 				prepareFiringFromInput(input);
 			}
-			input->weap = SDL_FALSE;
+			input->weap = false;
 		}
 	}
 	else if (event->type == SDL_JOYHATMOTION)
@@ -492,7 +492,7 @@ void performUpAction(Input *input, SDL_Event *event)
 				{
 					prepareFiringFromInput(input);
 				}
-				input->weap = SDL_FALSE;
+				input->weap = false;
 			}
 		}
 	}
@@ -506,7 +506,7 @@ void performUpAction(Input *input, SDL_Event *event)
 			{
 				prepareFiringFromInput(input);
 			}
-			input->weap = SDL_FALSE;
+			input->weap = false;
 		}
 	}
 }
@@ -516,7 +516,7 @@ static uint32_t maxValue(uint32_t value, uint32_t value2)
 	return (value > value2) ? value : value2;
 }
 
-static int bestDirectionFromInputTicks(SDL_bool preferMaxValue, uint32_t right_ticks, uint32_t left_ticks, uint32_t up_ticks, uint32_t down_ticks)
+static int bestDirectionFromInputTicks(bool preferMaxValue, uint32_t right_ticks, uint32_t left_ticks, uint32_t up_ticks, uint32_t down_ticks)
 {
 	if (right_ticks == 0 && left_ticks == 0 && up_ticks == 0 && down_ticks == 0)
 	{
@@ -602,27 +602,27 @@ void updateCharacterFromInput(Input *input)
 	input->character->direction = bestDirectionFromInputTicks(input->priority == 0, input->right_ticks, input->left_ticks, input->up_ticks, input->down_ticks);
 }
 
-SDL_bool joyButtonEventMatchesMovementFromInput(SDL_JoyButtonEvent *buttonEvent, Input *input)
+bool joyButtonEventMatchesMovementFromInput(SDL_JoyButtonEvent *buttonEvent, Input *input)
 {
 	if (buttonEvent->which == input->joy_right_id && buttonEvent->button == input->rjs_id)
 	{
-		return SDL_TRUE;
+		return true;
 	}
 	
 	if (buttonEvent->which == input->joy_left_id && buttonEvent->button == input->ljs_id)
 	{
-		return SDL_TRUE;
+		return true;
 	}
 	
 	if (buttonEvent->which == input->joy_up_id && buttonEvent->button == input->ujs_id)
 	{
-		return SDL_TRUE;
+		return true;
 	}
 	
 	if (buttonEvent->which == input->joy_down_id && buttonEvent->button == input->djs_id)
 	{
-		return SDL_TRUE;
+		return true;
 	}
 	
-	return SDL_FALSE;
+	return false;
 }
