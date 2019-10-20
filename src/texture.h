@@ -19,9 +19,6 @@
 
 #pragma once
 
-#include "maincore.h"
 #include "renderer.h"
 
 TextureObject loadTexture(Renderer *renderer, const char *filePath);
-
-TextureObject surfaceToTexture(Renderer *renderer, SDL_Surface *surface);

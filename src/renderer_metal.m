@@ -38,7 +38,7 @@ static void updateRealViewport(Renderer *renderer);
 
 void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *));
 
-TextureObject textureFromPixelData_metal(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
+TextureObject textureFromPixelData_metal(Renderer *renderer, const void *pixels, int32_t width, int32_t height, PixelFormat pixelFormat);
 
 void deleteTexture_metal(Renderer *renderer, TextureObject texture);
 
@@ -615,13 +615,25 @@ void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *))
 	}
 }
 
-TextureObject textureFromPixelData_metal(Renderer *renderer, const void *pixels, int32_t width, int32_t height)
+TextureObject textureFromPixelData_metal(Renderer *renderer, const void *pixels, int32_t width, int32_t height, PixelFormat pixelFormat)
 {
 	CAMetalLayer *metalLayer = (__bridge CAMetalLayer *)(renderer->metalLayer);
 	id<MTLDevice> device = metalLayer.device;
 	
 	MTLTextureDescriptor *textureDescriptor = [[MTLTextureDescriptor alloc] init];
-	textureDescriptor.pixelFormat = MTLPixelFormatBGRA8Unorm;
+	
+	MTLPixelFormat format;
+	switch (pixelFormat)
+	{
+		case PIXEL_FORMAT_RGBA32:
+			format = MTLPixelFormatRGBA8Unorm;
+			break;
+		case PIXEL_FORMAT_BGRA32:
+			format = MTLPixelFormatBGRA8Unorm;
+			break;
+	}
+	
+	textureDescriptor.pixelFormat = format;
 	textureDescriptor.width = (NSUInteger)width;
 	textureDescriptor.height = (NSUInteger)height;
 	

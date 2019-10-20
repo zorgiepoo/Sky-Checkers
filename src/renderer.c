@@ -97,9 +97,9 @@ void renderFrame(Renderer *renderer, void (*drawFunc)(Renderer *))
 	renderer->renderFramePtr(renderer, drawFunc);
 }
 
-TextureObject textureFromPixelData(Renderer *renderer, const void *pixels, int32_t width, int32_t height)
+TextureObject textureFromPixelData(Renderer *renderer, const void *pixels, int32_t width, int32_t height, PixelFormat pixelFormat)
 {
-	return renderer->textureFromPixelDataPtr(renderer, pixels, width, height);
+	return renderer->textureFromPixelDataPtr(renderer, pixels, width, height, pixelFormat);
 }
 
 void deleteTexture(Renderer *renderer, TextureObject texture)

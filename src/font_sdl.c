@@ -82,3 +82,8 @@ int32_t getTextDataHeight(TextData textData)
 {
 	return ((SDL_Surface *)textData)->h;
 }
+
+PixelFormat getPixelFormat(TextData textData)
+{
+	return PIXEL_FORMAT_BGRA32;
+}

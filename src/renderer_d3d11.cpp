@@ -33,7 +33,7 @@ extern "C" static void updateViewport_d3d11(Renderer *renderer, int32_t windowWi
 
 extern "C" void renderFrame_d3d11(Renderer *renderer, void(*drawFunc)(Renderer *));
 
-extern "C" TextureObject textureFromPixelData_d3d11(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
+extern "C" TextureObject textureFromPixelData_d3d11(Renderer *renderer, const void *pixels, int32_t width, int32_t height, PixelFormat pixelFormat);
 
 extern "C" void deleteTexture_d3d11(Renderer *renderer, TextureObject texture);
 
@@ -875,7 +875,7 @@ extern "C" void renderFrame_d3d11(Renderer *renderer, void(*drawFunc)(Renderer *
 	}
 }
 
-extern "C" TextureObject textureFromPixelData_d3d11(Renderer *renderer, const void *pixels, int32_t width, int32_t height)
+extern "C" TextureObject textureFromPixelData_d3d11(Renderer *renderer, const void *pixels, int32_t width, int32_t height, PixelFormat pixelFormat)
 {
 	D3D11_SUBRESOURCE_DATA textureData;
 	ZeroMemory(&textureData, sizeof(textureData));
@@ -889,11 +889,22 @@ extern "C" TextureObject textureFromPixelData_d3d11(Renderer *renderer, const vo
 	D3D11_TEXTURE2D_DESC textureDescription;
 	ZeroMemory(&textureDescription, sizeof(textureDescription));
 
+	DXGI_FORMAT format;
+	switch (pixelFormat)
+	{
+	case PIXEL_FORMAT_RGBA32:
+		format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		break;
+	case PIXEL_FORMAT_BGRA32:
+		format = DXGI_FORMAT_B8G8R8A8_UNORM;
+		break;
+	}
+
 	textureDescription.Width = width;
 	textureDescription.Height = height;
 	textureDescription.MipLevels = 1;
 	textureDescription.ArraySize = 1;
-	textureDescription.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+	textureDescription.Format = format;
 	textureDescription.SampleDesc.Count = 1;
 	textureDescription.SampleDesc.Quality = 0;
 	textureDescription.Usage = D3D11_USAGE_DEFAULT;

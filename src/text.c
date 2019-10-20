@@ -180,7 +180,7 @@ int cacheString(Renderer *renderer, const char *string)
 			TextData textData = createTextData(newText);
 			gTextRenderings[insertionIndex].width = getTextDataWidth(textData);
 			gTextRenderings[insertionIndex].height = getTextDataHeight(textData);
-			gTextRenderings[insertionIndex].texture = textureFromPixelData(renderer, getTextDataPixels(textData), gTextRenderings[insertionIndex].width, gTextRenderings[insertionIndex].height);
+			gTextRenderings[insertionIndex].texture = textureFromPixelData(renderer, getTextDataPixels(textData), gTextRenderings[insertionIndex].width, gTextRenderings[insertionIndex].height, getPixelFormat(textData));
 			
 			releaseTextData(textData);
 			

@@ -48,7 +48,7 @@ static void updateViewport_gl(Renderer *renderer, int32_t windowWidth, int32_t w
 
 void renderFrame_gl(Renderer *renderer, void (*drawFunc)(Renderer *));
 
-TextureObject textureFromPixelData_gl(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
+TextureObject textureFromPixelData_gl(Renderer *renderer, const void *pixels, int32_t width, int32_t height, PixelFormat pixelFormat);
 
 void deleteTexture_gl(Renderer *renderer, TextureObject texture);
 
@@ -468,9 +468,20 @@ void renderFrame_gl(Renderer *renderer, void (*drawFunc)(Renderer *))
 #endif
 }
 
-static GLuint glTextureFromPixelData(Renderer *renderer, const void *pixels, int32_t width, int32_t height)
+static GLuint glTextureFromPixelData(Renderer *renderer, const void *pixels, int32_t width, int32_t height, PixelFormat pixelFormat)
 {
 	GLuint texture = 0;
+	
+	GLenum format;
+	switch (pixelFormat)
+	{
+		case PIXEL_FORMAT_BGRA32:
+			format = GL_BGRA;
+			break;
+		case PIXEL_FORMAT_RGBA32:
+			format = GL_RGBA;
+			break;
+	}
 	
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
@@ -481,16 +492,16 @@ static GLuint glTextureFromPixelData(Renderer *renderer, const void *pixels, int
 				 GL_RGBA,
 				 width, height,
 				 0,
-				 GL_BGRA,
+				 format,
 				 GL_UNSIGNED_BYTE,
 				 pixels);
 	
 	return texture;
 }
 
-TextureObject textureFromPixelData_gl(Renderer *renderer, const void *pixels, int32_t width, int32_t height)
+TextureObject textureFromPixelData_gl(Renderer *renderer, const void *pixels, int32_t width, int32_t height, PixelFormat pixelFormat)
 {
-	GLuint texture = glTextureFromPixelData(renderer, pixels, width, height);
+	GLuint texture = glTextureFromPixelData(renderer, pixels, width, height, pixelFormat);
 	return (TextureObject){.glObject = texture};
 }
 

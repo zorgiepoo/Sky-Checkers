@@ -86,3 +86,8 @@ int32_t getTextDataHeight(TextData textData)
 {
 	return (int32_t)CGBitmapContextGetHeight((CGContextRef)textData);
 }
+
+PixelFormat getPixelFormat(TextData textData)
+{
+	return PIXEL_FORMAT_RGBA32;
+}

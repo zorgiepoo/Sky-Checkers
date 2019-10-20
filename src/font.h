@@ -20,6 +20,7 @@
 #pragma once
 
 #include "maincore.h"
+#include "renderer_types.h"
 
 #define FONT_POINT_SIZE 144
 // This font is "goodfish.ttf" and is intentionally obfuscated in source by author's request
@@ -37,3 +38,4 @@ void *getTextDataPixels(TextData textData);
 
 int32_t getTextDataWidth(TextData textData);
 int32_t getTextDataHeight(TextData textData);
+PixelFormat getPixelFormat(TextData textData);

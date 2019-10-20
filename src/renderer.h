@@ -29,7 +29,7 @@ void updateViewport(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 
 void renderFrame(Renderer *renderer, void (*drawFunc)(Renderer *));
 
-TextureObject textureFromPixelData(Renderer *renderer, const void *pixels, int32_t width, int32_t height);
+TextureObject textureFromPixelData(Renderer *renderer, const void *pixels, int32_t width, int32_t height, PixelFormat pixelFormat);
 
 void deleteTexture(Renderer *renderer, TextureObject texture);
 

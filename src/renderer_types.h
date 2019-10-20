@@ -101,6 +101,12 @@ typedef struct
 	};
 } TextureObject;
 
+typedef enum
+{
+	PIXEL_FORMAT_RGBA32,
+	PIXEL_FORMAT_BGRA32
+} PixelFormat;
+
 typedef struct
 {
 	int32_t program;
@@ -201,7 +207,7 @@ typedef struct _Renderer
 	// because the matrix library is not very C++ friendly, and the d3d renderer is C++
 	void(*updateViewportPtr)(struct _Renderer *, int32_t, int32_t);
 	void(*renderFramePtr)(struct _Renderer *, void(*)(struct _Renderer *));
-	TextureObject(*textureFromPixelDataPtr)(struct _Renderer *, const void *, int32_t, int32_t);
+	TextureObject(*textureFromPixelDataPtr)(struct _Renderer *, const void *, int32_t, int32_t, PixelFormat);
 	void(*deleteTexturePtr)(struct _Renderer *, TextureObject);
 	BufferObject(*createBufferObjectPtr)(struct _Renderer *, const void *data, uint32_t size);
 	BufferArrayObject(*createVertexArrayObjectPtr)(struct _Renderer *, const void *, uint32_t);

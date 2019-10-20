@@ -18,6 +18,7 @@
  */
 
 #include "texture.h"
+#include "maincore.h"
 #include "quit.h"
 
 static void *create8BitPixelDataWithAlpha(SDL_Surface *surface)
@@ -42,8 +43,15 @@ static void *create8BitPixelDataWithAlpha(SDL_Surface *surface)
 	return pixelData;
 }
 
-TextureObject surfaceToTexture(Renderer *renderer, SDL_Surface *surface)
+TextureObject loadTexture(Renderer *renderer, const char *filePath)
 {
+	SDL_Surface *surface = SDL_LoadBMP(filePath);
+	if (surface == NULL)
+	{
+		fprintf(stderr, "Couldn't load texture: %s\n", filePath);
+		ZGQuit();
+	}
+
 	void *pixelData = NULL;
 	bool sourceMissingAlpha = (surface->format->BytesPerPixel == 3);
 	if (sourceMissingAlpha)
@@ -56,28 +64,14 @@ TextureObject surfaceToTexture(Renderer *renderer, SDL_Surface *surface)
 	}
 	
 	// Create texture from texture image data
-	TextureObject texture = textureFromPixelData(renderer, pixelData, surface->w, surface->h);
+	TextureObject texture = textureFromPixelData(renderer, pixelData, surface->w, surface->h, PIXEL_FORMAT_BGRA32);
 	
 	if (sourceMissingAlpha)
 	{
 		free(pixelData);
 	}
-	
-	return texture;
-}
 
-TextureObject loadTexture(Renderer *renderer, const char *filePath)
-{
-	SDL_Surface *texImage = SDL_LoadBMP(filePath);
-	if (texImage == NULL)
-	{
-		fprintf(stderr, "Couldn't load texture: %s\n", filePath);
-		ZGQuit();
-	}
-	
-	TextureObject texture = surfaceToTexture(renderer, texImage);
-	
-	SDL_FreeSurface(texImage);
-	
+	SDL_FreeSurface(surface);
+
 	return texture;
 }
