@@ -274,7 +274,7 @@ void drawSky(Renderer *renderer, RendererOptions options)
 		};
 		
 		vertexAndTextureArrayObject = createVertexAndTextureCoordinateArrayObject(renderer, vertexAndTextureCoordinates, 12 * sizeof(*vertexAndTextureCoordinates), 8 * sizeof(*vertexAndTextureCoordinates));
-		indicesBufferObject = createBufferObject(renderer, indices, sizeof(indices));
+		indicesBufferObject = createIndexBufferObject(renderer, indices, sizeof(indices));
 		
 		initializedBuffers = true;
 	}
@@ -367,7 +367,7 @@ void drawTiles(Renderer *renderer)
 		
 		vertexAndTextureCoordinateArrayObject = createVertexAndTextureCoordinateArrayObject(renderer, verticesAndTextureCoordinates, sizeof(*verticesAndTextureCoordinates) * 48, sizeof(*verticesAndTextureCoordinates) * 32);
 		
-		indicesBufferObject = createBufferObject(renderer, indices, sizeof(indices));
+		indicesBufferObject = createIndexBufferObject(renderer, indices, sizeof(indices));
 		
 		initializedBuffers = true;
 	}

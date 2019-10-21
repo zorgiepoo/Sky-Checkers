@@ -33,7 +33,7 @@ TextureObject textureFromPixelData(Renderer *renderer, const void *pixels, int32
 
 void deleteTexture(Renderer *renderer, TextureObject texture);
 
-BufferObject createBufferObject(Renderer *renderer, const void *data, uint32_t size);
+BufferObject createIndexBufferObject(Renderer *renderer, const void *data, uint32_t size);
 
 BufferArrayObject createVertexArrayObject(Renderer *renderer, const void *vertices, uint32_t verticesSize);
 

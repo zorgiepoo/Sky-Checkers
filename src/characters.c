@@ -347,7 +347,7 @@ void buildCharacterModels(Renderer *renderer)
 	
 	gCharacterVertexAndTextureCoordinateArrayObject = createVertexAndTextureCoordinateArrayObject(renderer, characterVerticesAndTextureCoordinates, (uint32_t)characterVerticesSize, (uint32_t)characterTextureCoordinatesSize);
 	
-	gCharacterIndicesBufferObject = createBufferObject(renderer, characterIndices, (uint32_t)characterIndicesSize);
+	gCharacterIndicesBufferObject = createIndexBufferObject(renderer, characterIndices, (uint32_t)characterIndicesSize);
 	
 	free(characterVerticesAndTextureCoordinates);
 	free(characterIndices);

@@ -155,7 +155,7 @@ void drawWeapon(Renderer *renderer, Weapon *weap)
 		};
 		
 		vertexArrayObject = createVertexArrayObject(renderer, vertices, sizeof(vertices));
-		indicesBufferObject = createBufferObject(renderer, indices, sizeof(indices));
+		indicesBufferObject = createIndexBufferObject(renderer, indices, sizeof(indices));
 		
 		initializedBuffers = true;
 	}

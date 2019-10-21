@@ -42,7 +42,7 @@ TextureObject textureFromPixelData_metal(Renderer *renderer, const void *pixels,
 
 void deleteTexture_metal(Renderer *renderer, TextureObject texture);
 
-BufferObject createBufferObject_metal(Renderer *renderer, const void *data, uint32_t size);
+BufferObject createIndexBufferObject_metal(Renderer *renderer, const void *data, uint32_t size);
 
 BufferArrayObject createVertexArrayObject_metal(Renderer *renderer, const void *vertices, uint32_t verticesSize);
 
@@ -544,7 +544,7 @@ bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t w
 		renderer->renderFramePtr = renderFrame_metal;
 		renderer->textureFromPixelDataPtr = textureFromPixelData_metal;
 		renderer->deleteTexturePtr = deleteTexture_metal;
-		renderer->createBufferObjectPtr = createBufferObject_metal;
+		renderer->createIndexBufferObjectPtr = createIndexBufferObject_metal;
 		renderer->createVertexArrayObjectPtr = createVertexArrayObject_metal;
 		renderer->createVertexAndTextureCoordinateArrayObjectPtr = createVertexAndTextureCoordinateArrayObject_metal;
 		renderer->drawVerticesPtr = drawVertices_metal;
@@ -672,7 +672,7 @@ static id<MTLBuffer> createBuffer(Renderer *renderer, const void *data, uint32_t
 	return buffer;
 }
 
-BufferObject createBufferObject_metal(Renderer *renderer, const void *data, uint32_t size)
+BufferObject createIndexBufferObject_metal(Renderer *renderer, const void *data, uint32_t size)
 {
 	id<MTLBuffer> buffer = createBuffer(renderer, data, size);
 	return (BufferObject){.metalObject = (void *)CFBridgingRetain(buffer)};

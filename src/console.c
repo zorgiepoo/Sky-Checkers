@@ -93,7 +93,7 @@ void drawConsole(Renderer *renderer)
 		};
 		
 		vertexArrayObject = createVertexArrayObject(renderer, vertices, sizeof(vertices));
-		indicesBufferObject = createBufferObject(renderer, indices, sizeof(indices));
+		indicesBufferObject = createIndexBufferObject(renderer, indices, sizeof(indices));
 		
 		initializedBuffers = true;
 	}

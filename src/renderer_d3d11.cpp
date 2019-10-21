@@ -37,7 +37,7 @@ extern "C" TextureObject textureFromPixelData_d3d11(Renderer *renderer, const vo
 
 extern "C" void deleteTexture_d3d11(Renderer *renderer, TextureObject texture);
 
-extern "C" BufferObject createBufferObject_d3d11(Renderer *renderer, const void *data, uint32_t size);
+extern "C" BufferObject createIndexBufferObject_d3d11(Renderer *renderer, const void *data, uint32_t size);
 
 extern "C" BufferArrayObject createVertexArrayObject_d3d11(Renderer *renderer, const void *vertices, uint32_t verticesSize);
 
@@ -785,7 +785,7 @@ extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowT
 	renderer->renderFramePtr = renderFrame_d3d11;
 	renderer->textureFromPixelDataPtr = textureFromPixelData_d3d11;
 	renderer->deleteTexturePtr = deleteTexture_d3d11;
-	renderer->createBufferObjectPtr = createBufferObject_d3d11;
+	renderer->createIndexBufferObjectPtr = createIndexBufferObject_d3d11;
 	renderer->createVertexArrayObjectPtr = createVertexArrayObject_d3d11;
 	renderer->createVertexAndTextureCoordinateArrayObjectPtr = createVertexAndTextureCoordinateArrayObject_d3d11;
 	renderer->drawVerticesPtr = drawVertices_d3d11;
@@ -982,7 +982,7 @@ static ID3D11Buffer *createVertexBuffer(ID3D11Device *device, const void *data, 
 	return vertexBuffer;
 }
 
-extern "C" BufferObject createBufferObject_d3d11(Renderer *renderer, const void *data, uint32_t size)
+extern "C" BufferObject createIndexBufferObject_d3d11(Renderer *renderer, const void *data, uint32_t size)
 {
 	BufferObject buffer;
 	buffer.d3d11Object = createVertexBuffer((ID3D11Device *)renderer->d3d11Device, data, size, D3D11_BIND_INDEX_BUFFER);

@@ -52,7 +52,7 @@ TextureObject textureFromPixelData_gl(Renderer *renderer, const void *pixels, in
 
 void deleteTexture_gl(Renderer *renderer, TextureObject texture);
 
-BufferObject createBufferObject_gl(Renderer *renderer, const void *data, uint32_t size);
+BufferObject createIndexBufferObject_gl(Renderer *renderer, const void *data, uint32_t size);
 
 BufferArrayObject createVertexArrayObject_gl(Renderer *renderer, const void *vertices, uint32_t verticesSize);
 
@@ -433,7 +433,7 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	renderer->renderFramePtr = renderFrame_gl;
 	renderer->textureFromPixelDataPtr = textureFromPixelData_gl;
 	renderer->deleteTexturePtr = deleteTexture_gl;
-	renderer->createBufferObjectPtr = createBufferObject_gl;
+	renderer->createIndexBufferObjectPtr = createIndexBufferObject_gl;
 	renderer->createVertexArrayObjectPtr = createVertexArrayObject_gl;
 	renderer->createVertexAndTextureCoordinateArrayObjectPtr = createVertexAndTextureCoordinateArrayObject_gl;
 	renderer->drawVerticesPtr = drawVertices_gl;
@@ -522,7 +522,7 @@ static GLenum glModeFromMode(RendererMode mode)
 	return 0;
 }
 
-BufferObject createBufferObject_gl(Renderer *renderer, const void *data, uint32_t size)
+BufferObject createIndexBufferObject_gl(Renderer *renderer, const void *data, uint32_t size)
 {
 	GLuint buffer = 0;
 	glGenBuffers(1, &buffer);

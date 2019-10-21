@@ -107,9 +107,9 @@ void deleteTexture(Renderer *renderer, TextureObject texture)
 	renderer->deleteTexturePtr(renderer, texture);
 }
 
-BufferObject createBufferObject(Renderer *renderer, const void *data, uint32_t size)
+BufferObject createIndexBufferObject(Renderer *renderer, const void *data, uint32_t size)
 {
-	return renderer->createBufferObjectPtr(renderer, data, size);
+	return renderer->createIndexBufferObjectPtr(renderer, data, size);
 }
 
 BufferArrayObject createVertexArrayObject(Renderer *renderer, const void *vertices, uint32_t verticesSize)

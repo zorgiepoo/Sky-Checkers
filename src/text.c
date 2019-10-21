@@ -65,7 +65,7 @@ void initText(Renderer *renderer)
 	
 	gFontVertexAndTextureBufferObject = createVertexAndTextureCoordinateArrayObject(renderer, verticesAndTextureCoordinates, 12 * sizeof(*verticesAndTextureCoordinates), 8 * sizeof(*verticesAndTextureCoordinates));
 	
-	gFontIndicesBufferObject = createBufferObject(renderer, indices, sizeof(indices));
+	gFontIndicesBufferObject = createIndexBufferObject(renderer, indices, sizeof(indices));
 }
 
 void drawStringf(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, float width, float height, const char *format, ...)

@@ -209,7 +209,7 @@ typedef struct _Renderer
 	void(*renderFramePtr)(struct _Renderer *, void(*)(struct _Renderer *));
 	TextureObject(*textureFromPixelDataPtr)(struct _Renderer *, const void *, int32_t, int32_t, PixelFormat);
 	void(*deleteTexturePtr)(struct _Renderer *, TextureObject);
-	BufferObject(*createBufferObjectPtr)(struct _Renderer *, const void *data, uint32_t size);
+	BufferObject(*createIndexBufferObjectPtr)(struct _Renderer *, const void *data, uint32_t size);
 	BufferArrayObject(*createVertexArrayObjectPtr)(struct _Renderer *, const void *, uint32_t);
 	BufferArrayObject(*createVertexAndTextureCoordinateArrayObjectPtr)(struct _Renderer *, const void *, uint32_t, uint32_t);
 	void(*drawVerticesPtr)(struct _Renderer *, float *, RendererMode, BufferArrayObject, uint32_t, color4_t, RendererOptions);
