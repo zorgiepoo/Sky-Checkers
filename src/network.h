@@ -21,6 +21,7 @@
 
 #include "maincore.h"
 #include "characters.h"
+#include "thread.h"
 
 #define NETWORK_SERVER_TYPE 1
 #define NETWORK_CLIENT_TYPE 2
@@ -208,7 +209,7 @@ typedef struct
 	GameMessage *messages;
 	uint32_t count;
 	uint32_t capacity;
-	SDL_mutex *mutex;
+	ZGMutex *mutex;
 } GameMessageArray;
 
 // Use a union to avoid violating strict aliasing
@@ -233,7 +234,7 @@ typedef struct
 	
 	// Writable before thread is created or during creation
 	// Only used from main thread
-	SDL_Thread *thread;
+	ZGThread thread;
 	
 	union
 	{

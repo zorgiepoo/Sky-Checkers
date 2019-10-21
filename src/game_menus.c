@@ -289,7 +289,7 @@ void networkServerPlayMenuAction(void *context)
 	gBlueLightningInput.character = gNetworkConnection->character;
 	gGreenTreeInput.character = gNetworkConnection->character;
 	
-	gNetworkConnection->thread = SDL_CreateThread(serverNetworkThread, "server-thread", &gNetworkConnection->numberOfPlayersToWaitFor);
+	gNetworkConnection->thread = ZGCreateThread(serverNetworkThread, "server-thread", &gNetworkConnection->numberOfPlayersToWaitFor);
 }
 
 void drawNetworkServerNumberOfPlayersMenu(Renderer *renderer, color4_t preferredColor)
@@ -486,7 +486,7 @@ void connectToNetworkGameMenuAction(void *context)
 	GameState *gameState = menuContext->gameState;
 	*gameState = GAME_STATE_CONNECTING;
 	
-	gNetworkConnection->thread = SDL_CreateThread(clientNetworkThread, "client-thread", NULL);
+	gNetworkConnection->thread = ZGCreateThread(clientNetworkThread, "client-thread", NULL);
 }
 
 void drawGameOptionsMenu(Renderer *renderer, color4_t preferredColor)

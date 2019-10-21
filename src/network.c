@@ -63,7 +63,7 @@ GameMessageArray gGameMessagesToNet;
 
 NetworkConnection *gNetworkConnection = NULL;
 
-static SDL_mutex *gCurrentSlotAndClientStatesMutex;
+static ZGMutex gCurrentSlotAndClientStatesMutex;
 
 static void pushNetworkMessage(GameMessageArray *messageArray, GameMessage message);
 static void depleteNetworkMessages(GameMessageArray *messageArray);
@@ -214,7 +214,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					
 					deinitializeNetwork();
 					
-					SDL_Thread *thread = gNetworkConnection->thread;
+					ZGThread thread = gNetworkConnection->thread;
 					
 					free(gNetworkConnection->characterTriggerMessages);
 					free(gNetworkConnection);
@@ -226,7 +226,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 					if (thread != NULL)
 					{
 						// We need to wait for the thread to exit, otherwise we'll have a resource leak
-						SDL_WaitThread(thread, NULL);
+						ZGWaitThread(thread);
 					}
 					
 					break;
@@ -790,11 +790,11 @@ static void advanceReceiveBuffer(char **buffer, void *receiveData, size_t receiv
 
 static void disconnectClient(uint8_t addressIndex, uint32_t *lastPongReceivedTimestamps)
 {
-	SDL_LockMutex(gCurrentSlotAndClientStatesMutex);
+	ZGLockMutex(gCurrentSlotAndClientStatesMutex);
 	
 	gClientStates[addressIndex] = CLIENT_STATE_DEAD;
 	
-	SDL_UnlockMutex(gCurrentSlotAndClientStatesMutex);
+	ZGUnlockMutex(gCurrentSlotAndClientStatesMutex);
 	
 	GameMessage message;
 	message.type = LAGGED_OUT_MESSAGE_TYPE;
@@ -1326,9 +1326,9 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 										triggerIncomingPacketNumbers[addressIndex]++;
 										lastPongReceivedTimestamps[addressIndex] = ZGGetTicks();
 										
-										SDL_LockMutex(gCurrentSlotAndClientStatesMutex);
+										ZGLockMutex(gCurrentSlotAndClientStatesMutex);
 										gCurrentSlot++;
-										SDL_UnlockMutex(gCurrentSlotAndClientStatesMutex);
+										ZGUnlockMutex(gCurrentSlotAndClientStatesMutex);
 										
 										numberOfPlayersToWaitFor--;
 										
@@ -2376,7 +2376,7 @@ static void initializeGameBuffer(GameMessageArray *messageArray)
 	messageArray->messages = NULL;
 	messageArray->count = 0;
 	messageArray->capacity = 1024;
-	messageArray->mutex = SDL_CreateMutex();
+	messageArray->mutex = ZGCreateMutex();
 }
 
 void initializeNetworkBuffers(void)
@@ -2384,7 +2384,7 @@ void initializeNetworkBuffers(void)
 	initializeGameBuffer(&gGameMessagesFromNet);
 	initializeGameBuffer(&gGameMessagesToNet);
 	
-	gCurrentSlotAndClientStatesMutex = SDL_CreateMutex();
+	gCurrentSlotAndClientStatesMutex = ZGCreateMutex();
 }
 
 static void _pushNetworkMessage(GameMessageArray *messageArray, GameMessage message)
@@ -2423,27 +2423,27 @@ static void _pushNetworkMessage(GameMessageArray *messageArray, GameMessage mess
 
 void pushNetworkMessage(GameMessageArray *messageArray, GameMessage message)
 {
-	SDL_LockMutex(messageArray->mutex);
+	ZGLockMutex(messageArray->mutex);
 	
 	_pushNetworkMessage(messageArray, message);
 	
-	SDL_UnlockMutex(messageArray->mutex);
+	ZGUnlockMutex(messageArray->mutex);
 }
 
 static void depleteNetworkMessages(GameMessageArray *messageArray)
 {
-	SDL_LockMutex(messageArray->mutex);
+	ZGLockMutex(messageArray->mutex);
 	
 	messageArray->count = 0;
 	
-	SDL_UnlockMutex(messageArray->mutex);
+	ZGUnlockMutex(messageArray->mutex);
 }
 
 GameMessage *popNetworkMessages(GameMessageArray *messageArray, uint32_t *count)
 {
 	GameMessage *newMessages = NULL;
 	
-	SDL_LockMutex(messageArray->mutex);
+	ZGLockMutex(messageArray->mutex);
 	
 	if (messageArray->count > 0)
 	{
@@ -2457,7 +2457,7 @@ GameMessage *popNetworkMessages(GameMessageArray *messageArray, uint32_t *count)
 		}
 	}
 	
-	SDL_UnlockMutex(messageArray->mutex);
+	ZGUnlockMutex(messageArray->mutex);
 	
 	return newMessages;
 }
@@ -2516,8 +2516,8 @@ static void cleanupStateFromNetwork(void)
 
 void sendToClients(int exception, GameMessage *message)
 {
-	SDL_LockMutex(gCurrentSlotAndClientStatesMutex);
-	SDL_LockMutex(gGameMessagesToNet.mutex);
+	ZGLockMutex(gCurrentSlotAndClientStatesMutex);
+	ZGLockMutex(gGameMessagesToNet.mutex);
 	
 	message->packetNumber = 0;
 	
@@ -2537,8 +2537,8 @@ void sendToClients(int exception, GameMessage *message)
 		_pushNetworkMessage(&gGameMessagesToNet, *message);
 	}
 	
-	SDL_UnlockMutex(gGameMessagesToNet.mutex);
-	SDL_UnlockMutex(gCurrentSlotAndClientStatesMutex);
+	ZGUnlockMutex(gGameMessagesToNet.mutex);
+	ZGUnlockMutex(gCurrentSlotAndClientStatesMutex);
 }
 
 void sendToServer(GameMessage message)
