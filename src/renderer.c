@@ -112,6 +112,24 @@ BufferObject createIndexBufferObject(Renderer *renderer, const void *data, uint3
 	return renderer->createIndexBufferObjectPtr(renderer, data, size);
 }
 
+BufferObject rectangleIndexBufferObject(Renderer *renderer)
+{
+	static BufferObject indicesBufferObject;
+	static bool initializedBuffer = false;
+	if (!initializedBuffer)
+	{
+		const uint16_t indices[] =
+		{
+			0, 1, 2,
+			2, 3, 0
+		};
+		
+		indicesBufferObject = createIndexBufferObject(renderer, indices, sizeof(indices));
+		initializedBuffer = true;
+	}
+	return indicesBufferObject;
+}
+
 BufferArrayObject createVertexArrayObject(Renderer *renderer, const void *vertices, uint32_t verticesSize)
 {
 	return renderer->createVertexArrayObjectPtr(renderer, vertices, verticesSize);

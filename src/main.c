@@ -105,14 +105,8 @@ static void drawBlackBox(Renderer *renderer)
 			-9.5f, -9.5f, 0.0f
 		};
 		
-		const uint16_t indices[] =
-		{
-			0, 1, 2,
-			2, 3, 0
-		};
-		
 		vertexArrayObject = createVertexArrayObject(renderer, vertices, sizeof(vertices));
-		indicesBufferObject = createIndexBufferObject(renderer, indices, sizeof(indices));
+		indicesBufferObject = rectangleIndexBufferObject(renderer);
 		
 		initializedBuffers = true;
 	}

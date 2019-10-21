@@ -252,12 +252,6 @@ void drawSky(Renderer *renderer, RendererOptions options)
 	
 	if (!initializedBuffers)
 	{
-		uint16_t indices[] =
-		{
-			0, 1, 2,
-			2, 3, 0
-		};
-		
 		float vertexAndTextureCoordinates[] =
 		{
 			// vertices
@@ -274,7 +268,7 @@ void drawSky(Renderer *renderer, RendererOptions options)
 		};
 		
 		vertexAndTextureArrayObject = createVertexAndTextureCoordinateArrayObject(renderer, vertexAndTextureCoordinates, 12 * sizeof(*vertexAndTextureCoordinates), 8 * sizeof(*vertexAndTextureCoordinates));
-		indicesBufferObject = createIndexBufferObject(renderer, indices, sizeof(indices));
+		indicesBufferObject = rectangleIndexBufferObject(renderer);
 		
 		initializedBuffers = true;
 	}

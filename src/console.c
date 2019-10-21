@@ -86,14 +86,8 @@ void drawConsole(Renderer *renderer)
 			-10.0f, 1.0f, 1.0f,
 		};
 		
-		const uint16_t indices[] =
-		{
-			0, 1, 2,
-			2, 3, 0
-		};
-		
 		vertexArrayObject = createVertexArrayObject(renderer, vertices, sizeof(vertices));
-		indicesBufferObject = createIndexBufferObject(renderer, indices, sizeof(indices));
+		indicesBufferObject = rectangleIndexBufferObject(renderer);
 		
 		initializedBuffers = true;
 	}

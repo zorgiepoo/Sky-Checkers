@@ -42,12 +42,6 @@ void initText(Renderer *renderer)
 	
 	gTextRenderings = calloc(MAX_TEXT_RENDERING_COUNT, sizeof(*gTextRenderings));
 	
-	const uint16_t indices[] =
-	{
-		0, 1, 2,
-		2, 3, 0
-	};
-	
 	const float verticesAndTextureCoordinates[] =
 	{
 		// vertices
@@ -65,7 +59,7 @@ void initText(Renderer *renderer)
 	
 	gFontVertexAndTextureBufferObject = createVertexAndTextureCoordinateArrayObject(renderer, verticesAndTextureCoordinates, 12 * sizeof(*verticesAndTextureCoordinates), 8 * sizeof(*verticesAndTextureCoordinates));
 	
-	gFontIndicesBufferObject = createIndexBufferObject(renderer, indices, sizeof(indices));
+	gFontIndicesBufferObject = rectangleIndexBufferObject(renderer);
 }
 
 void drawStringf(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, float width, float height, const char *format, ...)

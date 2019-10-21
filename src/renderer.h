@@ -35,6 +35,8 @@ void deleteTexture(Renderer *renderer, TextureObject texture);
 
 BufferObject createIndexBufferObject(Renderer *renderer, const void *data, uint32_t size);
 
+BufferObject rectangleIndexBufferObject(Renderer *renderer);
+
 BufferArrayObject createVertexArrayObject(Renderer *renderer, const void *vertices, uint32_t verticesSize);
 
 BufferArrayObject createVertexAndTextureCoordinateArrayObject(Renderer *renderer, const void *verticesAndTextureCoordinates, uint32_t verticesSize, uint32_t textureCoordinatesSize);
