@@ -57,6 +57,12 @@ void initText(Renderer *renderer)
 		1.0f, 1.0f
 	};
 	
+#if defined(MAC_OS_X) && _DEBUG
+	// Work around issue where text is distorted while debugging on some machines via Xcode by ignoring the first created vertex buffer.
+	// This is not a game bug.
+	createVertexAndTextureCoordinateArrayObject(renderer, verticesAndTextureCoordinates, 12 * sizeof(*verticesAndTextureCoordinates), 8 * sizeof(*verticesAndTextureCoordinates));
+#endif
+	
 	gFontVertexAndTextureBufferObject = createVertexAndTextureCoordinateArrayObject(renderer, verticesAndTextureCoordinates, 12 * sizeof(*verticesAndTextureCoordinates), 8 * sizeof(*verticesAndTextureCoordinates));
 	
 	gFontIndicesBufferObject = rectangleIndexBufferObject(renderer);
