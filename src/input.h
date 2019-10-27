@@ -21,25 +21,7 @@
 
 #include "maincore.h"
 #include "characters.h"
-
-#define JOY_NONE	8001
-#define JOY_UP		8002
-#define JOY_RIGHT	8003
-#define JOY_DOWN	8004
-#define JOY_LEFT	8005
-#define JOYHAT_UPRIGHT 8006
-#define JOYHAT_DOWNRIGHT 8007
-#define JOYHAT_DOWNLEFT 8008
-#define JOYHAT_UPLEFT 8009
-#define JOY_AXIS_NONE	100
-#define JOY_HAT_NONE	100
-#define JOY_INVALID_ID	-1
-
-#define MAX_JOY_DESCRIPTION_BUFFER_LENGTH 128
-#define MAX_JOY_GUID_BUFFER_LENGTH 128
-
-// This dictates what the analog deadzone is. Max is 32767
-#define VALID_ANALOG_MAGNITUDE 10000
+#include "gamepad.h"
 
 /* Keyboard input structure used for a character*/
 typedef struct
@@ -62,55 +44,14 @@ typedef struct
 	uint32_t up_ticks;
 	uint32_t down_ticks;
 	
-	// right, left, up, down ids - their assigned keyboard keys.
+	// right, left, up, down, weapon ids - their assigned keyboard keys.
 	unsigned int r_id;
 	unsigned int l_id;
 	unsigned int u_id;
 	unsigned int d_id;
-	// and the weapon id.
 	unsigned int weap_id;
 	
-	// joy stick ids.
-	int rjs_id;
-	int ljs_id;
-	int ujs_id;
-	int djs_id;
-	int weapjs_id;
-	
-	// joy stick axis ids (x, y)
-	unsigned int rjs_axis_id;
-	unsigned int ljs_axis_id;
-	unsigned int ujs_axis_id;
-	unsigned int djs_axis_id;
-	unsigned int weapjs_axis_id;
-	
-	// joy stick hat ids
-	unsigned int rjs_hat_id;
-	unsigned int ljs_hat_id;
-	unsigned int ujs_hat_id;
-	unsigned int djs_hat_id;
-	unsigned int weapjs_hat_id;
-	
-	// joystick instance ids which tell us what joystick is being triggered
-	int joy_right_id;
-	int joy_left_id;
-	int joy_down_id;
-	int joy_up_id;
-	int joy_weap_id;
-	
-	// joystick instance guid strings corresponding to joystick ids above
-	char *joy_right_guid;
-	char *joy_left_guid;
-	char *joy_down_guid;
-	char *joy_up_guid;
-	char *joy_weap_guid;
-	
-	// descriptions of joy actions
-	char *joy_right;
-	char *joy_left;
-	char *joy_up;
-	char *joy_down;
-	char *joy_weap;
+	GamepadIndex gamepadIndex;
 } Input;
 
 extern Input gRedRoverInput;
@@ -122,8 +63,10 @@ void initInput(Input *input, int right, int left, int up, int down, int weapon);
 
 Character *characterFromInput(Input *characterInput);
 
-void performDownAction(Input *input, SDL_Event *event);
-void performUpAction(Input *input, SDL_Event *event);
+void performDownKeyAction(Input *input, SDL_Event *event);
+void performUpKeyAction(Input *input, SDL_Event *event);
+
+void performGamepadAction(Input *input, GamepadEvent *gamepadEvent);
 
 void updateCharacterFromInput(Input *input);
 void updateCharacterFromAnyInput(void);

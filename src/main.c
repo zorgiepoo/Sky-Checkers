@@ -31,6 +31,7 @@
 #include "mt_random.h"
 #include "quit.h"
 #include "time.h"
+#include "gamepad.h"
 
 #define MATH_3D_IMPLEMENTATION
 #include "math_3d.h"
@@ -77,17 +78,10 @@ static uint32_t gEscapeHeldDownTimer;
 #define CHARACTER_ICON_DISPLACEMENT 5.0f
 #define CHARACTER_ICON_OFFSET -8.5f
 
-#define MAX_SUPPORTED_JOYSTICKS 32
-
 static void initScene(Renderer *renderer);
 
-static void readDefaults(SDL_Joystick **joysticks);
+static void readDefaults(void);
 static void writeDefaults(Renderer *renderer);
-
-static void removeJoyStick(SDL_Joystick **joysticks, SDL_JoystickID instanceID);
-static void addJoyStick(SDL_Joystick **joysticks, int deviceIndex);
-static void setJoystickIdFromGuid(SDL_Joystick **joysticks, int *joystickId, char *guidString);
-static void reloadJoySticks(SDL_Joystick **joysticks);
 
 static void drawBlackBox(Renderer *renderer)
 {
@@ -143,20 +137,6 @@ static void initScene(Renderer *renderer)
 		gBlueLightning.state = CHARACTER_AI_STATE;
 
 		gAIMode = AI_EASY_MODE;
-	}
-	else
-	{
-		// If any of the scan code's are unknown, assume they are all invalid and reset them
-		// The reason I'm doing this is because I gave development builds that saved SDL2 scan codes,
-		// but didn't record the defaults version, which would mean the defaults file would be treated the same
-		// as SDL 1.2 versioned file. This is a little robustness check against that case :)
-		if (gRedRoverInput.r_id == SDL_SCANCODE_UNKNOWN || gRedRoverInput.l_id == SDL_SCANCODE_UNKNOWN || gRedRoverInput.d_id == SDL_SCANCODE_UNKNOWN || gRedRoverInput.u_id == SDL_SCANCODE_UNKNOWN || gGreenTreeInput.r_id == SDL_SCANCODE_UNKNOWN || gGreenTreeInput.l_id == SDL_SCANCODE_UNKNOWN || gGreenTreeInput.d_id == SDL_SCANCODE_UNKNOWN || gGreenTreeInput.u_id == SDL_SCANCODE_UNKNOWN || gBlueLightningInput.r_id == SDL_SCANCODE_UNKNOWN || gBlueLightningInput.l_id == SDL_SCANCODE_UNKNOWN || gBlueLightningInput.d_id == SDL_SCANCODE_UNKNOWN || gBlueLightningInput.u_id == SDL_SCANCODE_UNKNOWN || gPinkBubbleGumInput.r_id == SDL_SCANCODE_UNKNOWN || gPinkBubbleGumInput.l_id == SDL_SCANCODE_UNKNOWN || gPinkBubbleGumInput.d_id == SDL_SCANCODE_UNKNOWN || gPinkBubbleGumInput.u_id == SDL_SCANCODE_UNKNOWN)
-		{
-			initInput(&gRedRoverInput, SDL_SCANCODE_B, SDL_SCANCODE_C, SDL_SCANCODE_F, SDL_SCANCODE_V, SDL_SCANCODE_G);
-			initInput(&gGreenTreeInput, SDL_SCANCODE_L, SDL_SCANCODE_J, SDL_SCANCODE_I, SDL_SCANCODE_K, SDL_SCANCODE_M);
-			initInput(&gBlueLightningInput, SDL_SCANCODE_D, SDL_SCANCODE_A, SDL_SCANCODE_W, SDL_SCANCODE_S, SDL_SCANCODE_Z);
-			initInput(&gPinkBubbleGumInput, SDL_SCANCODE_RIGHT, SDL_SCANCODE_LEFT, SDL_SCANCODE_UP, SDL_SCANCODE_DOWN, SDL_SCANCODE_SPACE);
-		}
 	}
 
 	gRedRoverInput.character = &gRedRover;
@@ -219,347 +199,49 @@ static bool scanLineTerminatingString(FILE *fp, char *destBuffer, size_t maxBuff
 	return success;
 }
 
-static bool scanJoyGuidAndDescriptionString(FILE *fp, char *guidBuffer, char *descriptionBuffer)
-{
-	char tempBuffer[MAX_JOY_GUID_BUFFER_LENGTH + MAX_JOY_DESCRIPTION_BUFFER_LENGTH + 2] = {0};
-	if (!scanLineTerminatingString(fp, tempBuffer, sizeof(tempBuffer))) return false;
-	
-	size_t length = strlen(tempBuffer);
-	if (length <= 3) return false; // () + space at least
-	
-	if (tempBuffer[length - 1] != ')') return false;
-	
-	char *lastOpenParenPtr = strrchr(tempBuffer, '(');
-	if (lastOpenParenPtr == NULL || lastOpenParenPtr >= &tempBuffer[length - 1]) return false;
-	
-	if (lastOpenParenPtr - tempBuffer < 1) return false;
-	if (lastOpenParenPtr - tempBuffer - 1 >= MAX_JOY_GUID_BUFFER_LENGTH) return false;
-	
-	size_t guidLength = lastOpenParenPtr - tempBuffer - 1;
-	memcpy(guidBuffer, tempBuffer, guidLength);
-	guidBuffer[guidLength] = '\0';
-	
-	size_t descriptionLength = tempBuffer + length - lastOpenParenPtr - 2;
-	if (descriptionLength >= MAX_JOY_DESCRIPTION_BUFFER_LENGTH) return false;
-	memcpy(descriptionBuffer, lastOpenParenPtr + 1, descriptionLength);
-	descriptionBuffer[descriptionLength] = '\0';
-	
-	return true;
-}
-
-static void setJoystickIdFromGuid(SDL_Joystick **joysticks, int *joystickId, char *guidString)
-{
-	for (int joystickIndex = 0; joystickIndex < MAX_SUPPORTED_JOYSTICKS; joystickIndex++)
-	{
-		SDL_Joystick *joystick = joysticks[joystickIndex];
-		if (joystick != NULL && SDL_JoystickGetAttached(joystick))
-		{
-			SDL_JoystickGUID guid = SDL_JoystickGetGUID(joystick);
-			
-			char guidBuffer[MAX_JOY_GUID_BUFFER_LENGTH] = {0};
-			SDL_JoystickGetGUIDString(guid, guidBuffer, MAX_JOY_GUID_BUFFER_LENGTH);
-			
-			if (strncmp(guidString, guidBuffer, MAX_JOY_GUID_BUFFER_LENGTH) == 0)
-			{
-				*joystickId = SDL_JoystickInstanceID(joystick);
-				return;
-			}
-		}
-	}
-	
-	*joystickId = -1;
-}
-
-// SDL 1.2 had a different mapping of key codes compared to SDL 2
-// We need to read user defaults from SDL 1.2 key codes once for migration purposes
-static SDL_Scancode scanCodeFromKeyCode1_2(int keyCode)
-{
-	switch (keyCode)
-	{
-		case 0: return SDL_SCANCODE_UNKNOWN;
-		case 8: return SDL_SCANCODE_BACKSPACE;
-		case 9: return SDL_SCANCODE_TAB;
-		case 12: return SDL_SCANCODE_CLEAR;
-		case 13: return SDL_SCANCODE_RETURN;
-		case 19: return SDL_SCANCODE_PAUSE;
-		case 27: return SDL_SCANCODE_ESCAPE;
-		case 32: return SDL_SCANCODE_SPACE;
-		case 35: return SDL_SCANCODE_KP_HASH;
-		case 38: return SDL_SCANCODE_KP_AMPERSAND;
-		case 40: return SDL_SCANCODE_KP_LEFTPAREN;
-		case 41: return SDL_SCANCODE_KP_RIGHTPAREN;
-		case 43: return SDL_SCANCODE_KP_PLUS;
-		case 44: return SDL_SCANCODE_COMMA;
-		case 45: return SDL_SCANCODE_MINUS;
-		case 46: return SDL_SCANCODE_PERIOD;
-		case 47: return SDL_SCANCODE_SLASH;
-		case 48: return SDL_SCANCODE_0;
-		case 49: return SDL_SCANCODE_1;
-		case 50: return SDL_SCANCODE_2;
-		case 51: return SDL_SCANCODE_3;
-		case 52: return SDL_SCANCODE_4;
-		case 53: return SDL_SCANCODE_5;
-		case 54: return SDL_SCANCODE_6;
-		case 55: return SDL_SCANCODE_7;
-		case 56: return SDL_SCANCODE_8;
-		case 57: return SDL_SCANCODE_9;
-		case 58: return SDL_SCANCODE_KP_COLON;
-		case 59: return SDL_SCANCODE_SEMICOLON;
-		case 60: return SDL_SCANCODE_KP_LESS;
-		case 61: return SDL_SCANCODE_EQUALS;
-		case 62: return SDL_SCANCODE_KP_GREATER;
-		case 64: return SDL_SCANCODE_KP_AT;
-		case 91: return SDL_SCANCODE_LEFTBRACKET;
-		case 92: return SDL_SCANCODE_BACKSLASH;
-		case 93: return SDL_SCANCODE_RIGHTBRACKET;
-		case 97: return SDL_SCANCODE_A;
-		case 98: return SDL_SCANCODE_B;
-		case 99: return SDL_SCANCODE_C;
-		case 100: return SDL_SCANCODE_D;
-		case 101: return SDL_SCANCODE_E;
-		case 102: return SDL_SCANCODE_F;
-		case 103: return SDL_SCANCODE_G;
-		case 104: return SDL_SCANCODE_H;
-		case 105: return SDL_SCANCODE_I;
-		case 106: return SDL_SCANCODE_J;
-		case 107: return SDL_SCANCODE_K;
-		case 108: return SDL_SCANCODE_L;
-		case 109: return SDL_SCANCODE_M;
-		case 110: return SDL_SCANCODE_N;
-		case 111: return SDL_SCANCODE_O;
-		case 112: return SDL_SCANCODE_P;
-		case 113: return SDL_SCANCODE_Q;
-		case 114: return SDL_SCANCODE_R;
-		case 115: return SDL_SCANCODE_S;
-		case 116: return SDL_SCANCODE_T;
-		case 117: return SDL_SCANCODE_U;
-		case 118: return SDL_SCANCODE_V;
-		case 119: return SDL_SCANCODE_W;
-		case 120: return SDL_SCANCODE_X;
-		case 121: return SDL_SCANCODE_Y;
-		case 122: return SDL_SCANCODE_Z;
-		case 127: return SDL_SCANCODE_DELETE;
-		case 256: return SDL_SCANCODE_KP_0;
-		case 257: return SDL_SCANCODE_KP_1;
-		case 258: return SDL_SCANCODE_KP_2;
-		case 259: return SDL_SCANCODE_KP_3;
-		case 260: return SDL_SCANCODE_KP_4;
-		case 261: return SDL_SCANCODE_KP_5;
-		case 262: return SDL_SCANCODE_KP_6;
-		case 263: return SDL_SCANCODE_KP_7;
-		case 264: return SDL_SCANCODE_KP_8;
-		case 265: return SDL_SCANCODE_KP_9;
-		case 266: return SDL_SCANCODE_KP_PERIOD;
-		case 267: return SDL_SCANCODE_KP_DIVIDE;
-		case 268: return SDL_SCANCODE_KP_MULTIPLY;
-		case 269: return SDL_SCANCODE_KP_MINUS;
-		case 270: return SDL_SCANCODE_KP_PLUS;
-		case 271: return SDL_SCANCODE_KP_ENTER;
-		case 272: return SDL_SCANCODE_KP_EQUALS;
-		case 273: return SDL_SCANCODE_UP;
-		case 274: return SDL_SCANCODE_DOWN;
-		case 275: return SDL_SCANCODE_RIGHT;
-		case 276: return SDL_SCANCODE_LEFT;
-		case 277: return SDL_SCANCODE_INSERT;
-		case 278: return SDL_SCANCODE_HOME;
-		case 279: return SDL_SCANCODE_END;
-		case 280: return SDL_SCANCODE_PAGEUP;
-		case 281: return SDL_SCANCODE_PAGEDOWN;
-		case 282: return SDL_SCANCODE_F1;
-		case 283: return SDL_SCANCODE_F2;
-		case 284: return SDL_SCANCODE_F3;
-		case 285: return SDL_SCANCODE_F4;
-		case 286: return SDL_SCANCODE_F5;
-		case 287: return SDL_SCANCODE_F6;
-		case 288: return SDL_SCANCODE_F7;
-		case 289: return SDL_SCANCODE_F8;
-		case 290: return SDL_SCANCODE_F9;
-		case 291: return SDL_SCANCODE_F10;
-		case 292: return SDL_SCANCODE_F11;
-		case 293: return SDL_SCANCODE_F12;
-		case 294: return SDL_SCANCODE_F13;
-		case 295: return SDL_SCANCODE_F14;
-		case 296: return SDL_SCANCODE_F15;
-		case 301: return SDL_SCANCODE_CAPSLOCK;
-		case 302: return SDL_SCANCODE_SCROLLLOCK;
-		case 303: return SDL_SCANCODE_RSHIFT;
-		case 304: return SDL_SCANCODE_LSHIFT;
-		case 305: return SDL_SCANCODE_RCTRL;
-		case 306: return SDL_SCANCODE_LCTRL;
-		case 307: return SDL_SCANCODE_RALT;
-		case 308: return SDL_SCANCODE_LALT;
-		case 309: return SDL_SCANCODE_RGUI;
-		case 310: return SDL_SCANCODE_LGUI;
-		case 313: return SDL_SCANCODE_MODE;
-		case 314: return SDL_SCANCODE_APPLICATION;
-		case 315: return SDL_SCANCODE_HELP;
-		case 316: return SDL_SCANCODE_PRINTSCREEN;
-		case 317: return SDL_SCANCODE_SYSREQ;
-		case 319: return SDL_SCANCODE_MENU;
-		case 320: return SDL_SCANCODE_POWER;
-		case 322: return SDL_SCANCODE_UNDO;
-	}
-	return SDL_SCANCODE_UNKNOWN;
-}
-
-static bool readCharacterInputDefaults(FILE *fp, const char *characterName, Input *input, SDL_Joystick **joysticks, int defaultsVersion)
+static bool readCharacterInputDefaults(FILE *fp, const char *characterName, Input *input, int defaultsVersion)
 {
 	bool readInputDefaults = false;
 	
-	input->joy_right = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
-	input->joy_left = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
-	input->joy_up = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
-	input->joy_down = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
-	input->joy_weap = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
+	if (!scanExpectedString(fp, characterName)) goto read_input_cleanup;
 	
-	input->joy_right_guid = calloc(MAX_JOY_GUID_BUFFER_LENGTH, 1);
-	input->joy_left_guid = calloc(MAX_JOY_GUID_BUFFER_LENGTH, 1);
-	input->joy_up_guid = calloc(MAX_JOY_GUID_BUFFER_LENGTH, 1);
-	input->joy_down_guid = calloc(MAX_JOY_GUID_BUFFER_LENGTH, 1);
-	input->joy_weap_guid = calloc(MAX_JOY_GUID_BUFFER_LENGTH, 1);
+	int right = 0;
+	if (fscanf(fp, " key right: %d\n", &right) < 1) goto read_input_cleanup;
 	
 	if (!scanExpectedString(fp, characterName)) goto read_input_cleanup;
-	if (fscanf(fp, " key right: %i\n", &input->r_id) < 1) goto read_input_cleanup;
-	if (defaultsVersion <= 1)
-	{
-		input->r_id = scanCodeFromKeyCode1_2(input->r_id);
-	}
+	
+	int left = 0;
+	if (fscanf(fp, " key left: %d\n", &left) < 1) goto read_input_cleanup;
 	
 	if (!scanExpectedString(fp, characterName)) goto read_input_cleanup;
-	if (fscanf(fp, " key left: %i\n", &input->l_id) < 1) goto read_input_cleanup;
-	if (defaultsVersion <= 1)
-	{
-		input->l_id = scanCodeFromKeyCode1_2(input->l_id);
-	}
+	
+	int up = 0;
+	if (fscanf(fp, " key up: %d\n", &up) < 1) goto read_input_cleanup;
 	
 	if (!scanExpectedString(fp, characterName)) goto read_input_cleanup;
-	if (fscanf(fp, " key up: %i\n", &input->u_id) < 1) goto read_input_cleanup;
-	if (defaultsVersion <= 1)
-	{
-		input->u_id = scanCodeFromKeyCode1_2(input->u_id);
-	}
+	
+	int down = 0;
+	if (fscanf(fp, " key down: %d\n", &down) < 1) goto read_input_cleanup;
 	
 	if (!scanExpectedString(fp, characterName)) goto read_input_cleanup;
-	if (fscanf(fp, " key down: %i\n", &input->d_id) < 1) goto read_input_cleanup;
-	if (defaultsVersion <= 1)
-	{
-		input->d_id = scanCodeFromKeyCode1_2(input->d_id);
-	}
+	
+	int weapon = 0;
+	if (fscanf(fp, " key weapon: %d\n", &weapon) < 1) goto read_input_cleanup;
 	
 	if (!scanExpectedString(fp, characterName)) goto read_input_cleanup;
-	if (fscanf(fp, " key weapon: %i\n", &input->weap_id) < 1) goto read_input_cleanup;
-	if (defaultsVersion <= 1)
-	{
-		input->weap_id = scanCodeFromKeyCode1_2(input->weap_id);
-	}
-	
-	if (!scanExpectedString(fp, characterName)) goto read_input_cleanup;
-	if (defaultsVersion < 3)
-	{
-		if (fscanf(fp, " joy right id: %i, axis: %i, joy id: ", &input->rjs_id, &input->rjs_axis_id) < 2) goto read_input_cleanup;
-	}
-	else
-	{
-		input->rjs_hat_id = JOY_HAT_NONE;
-		if (fscanf(fp, " joy right id: %i, axis: %i, hat: %i, joy id: ", &input->rjs_id, &input->rjs_axis_id, &input->rjs_hat_id) < 3) goto read_input_cleanup;
-	}
-	if (!scanJoyGuidAndDescriptionString(fp, input->joy_right_guid, input->joy_right)) goto read_input_cleanup;
-	setJoystickIdFromGuid(joysticks, &input->joy_right_id, input->joy_right_guid);
-	
-	if (!scanExpectedString(fp, characterName)) goto read_input_cleanup;
-	if (defaultsVersion < 3)
-	{
-		if (fscanf(fp, " joy left id: %i, axis: %i, joy id: ", &input->ljs_id, &input->ljs_axis_id) < 2) goto read_input_cleanup;
-	}
-	else
-	{
-		input->ljs_hat_id = JOY_HAT_NONE;
-		if (fscanf(fp, " joy left id: %i, axis: %i, hat: %i, joy id: ", &input->ljs_id, &input->ljs_axis_id, &input->ljs_hat_id) < 3) goto read_input_cleanup;
-	}
-	if (!scanJoyGuidAndDescriptionString(fp, input->joy_left_guid, input->joy_left)) goto read_input_cleanup;
-	setJoystickIdFromGuid(joysticks, &input->joy_left_id, input->joy_left_guid);
-	
-	if (!scanExpectedString(fp, characterName)) goto read_input_cleanup;
-	if (defaultsVersion < 3)
-	{
-		if (fscanf(fp, " joy up id: %i, axis: %i, joy id: ", &input->ujs_id, &input->ujs_axis_id) < 2) goto read_input_cleanup;
-	}
-	else
-	{
-		input->ujs_hat_id = JOY_HAT_NONE;
-		if (fscanf(fp, " joy up id: %i, axis: %i, hat: %i, joy id: ", &input->ujs_id, &input->ujs_axis_id, &input->ujs_hat_id) < 3) goto read_input_cleanup;
-	}
-	if (!scanJoyGuidAndDescriptionString(fp, input->joy_up_guid, input->joy_up)) goto read_input_cleanup;
-	setJoystickIdFromGuid(joysticks, &input->joy_up_id, input->joy_up_guid);
-	
-	if (!scanExpectedString(fp, characterName)) goto read_input_cleanup;
-	if (defaultsVersion < 3)
-	{
-		if (fscanf(fp, " joy down id: %i, axis: %i, joy id: ", &input->djs_id, &input->djs_axis_id) < 2) goto read_input_cleanup;
-	}
-	else
-	{
-		input->djs_hat_id = JOY_HAT_NONE;
-		if (fscanf(fp, " joy down id: %i, axis: %i, hat: %i, joy id: ", &input->djs_id, &input->djs_axis_id, &input->djs_hat_id) < 3) goto read_input_cleanup;
-	}
-	if (!scanJoyGuidAndDescriptionString(fp, input->joy_down_guid, input->joy_down)) goto read_input_cleanup;
-	setJoystickIdFromGuid(joysticks, &input->joy_down_id, input->joy_down_guid);
-	
-	if (!scanExpectedString(fp, characterName)) goto read_input_cleanup;
-	if (defaultsVersion < 3)
-	{
-		if (fscanf(fp, " joy weapon id: %i, axis: %i, joy id: ", &input->weapjs_id, &input->weapjs_axis_id) < 2) goto read_input_cleanup;
-	}
-	else
-	{
-		input->weapjs_hat_id = JOY_HAT_NONE;
-		if (fscanf(fp, " joy weapon id: %i, axis: %i, hat: %i, joy id: ", &input->weapjs_id, &input->weapjs_axis_id, &input->weapjs_hat_id) < 3) goto read_input_cleanup;
-	}
-	if (!scanJoyGuidAndDescriptionString(fp, input->joy_weap_guid, input->joy_weap)) goto read_input_cleanup;
-	setJoystickIdFromGuid(joysticks, &input->joy_weap_id, input->joy_weap_guid);
 	
 	if (!scanExpectedString(fp, "\n")) goto read_input_cleanup;
+	
+	initInput(input, right, left, up, down, weapon);
 	
 	readInputDefaults = true;
 	
 read_input_cleanup:
-	if (!readInputDefaults)
-	{
-		free(input->joy_right);
-		input->joy_right = NULL;
-		
-		free(input->joy_left);
-		input->joy_left = NULL;
-		
-		free(input->joy_up);
-		input->joy_up = NULL;
-		
-		free(input->joy_down);
-		input->joy_down = NULL;
-		
-		free(input->joy_weap);
-		input->joy_weap = NULL;
-		
-		free(input->joy_right_guid);
-		input->joy_right_guid = NULL;
-		
-		free(input->joy_left_guid);
-		input->joy_left_guid = NULL;
-		
-		free(input->joy_up_guid);
-		input->joy_up_guid = NULL;
-		
-		free(input->joy_down_guid);
-		input->joy_down_guid = NULL;
-		
-		free(input->joy_weap_guid);
-		input->joy_weap_guid = NULL;
-	}
 	
 	return readInputDefaults;
 }
 
-static void readDefaults(SDL_Joystick **joysticks)
+static void readDefaults(void)
 {
 	// this would be a good time to get the default user name
 #ifdef MAC_OS_X
@@ -592,6 +274,9 @@ static void readDefaults(SDL_Joystick **joysticks)
 	}
 	
 	if (fseek(fp, 0, SEEK_SET) < 0) goto cleanup;
+	
+	// We don't handle reading joystick inputs anymore and need to reset defaults
+	if (defaultsVersion < 4) goto cleanup;
 
 	// conole flag default
 	int consoleFlag = 0;
@@ -717,10 +402,10 @@ static void readDefaults(SDL_Joystick **joysticks)
 		gNumberOfNetHumans = 1;
 	}
 	
-	if (!readCharacterInputDefaults(fp, "Pink Bubblegum", &gPinkBubbleGumInput, joysticks, defaultsVersion)) goto cleanup;
-	if (!readCharacterInputDefaults(fp, "Red Rover", &gRedRoverInput, joysticks, defaultsVersion)) goto cleanup;
-	if (!readCharacterInputDefaults(fp, "Green Tree", &gGreenTreeInput, joysticks, defaultsVersion)) goto cleanup;
-	if (!readCharacterInputDefaults(fp, "Blue Lightning", &gBlueLightningInput, joysticks, defaultsVersion)) goto cleanup;
+	if (!readCharacterInputDefaults(fp, "Pink Bubblegum", &gPinkBubbleGumInput, defaultsVersion)) goto cleanup;
+	if (!readCharacterInputDefaults(fp, "Red Rover", &gRedRoverInput, defaultsVersion)) goto cleanup;
+	if (!readCharacterInputDefaults(fp, "Green Tree", &gGreenTreeInput, defaultsVersion)) goto cleanup;
+	if (!readCharacterInputDefaults(fp, "Blue Lightning", &gBlueLightningInput, defaultsVersion)) goto cleanup;
 	
 	if (!scanExpectedString(fp, "Server IP Address: ")) goto cleanup;
 	if (!scanLineTerminatingString(fp, gServerAddressString, sizeof(gServerAddressString))) goto cleanup;
@@ -745,18 +430,6 @@ cleanup:
 	fclose(fp);
 }
 
-static char *joystickGuidFromId(char *guid)
-{
-	if (guid != NULL && strlen(guid) > 0)
-	{
-		return guid;
-	}
-	else
-	{
-		return "_NULL_";
-	}
-}
-
 static void writeCharacterInput(FILE *fp, const char *characterName, Input *input)
 {
 	fprintf(fp, "%s key right: %i\n", characterName, input->r_id);
@@ -766,12 +439,6 @@ static void writeCharacterInput(FILE *fp, const char *characterName, Input *inpu
 	fprintf(fp, "%s key weapon: %i\n", characterName, input->weap_id);
 	
 	fprintf(fp, "\n");
-	
-	fprintf(fp, "%s joy right id: %i, axis: %i, hat: %i, joy id: %s (%s)\n", characterName, input->rjs_id, input->rjs_axis_id, input->rjs_hat_id, joystickGuidFromId(input->joy_right_guid), input->joy_right);
-	fprintf(fp, "%s joy left id: %i, axis: %i, hat: %i, joy id: %s (%s)\n", characterName, input->ljs_id, input->ljs_axis_id, input->ljs_hat_id, joystickGuidFromId(input->joy_left_guid), input->joy_left);
-	fprintf(fp, "%s joy up id: %i, axis: %i, hat: %i, joy id: %s (%s)\n", characterName, input->ujs_id, input->ujs_axis_id, input->ujs_hat_id, joystickGuidFromId(input->joy_up_guid), input->joy_up);
-	fprintf(fp, "%s joy down id: %i, axis: %i, hat: %i, joy id: %s (%s)\n", characterName, input->djs_id, input->djs_axis_id, input->djs_hat_id, joystickGuidFromId(input->joy_down_guid), input->joy_down);
-	fprintf(fp, "%s joy weapon id: %i, axis: %i, hat: %i, joy id: %s (%s)\n", characterName, input->weapjs_id, input->weapjs_axis_id, input->weapjs_hat_id, joystickGuidFromId(input->joy_weap_guid), input->joy_weap);
 }
 
 static void writeDefaults(Renderer *renderer)
@@ -841,7 +508,7 @@ static void writeDefaults(Renderer *renderer)
 	
 	// If defaults version ever gets > 9, I may have to adjust the defaults reading code
 	// I doubt this will ever happen though
-	fprintf(fp, "\nDefaults version: 3\n");
+	fprintf(fp, "\nDefaults version: 4\n");
 
 	fclose(fp);
 }
@@ -1354,7 +1021,7 @@ static void writeTextInput(const char *text, uint8_t maxSize)
 	}
 }
 
-static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawScene, SDL_Joystick **joysticks, bool *quit)
+static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawScene, bool *quit)
 {
 	SDL_Window *window = renderer->window;
 	
@@ -1709,31 +1376,23 @@ static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawSc
 			writeTextInput(event->text.text, SDL_TEXTINPUTEVENT_TEXT_SIZE);
 			break;
 
-		case SDL_JOYBUTTONDOWN:
-			if (gGameState == GAME_STATE_ON && gGameWinner != NO_CHARACTER && ((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && !joyButtonEventMatchesMovementFromInput(&event->jbutton, &gPinkBubbleGumInput) && !joyButtonEventMatchesMovementFromInput(&event->jbutton, &gRedRoverInput) && !joyButtonEventMatchesMovementFromInput(&event->jbutton, &gGreenTreeInput) && !joyButtonEventMatchesMovementFromInput(&event->jbutton, &gBlueLightningInput))
-			{
-				// new game
-				if (!gConsoleActivated && (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE))
-				{
-					if (gNetworkConnection)
-					{
-						GameMessage message;
-						message.type = GAME_RESET_MESSAGE_TYPE;
-						sendToClients(0, &message);
-					}
-					gGameShouldReset = true;
-				}
-			}
-
-			break;
-		case SDL_JOYDEVICEADDED:
-			addJoyStick(joysticks, event->jdevice.which);
-			reloadJoySticks(joysticks);
-			break;
-		case SDL_JOYDEVICEREMOVED:
-			removeJoyStick(joysticks, event->jdevice.which);
-			reloadJoySticks(joysticks);
-			break;
+//		case SDL_JOYBUTTONDOWN:
+//			if (gGameState == GAME_STATE_ON && gGameWinner != NO_CHARACTER && ((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && !joyButtonEventMatchesMovementFromInput(&event->jbutton, &gPinkBubbleGumInput) && !joyButtonEventMatchesMovementFromInput(&event->jbutton, &gRedRoverInput) && !joyButtonEventMatchesMovementFromInput(&event->jbutton, &gGreenTreeInput) && !joyButtonEventMatchesMovementFromInput(&event->jbutton, &gBlueLightningInput))
+//			{
+//				// new game
+//				if (!gConsoleActivated && (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE))
+//				{
+//					if (gNetworkConnection)
+//					{
+//						GameMessage message;
+//						message.type = GAME_RESET_MESSAGE_TYPE;
+//						sendToClients(0, &message);
+//					}
+//					gGameShouldReset = true;
+//				}
+//			}
+//
+//			break;
 		case SDL_WINDOWEVENT:
 			if (event->window.event == SDL_WINDOWEVENT_FOCUS_LOST)
 			{
@@ -1776,22 +1435,22 @@ static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawSc
 	{
 		if (!gConsoleActivated)
 		{
-			performDownAction(&gRedRoverInput, event);
-			performDownAction(&gGreenTreeInput, event);
-			performDownAction(&gPinkBubbleGumInput, event);
-			performDownAction(&gBlueLightningInput, event);
+			performDownKeyAction(&gRedRoverInput, event);
+			performDownKeyAction(&gGreenTreeInput, event);
+			performDownKeyAction(&gPinkBubbleGumInput, event);
+			performDownKeyAction(&gBlueLightningInput, event);
 		}
 
-		performUpAction(&gRedRoverInput, event);
-		performUpAction(&gGreenTreeInput, event);
-		performUpAction(&gPinkBubbleGumInput, event);
-		performUpAction(&gBlueLightningInput, event);
+		performUpKeyAction(&gRedRoverInput, event);
+		performUpKeyAction(&gGreenTreeInput, event);
+		performUpKeyAction(&gPinkBubbleGumInput, event);
+		performUpKeyAction(&gBlueLightningInput, event);
 	}
 }
 
 #define MAX_ITERATIONS (25 * ANIMATION_TIMER_INTERVAL)
 
-static void eventLoop(Renderer *renderer, SDL_Joystick **joysticks)
+static void eventLoop(Renderer *renderer, GamepadManager *gamepadManager)
 {
 	SDL_Event event;
 	bool needsToDrawScene = true;
@@ -1806,7 +1465,19 @@ static void eventLoop(Renderer *renderer, SDL_Joystick **joysticks)
 	{
 		while (SDL_PollEvent(&event))
 		{
-			eventInput(&event, renderer, &needsToDrawScene, joysticks, &done);
+			eventInput(&event, renderer, &needsToDrawScene, &done);
+		}
+		
+		uint16_t gamepadEventsCount = 0;
+		GamepadEvent *gamepadEvents = pollGamepadEvents(gamepadManager, &gamepadEventsCount);
+		for (uint16_t gamepadEventIndex = 0; gamepadEventIndex < gamepadEventsCount; gamepadEventIndex++)
+		{
+			GamepadEvent *gamepadEvent = &gamepadEvents[gamepadEventIndex];
+			
+			performGamepadAction(&gRedRoverInput, gamepadEvent);
+			performGamepadAction(&gGreenTreeInput, gamepadEvent);
+			performGamepadAction(&gPinkBubbleGumInput, gamepadEvent);
+			performGamepadAction(&gBlueLightningInput, gamepadEvent);
 		}
 		
 		// Update game state
@@ -1878,96 +1549,49 @@ static void eventLoop(Renderer *renderer, SDL_Joystick **joysticks)
 	}
 }
 
-static void removeJoyStick(SDL_Joystick **joysticks, SDL_JoystickID instanceID)
+static void gamepadAdded(GamepadIndex gamepadIndex)
 {
-	for (int joyIndex = 0; joyIndex < MAX_SUPPORTED_JOYSTICKS; joyIndex++)
+	if (gPinkBubbleGumInput.gamepadIndex == INVALID_GAMEPAD_INDEX)
 	{
-		if (joysticks[joyIndex] != NULL)
-		{
-			if (!SDL_JoystickGetAttached(joysticks[joyIndex]))
-			{
-				joysticks[joyIndex] = NULL;
-			}
-			else if (SDL_JoystickInstanceID(joysticks[joyIndex]) == instanceID)
-			{
-				SDL_JoystickClose(joysticks[joyIndex]);
-				joysticks[joyIndex] = NULL;
-			}
-		}
+		gPinkBubbleGumInput.gamepadIndex = gamepadIndex;
+	}
+	else if (gRedRoverInput.gamepadIndex == INVALID_GAMEPAD_INDEX)
+	{
+		gRedRoverInput.gamepadIndex = gamepadIndex;
+	}
+	else if (gGreenTreeInput.gamepadIndex == INVALID_GAMEPAD_INDEX)
+	{
+		gGreenTreeInput.gamepadIndex = gamepadIndex;
+	}
+	else if (gBlueLightningInput.gamepadIndex == INVALID_GAMEPAD_INDEX)
+	{
+		gBlueLightningInput.gamepadIndex = gamepadIndex;
 	}
 }
 
-static void addJoyStick(SDL_Joystick **joysticks, int deviceIndex)
+static void gamepadRemoved(GamepadIndex gamepadIndex)
 {
-	SDL_Joystick *newJoystick = SDL_JoystickOpen(deviceIndex);
-	if (newJoystick == NULL)
+	if (gPinkBubbleGumInput.gamepadIndex == gamepadIndex)
 	{
-		return;
+		gPinkBubbleGumInput.gamepadIndex = INVALID_GAMEPAD_INDEX;
 	}
-	
-	for (int joyIndex = 0; joyIndex < MAX_SUPPORTED_JOYSTICKS; joyIndex++)
+	else if (gRedRoverInput.gamepadIndex == gamepadIndex)
 	{
-		if (joysticks[joyIndex] != NULL && SDL_JoystickGetAttached(joysticks[joyIndex]) && SDL_JoystickInstanceID(joysticks[joyIndex]) == SDL_JoystickInstanceID(newJoystick))
-		{
-			return;
-		}
+		gRedRoverInput.gamepadIndex = INVALID_GAMEPAD_INDEX;
 	}
-	
-	for (int joyIndex = 0; joyIndex < MAX_SUPPORTED_JOYSTICKS; joyIndex++)
+	else if (gGreenTreeInput.gamepadIndex == gamepadIndex)
 	{
-		if (joysticks[joyIndex] == NULL || !SDL_JoystickGetAttached(joysticks[joyIndex]))
-		{
-			joysticks[joyIndex] = newJoystick;
-			return;
-		}
+		gGreenTreeInput.gamepadIndex = INVALID_GAMEPAD_INDEX;
 	}
-	
-	SDL_JoystickClose(newJoystick);
-}
-
-static void reloadJoyStickForInput(SDL_Joystick **joysticks, Input *input)
-{
-	setJoystickIdFromGuid(joysticks, &input->joy_right_id, input->joy_right_guid);
-	setJoystickIdFromGuid(joysticks, &input->joy_left_id, input->joy_left_guid);
-	setJoystickIdFromGuid(joysticks, &input->joy_up_id, input->joy_up_guid);
-	setJoystickIdFromGuid(joysticks, &input->joy_down_id, input->joy_down_guid);
-	setJoystickIdFromGuid(joysticks, &input->joy_weap_id, input->joy_weap_guid);
-}
-
-static void reloadJoySticks(SDL_Joystick **joysticks)
-{
-	reloadJoyStickForInput(joysticks, &gRedRoverInput);
-	reloadJoyStickForInput(joysticks, &gPinkBubbleGumInput);
-	reloadJoyStickForInput(joysticks, &gGreenTreeInput);
-	reloadJoyStickForInput(joysticks, &gBlueLightningInput);
-}
-
-static void initJoySticks(SDL_Joystick **joysticks)
-{
-	int numJoySticks = SDL_NumJoysticks();
-	if (numJoySticks > 0)
+	else if (gBlueLightningInput.gamepadIndex == gamepadIndex)
 	{
-		if (numJoySticks > MAX_SUPPORTED_JOYSTICKS)
-		{
-			numJoySticks = MAX_SUPPORTED_JOYSTICKS;
-		}
-		
-		int numJoysticksCreated = 0;
-		for (int joyIndex = 0; joyIndex < numJoySticks; joyIndex++)
-		{
-			SDL_Joystick *joystick = SDL_JoystickOpen(joyIndex);
-			if (joystick != NULL)
-			{
-				joysticks[numJoysticksCreated] = joystick;
-				numJoysticksCreated++;
-			}
-		}
+		gBlueLightningInput.gamepadIndex = INVALID_GAMEPAD_INDEX;
 	}
 }
 
 int main(int argc, char *argv[])
 {
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
+	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
         fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
 		ZGQuit();
@@ -1983,15 +1607,12 @@ int main(int argc, char *argv[])
 	}
 #endif
 
-	SDL_Joystick *joysticks[MAX_SUPPORTED_JOYSTICKS] = {0};
-	initJoySticks(joysticks);
-
 	initAudio();
 	
 	// init random number generator
 	mt_init();
 
-	readDefaults(joysticks);
+	readDefaults();
 
 	// Create renderer
 #ifdef _PROFILING
@@ -2013,6 +1634,8 @@ int main(int argc, char *argv[])
 	
 	initScene(&renderer);
 	
+	GamepadManager *gamepadManager = initGamepadManager("Data/gamecontrollerdb.txt", gamepadAdded, gamepadRemoved);
+	
 	/*
 	 * Load a few font strings before a game starts up.
 	 * We don't want the user to experience slow font loading times during a game
@@ -2033,7 +1656,7 @@ int main(int argc, char *argv[])
 	}
 
 	// Start the game event loop
-	eventLoop(&renderer, joysticks);
+	eventLoop(&renderer, gamepadManager);
 	
 	// Prepare to quit
 	

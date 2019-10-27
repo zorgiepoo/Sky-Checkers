@@ -37,61 +37,13 @@ void initInput(Input *input, int right, int left, int up, int down, int weapon)
 	
 	input->priority = 0;
 	
-	input->u_id = 0;
-	input->d_id = 0;
-	input->l_id = 0;
-	input->r_id = 0;
-	input->weap_id = 0;
-	
-	input->ujs_id = JOY_NONE;
-	input->djs_id = JOY_NONE;
-	input->ljs_id = JOY_NONE;
-	input->rjs_id = JOY_NONE;
-	input->weapjs_id = JOY_NONE;
-	
-	input->rjs_axis_id = JOY_AXIS_NONE;
-	input->ljs_axis_id = JOY_AXIS_NONE;
-	input->ujs_axis_id = JOY_AXIS_NONE;
-	input->djs_axis_id = JOY_AXIS_NONE;
-	input->weapjs_axis_id = JOY_AXIS_NONE;
-	
-	input->rjs_hat_id = JOY_HAT_NONE;
-	input->ljs_hat_id = JOY_HAT_NONE;
-	input->ujs_hat_id = JOY_HAT_NONE;
-	input->djs_hat_id = JOY_HAT_NONE;
-	input->weapjs_hat_id = JOY_HAT_NONE;
-	
-	input->joy_right_id = JOY_INVALID_ID;
-	input->joy_left_id = JOY_INVALID_ID;
-	input->joy_up_id = JOY_INVALID_ID;
-	input->joy_down_id = JOY_INVALID_ID;
-	input->joy_weap_id = JOY_INVALID_ID;
-	
-	// allocate some memory for the descriptions.
-	input->joy_right = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
-	input->joy_left = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
-	input->joy_up = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
-	input->joy_down = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
-	input->joy_weap = calloc(MAX_JOY_DESCRIPTION_BUFFER_LENGTH, 1);
-	
-	// alocate memory for the uuids
-	input->joy_right_guid = calloc(MAX_JOY_GUID_BUFFER_LENGTH, 1);
-	input->joy_left_guid = calloc(MAX_JOY_GUID_BUFFER_LENGTH, 1);
-	input->joy_up_guid = calloc(MAX_JOY_GUID_BUFFER_LENGTH, 1);
-	input->joy_down_guid = calloc(MAX_JOY_GUID_BUFFER_LENGTH, 1);
-	input->joy_weap_guid = calloc(MAX_JOY_GUID_BUFFER_LENGTH, 1);
-	
-	sprintf(input->joy_right, "None");
-	sprintf(input->joy_left, "None");
-	sprintf(input->joy_down, "None");
-	sprintf(input->joy_up, "None");
-	sprintf(input->joy_weap, "None");
-	
 	input->r_id = right;
 	input->l_id = left;
 	input->u_id = up;
 	input->d_id = down;
 	input->weap_id = weapon;
+	
+	input->gamepadIndex = INVALID_GAMEPAD_INDEX;
 }
 
 /* Returns the Character that corresponds to the characterInput. This is more reliable than using input->character when there's a network connection alive because the character pointer variable may be different */
@@ -122,10 +74,8 @@ static void prepareFiringFromInput(Input *input)
 	prepareFiringCharacterWeapon(input->character, input->character->x, input->character->y, input->character->pointing_direction, 0.0f);
 }
 
-void performDownAction(Input *input, SDL_Event *event)
+void performDownKeyAction(Input *input, SDL_Event *event)
 {
-	// check if the input is pressed and set the character's direction value accordingly
-	
 	if (event->type == SDL_KEYDOWN)
 	{
 		if (event->key.keysym.scancode == input->weap_id && !input->character->weap->animationState)
@@ -156,245 +106,10 @@ void performDownAction(Input *input, SDL_Event *event)
 			input->down_ticks = event->key.timestamp;
 		}
 	}
-	
-	// joystick input. see if it's pressed or released and set direction value accordingly
-	
-	else if (event->type == SDL_JOYAXISMOTION)
-	{
-		if (input->joy_up_id == event->jaxis.which && input->ujs_axis_id == event->jaxis.axis)
-		{
-			if (input->ujs_id > VALID_ANALOG_MAGNITUDE)
-			{
-				if (event->jaxis.value > VALID_ANALOG_MAGNITUDE)
-				{
-					input->up_ticks = event->key.timestamp;
-					input->priority |= 1 << 0;
-				}
-				else
-				{
-					input->up_ticks = 0;
-					input->priority &= ~(1 << 0);
-				}
-			}
-			else if (input->ujs_id < -VALID_ANALOG_MAGNITUDE)
-			{
-				if (event->jaxis.value < -VALID_ANALOG_MAGNITUDE)
-				{
-					input->up_ticks = event->key.timestamp;
-					input->priority |= 1 << 0;
-				}
-				else
-				{
-					input->up_ticks = 0;
-					input->priority &= ~(1 << 0);
-				}
-			}
-			else
-			{
-				input->up_ticks = 0;
-				input->priority &= ~(1 << 0);
-			}
-		}
-		
-		if (input->joy_down_id == event->jaxis.which && input->djs_axis_id == event->jaxis.axis)
-		{
-			if (input->djs_id > VALID_ANALOG_MAGNITUDE)
-			{
-				if (event->jaxis.value > VALID_ANALOG_MAGNITUDE)
-				{
-					input->down_ticks = event->key.timestamp;
-					input->priority |= 1 << 1;
-				}
-				else
-				{
-					input->down_ticks = 0;
-					input->priority &= ~(1 << 1);
-				}
-			}
-			else if (input->djs_id < -VALID_ANALOG_MAGNITUDE)
-			{
-				if (event->jaxis.value < -VALID_ANALOG_MAGNITUDE)
-				{
-					input->down_ticks = event->key.timestamp;
-					input->priority |= 1 << 1;
-				}
-				else
-				{
-					input->down_ticks = 0;
-					input->priority &= ~(1 << 1);
-				}
-			}
-			else
-			{
-				input->down_ticks = 0;
-				input->priority &= ~(1 << 1);
-			}
-		}
-		
-		if (input->joy_right_id == event->jaxis.which && input->rjs_axis_id == event->jaxis.axis)
-		{
-			if (input->rjs_id > VALID_ANALOG_MAGNITUDE)
-			{
-				if (event->jaxis.value > VALID_ANALOG_MAGNITUDE)
-				{
-					input->right_ticks = event->key.timestamp;
-					input->priority |= 1 << 2;
-				}
-				else
-				{
-					input->right_ticks = 0;
-					input->priority &= ~(1 << 2);
-				}
-			}
-			else if (input->rjs_id < -VALID_ANALOG_MAGNITUDE)
-			{
-				if (event->jaxis.value < -VALID_ANALOG_MAGNITUDE)
-				{
-					input->right_ticks = event->key.timestamp;
-					input->priority |= 1 << 2;
-				}
-				else
-				{
-					input->right_ticks = 0;
-					input->priority &= ~(1 << 2);
-				}
-			}
-			else
-			{
-				input->right_ticks = 0;
-				input->priority &= ~(1 << 2);
-			}
-		}
-		
-		if (input->joy_left_id == event->jaxis.which && input->ljs_axis_id == event->jaxis.axis)
-		{
-			if (input->ljs_id > VALID_ANALOG_MAGNITUDE)
-			{
-				if (event->jaxis.value > VALID_ANALOG_MAGNITUDE)
-				{
-					input->left_ticks = event->key.timestamp;
-					input->priority |= 1 << 3;
-				}
-				else
-				{
-					input->left_ticks = 0;
-					input->priority &= ~(1 << 3);
-				}
-			}
-			else if (input->ljs_id < -VALID_ANALOG_MAGNITUDE)
-			{
-				if (event->jaxis.value < -VALID_ANALOG_MAGNITUDE)
-				{
-					input->left_ticks = event->key.timestamp;
-					input->priority |= 1 << 3;
-				}
-				else
-				{
-					input->left_ticks = 0;
-					input->priority &= ~(1 << 3);
-				}
-			}
-			else
-			{
-				input->left_ticks = 0;
-				input->priority &= ~(1 << 3);
-			}
-		}
-		
-		if (!input->character->weap->animationState && event->jaxis.axis == input->weapjs_axis_id && event->jaxis.which == input->joy_weap_id)
-		{
-			
-			if (input->weapjs_id > VALID_ANALOG_MAGNITUDE)
-			{
-				if (event->jaxis.value > VALID_ANALOG_MAGNITUDE)
-				{
-					if (gGameHasStarted)
-					{
-						input->weap = true;
-					}
-				}
-			}
-			else if (input->weapjs_id < -VALID_ANALOG_MAGNITUDE)
-			{
-				if (event->jaxis.value < -VALID_ANALOG_MAGNITUDE)
-				{
-					if (gGameHasStarted)
-					{
-						input->weap = true;
-					}
-				}
-			}
-		}
-	}
-	
-	else if (event->type == SDL_JOYBUTTONDOWN)
-	{
-		
-		if (event->jbutton.which == input->joy_weap_id && event->jbutton.button == input->weapjs_id && input->weapjs_axis_id == JOY_AXIS_NONE &&
-			!input->character->weap->animationState && !input->weap)
-		{
-			
-			if (gGameHasStarted)
-				input->weap = true;
-		}
-		
-		else if (event->jbutton.which == input->joy_up_id && event->jbutton.button == input->ujs_id && input->ujs_axis_id == JOY_AXIS_NONE)
-		{
-			input->up_ticks = event->key.timestamp;
-		}
-		
-		else if (event->jbutton.which == input->joy_down_id && event->jbutton.button == input->djs_id && input->djs_axis_id == JOY_AXIS_NONE)
-		{
-			input->down_ticks = event->key.timestamp;
-		}
-		
-		else if (event->jbutton.which == input->joy_left_id && event->jbutton.button == input->ljs_id && input->ljs_axis_id == JOY_AXIS_NONE)
-		{
-			input->left_ticks = event->key.timestamp;
-		}
-		
-		else if (event->jbutton.which == input->joy_right_id && event->jbutton.button == input->rjs_id && input->rjs_axis_id == JOY_AXIS_NONE)
-		{
-			input->right_ticks = event->key.timestamp;
-		}
-	}
-	else if (event->type == SDL_JOYHATMOTION)
-	{
-		if (event->jhat.value != 0)
-		{
-			if (event->jhat.which == input->joy_weap_id && event->jhat.hat == input->weapjs_hat_id && event->jhat.value == input->weapjs_id && input->weapjs_axis_id == JOY_AXIS_NONE && !input->character->weap->animationState && !input->weap)
-			{
-				if (gGameHasStarted)
-					input->weap = true;
-			}
-			
-			else if (event->jhat.which == input->joy_up_id && event->jhat.hat == input->ujs_hat_id && event->jhat.value == input->ujs_id && input->ujs_axis_id == JOY_AXIS_NONE)
-			{
-				input->up_ticks = event->key.timestamp;
-			}
-			
-			else if (event->jhat.which == input->joy_down_id && event->jhat.hat == input->djs_hat_id && event->jhat.value == input->djs_id && input->djs_axis_id == JOY_AXIS_NONE)
-			{
-				input->down_ticks = event->key.timestamp;
-			}
-			
-			else if (event->jhat.which == input->joy_left_id && event->jhat.hat == input->ljs_hat_id && event->jhat.value == input->ljs_id && input->ljs_axis_id == JOY_AXIS_NONE)
-			{
-				input->left_ticks = event->key.timestamp;
-			}
-			
-			else if (event->jhat.which == input->joy_right_id && event->jhat.hat == input->rjs_hat_id && event->jhat.value == input->rjs_id && input->rjs_axis_id == JOY_AXIS_NONE)
-			{
-				input->right_ticks = event->key.timestamp;
-			}
-		}
-	}
 }
 
-void performUpAction(Input *input, SDL_Event *event)
+void performUpKeyAction(Input *input, SDL_Event *event)
 {
-	// If the user releases the key, we turn off the character's direction value.
-	
 	if (event->type == SDL_KEYUP)
 	{
 		if (input->right_ticks == 0 && input->left_ticks == 0 && input->down_ticks == 0 && input->up_ticks == 0 && !input->weap)
@@ -429,84 +144,128 @@ void performUpAction(Input *input, SDL_Event *event)
 			input->weap = false;
 		}
 	}
-	else if (event->type == SDL_JOYBUTTONUP)
+}
+
+void performGamepadAction(Input *input, GamepadEvent *gamepadEvent)
+{
+	if (input->gamepadIndex != gamepadEvent->index) return;
+	
+	switch (gamepadEvent->state)
 	{
-		if (input->up_ticks != 0 && event->jbutton.which == input->joy_up_id && event->jbutton.button == input->ujs_id && input->ujs_axis_id == JOY_AXIS_NONE)
+		case GAMEPAD_STATE_PRESSED:
 		{
-			input->up_ticks = 0;
+			switch (gamepadEvent->button)
+			{
+				case GAMEPAD_BUTTON_A:
+				case GAMEPAD_BUTTON_B:
+				case GAMEPAD_BUTTON_X:
+				case GAMEPAD_BUTTON_Y:
+					if (!input->character->weap->animationState && !input->weap)
+					{
+						if (gGameHasStarted)
+						{
+							input->weap = true;
+						}
+					}
+					break;
+				case GAMEPAD_BUTTON_BACK:
+				case GAMEPAD_BUTTON_START:
+					break;
+				case GAMEPAD_BUTTON_LEFTSHOULDER:
+				case GAMEPAD_BUTTON_RIGHTSHOULDER:
+				case GAMEPAD_BUTTON_LEFTTRIGGER:
+				case GAMEPAD_BUTTON_RIGHTTRIGGER:
+					break;
+				case GAMEPAD_BUTTON_DPAD_UP:
+					if (gamepadEvent->mappingType == GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS)
+					{
+						input->priority |= 1 << 0;
+					}
+					input->up_ticks = gamepadEvent->ticks;
+					break;
+				case GAMEPAD_BUTTON_DPAD_DOWN:
+					if (gamepadEvent->mappingType == GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS)
+					{
+						input->priority |= 1 << 1;
+					}
+					input->down_ticks = gamepadEvent->ticks;
+					break;
+				case GAMEPAD_BUTTON_DPAD_RIGHT:
+					if (gamepadEvent->mappingType == GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS)
+					{
+						input->priority |= 1 << 2;
+					}
+					input->right_ticks = gamepadEvent->ticks;
+					break;
+				case GAMEPAD_BUTTON_DPAD_LEFT:
+					if (gamepadEvent->mappingType == GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS)
+					{
+						input->priority |= 1 << 3;
+					}
+					input->left_ticks = gamepadEvent->ticks;
+					break;
+				case GAMEPAD_BUTTON_MAX:
+					break;
+			}
+			break;
 		}
-		
-		else if (input->down_ticks != 0 && event->jbutton.which == input->joy_down_id && event->jbutton.button == input->djs_id && input->djs_axis_id == JOY_AXIS_NONE)
+		case GAMEPAD_STATE_RELEASED:
 		{
-			input->down_ticks = 0;
-		}
-		
-		else if (input->left_ticks != 0 && event->jbutton.which == input->joy_left_id && event->jbutton.button == input->ljs_id && input->ljs_axis_id == JOY_AXIS_NONE)
-		{
-			input->left_ticks = 0;
-		}
-		
-		else if (input->right_ticks != 0 && event->jbutton.which == input->joy_right_id && event->jbutton.button == input->rjs_id && input->rjs_axis_id == JOY_AXIS_NONE)
-		{
-			input->right_ticks = 0;
-		}
-		
-		else if (input->weap && event->jbutton.which == input->joy_weap_id && event->jbutton.button == input->weapjs_id && input->weapjs_axis_id == JOY_AXIS_NONE &&
-				 !input->character->weap->animationState)
-		{
-			if (gGameHasStarted)
+			switch (gamepadEvent->button)
 			{
-				prepareFiringFromInput(input);
+				case GAMEPAD_BUTTON_A:
+				case GAMEPAD_BUTTON_B:
+				case GAMEPAD_BUTTON_X:
+				case GAMEPAD_BUTTON_Y:
+					if (input->weap && !input->character->weap->animationState)
+					{
+						if (gGameHasStarted)
+						{
+							prepareFiringFromInput(input);
+						}
+						input->weap = false;
+					}
+					break;
+				case GAMEPAD_BUTTON_BACK:
+				case GAMEPAD_BUTTON_START:
+					break;
+				case GAMEPAD_BUTTON_LEFTSHOULDER:
+				case GAMEPAD_BUTTON_RIGHTSHOULDER:
+				case GAMEPAD_BUTTON_LEFTTRIGGER:
+				case GAMEPAD_BUTTON_RIGHTTRIGGER:
+					break;
+				case GAMEPAD_BUTTON_DPAD_UP:
+					if (gamepadEvent->mappingType == GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS)
+					{
+						input->priority &= ~(1 << 0);
+					}
+					input->up_ticks = 0;
+					break;
+				case GAMEPAD_BUTTON_DPAD_DOWN:
+					if (gamepadEvent->mappingType == GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS)
+					{
+						input->priority &= ~(1 << 1);
+					}
+					input->down_ticks = 0;
+					break;
+				case GAMEPAD_BUTTON_DPAD_RIGHT:
+					if (gamepadEvent->mappingType == GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS)
+					{
+						input->priority &= ~(1 << 2);
+					}
+					input->right_ticks = 0;
+					break;
+				case GAMEPAD_BUTTON_DPAD_LEFT:
+					if (gamepadEvent->mappingType == GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS)
+					{
+						input->priority &= ~(1 << 3);
+					}
+					input->left_ticks = 0;
+					break;
+				case GAMEPAD_BUTTON_MAX:
+					break;
 			}
-			input->weap = false;
-		}
-	}
-	else if (event->type == SDL_JOYHATMOTION)
-	{
-		if (event->jhat.value == 0)
-		{
-			if (input->up_ticks != 0 && event->jhat.which == input->joy_up_id && event->jhat.hat == input->ujs_hat_id && input->ujs_axis_id == JOY_AXIS_NONE)
-			{
-				input->up_ticks = 0;
-			}
-			
-			if (input->down_ticks != 0 && event->jhat.which == input->joy_down_id && event->jhat.hat == input->djs_hat_id && input->djs_axis_id == JOY_AXIS_NONE)
-			{
-				input->down_ticks = 0;
-			}
-			
-			if (input->right_ticks != 0 && event->jhat.which == input->joy_right_id && event->jhat.hat == input->rjs_hat_id && input->rjs_axis_id == JOY_AXIS_NONE)
-			{
-				input->right_ticks = 0;
-			}
-			
-			if (input->left_ticks != 0 && event->jhat.which == input->joy_left_id && event->jhat.hat == input->ljs_hat_id && input->ljs_axis_id == JOY_AXIS_NONE)
-			{
-				input->left_ticks = 0;
-			}
-			
-			if (input->weap && event->jhat.which == input->joy_weap_id && event->jhat.hat == input->weapjs_hat_id && input->weapjs_axis_id == JOY_AXIS_NONE &&
-					 !input->character->weap->animationState)
-			{
-				if (gGameHasStarted)
-				{
-					prepareFiringFromInput(input);
-				}
-				input->weap = false;
-			}
-		}
-	}
-	else if (event->type == SDL_JOYAXISMOTION)
-	{
-		/* Other JOYAXISMOTION UPs are dealt with in performDownAction() (because it was easier to deal with there) */
-		
-		if (input->weap && !input->character->weap->animationState && input->weapjs_axis_id != JOY_AXIS_NONE)
-		{
-			if (gGameHasStarted)
-			{
-				prepareFiringFromInput(input);
-			}
-			input->weap = false;
+			break;
 		}
 	}
 }
@@ -600,29 +359,4 @@ void updateCharacterFromInput(Input *input)
 	}
 	
 	input->character->direction = bestDirectionFromInputTicks(input->priority == 0, input->right_ticks, input->left_ticks, input->up_ticks, input->down_ticks);
-}
-
-bool joyButtonEventMatchesMovementFromInput(SDL_JoyButtonEvent *buttonEvent, Input *input)
-{
-	if (buttonEvent->which == input->joy_right_id && buttonEvent->button == input->rjs_id)
-	{
-		return true;
-	}
-	
-	if (buttonEvent->which == input->joy_left_id && buttonEvent->button == input->ljs_id)
-	{
-		return true;
-	}
-	
-	if (buttonEvent->which == input->joy_up_id && buttonEvent->button == input->ujs_id)
-	{
-		return true;
-	}
-	
-	if (buttonEvent->which == input->joy_down_id && buttonEvent->button == input->djs_id)
-	{
-		return true;
-	}
-	
-	return false;
 }
