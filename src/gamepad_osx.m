@@ -312,6 +312,66 @@ static CFIndex _convertSDLHatToDeviceHat(CFIndex hatValue)
 	}
 }
 
+static NSArray<NSString *> *_gamepadButtonStringMappings(NSArray<NSString *> *mappings)
+{
+	NSMutableArray<NSString *> *newMappings = [NSMutableArray array];
+	
+	for (NSString *mapping in [mappings subarrayWithRange:NSMakeRange(2, mappings.count - 2)])
+	{
+		NSArray<NSString *> *stringMappingComponents = [mapping componentsSeparatedByString:@":"];
+		if (stringMappingComponents.count != 2) continue;
+		
+		BOOL xAxis = [stringMappingComponents[0] isEqualToString:@"leftx"];
+		BOOL yAxis = [stringMappingComponents[0] isEqualToString:@"lefty"];
+		if (xAxis || yAxis)
+		{
+			NSString *axis = stringMappingComponents[1];
+			BOOL positiveOrientation = [axis hasPrefix:@"+a"];
+			BOOL negativeOrientation = [axis hasPrefix:@"-a"];
+			BOOL unspecifiedOrientation = [axis hasPrefix:@"a"];
+			if (unspecifiedOrientation || positiveOrientation || negativeOrientation)
+			{
+				NSString *axisValue = [axis substringFromIndex:unspecifiedOrientation ? 1 : 2];
+				
+				NSString *initialPositiveString;
+				NSString *initialNegativeString;
+				if (xAxis)
+				{
+					initialPositiveString = @"right";
+					initialNegativeString = @"left";
+				}
+				else /* if (yAxis) */
+				{
+					initialPositiveString = @"down";
+					initialNegativeString = @"up";
+				}
+				
+				NSString *finalPositiveString;
+				NSString *finalNegativeString;
+				if (!negativeOrientation)
+				{
+					finalPositiveString = initialPositiveString;
+					finalNegativeString = initialNegativeString;
+				}
+				else
+				{
+					finalPositiveString = initialNegativeString;
+					finalNegativeString = initialPositiveString;
+				}
+				
+				[newMappings addObject:[NSString stringWithFormat:@"analog%@:+a%@", finalPositiveString, axisValue]];
+				[newMappings addObject:[NSString stringWithFormat:@"analog%@:-a%@", finalNegativeString, axisValue]];
+			}
+		}
+		else
+		{
+			[newMappings addObject:mapping];
+		}
+	}
+	
+	return newMappings;
+}
+
 static void _hidDeviceMatchingCallback(void *context, IOReturn result, void *sender, IOHIDDeviceRef device)
 {
 	GamepadManager *gamepadManager = context;
@@ -413,10 +473,14 @@ static void _hidDeviceMatchingCallback(void *context, IOReturn result, void *sen
 		@"dpup" : @(GAMEPAD_BUTTON_DPAD_UP),
 		@"dpdown" : @(GAMEPAD_BUTTON_DPAD_DOWN),
 		@"dpleft" : @(GAMEPAD_BUTTON_DPAD_LEFT),
-		@"dpright" : @(GAMEPAD_BUTTON_DPAD_RIGHT)
+		@"dpright" : @(GAMEPAD_BUTTON_DPAD_RIGHT),
+		@"analogleft" : @(GAMEPAD_BUTTON_ANALOG_LEFT),
+		@"analogright" : @(GAMEPAD_BUTTON_ANALOG_RIGHT),
+		@"analogup" : @(GAMEPAD_BUTTON_ANALOG_UP),
+		@"analogdown" : @(GAMEPAD_BUTTON_ANALOG_DOWN),
 	};
 	
-	NSArray<NSString *> *stringMappings = [foundGamepadMapping subarrayWithRange:NSMakeRange(2, foundGamepadMapping.count - 2)];
+	NSArray<NSString *> *stringMappings = _gamepadButtonStringMappings(foundGamepadMapping);
 	
 	for (NSString *stringMapping in stringMappings)
 	{
