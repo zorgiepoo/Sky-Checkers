@@ -40,10 +40,6 @@ typedef enum
 	GAMEPAD_BUTTON_DPAD_DOWN,
 	GAMEPAD_BUTTON_DPAD_LEFT,
 	GAMEPAD_BUTTON_DPAD_RIGHT,
-	GAMEPAD_BUTTON_ANALOG_UP,
-	GAMEPAD_BUTTON_ANALOG_DOWN,
-	GAMEPAD_BUTTON_ANALOG_LEFT,
-	GAMEPAD_BUTTON_ANALOG_RIGHT,
 	GAMEPAD_BUTTON_MAX
 } GamepadButton;
 
@@ -81,4 +77,4 @@ typedef void (*GamepadCallback)(GamepadIndex index);
 
 GamepadManager *initGamepadManager(const char *databasePath, GamepadCallback addedCallback, GamepadCallback removalCallback);
 
-GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, uint16_t *eventCount);
+GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *systemEvent, uint16_t *eventCount);

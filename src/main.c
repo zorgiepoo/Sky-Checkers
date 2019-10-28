@@ -1375,24 +1375,6 @@ static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawSc
 		case SDL_TEXTINPUT:
 			writeTextInput(event->text.text, SDL_TEXTINPUTEVENT_TEXT_SIZE);
 			break;
-
-//		case SDL_JOYBUTTONDOWN:
-//			if (gGameState == GAME_STATE_ON && gGameWinner != NO_CHARACTER && ((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && !joyButtonEventMatchesMovementFromInput(&event->jbutton, &gPinkBubbleGumInput) && !joyButtonEventMatchesMovementFromInput(&event->jbutton, &gRedRoverInput) && !joyButtonEventMatchesMovementFromInput(&event->jbutton, &gGreenTreeInput) && !joyButtonEventMatchesMovementFromInput(&event->jbutton, &gBlueLightningInput))
-//			{
-//				// new game
-//				if (!gConsoleActivated && (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE))
-//				{
-//					if (gNetworkConnection)
-//					{
-//						GameMessage message;
-//						message.type = GAME_RESET_MESSAGE_TYPE;
-//						sendToClients(0, &message);
-//					}
-//					gGameShouldReset = true;
-//				}
-//			}
-//
-//			break;
 		case SDL_WINDOWEVENT:
 			if (event->window.event == SDL_WINDOWEVENT_FOCUS_LOST)
 			{
@@ -1426,12 +1408,12 @@ static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawSc
 	}
 
 	/*
-	 * Perform up and down key/joystick character actions when playing the game
+	 * Perform up and down key character actions when playing the game
 	 * Make sure the user isn't trying to toggle fullscreen.
 	 * Other actions, such as changing menus are dealt before here
 	 */
 	if (!(event->key.keysym.sym == SDLK_RETURN && (SDL_GetModState() & metaMod) != 0) &&
-		gGameState == GAME_STATE_ON && (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP || event->type == SDL_JOYBUTTONDOWN || event->type == SDL_JOYHATMOTION || event->type == SDL_JOYBUTTONUP || event->type == SDL_JOYAXISMOTION))
+		gGameState == GAME_STATE_ON && (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP))
 	{
 		if (!gConsoleActivated)
 		{
@@ -1450,6 +1432,21 @@ static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawSc
 
 #define MAX_ITERATIONS (25 * ANIMATION_TIMER_INTERVAL)
 
+static void pollGamepads(GamepadManager *gamepadManager, const void *systemEvent)
+{
+	uint16_t gamepadEventsCount = 0;
+	GamepadEvent *gamepadEvents = pollGamepadEvents(gamepadManager, systemEvent, &gamepadEventsCount);
+	for (uint16_t gamepadEventIndex = 0; gamepadEventIndex < gamepadEventsCount; gamepadEventIndex++)
+	{
+		GamepadEvent *gamepadEvent = &gamepadEvents[gamepadEventIndex];
+
+		performGamepadAction(&gRedRoverInput, gamepadEvent);
+		performGamepadAction(&gGreenTreeInput, gamepadEvent);
+		performGamepadAction(&gPinkBubbleGumInput, gamepadEvent);
+		performGamepadAction(&gBlueLightningInput, gamepadEvent);
+	}
+}
+
 static void eventLoop(Renderer *renderer, GamepadManager *gamepadManager)
 {
 	SDL_Event event;
@@ -1466,19 +1463,10 @@ static void eventLoop(Renderer *renderer, GamepadManager *gamepadManager)
 		while (SDL_PollEvent(&event))
 		{
 			eventInput(&event, renderer, &needsToDrawScene, &done);
+			pollGamepads(gamepadManager, &event);
 		}
 		
-		uint16_t gamepadEventsCount = 0;
-		GamepadEvent *gamepadEvents = pollGamepadEvents(gamepadManager, &gamepadEventsCount);
-		for (uint16_t gamepadEventIndex = 0; gamepadEventIndex < gamepadEventsCount; gamepadEventIndex++)
-		{
-			GamepadEvent *gamepadEvent = &gamepadEvents[gamepadEventIndex];
-			
-			performGamepadAction(&gRedRoverInput, gamepadEvent);
-			performGamepadAction(&gGreenTreeInput, gamepadEvent);
-			performGamepadAction(&gPinkBubbleGumInput, gamepadEvent);
-			performGamepadAction(&gBlueLightningInput, gamepadEvent);
-		}
+		pollGamepads(gamepadManager, NULL);
 		
 		// Update game state
 		// http://ludobloom.com/tutorials/timestep.html

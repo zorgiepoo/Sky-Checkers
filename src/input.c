@@ -177,7 +177,6 @@ void performGamepadAction(Input *input, GamepadEvent *gamepadEvent)
 				case GAMEPAD_BUTTON_RIGHTTRIGGER:
 					break;
 				case GAMEPAD_BUTTON_DPAD_UP:
-				case GAMEPAD_BUTTON_ANALOG_UP:
 					if (gamepadEvent->mappingType == GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS)
 					{
 						input->priority |= 1 << 0;
@@ -185,7 +184,6 @@ void performGamepadAction(Input *input, GamepadEvent *gamepadEvent)
 					input->up_ticks = gamepadEvent->ticks;
 					break;
 				case GAMEPAD_BUTTON_DPAD_DOWN:
-				case GAMEPAD_BUTTON_ANALOG_DOWN:
 					if (gamepadEvent->mappingType == GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS)
 					{
 						input->priority |= 1 << 1;
@@ -193,7 +191,6 @@ void performGamepadAction(Input *input, GamepadEvent *gamepadEvent)
 					input->down_ticks = gamepadEvent->ticks;
 					break;
 				case GAMEPAD_BUTTON_DPAD_RIGHT:
-				case GAMEPAD_BUTTON_ANALOG_RIGHT:
 					if (gamepadEvent->mappingType == GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS)
 					{
 						input->priority |= 1 << 2;
@@ -201,7 +198,6 @@ void performGamepadAction(Input *input, GamepadEvent *gamepadEvent)
 					input->right_ticks = gamepadEvent->ticks;
 					break;
 				case GAMEPAD_BUTTON_DPAD_LEFT:
-				case GAMEPAD_BUTTON_ANALOG_LEFT:
 					if (gamepadEvent->mappingType == GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS)
 					{
 						input->priority |= 1 << 3;
@@ -239,7 +235,6 @@ void performGamepadAction(Input *input, GamepadEvent *gamepadEvent)
 				case GAMEPAD_BUTTON_RIGHTTRIGGER:
 					break;
 				case GAMEPAD_BUTTON_DPAD_UP:
-				case GAMEPAD_BUTTON_ANALOG_UP:
 					if (gamepadEvent->mappingType == GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS)
 					{
 						input->priority &= ~(1 << 0);
@@ -247,7 +242,6 @@ void performGamepadAction(Input *input, GamepadEvent *gamepadEvent)
 					input->up_ticks = 0;
 					break;
 				case GAMEPAD_BUTTON_DPAD_DOWN:
-				case GAMEPAD_BUTTON_ANALOG_DOWN:
 					if (gamepadEvent->mappingType == GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS)
 					{
 						input->priority &= ~(1 << 1);
@@ -255,7 +249,6 @@ void performGamepadAction(Input *input, GamepadEvent *gamepadEvent)
 					input->down_ticks = 0;
 					break;
 				case GAMEPAD_BUTTON_DPAD_RIGHT:
-				case GAMEPAD_BUTTON_ANALOG_RIGHT:
 					if (gamepadEvent->mappingType == GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS)
 					{
 						input->priority &= ~(1 << 2);
@@ -263,7 +256,6 @@ void performGamepadAction(Input *input, GamepadEvent *gamepadEvent)
 					input->right_ticks = 0;
 					break;
 				case GAMEPAD_BUTTON_DPAD_LEFT:
-				case GAMEPAD_BUTTON_ANALOG_LEFT:
 					if (gamepadEvent->mappingType == GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS)
 					{
 						input->priority &= ~(1 << 3);
