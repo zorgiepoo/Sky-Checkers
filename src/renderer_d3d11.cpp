@@ -21,6 +21,8 @@
 #include "renderer_types.h"
 #include "renderer_projection.h"
 
+#include <stdbool.h>
+
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
@@ -70,16 +72,16 @@ extern "C" static void updateViewport_d3d11(Renderer *renderer, int32_t windowWi
 
 	IDXGISwapChain *swapChain = (IDXGISwapChain *)renderer->d3d11SwapChain;
 
-	BOOL fullscreenState = SDL_FALSE;
+	BOOL fullscreenState = false;
 	HRESULT fullscreenStateResult = swapChain->GetFullscreenState(&fullscreenState, nullptr);
 	if (FAILED(fullscreenStateResult))
 	{
 		fprintf(stderr, "Error: Failed to retrieve fullscreen state: %d\n", fullscreenStateResult);
-		renderer->fullscreen = SDL_FALSE;
+		renderer->fullscreen = false;
 	}
 	else
 	{
-		renderer->fullscreen = (SDL_bool)fullscreenState;
+		renderer->fullscreen = (bool)fullscreenState;
 	}
 
 	if (!renderer->fullscreen)
@@ -241,7 +243,7 @@ static bool readFileBytes(const char *filename, void **bytesOutput, SIZE_T *leng
 	return true;
 }
 
-static bool createShader(Renderer *renderer, Shader_d3d11 *shader, const char *vertexShaderName, const char *pixelShaderName, SDL_bool textured)
+static bool createShader(Renderer *renderer, Shader_d3d11 *shader, const char *vertexShaderName, const char *pixelShaderName, bool textured)
 {
 	ID3D11Device *device = (ID3D11Device *)renderer->d3d11Device;
 
@@ -405,7 +407,7 @@ static bool createConstantBuffers(Renderer *renderer)
 	return true;
 }
 
-extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, SDL_bool fullscreen, SDL_bool vsync, SDL_bool fsaa)
+extern "C" bool createRenderer_d3d11(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, bool fullscreen, bool vsync, bool fsaa)
 {
 	// Need to initialize D3D states here in order to goto INIT_FAILURE on failure
 	ID3D11Device *device = nullptr;
@@ -434,7 +436,7 @@ extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowT
 
 	renderer->fullscreen = fullscreen;
 
-	renderer->windowsNativeFullscreenToggling = SDL_TRUE;
+	renderer->windowsNativeFullscreenToggling = true;
 
 	// Initialize with default adapter
 	IDXGIAdapter *adapter = nullptr;
@@ -541,16 +543,16 @@ extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowT
 		if (FAILED(multisampleResult))
 		{
 			fprintf(stderr, "Error: failed to check multisample quality levels\n");
-			renderer->fsaa = SDL_FALSE;
+			renderer->fsaa = false;
 		}
 		else
 		{
-			renderer->fsaa = (SDL_bool)(numberOfQualityLevels > 0);
+			renderer->fsaa = (bool)(numberOfQualityLevels > 0);
 		}
 	}
 	else
 	{
-		renderer->fsaa = SDL_FALSE;
+		renderer->fsaa = false;
 	}
 
 	renderer->vsync = vsync;
@@ -755,13 +757,13 @@ extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowT
 		goto INIT_FAILURE;
 	}
 
-	if (!createShader(renderer, &renderer->d3d11PositionShader, "Data\\Shaders\\position-vertex.cso", "Data\\Shaders\\position-pixel.cso", SDL_FALSE))
+	if (!createShader(renderer, &renderer->d3d11PositionShader, "Data\\Shaders\\position-vertex.cso", "Data\\Shaders\\position-pixel.cso", false))
 	{
 		fprintf(stderr, "Error: Failed to create position shader\n");
 		goto INIT_FAILURE;
 	}
 
-	if (!createShader(renderer, &renderer->d3d11TexturePositionShader, "Data\\Shaders\\texture-position-vertex.cso", "Data\\Shaders\\texture-position-pixel.cso", SDL_TRUE))
+	if (!createShader(renderer, &renderer->d3d11TexturePositionShader, "Data\\Shaders\\texture-position-vertex.cso", "Data\\Shaders\\texture-position-pixel.cso", true))
 	{
 		fprintf(stderr, "Error: Failed to create texture position shader\n");
 		goto INIT_FAILURE;
@@ -793,7 +795,7 @@ extern "C" SDL_bool createRenderer_d3d11(Renderer *renderer, const char *windowT
 	renderer->drawTextureWithVerticesPtr = drawTextureWithVertices_d3d11;
 	renderer->drawTextureWithVerticesFromIndicesPtr = drawTextureWithVerticesFromIndices_d3d11;
 
-	return SDL_TRUE;
+	return true;
 
 INIT_FAILURE:
 	if (swapChain != nullptr && renderer->fullscreen)
@@ -842,7 +844,7 @@ INIT_FAILURE:
 		renderer->window = NULL;
 	}
 
-	return SDL_FALSE;
+	return false;
 }
 
 extern "C" void renderFrame_d3d11(Renderer *renderer, void(*drawFunc)(Renderer *))
