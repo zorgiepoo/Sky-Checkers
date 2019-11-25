@@ -44,6 +44,7 @@ bool gGameShouldReset;
 int32_t gGameStartNumber;
 int gGameWinner;
 
+GamepadManager *gGamepadManager;
 static GamepadIndex gGamepads[4] = {INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX};
 
 // Console flag indicating if we can use the console
@@ -542,71 +543,80 @@ void initGame(SDL_Window *window, bool firstGame)
 		initialNumberOfLives = gCharacterLives;
 	}
 	
-	if (gNetworkConnection != NULL)
+	if (firstGame)
 	{
-		gPinkBubbleGumInput.gamepadIndex = gGamepads[0];
-		gRedRoverInput.gamepadIndex = gGamepads[1];
-		gGreenTreeInput.gamepadIndex = gGamepads[2];
-		gBlueLightningInput.gamepadIndex = gGamepads[3];
-	}
-	else
-	{
-		// Automatically assign gamepads to the last human character slots
-		// We don't assign gamepads to the first human character slots because we want the first slots to be reserved for keyboard usage
-		// Pink bubblegum (first character) in particular has ideal default keyboard controls
-		Input *characterInputs[4] = {&gPinkBubbleGumInput, &gRedRoverInput, &gGreenTreeInput, &gBlueLightningInput};
-		int16_t numberCharacters = (int16_t)(sizeof(characterInputs) / sizeof(*characterInputs));
-		int16_t maxGamepads = (int16_t)(sizeof(gGamepads) / sizeof(*gGamepads));
-
-		for (int16_t characterIndex = 0; characterIndex < numberCharacters; characterIndex++)
+		if (gNetworkConnection != NULL)
 		{
-			if (characterInputs[characterIndex]->character->state == CHARACTER_AI_STATE)
+			gPinkBubbleGumInput.gamepadIndex = gGamepads[0];
+			gRedRoverInput.gamepadIndex = gGamepads[1];
+			gGreenTreeInput.gamepadIndex = gGamepads[2];
+			gBlueLightningInput.gamepadIndex = gGamepads[3];
+		}
+		else
+		{
+			// Automatically assign gamepads to the last human character slots
+			// We don't assign gamepads to the first human character slots because we want the first slots to be reserved for keyboard usage
+			// Pink bubblegum (first character) in particular has ideal default keyboard controls
+			Input *characterInputs[4] = {&gPinkBubbleGumInput, &gRedRoverInput, &gGreenTreeInput, &gBlueLightningInput};
+			int16_t numberCharacters = (int16_t)(sizeof(characterInputs) / sizeof(*characterInputs));
+			int16_t maxGamepads = (int16_t)(sizeof(gGamepads) / sizeof(*gGamepads));
+
+			for (int16_t characterIndex = 0; characterIndex < numberCharacters; characterIndex++)
 			{
-				int16_t gamepadCount = 0;
-				for (int16_t gamepadIndex = 0; gamepadIndex < maxGamepads; gamepadIndex++)
+				if (characterInputs[characterIndex]->character->state == CHARACTER_AI_STATE)
 				{
-					if (gGamepads[gamepadIndex] != INVALID_GAMEPAD_INDEX)
+					int16_t gamepadCount = 0;
+					for (int16_t gamepadIndex = 0; gamepadIndex < maxGamepads; gamepadIndex++)
 					{
-						gamepadCount++;
-					}
-				}
-				
-				int16_t characterStartIndex = characterIndex >= gamepadCount ? characterIndex - gamepadCount : 0;
-				int16_t gamepadMappingIndex = 0;
-				
-				for (int16_t characterMappingIndex = characterStartIndex; characterMappingIndex < numberCharacters; characterMappingIndex++)
-				{
-					if (characterInputs[characterMappingIndex]->character->state == CHARACTER_AI_STATE)
-					{
-						break;
+						if (gGamepads[gamepadIndex] != INVALID_GAMEPAD_INDEX)
+						{
+							gamepadCount++;
+						}
 					}
 					
-					bool availableGamepad = true;
-					while (gGamepads[gamepadMappingIndex] == INVALID_GAMEPAD_INDEX)
+					int16_t characterStartIndex = characterIndex >= gamepadCount ? characterIndex - gamepadCount : 0;
+					int16_t gamepadMappingIndex = 0;
+					
+					for (int16_t characterMappingIndex = characterStartIndex; characterMappingIndex < numberCharacters; characterMappingIndex++)
 					{
+						if (characterInputs[characterMappingIndex]->character->state == CHARACTER_AI_STATE)
+						{
+							break;
+						}
+						
+						bool availableGamepad = true;
+						while (gGamepads[gamepadMappingIndex] == INVALID_GAMEPAD_INDEX)
+						{
+							gamepadMappingIndex++;
+							if (gamepadMappingIndex >= maxGamepads)
+							{
+								availableGamepad = false;
+								break;
+							}
+						}
+						
+						if (!availableGamepad)
+						{
+							break;
+						}
+						
+						characterInputs[characterMappingIndex]->gamepadIndex = gGamepads[gamepadMappingIndex];
+						
+						const char *controllerName = gamepadName(gGamepadManager, gGamepads[gamepadMappingIndex]);
+						if (controllerName != NULL)
+						{
+							strncpy(characterInputs[characterMappingIndex]->character->controllerName, controllerName, MAX_CONTROLLER_NAME_SIZE - 1);
+						}
+						
 						gamepadMappingIndex++;
 						if (gamepadMappingIndex >= maxGamepads)
 						{
-							availableGamepad = false;
 							break;
 						}
 					}
 					
-					if (!availableGamepad)
-					{
-						break;
-					}
-					
-					characterInputs[characterMappingIndex]->gamepadIndex = gGamepads[gamepadMappingIndex];
-					
-					gamepadMappingIndex++;
-					if (gamepadMappingIndex >= maxGamepads)
-					{
-						break;
-					}
+					break;
 				}
-				
-				break;
 			}
 		}
 	}
@@ -641,15 +651,23 @@ void endGame(SDL_Window *window, bool lastGame)
 	gGameWinner = NO_CHARACTER;
 	gGameShouldReset = false;
 	
-	gPinkBubbleGumInput.gamepadIndex = INVALID_GAMEPAD_INDEX;
-	gRedRoverInput.gamepadIndex = INVALID_GAMEPAD_INDEX;
-	gGreenTreeInput.gamepadIndex = INVALID_GAMEPAD_INDEX;
-	gBlueLightningInput.gamepadIndex = INVALID_GAMEPAD_INDEX;
-	
-	if (lastGame && gAudioMusicFlag)
+	if (lastGame)
 	{
-		bool windowFocus = (SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0;
-		playMainMenuMusic(!windowFocus);
+		gPinkBubbleGumInput.gamepadIndex = INVALID_GAMEPAD_INDEX;
+		gRedRoverInput.gamepadIndex = INVALID_GAMEPAD_INDEX;
+		gGreenTreeInput.gamepadIndex = INVALID_GAMEPAD_INDEX;
+		gBlueLightningInput.gamepadIndex = INVALID_GAMEPAD_INDEX;
+		
+		memset(gPinkBubbleGum.controllerName, 0, MAX_CONTROLLER_NAME_SIZE);
+		memset(gRedRover.controllerName, 0, MAX_CONTROLLER_NAME_SIZE);
+		memset(gGreenTree.controllerName, 0, MAX_CONTROLLER_NAME_SIZE);
+		memset(gBlueLightning.controllerName, 0, MAX_CONTROLLER_NAME_SIZE);
+		
+		if (gAudioMusicFlag)
+		{
+			bool windowFocus = (SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0;
+			playMainMenuMusic(!windowFocus);
+		}
 	}
 }
 
@@ -871,7 +889,7 @@ static void drawScene(Renderer *renderer)
 		drawCharacters(renderer, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
 		
 		// Character lives at z = -25.0f
-		drawAllCharacterLives(renderer, characterIconTranslations);
+		drawAllCharacterInfo(renderer, characterIconTranslations, gGameHasStarted);
 		
 		// Render game instruction and holding escape text at -25.0f
 		{
@@ -1702,7 +1720,7 @@ int main(int argc, char *argv[])
 	
 	initScene(&renderer);
 	
-	GamepadManager *gamepadManager = initGamepadManager("Data/gamecontrollerdb.txt", gamepadAdded, gamepadRemoved);
+	gGamepadManager = initGamepadManager("Data/gamecontrollerdb.txt", gamepadAdded, gamepadRemoved);
 	
 	/*
 	 * Load a few font strings before a game starts up.
@@ -1724,7 +1742,7 @@ int main(int argc, char *argv[])
 	}
 
 	// Start the game event loop
-	eventLoop(&renderer, gamepadManager);
+	eventLoop(&renderer, gGamepadManager);
 	
 	// Prepare to quit
 	

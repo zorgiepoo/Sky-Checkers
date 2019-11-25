@@ -78,3 +78,5 @@ typedef void (*GamepadCallback)(GamepadIndex index);
 GamepadManager *initGamepadManager(const char *databasePath, GamepadCallback addedCallback, GamepadCallback removalCallback);
 
 GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *systemEvent, uint16_t *eventCount);
+
+const char *gamepadName(GamepadManager *gamepadManager, GamepadIndex index);

@@ -105,6 +105,7 @@ void initCharacters(void)
 	gRedRover.red = 0.9f;
 	gRedRover.green = 0.0f;
 	gRedRover.blue = 0.0f;
+	memset(&gRedRover.controllerName, 0, sizeof(gRedRover.controllerName));
 	
 	// greenTree
 	gGreenTree.x = 0.0f;
@@ -122,6 +123,7 @@ void initCharacters(void)
 	gGreenTree.red = 0.3f;
 	gGreenTree.green = 1.0f;
 	gGreenTree.blue = 0.3f;
+	memset(&gGreenTree.controllerName, 0, sizeof(gGreenTree.controllerName));
 	
 	// pinkBubbleGum
 	gPinkBubbleGum.x = 0.0f;
@@ -139,6 +141,7 @@ void initCharacters(void)
 	gPinkBubbleGum.red = 1.0f;
 	gPinkBubbleGum.green = 0.7f;
 	gPinkBubbleGum.blue = 0.7f;
+	memset(&gPinkBubbleGum.controllerName, 0, sizeof(gPinkBubbleGum.controllerName));
 	
 	// blueLightning
 	gBlueLightning.x = 0.0f;
@@ -156,6 +159,7 @@ void initCharacters(void)
 	gBlueLightning.red = 0.4f;
 	gBlueLightning.green = 0.6f;
 	gBlueLightning.blue = 0.7f;
+	memset(&gBlueLightning.controllerName, 0, sizeof(gBlueLightning.controllerName));
 	
 	resetCharacterWins();
 }
@@ -491,8 +495,16 @@ static void drawCharacterLives(Renderer *renderer, mat4_t modelViewMatrix, color
 	drawStringLeftAligned(renderer, playerLabelModelViewMatrix(modelViewMatrix), color, 0.0027f, playerLabel);
 }
 
+static void drawCharacterControllerName(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, const char *controllerName)
+{
+	if (strlen(controllerName) > 0)
+	{
+		drawStringLeftAligned(renderer, m4_mul(modelViewMatrix, m4_translation((vec3_t){-1.2f, 1.0f, 0.0f})), color, 0.0015f, controllerName);
+	}
+}
+
 #define LIVES_DRAWING_OFFSET 0.8f
-void drawAllCharacterLives(Renderer *renderer, const mat4_t *iconTranslations)
+void drawAllCharacterInfo(Renderer *renderer, const mat4_t *iconTranslations, bool gameStarted)
 {
 	const mat4_t pinkBubbleGumModelViewMatrix = m4_mul(iconTranslations[0], m4_translation((vec3_t){LIVES_DRAWING_OFFSET, 0.0f, 0.0f}));
 	const mat4_t redRoverModelViewMatrix = m4_mul(iconTranslations[1], m4_translation((vec3_t){LIVES_DRAWING_OFFSET, 0.0f, 0.0f}));
@@ -514,6 +526,14 @@ void drawAllCharacterLives(Renderer *renderer, const mat4_t *iconTranslations)
 	drawCharacterLives(renderer, redRoverModelViewMatrix, redRoverColor, &gRedRover, livesWidth, livesHeight, "[P2]", playerLabelWidth, playerLabelHeight);
 	drawCharacterLives(renderer, greenTreeModelViewMatrix, greenTreeColor, &gGreenTree, livesWidth, livesHeight, "[P3]", playerLabelWidth, playerLabelHeight);
 	drawCharacterLives(renderer, blueLightningModelViewMatrix, blueLightningColor, &gBlueLightning, livesWidth, livesHeight, "[P4]", playerLabelWidth, playerLabelHeight);
+	
+	if (!gameStarted)
+	{
+		drawCharacterControllerName(renderer, pinkBubbleGumModelViewMatrix, pinkBubbleGumColor, gPinkBubbleGum.controllerName);
+		drawCharacterControllerName(renderer, redRoverModelViewMatrix, redRoverColor, gRedRover.controllerName);
+		drawCharacterControllerName(renderer, greenTreeModelViewMatrix, greenTreeColor, gGreenTree.controllerName);
+		drawCharacterControllerName(renderer, blueLightningModelViewMatrix, blueLightningColor, gBlueLightning.controllerName);
+	}
 }
 
 /*

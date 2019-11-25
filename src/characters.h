@@ -52,6 +52,7 @@
 #define NETWORK_PENDING_STATE 5
 #define NETWORK_PLAYING_STATE 6
 
+#define MAX_CONTROLLER_NAME_SIZE 32
 
 // If you were to use a stop watch, the time it takes for a character to go from one end
 // of the checkerboard to the other end (vertically) is ~3.50-3.60 seconds
@@ -141,6 +142,8 @@ typedef struct _Character
 	float move_timer;
 	float fire_timer;
 	float time_alive;
+	
+	char controllerName[MAX_CONTROLLER_NAME_SIZE];
 } Character;
 
 extern Character gRedRover;
@@ -163,7 +166,7 @@ void drawCharacterIcons(Renderer *renderer, const mat4_t *translations);
 
 void drawCharacters(Renderer *renderer, RendererOptions options);
 
-void drawAllCharacterLives(Renderer *renderer, const mat4_t *iconTranslations);
+void drawAllCharacterInfo(Renderer *renderer, const mat4_t *iconTranslations, bool gameStarted);
 
 void getOtherCharacters(Character *characterA, Character **characterB, Character **characterC, Character **characterD);
 

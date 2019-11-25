@@ -715,3 +715,16 @@ GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *syst
 	*eventCount = eventIndex;
 	return gamepadManager->eventsBuffer;
 }
+
+const char *gamepadName(GamepadManager *gamepadManager, GamepadIndex index)
+{
+	for (uint16_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
+	{
+		Gamepad *gamepad = &gamepadManager->gamepads[gamepadIndex];
+		if (gamepad->device == NULL || gamepad->index != index) continue;
+		
+		return gamepad->name;
+	}
+	
+	return NULL;
+}
