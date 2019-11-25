@@ -86,6 +86,8 @@ static void initScene(Renderer *renderer);
 static void readDefaults(void);
 static void writeDefaults(Renderer *renderer);
 
+static void resetGame(void);
+
 static void drawBlackBox(Renderer *renderer)
 {
 	static BufferArrayObject vertexArrayObject;
@@ -1183,13 +1185,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawSc
 				// new game
 				if (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE)
 				{
-					if (gNetworkConnection)
-					{
-						GameMessage message;
-						message.type = GAME_RESET_MESSAGE_TYPE;
-						sendToClients(0, &message);
-					}
-					gGameShouldReset = true;
+					resetGame();
 				}
 			}
 			else if (event->key.keysym.sym == SDLK_RETURN || event->key.keysym.sym == SDLK_KP_ENTER)
@@ -1528,6 +1524,17 @@ static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawSc
 
 #define MAX_ITERATIONS (25 * ANIMATION_TIMER_INTERVAL)
 
+static void resetGame(void)
+{
+	if (gNetworkConnection)
+	{
+		GameMessage message;
+		message.type = GAME_RESET_MESSAGE_TYPE;
+		sendToClients(0, &message);
+	}
+	gGameShouldReset = true;
+}
+
 static void pollGamepads(GamepadManager *gamepadManager, const void *systemEvent)
 {
 	uint16_t gamepadEventsCount = 0;
@@ -1540,6 +1547,11 @@ static void pollGamepads(GamepadManager *gamepadManager, const void *systemEvent
 		performGamepadAction(&gGreenTreeInput, gamepadEvent);
 		performGamepadAction(&gPinkBubbleGumInput, gamepadEvent);
 		performGamepadAction(&gBlueLightningInput, gamepadEvent);
+	}
+	
+	if (!gConsoleActivated && gGameState == GAME_STATE_ON && gGameWinner != NO_CHARACTER && (gNetworkConnection == NULL || gNetworkConnection->type == NETWORK_SERVER_TYPE) && (gRedRoverInput.weap || gRedRoverInput.weap || gRedRoverInput.weap || gRedRoverInput.weap))
+	{
+		resetGame();
 	}
 }
 
