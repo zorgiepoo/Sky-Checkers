@@ -230,10 +230,6 @@ static bool readCharacterInputDefaults(FILE *fp, const char *characterName, Inpu
 	int weapon = 0;
 	if (fscanf(fp, " key weapon: %d\n", &weapon) < 1) goto read_input_cleanup;
 	
-	if (!scanExpectedString(fp, characterName)) goto read_input_cleanup;
-	
-	if (!scanExpectedString(fp, "\n")) goto read_input_cleanup;
-	
 	initInput(input, right, left, up, down, weapon);
 	
 	readInputDefaults = true;
@@ -429,6 +425,12 @@ static void readDefaults(void)
 
 	gValidDefaults = true;
 cleanup:
+#ifdef _DEBUG
+	if (!gValidDefaults)
+	{
+		fprintf(stderr, "Warning: user defaults read were not valid\n");
+	}
+#endif
 	fclose(fp);
 }
 

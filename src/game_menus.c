@@ -1019,7 +1019,7 @@ void drawQuitMenu(Renderer *renderer, color4_t preferredColor)
 
 void quitMenuAction(void *context)
 {
-	ZGQuit();
+	ZGSendQuitEvent();
 }
 
 void initMenus(void)

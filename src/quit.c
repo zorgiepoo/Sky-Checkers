@@ -25,3 +25,10 @@ void ZGQuit(void)
 	SDL_Quit();
 	exit(0);
 }
+
+void ZGSendQuitEvent(void)
+{
+	SDL_Event event;
+	event.type = SDL_QUIT;
+	SDL_PushEvent(&event);
+}
