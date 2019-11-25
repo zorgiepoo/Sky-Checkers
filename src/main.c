@@ -36,9 +36,6 @@
 #define MATH_3D_IMPLEMENTATION
 #include "math_3d.h"
 
-// in seconds
-static const int NEW_GAME_WILL_BEGIN_DELAY =	3;
-
 bool gGameHasStarted;
 bool gGameShouldReset;
 int32_t gGameStartNumber;
@@ -80,6 +77,10 @@ static uint32_t gEscapeHeldDownTimer;
 #define MAX_CHARACTER_LIVES 10
 #define CHARACTER_ICON_DISPLACEMENT 5.0f
 #define CHARACTER_ICON_OFFSET -8.5f
+
+// in seconds
+#define FIRST_NEW_GAME_COUNTDOWN 5
+#define LATER_NEW_GAME_COUNTDOWN 3
 
 static void initScene(Renderer *renderer);
 
@@ -630,8 +631,8 @@ void initGame(SDL_Window *window, bool firstGame)
 
 	gGameState = GAME_STATE_ON;
 
-	// wait for NEW_GAME_WILL_BEGIN_DELAY seconds until the game can be started.
-	gGameStartNumber = NEW_GAME_WILL_BEGIN_DELAY;
+	// wait until the game can be started.
+	gGameStartNumber = firstGame ? FIRST_NEW_GAME_COUNTDOWN : LATER_NEW_GAME_COUNTDOWN;
 	
 	gEscapeHeldDownTimer = 0;
 	
