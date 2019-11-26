@@ -17,6 +17,8 @@
 * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <stdint.h>
+
 typedef void* ZGThread;
 typedef int (*ZGThreadFunction)(void *data);
 
@@ -29,3 +31,5 @@ void ZGWaitThread(ZGThread thread);
 ZGMutex ZGCreateMutex(void);
 void ZGLockMutex(ZGMutex mutex);
 void ZGUnlockMutex(ZGMutex mutex);
+
+void ZGDelay(uint32_t delayMilliseconds);

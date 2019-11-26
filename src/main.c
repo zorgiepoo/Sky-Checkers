@@ -1641,7 +1641,7 @@ static void eventLoop(Renderer *renderer, GamepadManager *gamepadManager)
 				thenTicks = ZGGetTicks();
 			}
 
-			SDL_Delay(delay);
+			ZGDelay(delay);
 		}
 	}
 }
@@ -1781,7 +1781,7 @@ int main(int argc, char *argv[])
 		while (gNetworkConnection != NULL)
 		{
 			syncNetworkState(renderer.window, (float)ANIMATION_TIMER_INTERVAL);
-			SDL_Delay(10);
+			ZGDelay(10);
 		}
 	}
 

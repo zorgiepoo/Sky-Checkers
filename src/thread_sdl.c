@@ -35,3 +35,8 @@ void ZGUnlockMutex(ZGMutex mutex)
 	int result = SDL_UnlockMutex(mutex);
 	assert(result == 0);
 }
+
+void ZGDelay(uint32_t delayMilliseconds)
+{
+	SDL_Delay(delayMilliseconds);
+}

@@ -24,6 +24,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <time.h>
 #include "maincore.h"
 
 #define PTHREAD_SETNAME_AVAILABLE MAC_OS_X
@@ -119,4 +120,19 @@ void ZGUnlockMutex(ZGMutex mutex)
 {
 	int result = pthread_mutex_unlock(mutex);
 	assert(result == 0);
+}
+
+void ZGDelay(uint32_t delayMilliseconds)
+{
+	struct timespec delaySpec;
+	delaySpec.tv_sec = delayMilliseconds / 1000;
+	delaySpec.tv_nsec = (delayMilliseconds % 1000) * 1000000;
+	int result;
+	do
+	{
+		struct timespec elapsedSpec;
+		result = nanosleep(&delaySpec, &elapsedSpec);
+		delaySpec = elapsedSpec;
+	}
+	while (result != 0 && errno == EINTR);
 }

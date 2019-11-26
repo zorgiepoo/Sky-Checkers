@@ -1551,7 +1551,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 			
 			if (deltaProcessingTime < targetDelay)
 			{
-				SDL_Delay(targetDelay - deltaProcessingTime);
+				ZGDelay(targetDelay - deltaProcessingTime);
 			}
 		}
 	}
@@ -2363,7 +2363,7 @@ int clientNetworkThread(void *context)
 			
 			if (deltaProcessingTime < targetDelay)
 			{
-				SDL_Delay(targetDelay - deltaProcessingTime);
+				ZGDelay(targetDelay - deltaProcessingTime);
 			}
 		}
 	}
