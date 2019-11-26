@@ -233,3 +233,9 @@ GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *syst
 	
 	return event;
 }
+
+const char *gamepadName(GamepadManager *gamepadManager, GamepadIndex index)
+{
+	SDL_GameController *controller = SDL_GameControllerFromInstanceID(index);
+	return SDL_GameControllerName(controller);
+}
