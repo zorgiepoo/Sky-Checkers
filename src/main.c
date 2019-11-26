@@ -1550,7 +1550,7 @@ static void pollGamepads(GamepadManager *gamepadManager, const void *systemEvent
 		performGamepadAction(&gBlueLightningInput, gamepadEvent);
 	}
 	
-	if (!gConsoleActivated && gGameState == GAME_STATE_ON && gGameWinner != NO_CHARACTER && (gNetworkConnection == NULL || gNetworkConnection->type == NETWORK_SERVER_TYPE) && (gRedRoverInput.weap || gRedRoverInput.weap || gRedRoverInput.weap || gRedRoverInput.weap))
+	if (!gConsoleActivated && gGameState == GAME_STATE_ON && gGameWinner != NO_CHARACTER && (gNetworkConnection == NULL || gNetworkConnection->type == NETWORK_SERVER_TYPE) && (gRedRoverInput.weap || gGreenTreeInput.weap || gPinkBubbleGumInput.weap || gBlueLightningInput.weap))
 	{
 		resetGame();
 	}
