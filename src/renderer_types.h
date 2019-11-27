@@ -24,8 +24,7 @@ extern "C" {
 #endif
 
 #include "platforms.h"
-#include "sdl.h"
-
+#include "window.h"
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -132,7 +131,7 @@ typedef struct
 
 typedef struct _Renderer
 {
-	SDL_Window *window;
+	ZGWindow *window;
 	float projectionMatrix[16];
 
 	// Width and height of drawable in pixels

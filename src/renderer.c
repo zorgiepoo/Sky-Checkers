@@ -20,6 +20,10 @@
 #include "renderer.h"
 #include "renderer_gl.h"
 #include "platforms.h"
+#include "window.h"
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 
 #ifdef MAC_OS_X
 #include "renderer_metal.h"
@@ -85,7 +89,7 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 		createdRenderer = true;
 	}
 	
-	SDL_ShowCursor(SDL_DISABLE);
+	ZGWindowHideCursor(renderer->window);
 }
 
 void updateViewport(Renderer *renderer, int32_t windowWidth, int32_t windowHeight)

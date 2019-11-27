@@ -29,7 +29,7 @@ void deleteBlackBorderDisplayList(void);
 
 void drawConsole(Renderer *renderer);
 
-void writeConsoleText(Uint8 text);
+void writeConsoleText(uint8_t text);
 
 bool performConsoleBackspace(void);
 

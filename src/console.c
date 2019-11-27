@@ -98,7 +98,7 @@ void drawConsole(Renderer *renderer)
 	drawVerticesFromIndices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertexArrayObject, indicesBufferObject, 6, (color4_t){0.0f, 0.0f, 0.0f, 0.6f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
 }
 
-void writeConsoleText(Uint8 text)
+void writeConsoleText(uint8_t text)
 {
 	if (gConsoleStringIndex < 99)
 	{

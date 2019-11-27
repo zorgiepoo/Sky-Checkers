@@ -185,7 +185,7 @@ static void interpolateCharacter(Character *character, CharacterMovement *previo
 	}
 }
 
-void syncNetworkState(SDL_Window *window, float timeDelta)
+void syncNetworkState(ZGWindow *window, float timeDelta)
 {
 	if (gNetworkConnection == NULL)
 	{
@@ -597,7 +597,7 @@ void syncNetworkState(SDL_Window *window, float timeDelta)
 						
 						gTiles[tileIndex].z -= OBJECT_FALLING_STEP;
 						
-						if (((SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0) && gAudioEffectsFlag)
+						if (ZGWindowHasFocus(window) && gAudioEffectsFlag)
 						{
 							playTileFallingSound();
 						}

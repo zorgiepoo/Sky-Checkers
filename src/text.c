@@ -20,6 +20,9 @@
 #include "text.h"
 #include "font.h"
 #include "platforms.h"
+#include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
 
 typedef struct
 {

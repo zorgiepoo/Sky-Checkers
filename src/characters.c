@@ -24,6 +24,8 @@
 #include "texture.h"
 #include "mt_random.h"
 #include "globals.h"
+#include <stdlib.h>
+#include <string.h>
 
 int gAIMode;
 int gAINetMode = 5; // AI_EASY_MODE

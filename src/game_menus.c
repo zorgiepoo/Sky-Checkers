@@ -27,6 +27,7 @@
 #include "quit.h"
 #include "globals.h"
 #include "platforms.h"
+#include "window.h"
 
 #include <stdbool.h>
 
@@ -134,7 +135,7 @@ void networkUserNameFieldMenuAction(void *context)
 	gNetworkUserNameFieldIsActive = !gNetworkUserNameFieldIsActive;
 }
 
-void writeNetworkUserNameText(Uint8 text)
+void writeNetworkUserNameText(uint8_t text)
 {
 	if (gUserNameStringIndex < MAX_USER_NAME_SIZE - 1)
 	{
@@ -387,7 +388,7 @@ void networkAddressFieldMenuAction(void *context)
 	gNetworkAddressFieldIsActive = !gNetworkAddressFieldIsActive;
 }
 
-void writeNetworkAddressText(Uint8 text)
+void writeNetworkAddressText(uint8_t text)
 {
 	if (gServerAddressStringIndex < MAX_SERVER_ADDRESS_SIZE - 1)
 	{
@@ -1009,7 +1010,7 @@ void audioMusicOptionsMenuAction(void *context)
 	else
 	{
 		GameMenuContext *menuContext = context;
-		bool windowFocus = (SDL_GetWindowFlags(menuContext->window) & SDL_WINDOW_INPUT_FOCUS) != 0;
+		bool windowFocus = ZGWindowHasFocus(menuContext->window);
 		playMainMenuMusic(!windowFocus);
 	}
 }

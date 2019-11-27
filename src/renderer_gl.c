@@ -23,6 +23,8 @@
 #include "renderer_projection.h"
 #include "texture.h"
 #include "quit.h"
+#include "window.h"
+#include "sdl.h"
 
 #ifdef WINDOWS
 #include <GL/glew.h>
@@ -235,7 +237,7 @@ static void compileAndLinkShader(Shader_gl *shader, uint16_t glslVersion, const 
 	glDeleteShader(fragmentShader);
 }
 
-static bool createOpenGLContext(SDL_Window **window, SDL_GLContext *glContext, uint16_t glslVersion, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, uint32_t videoFlags, bool fsaa)
+static bool createOpenGLContext(ZGWindow **window, SDL_GLContext *glContext, uint16_t glslVersion, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, ZGWindowFlags videoFlags, bool fsaa)
 {
 	switch (glslVersion)
 	{
@@ -268,7 +270,7 @@ static bool createOpenGLContext(SDL_Window **window, SDL_GLContext *glContext, u
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT);
 	}
 	
-	*window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags | SDL_WINDOW_OPENGL);
+	*window = ZGCreateWindow(windowTitle, windowWidth, windowHeight, videoFlags | ZG_WINDOW_FLAG_OPENGL);
 	
 	if (*window == NULL || (*glContext = SDL_GL_CreateContext(*window)) == NULL)
 	{
@@ -276,7 +278,7 @@ static bool createOpenGLContext(SDL_Window **window, SDL_GLContext *glContext, u
 		{
 			if (*window != NULL)
 			{
-				SDL_DestroyWindow(*window);
+				ZGDestroyWindow(*window);
 			}
 			return false;
 		}
@@ -284,14 +286,14 @@ static bool createOpenGLContext(SDL_Window **window, SDL_GLContext *glContext, u
 		{
 			if (*window != NULL)
 			{
-				SDL_DestroyWindow(*window);
+				ZGDestroyWindow(*window);
 			}
 			
 			// Try creating SDL window and opengl context again except without anti-aliasing
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 			
-			*window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags | SDL_WINDOW_OPENGL);
+			*window = ZGCreateWindow(windowTitle, windowWidth, windowHeight, videoFlags | ZG_WINDOW_FLAG_OPENGL);
 			
 			if (*window == NULL)
 			{
@@ -301,7 +303,7 @@ static bool createOpenGLContext(SDL_Window **window, SDL_GLContext *glContext, u
 			*glContext = SDL_GL_CreateContext(*window);
 			if (*glContext == NULL)
 			{
-				SDL_DestroyWindow(*window);
+				ZGDestroyWindow(*window);
 				
 				return false;
 			}
@@ -313,7 +315,7 @@ static bool createOpenGLContext(SDL_Window **window, SDL_GLContext *glContext, u
 static void updateViewport_gl(Renderer *renderer, int32_t windowWidth, int32_t windowHeight)
 {
 #ifndef MAC_OS_X
-	if ((SDL_GetWindowFlags(renderer->window) & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)) == 0 && !renderer->fullscreen)
+	if (!ZGWindowIsFullscreen(renderer->window) && !renderer->fullscreen)
 #else
 	// macOS uses fullscreen toggling independent of SDL's flags
 	if (!renderer->macosInFullscreenTransition && !renderer->fullscreen)
@@ -335,11 +337,11 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	renderer->windowWidth = windowWidth;
 	renderer->windowHeight = windowHeight;
 	
-	uint32_t videoFlags = SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE;
+	ZGWindowFlags videoFlags = ZG_WINDOW_FLAG_NONE;
 #ifndef MAC_OS_X
 	if (fullscreen)
 	{
-		videoFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+		videoFlags |= ZG_WINDOW_FLAG_FULLSCREEN;
 	}
 	renderer->fullscreen = fullscreen;
 #else

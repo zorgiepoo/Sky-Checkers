@@ -21,6 +21,7 @@
 
 #include "characters.h"
 #include "gamepad.h"
+#include "sdl.h"
 
 /* Keyboard input structure used for a character*/
 typedef struct

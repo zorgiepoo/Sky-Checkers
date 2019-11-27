@@ -19,6 +19,7 @@
 
 #include "renderer_projection.h"
 #include "math_3d.h"
+#include <string.h>
 
 float computeProjectionAspectRatio(Renderer *renderer)
 {

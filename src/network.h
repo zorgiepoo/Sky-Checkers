@@ -21,6 +21,7 @@
 
 #include "characters.h"
 #include "thread.h"
+#include "window.h"
 
 #ifdef WINDOWS
 #include <winsock2.h>
@@ -304,7 +305,7 @@ GameMessage *popNetworkMessages(GameMessageArray *messageArray, uint32_t *count)
 void initializeNetwork(void);
 void deinitializeNetwork(void);
 
-void syncNetworkState(SDL_Window *window, float timeDelta);
+void syncNetworkState(ZGWindow *window, float timeDelta);
 
 void setPredictedDirection(Character *character, int direction);
 

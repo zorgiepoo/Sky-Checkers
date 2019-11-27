@@ -20,6 +20,7 @@
 #pragma once
 
 #include "menu.h"
+#include <stdint.h>
 
 #define MAX_SERVER_ADDRESS_SIZE	512
 extern char gServerAddressString[MAX_SERVER_ADDRESS_SIZE];
@@ -50,7 +51,7 @@ extern bool gNetworkUserNameFieldIsActive;
 
 void initMenus(void);
 
-void writeNetworkAddressText(Uint8 text);
-void writeNetworkUserNameText(Uint8 text);
+void writeNetworkAddressText(uint8_t text);
+void writeNetworkUserNameText(uint8_t text);
 void performNetworkAddressBackspace(void);
 void performNetworkUserNameBackspace(void);

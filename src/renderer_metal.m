@@ -22,6 +22,8 @@
 #include "metal_indices.h"
 #include "renderer_projection.h"
 #include "quit.h"
+#include "window.h"
+#include "sdl.h"
 
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
@@ -489,9 +491,7 @@ bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t w
 			return false;
 		}
 		
-		uint32_t videoFlags = SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE;
-		renderer->window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags);
-		
+		renderer->window = ZGCreateWindow(windowTitle, windowWidth, windowHeight, ZG_WINDOW_FLAG_NONE);
 		if (renderer->window == NULL)
 		{
 			return false;

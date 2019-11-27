@@ -19,35 +19,24 @@
 
 #pragma once
 
-#include "window.h"
+#include <stdio.h>
 #include <stdbool.h>
-#include <stdint.h>
+
+typedef void ZGWindow;
 
 typedef enum
 {
-	GAME_STATE_OFF = 0,
-	GAME_STATE_ON = 1,
-	GAME_STATE_CONNECTING = 2
-} GameState;
+	ZG_WINDOW_FLAG_NONE,
+	ZG_WINDOW_FLAG_FULLSCREEN,
+	ZG_WINDOW_FLAG_OPENGL,
+} ZGWindowFlags;
 
-typedef struct
-{
-	GameState *gameState;
-	ZGWindow *window;
-} GameMenuContext;
+ZGWindow *ZGCreateWindow(const char *windowTitle, int32_t windowWidth, int32_t windowHeight, ZGWindowFlags flags);
+void ZGDestroyWindow(ZGWindow *window);
 
-void initGame(ZGWindow *window, bool firstGame);
-void endGame(ZGWindow *window, bool lastGame);
+void ZGWindowHideCursor(ZGWindow *window);
 
-extern bool gGameHasStarted;
-extern bool gGameShouldReset;
-extern int gGameWinner;
-extern int32_t gGameStartNumber;
-extern bool gDrawFPS;
-extern bool gDrawPings;
+bool ZGWindowHasFocus(ZGWindow *window);
+bool ZGWindowIsFullscreen(ZGWindow *window);
 
-extern int gCharacterLives;
-extern int gCharacterNetLives;
-
-extern bool gAudioEffectsFlag;
-extern bool gAudioMusicFlag;
+bool ZGSetWindowFullscreen(ZGWindow *window, bool enabled, const char **errorString);

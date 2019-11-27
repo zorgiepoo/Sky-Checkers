@@ -34,6 +34,7 @@
 #include "time.h"
 #include "gamepad.h"
 #include "globals.h"
+#include "window.h"
 
 #define MATH_3D_IMPLEMENTATION
 #include "math_3d.h"
@@ -535,7 +536,7 @@ static void writeDefaults(Renderer *renderer)
 	fclose(fp);
 }
 
-void initGame(SDL_Window *window, bool firstGame)
+void initGame(ZGWindow *window, bool firstGame)
 {
 	loadTiles();
 
@@ -652,12 +653,12 @@ void initGame(SDL_Window *window, bool firstGame)
 	
 	if (firstGame && gAudioMusicFlag)
 	{
-		bool windowFocus = (SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0;
+		bool windowFocus = ZGWindowHasFocus(window);
 		playGameMusic(!windowFocus);
 	}
 }
 
-void endGame(SDL_Window *window, bool lastGame)
+void endGame(ZGWindow *window, bool lastGame)
 {
 	gGameHasStarted = false;
 
@@ -682,13 +683,13 @@ void endGame(SDL_Window *window, bool lastGame)
 		
 		if (gAudioMusicFlag)
 		{
-			bool windowFocus = (SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0;
+			bool windowFocus = ZGWindowHasFocus(window);
 			playMainMenuMusic(!windowFocus);
 		}
 	}
 }
 
-static void exitGame(SDL_Window *window)
+static void exitGame(ZGWindow *window)
 {
 	resetCharacterWins();
 	endGame(window, true);
@@ -1136,7 +1137,7 @@ static void writeTextInput(const char *text, uint8_t maxSize)
 
 static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawScene, bool *quit)
 {
-	SDL_Window *window = renderer->window;
+	ZGWindow *window = renderer->window;
 	
 #ifdef MAC_OS_X
 	SDL_Keymod metaMod = (KMOD_LGUI | KMOD_RGUI);
@@ -1162,12 +1163,12 @@ static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawSc
 				if (!renderer->windowsNativeFullscreenToggling)
 #endif
 				{
-					uint32_t windowFlags = SDL_GetWindowFlags(renderer->window);
-					if ((windowFlags & (SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN)) == 0)
+					const char *fullscreenErrorString = NULL;
+					if (!ZGWindowIsFullscreen(renderer->window))
 					{
-						if (SDL_SetWindowFullscreen(renderer->window, SDL_WINDOW_FULLSCREEN_DESKTOP) != 0)
+						if (!ZGSetWindowFullscreen(renderer->window, true, &fullscreenErrorString))
 						{
-							fprintf(stderr, "Failed to set fullscreen because: %s\n", SDL_GetError());
+							fprintf(stderr, "Failed to set fullscreen because: %s\n", fullscreenErrorString);
 						}
 						else
 						{
@@ -1176,9 +1177,9 @@ static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawSc
 					}
 					else
 					{
-						if (SDL_SetWindowFullscreen(renderer->window, 0) != 0)
+						if (!ZGSetWindowFullscreen(renderer->window, false, &fullscreenErrorString))
 						{
-							fprintf(stderr, "Failed to escape fullscreen because: %s\n", SDL_GetError());
+							fprintf(stderr, "Failed to escape fullscreen because: %s\n", fullscreenErrorString);
 						}
 						else
 						{
@@ -1631,7 +1632,7 @@ static void eventLoop(Renderer *renderer, GamepadManager *gamepadManager)
 		}
 		
 #ifndef _PROFILING
-		bool hasAppFocus = (SDL_GetWindowFlags(renderer->window) & SDL_WINDOW_INPUT_FOCUS) != 0;
+		bool hasAppFocus = ZGWindowHasFocus(renderer->window);
 		// Restrict game to 30 fps when the fps flag is enabled as well as when we don't have app focus
 		// This will allow the game to use less processing power when it's in the background,
 		// which fixes a bug on macOS where the game can have huge CPU spikes when the window is completly obscured
@@ -1764,7 +1765,7 @@ int main(int argc, char *argv[])
 	
 	if (gAudioMusicFlag)
 	{
-		bool windowFocus = (SDL_GetWindowFlags(renderer.window) & SDL_WINDOW_INPUT_FOCUS) != 0;
+		bool windowFocus = ZGWindowHasFocus(renderer.window);
 		playMainMenuMusic(!windowFocus);
 	}
 
