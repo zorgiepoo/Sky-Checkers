@@ -42,7 +42,15 @@ void ZGWindowHideCursor(ZGWindow *window);
 bool ZGWindowHasFocus(ZGWindow *window);
 bool ZGWindowIsFullscreen(ZGWindow *window);
 
+#ifdef linux
 bool ZGSetWindowFullscreen(ZGWindow *window, bool enabled, const char **errorString);
+#endif
 
+#ifdef WINDOWS
 void ZGSetWindowMinimumSize(ZGWindow *window, int32_t minWidth, int32_t minHeight);
 void ZGGetWindowSize(ZGWindow *window, int32_t *width, int32_t *height);
+#endif
+
+#ifndef linux
+void *ZGWindowHandle(ZGWindow *window);
+#endif

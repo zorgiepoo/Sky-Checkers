@@ -57,6 +57,7 @@ bool ZGWindowIsFullscreen(ZGWindow *window)
 	return (SDL_GetWindowFlags(window) & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)) != 0;
 }
 
+#ifdef linux
 bool ZGSetWindowFullscreen(ZGWindow *window, bool enabled, const char **errorString)
 {
 	bool result = SDL_SetWindowFullscreen(window, enabled ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0) == 0;
@@ -66,7 +67,9 @@ bool ZGSetWindowFullscreen(ZGWindow *window, bool enabled, const char **errorStr
 	}
 	return result;
 }
+#endif
 
+#ifdef WINDOWS
 void ZGSetWindowMinimumSize(ZGWindow *window, int32_t minWidth, int32_t minHeight)
 {
 	SDL_SetWindowMinimumSize(window, minWidth, minHeight);
@@ -76,3 +79,21 @@ void ZGGetWindowSize(ZGWindow *window, int32_t *width, int32_t *height)
 {
 	SDL_GetWindowSize(window, width, height);
 }
+#endif
+
+#ifndef linux
+void *ZGWindowHandle(ZGWindow *window)
+{
+	SDL_SysWMinfo systemInfo;
+	SDL_VERSION(&systemInfo.version);
+	SDL_GetWindowWMInfo(window, &systemInfo);
+	
+#ifdef MAC_OS_X
+	return systemInfo.info.cocoa.window;
+#endif
+	
+#ifdef WINDOWS
+	return systemInfo.info.win.window;
+#endif
+}
+#endif

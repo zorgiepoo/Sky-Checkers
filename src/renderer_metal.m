@@ -497,11 +497,7 @@ bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t w
 			return false;
 		}
 		
-		SDL_SysWMinfo systemInfo;
-		SDL_VERSION(&systemInfo.version);
-		SDL_GetWindowWMInfo(renderer->window, &systemInfo);
-		
-		NSWindow *window = systemInfo.info.cocoa.window;
+		NSWindow *window = (__bridge NSWindow *)(ZGWindowHandle(renderer->window));
 		NSView *contentView = window.contentView;
 		
 		// Add our metal view ourselves

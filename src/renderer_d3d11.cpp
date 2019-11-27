@@ -605,12 +605,8 @@ extern "C" bool createRenderer_d3d11(Renderer *renderer, const char *windowTitle
 	swapChainDesc.Windowed = !renderer->fullscreen;
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 	swapChainDesc.Flags = 0;
-
-	SDL_SysWMinfo systemInfo;
-	SDL_VERSION(&systemInfo.version);
-	SDL_GetWindowWMInfo(renderer->window, &systemInfo);
-
-	swapChainDesc.OutputWindow = systemInfo.info.win.window;
+	
+	swapChainDesc.OutputWindow = (HWND)ZGWindowHandle(renderer->window);
 
 	HRESULT swapChainResult = pIDXGIFactory->CreateSwapChain(device, &swapChainDesc, &swapChain);
 	if (FAILED(swapChainResult))
