@@ -436,8 +436,6 @@ extern "C" bool createRenderer_d3d11(Renderer *renderer, const char *windowTitle
 
 	renderer->fullscreen = fullscreen;
 
-	renderer->windowsNativeFullscreenToggling = true;
-
 	// Initialize with default adapter
 	IDXGIAdapter *adapter = nullptr;
 	

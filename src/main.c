@@ -1156,39 +1156,30 @@ static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawSc
 					writeTextInput(clipboardText, 128);
 				}
 			}
-#ifndef MAC_OS_X
+#ifdef linux
 			else if (event->key.keysym.sym == SDLK_RETURN && (event->key.keysym.mod & KMOD_ALT) != 0)
 			{
-#ifdef WINDOWS
-				if (!renderer->windowsNativeFullscreenToggling)
-#endif
+				const char *fullscreenErrorString = NULL;
+				if (!ZGWindowIsFullscreen(renderer->window))
 				{
-					const char *fullscreenErrorString = NULL;
-					if (!ZGWindowIsFullscreen(renderer->window))
+					if (!ZGSetWindowFullscreen(renderer->window, true, &fullscreenErrorString))
 					{
-						if (!ZGSetWindowFullscreen(renderer->window, true, &fullscreenErrorString))
-						{
-							fprintf(stderr, "Failed to set fullscreen because: %s\n", fullscreenErrorString);
-						}
-						else
-						{
-							renderer->fullscreen = true;
-						}
+						fprintf(stderr, "Failed to set fullscreen because: %s\n", fullscreenErrorString);
 					}
 					else
 					{
-						if (!ZGSetWindowFullscreen(renderer->window, false, &fullscreenErrorString))
-						{
-							fprintf(stderr, "Failed to escape fullscreen because: %s\n", fullscreenErrorString);
-						}
-						else
-						{
-							renderer->fullscreen = false;
-#ifdef WINDOWS
-							// Not sure why but on Windows at least a resize event isn't sent when exiting fullscreen
-							updateViewport(renderer, renderer->windowWidth, renderer->windowHeight);
-#endif
-						}
+						renderer->fullscreen = true;
+					}
+				}
+				else
+				{
+					if (!ZGSetWindowFullscreen(renderer->window, false, &fullscreenErrorString))
+					{
+						fprintf(stderr, "Failed to escape fullscreen because: %s\n", fullscreenErrorString);
+					}
+					else
+					{
+						renderer->fullscreen = false;
 					}
 				}
 			}

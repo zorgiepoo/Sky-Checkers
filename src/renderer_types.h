@@ -210,9 +210,6 @@ typedef struct _Renderer
 #ifdef MAC_OS_X
 	bool macosInFullscreenTransition;
 #endif
-#ifdef WINDOWS
-	bool windowsNativeFullscreenToggling;
-#endif
 
 	// Private function pointers
 	// Note mat4_t is not passed in these function pointers or included in this file
