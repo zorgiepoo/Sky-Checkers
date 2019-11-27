@@ -23,7 +23,6 @@
 #include "renderer_projection.h"
 #include "quit.h"
 #include "window.h"
-#include "sdl.h"
 
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>

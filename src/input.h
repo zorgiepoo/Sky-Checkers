@@ -70,5 +70,3 @@ void performGamepadAction(Input *input, GamepadEvent *gamepadEvent);
 
 void updateCharacterFromInput(Input *input);
 void updateCharacterFromAnyInput(void);
-
-bool joyButtonEventMatchesMovementFromInput(SDL_JoyButtonEvent *buttonEvent, Input *input);
