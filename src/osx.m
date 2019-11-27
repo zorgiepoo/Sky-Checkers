@@ -123,11 +123,3 @@ void registerForNativeFullscreenEvents(void *windowReference, Renderer *renderer
 		[window toggleFullScreen:nil];
 	}
 }
-
-void setVsyncForGL(bool enabled)
-{
-	NSOpenGLContext *context = [NSOpenGLContext currentContext];
-	GLint value = !!enabled;
-	
-	[context setValues:&value forParameter:NSOpenGLCPSwapInterval];
-}

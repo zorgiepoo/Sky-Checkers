@@ -18,7 +18,6 @@
  */
 
 #include "renderer.h"
-#include "renderer_gl.h"
 #include "platforms.h"
 #include "window.h"
 #include <stdlib.h>
@@ -33,6 +32,10 @@
 #include "renderer_d3d11.h"
 #endif
 
+#ifdef linux
+#include "renderer_gl.h"
+#endif
+
 void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, bool fullscreen, bool vsync, bool fsaa)
 {
 #ifndef MAC_OS_X
@@ -41,8 +44,6 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 	const char *windowTitle = "";
 #endif
 	
-	bool createdRenderer = false;
-	
 	char *forceDisablingFSAAEnvironmentVariable = getenv("FORCE_DISABLE_AA");
 	if (forceDisablingFSAAEnvironmentVariable != NULL && strlen(forceDisablingFSAAEnvironmentVariable) > 0 && (tolower(forceDisablingFSAAEnvironmentVariable[0]) == 'y' || forceDisablingFSAAEnvironmentVariable[0] == '1'))
 	{
@@ -50,44 +51,18 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 		fprintf(stderr, "NOTICE: Force disabling anti-aliasing usage!!\n");
 	}
 	
-#ifndef linux
-	bool forcingOpenGL = false;
-	char *forceOpenGLEnvironmentVariable = getenv("FORCE_OPENGL");
-	if (forceOpenGLEnvironmentVariable != NULL && strlen(forceOpenGLEnvironmentVariable) > 0 && (tolower(forceOpenGLEnvironmentVariable[0]) == 'y' || forceOpenGLEnvironmentVariable[0] == '1'))
-	{
-		forcingOpenGL = true;
-	}
+#ifdef MAC_OS_X
+	// Metal
+	createRenderer_metal(renderer, windowTitle, windowWidth, windowHeight, fullscreen, vsync, fsaa);
 #endif
 	
-#ifndef linux
-	if (!forcingOpenGL)
-	{
-#ifdef MAC_OS_X
-		// Metal
-		createdRenderer = createRenderer_metal(renderer, windowTitle, windowWidth, windowHeight, fullscreen, vsync, fsaa);
-#endif
 #ifdef WINDOWS
-		createdRenderer = createRenderer_d3d11(renderer, windowTitle, windowWidth, windowHeight, fullscreen, vsync, fsaa);
+	createRenderer_d3d11(renderer, windowTitle, windowWidth, windowHeight, fullscreen, vsync, fsaa);
 #endif
-#ifdef _DEBUG
-		if (!createdRenderer)
-		{
-			fprintf(stderr, "ERROR: Failed creating Metal renderer!! Falling back to OpenGL.\n");
-		}
+	
+#ifdef linux
+	createRenderer_gl(renderer, windowTitle, windowWidth, windowHeight, fullscreen, vsync, fsaa);
 #endif
-	}
-	else
-	{
-		fprintf(stderr, "NOTICE: Forcing OpenGL usage!!\n");
-	}
-#endif
-
-	// OpenGL
-	if (!createdRenderer)
-	{
-		createRenderer_gl(renderer, windowTitle, windowWidth, windowHeight, fullscreen, vsync, fsaa);
-		createdRenderer = true;
-	}
 	
 	ZGWindowHideCursor(renderer->window);
 }

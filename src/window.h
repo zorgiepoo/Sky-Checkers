@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "platforms.h"
 #include <stdio.h>
 #include <stdbool.h>
 
@@ -28,7 +29,9 @@ typedef enum
 {
 	ZG_WINDOW_FLAG_NONE,
 	ZG_WINDOW_FLAG_FULLSCREEN,
+#ifdef linux
 	ZG_WINDOW_FLAG_OPENGL,
+#endif
 } ZGWindowFlags;
 
 ZGWindow *ZGCreateWindow(const char *windowTitle, int32_t windowWidth, int32_t windowHeight, ZGWindowFlags flags);

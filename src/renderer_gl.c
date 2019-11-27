@@ -36,11 +36,6 @@
 #include <SDL2/SDL_opengl.h>
 #endif
 
-#ifdef MAC_OS_X
-#include <OpenGL/gl3.h>
-#include "osx.h"
-#endif
-
 #define VERTEX_ATTRIBUTE 0
 #define TEXTURE_ATTRIBUTE 1
 
@@ -314,12 +309,7 @@ static bool createOpenGLContext(ZGWindow **window, SDL_GLContext *glContext, uin
 
 static void updateViewport_gl(Renderer *renderer, int32_t windowWidth, int32_t windowHeight)
 {
-#ifndef MAC_OS_X
 	if (!ZGWindowIsFullscreen(renderer->window) && !renderer->fullscreen)
-#else
-	// macOS uses fullscreen toggling independent of SDL's flags
-	if (!renderer->macosInFullscreenTransition && !renderer->fullscreen)
-#endif
 	{
 		renderer->windowWidth = windowWidth;
 		renderer->windowHeight = windowHeight;
@@ -338,16 +328,11 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	renderer->windowHeight = windowHeight;
 	
 	ZGWindowFlags videoFlags = ZG_WINDOW_FLAG_NONE;
-#ifndef MAC_OS_X
 	if (fullscreen)
 	{
 		videoFlags |= ZG_WINDOW_FLAG_FULLSCREEN;
 	}
 	renderer->fullscreen = fullscreen;
-#else
-	renderer->fullscreen = false;
-	renderer->macosInFullscreenTransition = false;
-#endif
 
 #ifdef WINDOWS
 	renderer->windowsNativeFullscreenToggling = false;
@@ -380,15 +365,8 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	}
 	
 	// VSYNC
-#ifdef MAC_OS_X
-	// The current SDL build we're using doesn't enable/disable vsync properly,
-	// so enable/disable vsync ourselves
-	setVsyncForGL(vsync);
-#else
 	SDL_GL_SetSwapInterval(!!vsync);
-#endif
 	
-#ifndef MAC_OS_X
 	glewExperimental = GL_TRUE;
 	GLenum glewError = glewInit();
 	if (glewError != GLEW_OK)
@@ -396,7 +374,6 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 		fprintf(stderr, "Failed to initialize GLEW: %s\n", glewGetErrorString(glewError));
 		ZGQuit();
 	}
-#endif
 	
 	int value;
 	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &value);
@@ -444,15 +421,6 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	renderer->drawVerticesFromIndicesPtr = drawVerticesFromIndices_gl;
 	renderer->drawTextureWithVerticesPtr = drawTextureWithVertices_gl;
 	renderer->drawTextureWithVerticesFromIndicesPtr = drawTextureWithVerticesFromIndices_gl;
-	
-#ifdef MAC_OS_X
-	// Register for full screen notifications and launch in fullscreen if requested
-	SDL_SysWMinfo systemInfo;
-	SDL_VERSION(&systemInfo.version);
-	SDL_GetWindowWMInfo(renderer->window, &systemInfo);
-	
-	registerForNativeFullscreenEvents((void *)systemInfo.info.cocoa.window, renderer, fullscreen);
-#endif
 }
 
 void renderFrame_gl(Renderer *renderer, void (*drawFunc)(Renderer *))

@@ -63,7 +63,9 @@ typedef struct
 #ifdef WINDOWS
 		void *d3d11Object;
 #endif
+#ifdef linux
 		uint32_t glObject;
+#endif
 	};
 } BufferObject;
 
@@ -85,7 +87,9 @@ typedef struct
 			uint32_t d3d11VerticesSize;
 		};
 #endif
+#ifdef linux
 		uint32_t glObject;
+#endif
 	};
 } BufferArrayObject;
 
@@ -99,7 +103,9 @@ typedef struct
 #ifdef WINDOWS
 		void *d3d11Object;
 #endif
+#ifdef linux
 		uint32_t glObject;
+#endif
 	};
 } TextureObject;
 
@@ -109,6 +115,7 @@ typedef enum
 	PIXEL_FORMAT_BGRA32
 } PixelFormat;
 
+#ifdef linux
 typedef struct
 {
 	int32_t program;
@@ -117,6 +124,7 @@ typedef struct
 	int32_t colorUniformLocation;
 	int32_t textureUniformLocation;
 } Shader_gl;
+#endif
 
 #ifdef WINDOWS
 typedef struct
@@ -150,12 +158,14 @@ typedef struct _Renderer
 
 	union
 	{
+#ifdef linux
 		// Private GL data
 		struct
 		{
 			Shader_gl glPositionTextureShader;
 			Shader_gl glPositionShader;
 		};
+#endif
 
 #ifdef MAC_OS_X
 		// Private metal data
