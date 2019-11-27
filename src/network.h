@@ -19,9 +19,21 @@
 
 #pragma once
 
-#include "maincore.h"
 #include "characters.h"
 #include "thread.h"
+
+#ifdef WINDOWS
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#else
+#include <unistd.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#endif
 
 #define NETWORK_SERVER_TYPE 1
 #define NETWORK_CLIENT_TYPE 2

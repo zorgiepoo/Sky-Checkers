@@ -24,8 +24,11 @@
 #include "audio.h"
 #include "math_3d.h"
 #include "renderer.h"
-#include <stdbool.h>
 #include "quit.h"
+#include "globals.h"
+#include "platforms.h"
+
+#include <stdbool.h>
 
 Menu *gConfigureLivesMenu;
 Menu *gScreenResolutionVideoOptionMenu;

@@ -22,6 +22,7 @@
 #include "menu.h"
 #include "characters.h" // for constants RIGHT, LEFT, UP, DOWN
 #include "audio.h"
+#include "globals.h"
 
 /*
  * Everyone is a type of child of gMainMenu.

@@ -19,6 +19,7 @@
 
 #include "text.h"
 #include "font.h"
+#include "platforms.h"
 
 typedef struct
 {

@@ -19,13 +19,14 @@
 
 #include "thread.h"
 #include "quit.h"
+#include "platforms.h"
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <time.h>
-#include "maincore.h"
+#include <errno.h>
 
 #define PTHREAD_SETNAME_AVAILABLE MAC_OS_X
 

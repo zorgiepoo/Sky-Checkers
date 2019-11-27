@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include "maincore.h"
 #include "renderer_types.h"
 
 #define FONT_POINT_SIZE 144

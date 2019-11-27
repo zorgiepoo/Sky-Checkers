@@ -24,6 +24,7 @@
 #include "mt_random.h"
 #include "scenery.h"
 #include "time.h"
+#include "globals.h"
 
 static void setNewDirection(Character *character);
 static void directCharacterBasedOnCollisions(Character *character, float currentTime);

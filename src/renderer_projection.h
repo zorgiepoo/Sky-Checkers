@@ -23,8 +23,8 @@
 extern "C" {
 #endif
 
-#include "maincore.h"
 #include "renderer_types.h"
+#include "platforms.h"
 
 #define PROJECTION_FOV_ANGLE 45.0f // in degrees
 #define PROJECTION_NEAR_VIEW_DISTANCE 10.0f

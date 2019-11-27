@@ -24,6 +24,7 @@
 #include "network.h"
 #include "audio.h"
 #include "time.h"
+#include "globals.h"
 
 #define TILE_FALLING_SPEED 25.4237f
 

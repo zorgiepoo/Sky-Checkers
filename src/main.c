@@ -17,7 +17,8 @@
  * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "maincore.h"
+#include "sdl.h"
+#include "platforms.h"
 #include "characters.h"
 #include "scenery.h"
 #include "input.h"
@@ -32,9 +33,22 @@
 #include "quit.h"
 #include "time.h"
 #include "gamepad.h"
+#include "globals.h"
 
 #define MATH_3D_IMPLEMENTATION
 #include "math_3d.h"
+
+#ifdef MAC_OS_X
+#include "osx.h"
+#endif
+
+#ifdef WINDOWS
+#include "linux.h"
+#endif
+
+#ifdef linux
+#include "linux.h"
+#endif
 
 bool gGameHasStarted;
 bool gGameShouldReset;

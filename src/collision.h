@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include "maincore.h"
 #include "characters.h"
 
 bool characterCanMove(int direction, Character *character);

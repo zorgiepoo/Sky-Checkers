@@ -18,11 +18,12 @@
  */
 
 #include "network.h"
+#include "platforms.h"
 #include "animation.h"
 #include "game_menus.h"
 #include "audio.h"
 #include "time.h"
-
+#include "globals.h"
 #include <inttypes.h>
 
 #define MAX_PACKET_SIZE 500

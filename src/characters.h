@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include "maincore.h"
 #include "scenery.h"
 #include "weapon.h"
 #include "math_3d.h"

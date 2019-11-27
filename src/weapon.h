@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include "maincore.h"
 #include "renderer.h"
 
 typedef struct

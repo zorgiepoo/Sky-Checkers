@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "maincore.h"
+#include <stdbool.h>
 
 #define MUSIC_VOLUME					32
 #define MENU_SOUND_VOLUME				32

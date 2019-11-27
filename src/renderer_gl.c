@@ -19,6 +19,7 @@
 
 #include "renderer_gl.h"
 
+#include "platforms.h"
 #include "renderer_projection.h"
 #include "texture.h"
 #include "quit.h"
@@ -35,6 +36,7 @@
 
 #ifdef MAC_OS_X
 #include <OpenGL/gl3.h>
+#include "osx.h"
 #endif
 
 #define VERTEX_ATTRIBUTE 0

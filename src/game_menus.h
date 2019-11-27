@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include "maincore.h"
 #include "menu.h"
 
 #define MAX_SERVER_ADDRESS_SIZE	512

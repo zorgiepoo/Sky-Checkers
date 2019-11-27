@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include "maincore.h"
 #include "characters.h"
 #include "gamepad.h"
 

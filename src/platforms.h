@@ -17,19 +17,16 @@
 * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "quit.h"
-#include "sdl.h"
-#include <stdlib.h>
+#pragma once
 
-void ZGQuit(void)
-{
-	SDL_Quit();
-	exit(0);
-}
+#ifdef __APPLE__
+#ifdef __MACH__
+#define MAC_OS_X
+#endif
+#endif
 
-void ZGSendQuitEvent(void)
-{
-	SDL_Event event;
-	event.type = SDL_QUIT;
-	SDL_PushEvent(&event);
-}
+#ifdef _WIN32
+#define WINDOWS
+#endif
+
+// linux is OK already

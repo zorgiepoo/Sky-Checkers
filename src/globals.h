@@ -17,19 +17,33 @@
 * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "quit.h"
-#include "sdl.h"
-#include <stdlib.h>
+#pragma once
 
-void ZGQuit(void)
+typedef enum
 {
-	SDL_Quit();
-	exit(0);
-}
+	GAME_STATE_OFF = 0,
+	GAME_STATE_ON = 1,
+	GAME_STATE_CONNECTING = 2
+} GameState;
 
-void ZGSendQuitEvent(void)
+typedef struct
 {
-	SDL_Event event;
-	event.type = SDL_QUIT;
-	SDL_PushEvent(&event);
-}
+	GameState *gameState;
+	SDL_Window *window;
+} GameMenuContext;
+
+void initGame(SDL_Window *window, bool firstGame);
+void endGame(SDL_Window *window, bool lastGame);
+
+extern bool gGameHasStarted;
+extern bool gGameShouldReset;
+extern int gGameWinner;
+extern int32_t gGameStartNumber;
+extern bool gDrawFPS;
+extern bool gDrawPings;
+
+extern int gCharacterLives;
+extern int gCharacterNetLives;
+
+extern bool gAudioEffectsFlag;
+extern bool gAudioMusicFlag;

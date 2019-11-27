@@ -23,8 +23,11 @@
 extern "C" {
 #endif
 
-#include "maincore.h"
+#include "platforms.h"
+#include "sdl.h"
+
 #include <stdbool.h>
+#include <stdint.h>
 
 #define MSAA_PREFERRED_RETINA_SAMPLE_COUNT 2
 #define MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT 4

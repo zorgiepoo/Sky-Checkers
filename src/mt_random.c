@@ -1,7 +1,7 @@
 
 #include "mt_random.h"
-#include "maincore.h"
-#include <stdarg.h>
+#include <stdlib.h>
+#include <time.h>
 
 #define MT_LEN			624
 

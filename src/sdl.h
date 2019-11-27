@@ -17,19 +17,20 @@
 * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "quit.h"
-#include "sdl.h"
-#include <stdlib.h>
+#pragma once
 
-void ZGQuit(void)
-{
-	SDL_Quit();
-	exit(0);
-}
+#include "platforms.h"
 
-void ZGSendQuitEvent(void)
-{
-	SDL_Event event;
-	event.type = SDL_QUIT;
-	SDL_PushEvent(&event);
-}
+#ifdef MAC_OS_X
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_syswm.h"
+#endif
+
+#ifdef WINDOWS
+#include "SDL.h"
+#include "SDL_syswm.h"
+#endif
+
+#ifdef linux
+#include <SDL2/SDL.h>
+#endif

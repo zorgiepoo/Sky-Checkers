@@ -46,6 +46,7 @@
 #include "scenery.h"
 #include "network.h"
 #include "text.h"
+#include "globals.h"
 
 // "scc~: " length == 6
 static const unsigned int MIN_CONSOLE_STRING_LENGTH = 6;

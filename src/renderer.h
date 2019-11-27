@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include "maincore.h"
 #include "math_3d.h"
 #include "renderer_types.h"
 

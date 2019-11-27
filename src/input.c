@@ -21,6 +21,7 @@
 #include <stdint.h>
 #include "network.h"
 #include "collision.h"
+#include "globals.h"
 
 Input gRedRoverInput;
 Input gGreenTreeInput;
