@@ -66,3 +66,13 @@ bool ZGSetWindowFullscreen(ZGWindow *window, bool enabled, const char **errorStr
 	}
 	return result;
 }
+
+void ZGSetWindowMinimumSize(ZGWindow *window, int32_t minWidth, int32_t minHeight)
+{
+	SDL_SetWindowMinimumSize(window, minWidth, minHeight);
+}
+
+void ZGGetWindowSize(ZGWindow *window, int32_t *width, int32_t *height)
+{
+	SDL_GetWindowSize(window, width, height);
+}

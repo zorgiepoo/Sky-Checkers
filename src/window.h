@@ -43,3 +43,6 @@ bool ZGWindowHasFocus(ZGWindow *window);
 bool ZGWindowIsFullscreen(ZGWindow *window);
 
 bool ZGSetWindowFullscreen(ZGWindow *window, bool enabled, const char **errorString);
+
+void ZGSetWindowMinimumSize(ZGWindow *window, int32_t minWidth, int32_t minHeight);
+void ZGGetWindowSize(ZGWindow *window, int32_t *width, int32_t *height);

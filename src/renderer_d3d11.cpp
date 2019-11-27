@@ -20,6 +20,7 @@
 #include "renderer_d3d11.h"
 #include "renderer_types.h"
 #include "renderer_projection.h"
+#include "window.h"
 
 #include <stdbool.h>
 
@@ -419,20 +420,17 @@ extern "C" bool createRenderer_d3d11(Renderer *renderer, const char *windowTitle
 	ID3D11BlendState *oneMinusAlphaBlendState = nullptr;
 	ID3D11RasterizerState *rasterState = nullptr;
 
-	uint32_t videoFlags = SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE;
-
 	renderer->windowWidth = max(windowWidth, 1);
 	renderer->windowHeight = max(windowHeight, 1);
 
-	renderer->window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags);
+	renderer->window = renderer->window = ZGCreateWindow(windowTitle, windowWidth, windowHeight, ZG_WINDOW_FLAG_NONE);
 	if (renderer->window == NULL)
 	{
 		goto INIT_FAILURE;
 	}
 
-	SDL_SetWindowMinimumSize(renderer->window, 8, 8);
-
-	SDL_GetWindowSize(renderer->window, &renderer->windowWidth, &renderer->windowHeight);
+	ZGSetWindowMinimumSize(renderer->window, 8, 8);
+	ZGGetWindowSize(renderer->window, &renderer->windowWidth, &renderer->windowHeight);
 
 	renderer->fullscreen = fullscreen;
 
@@ -585,7 +583,7 @@ extern "C" bool createRenderer_d3d11(Renderer *renderer, const char *windowTitle
 	DXGI_SWAP_CHAIN_DESC swapChainDesc;
 	ZeroMemory(&swapChainDesc, sizeof(swapChainDesc));
 
-	// Infer window width/height from our SDL window
+	// Infer window width/height from our window
 	swapChainDesc.BufferDesc.Width = 0;
 	swapChainDesc.BufferDesc.Height = 0;
 
@@ -838,7 +836,7 @@ INIT_FAILURE:
 
 	if (renderer->window != NULL)
 	{
-		SDL_DestroyWindow(renderer->window);
+		ZGDestroyWindow(renderer->window);
 		renderer->window = NULL;
 	}
 
