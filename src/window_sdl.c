@@ -24,10 +24,7 @@ ZGWindow *ZGCreateWindow(const char *windowTitle, int32_t windowWidth, int32_t w
 {
 	Uint32 videoFlags = SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE;
 #ifdef linux
-	if ((flags & ZG_WINDOW_FLAG_OPENGL) != 0)
-	{
-		videoFlags |= SDL_WINDOW_OPENGL;
-	}
+	videoFlags |= SDL_WINDOW_OPENGL;
 #endif
 	if ((flags & ZG_WINDOW_FLAG_FULLSCREEN) != 0)
 	{

@@ -265,7 +265,7 @@ static bool createOpenGLContext(ZGWindow **window, SDL_GLContext *glContext, uin
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT);
 	}
 	
-	*window = ZGCreateWindow(windowTitle, windowWidth, windowHeight, videoFlags | ZG_WINDOW_FLAG_OPENGL);
+	*window = ZGCreateWindow(windowTitle, windowWidth, windowHeight, videoFlags);
 	
 	if (*window == NULL || (*glContext = SDL_GL_CreateContext(*window)) == NULL)
 	{
@@ -288,7 +288,7 @@ static bool createOpenGLContext(ZGWindow **window, SDL_GLContext *glContext, uin
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 			
-			*window = ZGCreateWindow(windowTitle, windowWidth, windowHeight, videoFlags | ZG_WINDOW_FLAG_OPENGL);
+			*window = ZGCreateWindow(windowTitle, windowWidth, windowHeight, videoFlags);
 			
 			if (*window == NULL)
 			{
