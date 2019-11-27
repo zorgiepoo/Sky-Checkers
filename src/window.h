@@ -37,9 +37,9 @@ void ZGDestroyWindow(ZGWindow *window);
 void ZGWindowHideCursor(ZGWindow *window);
 
 bool ZGWindowHasFocus(ZGWindow *window);
-bool ZGWindowIsFullscreen(ZGWindow *window);
 
 #ifdef linux
+bool ZGWindowIsFullscreen(ZGWindow *window);
 bool ZGSetWindowFullscreen(ZGWindow *window, bool enabled, const char **errorString);
 #endif
 

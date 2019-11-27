@@ -49,12 +49,12 @@ bool ZGWindowHasFocus(ZGWindow *window)
 	return (SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0;
 }
 
+#ifdef linux
 bool ZGWindowIsFullscreen(ZGWindow *window)
 {
 	return (SDL_GetWindowFlags(window) & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)) != 0;
 }
 
-#ifdef linux
 bool ZGSetWindowFullscreen(ZGWindow *window, bool enabled, const char **errorString)
 {
 	bool result = SDL_SetWindowFullscreen(window, enabled ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0) == 0;
