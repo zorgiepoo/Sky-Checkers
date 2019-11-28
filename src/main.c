@@ -1501,18 +1501,20 @@ static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawSc
 	if (!(event->key.keysym.scancode == SDL_SCANCODE_RETURN && (SDL_GetModState() & metaMod) != 0) &&
 		gGameState == GAME_STATE_ON && (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP))
 	{
-		if (!gConsoleActivated)
+		if (!gConsoleActivated && event->type == SDL_KEYDOWN)
 		{
 			performDownKeyAction(&gRedRoverInput, event);
 			performDownKeyAction(&gGreenTreeInput, event);
 			performDownKeyAction(&gPinkBubbleGumInput, event);
 			performDownKeyAction(&gBlueLightningInput, event);
 		}
-
-		performUpKeyAction(&gRedRoverInput, event);
-		performUpKeyAction(&gGreenTreeInput, event);
-		performUpKeyAction(&gPinkBubbleGumInput, event);
-		performUpKeyAction(&gBlueLightningInput, event);
+		else if (event->type == SDL_KEYUP)
+		{
+			performUpKeyAction(&gRedRoverInput, event);
+			performUpKeyAction(&gGreenTreeInput, event);
+			performUpKeyAction(&gPinkBubbleGumInput, event);
+			performUpKeyAction(&gBlueLightningInput, event);
+		}
 	}
 }
 

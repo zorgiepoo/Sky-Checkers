@@ -77,73 +77,59 @@ static void prepareFiringFromInput(Input *input)
 
 void performDownKeyAction(Input *input, SDL_Event *event)
 {
-	if (event->type == SDL_KEYDOWN)
+	if (event->key.keysym.scancode == input->weap_id && !input->character->weap->animationState)
 	{
-		if (event->key.keysym.scancode == input->weap_id && !input->character->weap->animationState)
+		if (gGameHasStarted)
 		{
-			if (gGameHasStarted)
-			{
-				input->weap = true;
-			}
+			input->weap = true;
 		}
-		
-		else if (input->right_ticks == 0 && event->key.keysym.scancode == input->r_id)
-		{
-			input->right_ticks = event->key.timestamp;
-		}
-	
-		else if (input->left_ticks == 0 && event->key.keysym.scancode == input->l_id)
-		{
-			input->left_ticks = event->key.timestamp;
-		}
-	
-		else if (input->up_ticks == 0 && event->key.keysym.scancode == input->u_id)
-		{
-			input->up_ticks = event->key.timestamp;
-		}
-	
-		else if (input->down_ticks == 0 && event->key.keysym.scancode == input->d_id)
-		{
-			input->down_ticks = event->key.timestamp;
-		}
+	}
+	else if (input->right_ticks == 0 && event->key.keysym.scancode == input->r_id)
+	{
+		input->right_ticks = event->key.timestamp;
+	}
+	else if (input->left_ticks == 0 && event->key.keysym.scancode == input->l_id)
+	{
+		input->left_ticks = event->key.timestamp;
+	}
+	else if (input->up_ticks == 0 && event->key.keysym.scancode == input->u_id)
+	{
+		input->up_ticks = event->key.timestamp;
+	}
+	else if (input->down_ticks == 0 && event->key.keysym.scancode == input->d_id)
+	{
+		input->down_ticks = event->key.timestamp;
 	}
 }
 
 void performUpKeyAction(Input *input, SDL_Event *event)
 {
-	if (event->type == SDL_KEYUP)
+	if (input->right_ticks == 0 && input->left_ticks == 0 && input->down_ticks == 0 && input->up_ticks == 0 && !input->weap)
+		return;
+
+	if (event->key.keysym.scancode == input->r_id)
 	{
-		if (input->right_ticks == 0 && input->left_ticks == 0 && input->down_ticks == 0 && input->up_ticks == 0 && !input->weap)
-			return;
-	
-		if (event->key.keysym.scancode == input->r_id)
+		input->right_ticks = 0;
+	}
+	else if (event->key.keysym.scancode == input->l_id)
+	{
+		input->left_ticks = 0;
+	}
+	else if (event->key.keysym.scancode == input->u_id)
+	{
+		input->up_ticks = 0;
+	}
+	else if (event->key.keysym.scancode == input->d_id)
+	{
+		input->down_ticks = 0;
+	}
+	else if (event->key.keysym.scancode == input->weap_id)
+	{
+		if (gGameHasStarted)
 		{
-			input->right_ticks = 0;
+			prepareFiringFromInput(input);
 		}
-	
-		else if (event->key.keysym.scancode == input->l_id)
-		{
-			input->left_ticks = 0;
-		}
-	
-		else if (event->key.keysym.scancode == input->u_id)
-		{
-			input->up_ticks = 0;
-		}
-	
-		else if (event->key.keysym.scancode == input->d_id)
-		{
-			input->down_ticks = 0;
-		}
-		
-		else if (event->key.keysym.scancode == input->weap_id)
-		{
-			if (gGameHasStarted)
-			{
-				prepareFiringFromInput(input);
-			}
-			input->weap = false;
-		}
+		input->weap = false;
 	}
 }
 
