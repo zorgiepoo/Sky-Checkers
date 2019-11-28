@@ -64,11 +64,11 @@ static double gTimeElapsedAccumulator = 0.0;
 
 static void colorTile(int tileIndex, Character *character);
 
-static void animateTilesAndPlayerRecovery(double timeDelta, SDL_Window *window, Character *player);
+static void animateTilesAndPlayerRecovery(double timeDelta, ZGWindow *window, Character *player);
 static void moveWeapon(Weapon *weapon, double timeDelta);
 
-static void firstTileLayerAnimation(SDL_Window *window);
-static void secondTileLayerAnimation(SDL_Window *window);
+static void firstTileLayerAnimation(ZGWindow *window);
+static void secondTileLayerAnimation(ZGWindow *window);
 
 static void loadFirstTileAnimationLayer(void);
 static void loadSecondTileAnimationLayer(void);
@@ -83,7 +83,7 @@ static void sendPing(void);
 
 static void clearPredictedColors(void);
 
-void animate(SDL_Window *window, double timeDelta)
+void animate(ZGWindow *window, double timeDelta)
 {
 	gSecondTimer += (float)timeDelta;
 	
@@ -304,7 +304,7 @@ static void moveWeapon(Weapon *weapon, double timeDelta)
 #define END_CHARACTER_ANIMATION ((70 + 1) * ANIMATION_TIME_ELAPSED_INTERVAL)
 #define NUM_ALPHA_FLASH_ITERATIONS 3
 #define ALPHA_FLUCUATION 0.5f
-static void animateTilesAndPlayerRecovery(double timeDelta, SDL_Window *window, Character *player)
+static void animateTilesAndPlayerRecovery(double timeDelta, ZGWindow *window, Character *player)
 {
 	if (player->weap->animationState)
 	{
@@ -455,7 +455,7 @@ static void animateTilesAndPlayerRecovery(double timeDelta, SDL_Window *window, 
  * First layer of tiles to destroy (most outter one).
  * This animation is activated by setting gFirstLayerAnimationTimer = 1
  */
-static void firstTileLayerAnimation(SDL_Window *window)
+static void firstTileLayerAnimation(ZGWindow *window)
 {
 	// Color the tiles dieing
 	if (gTileLayerStates[0].colorIndex != -1 && gTileLayerStates[0].animationTimer > BEGIN_TILE_LAYER_ANIMATION)
@@ -520,7 +520,7 @@ static void firstTileLayerAnimation(SDL_Window *window)
  * Second layer of tiles to destroy (second most outter one)
  * This animation is activated by setting gSecondLayerAnimationTimer = 1
  */
-static void secondTileLayerAnimation(SDL_Window *window)
+static void secondTileLayerAnimation(ZGWindow *window)
 {
 	// Color the tiles dieing
 	if (gTileLayerStates[1].colorIndex != -1 && gTileLayerStates[1].animationTimer > BEGIN_TILE_LAYER_ANIMATION)
