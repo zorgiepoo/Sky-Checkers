@@ -1158,7 +1158,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawSc
 			{
 				setPendingKeyCode(event->key.keysym.scancode);
 			}
-			else if (event->key.keysym.sym == SDLK_v && (event->key.keysym.mod & metaMod) != 0 && SDL_HasClipboardText())
+			else if (event->key.keysym.scancode == SDL_SCANCODE_V && (event->key.keysym.mod & metaMod) != 0 && SDL_HasClipboardText())
 			{
 				char *clipboardText = SDL_GetClipboardText();
 				if (clipboardText != NULL)
@@ -1167,7 +1167,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawSc
 				}
 			}
 #ifdef linux
-			else if (event->key.keysym.sym == SDLK_RETURN && (event->key.keysym.mod & KMOD_ALT) != 0)
+			else if (event->key.keysym.scancode == SDL_SCANCODE_RETURN && (event->key.keysym.mod & KMOD_ALT) != 0)
 			{
 				const char *fullscreenErrorString = NULL;
 				if (!ZGWindowIsFullscreen(renderer->window))
@@ -1205,7 +1205,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawSc
 					resetGame();
 				}
 			}
-			else if (event->key.keysym.sym == SDLK_RETURN || event->key.keysym.sym == SDLK_KP_ENTER)
+			else if (event->key.keysym.scancode == SDL_SCANCODE_RETURN)
 			{
 				if (gCurrentMenu == gConfigureLivesMenu)
 				{
@@ -1443,7 +1443,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawSc
 				}
 			}
 
-			else if (event->key.keysym.sym == SDLK_BACKQUOTE && gGameState == GAME_STATE_ON)
+			else if (event->key.keysym.scancode == SDL_SCANCODE_GRAVE && gGameState == GAME_STATE_ON)
 			{
 				if (gConsoleFlag)
 				{
@@ -1458,7 +1458,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawSc
 				}
 			}
 
-			else if (event->key.keysym.sym == SDLK_BACKSPACE)
+			else if (event->key.keysym.scancode == SDL_SCANCODE_BACKSPACE)
 			{
 				if (gConsoleActivated)
 				{
@@ -1498,7 +1498,7 @@ static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawSc
 	 * Make sure the user isn't trying to toggle fullscreen.
 	 * Other actions, such as changing menus are dealt before here
 	 */
-	if (!(event->key.keysym.sym == SDLK_RETURN && (SDL_GetModState() & metaMod) != 0) &&
+	if (!(event->key.keysym.scancode == SDL_SCANCODE_RETURN && (SDL_GetModState() & metaMod) != 0) &&
 		gGameState == GAME_STATE_ON && (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP))
 	{
 		if (!gConsoleActivated)
