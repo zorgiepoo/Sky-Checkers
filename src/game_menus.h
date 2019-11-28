@@ -49,9 +49,13 @@ extern bool gDrawArrowsForNetPlayerLivesFlag;
 extern bool gNetworkAddressFieldIsActive;
 extern bool gNetworkUserNameFieldIsActive;
 
+extern bool gMenuPendingOnKeyCode;
+
 void initMenus(void);
 
 void writeNetworkAddressText(uint8_t text);
 void writeNetworkUserNameText(uint8_t text);
 void performNetworkAddressBackspace(void);
 void performNetworkUserNameBackspace(void);
+
+void setPendingKeyCode(uint32_t keyCode);

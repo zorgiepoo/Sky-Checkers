@@ -56,8 +56,11 @@ int gServerAddressStringIndex = 9;
 char gUserNameString[MAX_USER_NAME_SIZE] = "Kale";
 int gUserNameStringIndex = 4;
 
+bool gMenuPendingOnKeyCode = false;
+static uint32_t *gMenuPendingKeyCode;
+
 static char *convertKeyCodeToString(uint32_t theKeyCode);
-static uint32_t getKey(void);
+static void configureKey(uint32_t *id);
 
 static void drawUpAndDownArrowTriangles(Renderer *renderer, mat4_t modelViewMatrix)
 {
@@ -703,14 +706,6 @@ void blueLightningKeyMenuAction(void *context)
 	changeMenu(RIGHT);
 }
 
-void configureKey(uint32_t *id)
-{
-	uint32_t key = getKey();
-	
-	if (key != SDL_SCANCODE_UNKNOWN)
-		*id = key;
-}
-
 // start configuration menus
 
 static void drawKeyboardConfigurationInstructions(Renderer *renderer)
@@ -1274,30 +1269,17 @@ static char *convertKeyCodeToString(uint32_t theKeyCode)
 	return gKeyCode;
 }
 
-static uint32_t getKey(void)
+void setPendingKeyCode(uint32_t code)
 {
-	SDL_Event event;
-	bool quit = false;
-	uint32_t key = 0;
-	
-	while (!quit)
+	if (code != SDL_SCANCODE_RETURN && code != SDL_SCANCODE_RETURN2 && code != SDL_SCANCODE_KP_ENTER && code != SDL_SCANCODE_ESCAPE && code != SDL_SCANCODE_UNKNOWN)
 	{
-		while (SDL_PollEvent(&event))
-		{
-			switch (event.type)
-			{
-				case SDL_KEYDOWN:
-					
-					if (event.key.keysym.scancode != SDL_SCANCODE_RETURN && event.key.keysym.scancode != SDL_SCANCODE_RETURN2 && event.key.keysym.scancode != SDL_SCANCODE_KP_ENTER && event.key.keysym.scancode != SDL_SCANCODE_ESCAPE)
-					{
-						key = event.key.keysym.scancode;
-					}
-					
-					quit = true;
-					break;
-			}
-		}
+		*gMenuPendingKeyCode = code;
+		gMenuPendingOnKeyCode = false;
 	}
-	
-	return key;
+}
+
+void configureKey(uint32_t *id)
+{
+	gMenuPendingKeyCode = id;
+	gMenuPendingOnKeyCode = true;
 }

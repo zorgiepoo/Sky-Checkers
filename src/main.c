@@ -1154,7 +1154,11 @@ static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawSc
 	switch (event->type)
 	{
 		case SDL_KEYDOWN:
-			if (event->key.keysym.sym == SDLK_v && (event->key.keysym.mod & metaMod) != 0 && SDL_HasClipboardText())
+			if (gMenuPendingOnKeyCode)
+			{
+				setPendingKeyCode(event->key.keysym.scancode);
+			}
+			else if (event->key.keysym.sym == SDLK_v && (event->key.keysym.mod & metaMod) != 0 && SDL_HasClipboardText())
 			{
 				char *clipboardText = SDL_GetClipboardText();
 				if (clipboardText != NULL)
@@ -1258,7 +1262,6 @@ static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawSc
 					{
 						gCharacterNetLives--;
 					}
-					
 				}
 
 				else if (gDrawArrowsForAIModeFlag)
