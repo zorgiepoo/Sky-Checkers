@@ -50,17 +50,14 @@ bool gDrawArrowsForNetPlayerLivesFlag =		false;
 bool gNetworkAddressFieldIsActive =			false;
 bool gNetworkUserNameFieldIsActive =		false;
 
-// Variable that holds a keyCode for configuring keys (see convertKeyCodeToString() and menu configuration implementations)
-static char gKeyCode[64];
-
 char gServerAddressString[MAX_SERVER_ADDRESS_SIZE] = "localhost";
 int gServerAddressStringIndex = 9;
 
 char gUserNameString[MAX_USER_NAME_SIZE] = "Kale";
 int gUserNameStringIndex = 4;
 
-static char *convertKeyCodeToString(unsigned int theKeyCode);
-static unsigned int getKey(void);
+static char *convertKeyCodeToString(uint32_t theKeyCode);
+static uint32_t getKey(void);
 
 static void drawUpAndDownArrowTriangles(Renderer *renderer, mat4_t modelViewMatrix)
 {
@@ -706,9 +703,9 @@ void blueLightningKeyMenuAction(void *context)
 	changeMenu(RIGHT);
 }
 
-void configureKey(unsigned int *id)
+void configureKey(uint32_t *id)
 {
-	unsigned int key = getKey();
+	uint32_t key = getKey();
 	
 	if (key != SDL_SCANCODE_UNKNOWN)
 		*id = key;
@@ -1253,8 +1250,9 @@ void initMenus(void)
 	}
 }
 
-static char *convertKeyCodeToString(unsigned theKeyCode)
+static char *convertKeyCodeToString(uint32_t theKeyCode)
 {
+	static char gKeyCode[64];
 	const char *name = SDL_GetScancodeName(theKeyCode);
 	if (name == NULL || strlen(name) == 0)
 	{
@@ -1276,11 +1274,11 @@ static char *convertKeyCodeToString(unsigned theKeyCode)
 	return gKeyCode;
 }
 
-static unsigned int getKey(void)
+static uint32_t getKey(void)
 {
 	SDL_Event event;
 	bool quit = false;
-	unsigned int key = 0;
+	uint32_t key = 0;
 	
 	while (!quit)
 	{

@@ -45,11 +45,11 @@ typedef struct
 	uint32_t down_ticks;
 	
 	// right, left, up, down, weapon ids - their assigned keyboard keys.
-	unsigned int r_id;
-	unsigned int l_id;
-	unsigned int u_id;
-	unsigned int d_id;
-	unsigned int weap_id;
+	uint32_t r_id;
+	uint32_t l_id;
+	uint32_t u_id;
+	uint32_t d_id;
+	uint32_t weap_id;
 	
 	GamepadIndex gamepadIndex;
 } Input;
@@ -59,7 +59,7 @@ extern Input gGreenTreeInput;
 extern Input gPinkBubbleGumInput;
 extern Input gBlueLightningInput;
 
-void initInput(Input *input, int right, int left, int up, int down, int weapon);
+void initInput(Input *input, uint32_t right, uint32_t left, uint32_t up, uint32_t down, uint32_t weapon);
 
 Character *characterFromInput(Input *characterInput);
 

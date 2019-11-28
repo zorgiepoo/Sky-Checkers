@@ -28,7 +28,7 @@ Input gGreenTreeInput;
 Input gPinkBubbleGumInput;
 Input gBlueLightningInput;
 
-void initInput(Input *input, int right, int left, int up, int down, int weapon)
+void initInput(Input *input, uint32_t right, uint32_t left, uint32_t up, uint32_t down, uint32_t weapon)
 {
 	input->right_ticks = 0;
 	input->left_ticks = 0;
