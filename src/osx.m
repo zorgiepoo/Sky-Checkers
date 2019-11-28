@@ -65,3 +65,19 @@ void getDefaultUserName(char *defaultUserName, int maxLength)
 		}
 	}
 }
+
+void setUpCurrentWorkingDirectory(void)
+{
+	@autoreleasepool
+	{
+		NSBundle *mainBundle = [NSBundle mainBundle];
+		NSString *resourcePath = [mainBundle resourcePath];
+		
+		NSFileManager *fileManager = [NSFileManager defaultManager];
+		if (![fileManager changeCurrentDirectoryPath:resourcePath])
+		{
+			fprintf(stderr, "Error: failed to change current working directory to: %s\n", resourcePath.fileSystemRepresentation);
+			abort();
+		}
+	}
+}

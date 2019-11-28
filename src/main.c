@@ -1719,13 +1719,7 @@ int main(int argc, char *argv[])
 	}
 	
 #ifdef MAC_OS_X
-	// The current working directory should point to our base path, particularly on macOS
-	const char *baseDirectory = SDL_GetBasePath();
-	if (baseDirectory != NULL && chdir(baseDirectory) != 0)
-	{
-		fprintf(stderr, "Failed to change current working directory to %s\n", baseDirectory);
-		ZGQuit();
-	}
+	setUpCurrentWorkingDirectory();
 #endif
 
 	initAudio();

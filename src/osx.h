@@ -22,3 +22,5 @@
 
 FILE *getUserDataFile(const char *mode);
 void getDefaultUserName(char *defaultUserName, int maxLength);
+
+void setUpCurrentWorkingDirectory(void);
