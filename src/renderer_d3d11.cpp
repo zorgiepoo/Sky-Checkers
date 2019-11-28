@@ -423,7 +423,7 @@ extern "C" bool createRenderer_d3d11(Renderer *renderer, const char *windowTitle
 	renderer->windowWidth = max(windowWidth, 1);
 	renderer->windowHeight = max(windowHeight, 1);
 
-	renderer->window = renderer->window = ZGCreateWindow(windowTitle, windowWidth, windowHeight, ZG_WINDOW_FLAG_NONE);
+	renderer->window = renderer->window = ZGCreateWindow(windowTitle, windowWidth, windowHeight, nullptr);
 	if (renderer->window == NULL)
 	{
 		goto INIT_FAILURE;

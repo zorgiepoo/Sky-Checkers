@@ -20,44 +20,119 @@
 #include "window.h"
 #include "sdl.h"
 
-ZGWindow *ZGCreateWindow(const char *windowTitle, int32_t windowWidth, int32_t windowHeight, ZGWindowFlags flags)
+typedef struct
+{
+	SDL_Window *window;
+	void (*eventHandler)(ZGWindowEvent, void *);
+	void *eventHandlerContext;
+} WindowController;
+
+ZGWindow *ZGCreateWindow(const char *windowTitle, int32_t windowWidth, int32_t windowHeight, bool *fullscreenFlag)
 {
 	Uint32 videoFlags = SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE;
 #ifdef linux
 	videoFlags |= SDL_WINDOW_OPENGL;
 #endif
-	if ((flags & ZG_WINDOW_FLAG_FULLSCREEN) != 0)
+	if (fullscreenFlag != NULL && *fullscreenFlag)
 	{
 		videoFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 	}
 	
-	return SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags);
+	WindowController *windowController = calloc(1, sizeof(*windowController));
+	windowController->window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags);
+	return windowController;
 }
 
-void ZGDestroyWindow(ZGWindow *window)
+void ZGDestroyWindow(ZGWindow *windowRef)
 {
-	SDL_DestroyWindow(window);
+	WindowController *windowController = (WindowController *)windowRef;
+	SDL_DestroyWindow(windowController->window);
+	
+	windowController->window = NULL;
+	windowController->eventHandler = NULL;
+	windowController->eventHandlerContext = NULL;
+	
+	free(windowController);
 }
 
-void ZGWindowHideCursor(ZGWindow *window)
+bool ZGWindowHasFocus(ZGWindow *windowRef)
 {
-	SDL_ShowCursor(SDL_DISABLE);
+	WindowController *windowController = (WindowController *)windowRef;
+	return (SDL_GetWindowFlags(windowController->window) & SDL_WINDOW_INPUT_FOCUS) != 0;
 }
 
-bool ZGWindowHasFocus(ZGWindow *window)
+void ZGSetWindowEventHandler(ZGWindow *windowRef, void *context, void (*windowEventHandler)(ZGWindowEvent, void *))
 {
-	return (SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS) != 0;
+	WindowController *windowController = (WindowController *)windowRef;
+	windowController->eventHandler = windowEventHandler;
+	windowController->eventHandlerContext = context;
+}
+
+void ZGPollWindowEvents(ZGWindow *windowRef, const void *systemEvent)
+{
+	WindowController *windowController = (WindowController *)windowRef;
+	if (windowController->eventHandler == NULL || systemEvent == NULL) return;
+	
+	const SDL_Event *sdlEvent = systemEvent;
+	switch (sdlEvent->type)
+	{
+		case SDL_WINDOWEVENT:
+		{
+			switch (sdlEvent->window.event)
+			{
+				case SDL_WINDOWEVENT_FOCUS_LOST:
+				{
+					ZGWindowEvent event;
+					event.type = ZGWindowEventTypeFocusLost;
+
+					windowController->eventHandler(event, windowController->eventHandlerContext);
+				} break;
+				case SDL_WINDOWEVENT_FOCUS_GAINED:
+				{
+					ZGWindowEvent event;
+					event.type = ZGWindowEventTypeFocusGained;
+
+					windowController->eventHandler(event, windowController->eventHandlerContext);
+				} break;
+				case SDL_WINDOWEVENT_HIDDEN:
+				{
+					ZGWindowEvent event;
+					event.type = ZGWindowEventTypeHidden;
+
+					windowController->eventHandler(event, windowController->eventHandlerContext);
+				} break;
+				case SDL_WINDOWEVENT_SHOWN:
+				{
+					ZGWindowEvent event;
+					event.type = ZGWindowEventTypeShown;
+					
+					windowController->eventHandler(event, windowController->eventHandlerContext);
+				} break;
+				case SDL_WINDOWEVENT_RESIZED:
+				{
+					ZGWindowEvent event;
+					event.type = ZGWindowEventTypeResize;
+					event.width = sdlEvent->window.data1;
+					event.height = sdlEvent->window.data2;
+					
+					windowController->eventHandler(event, windowController->eventHandlerContext);
+				} break;
+			}
+		}
+	}
 }
 
 #ifdef linux
-bool ZGWindowIsFullscreen(ZGWindow *window)
+bool ZGWindowIsFullscreen(ZGWindow *windowRef)
 {
-	return (SDL_GetWindowFlags(window) & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)) != 0;
+	WindowController *windowController = (WindowController *)windowRef;
+	return (SDL_GetWindowFlags(windowController->window) & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)) != 0;
 }
 
-bool ZGSetWindowFullscreen(ZGWindow *window, bool enabled, const char **errorString)
+bool ZGSetWindowFullscreen(ZGWindow *windowRef, bool enabled, const char **errorString)
 {
-	bool result = SDL_SetWindowFullscreen(window, enabled ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0) == 0;
+	WindowController *windowController = (WindowController *)windowRef;
+	bool result = SDL_SetWindowFullscreen(windowController->window, enabled ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0) == 0;
 	if (!result && errorString != NULL)
 	{
 		*errorString = SDL_GetError();
@@ -67,23 +142,27 @@ bool ZGSetWindowFullscreen(ZGWindow *window, bool enabled, const char **errorStr
 #endif
 
 #ifdef WINDOWS
-void ZGSetWindowMinimumSize(ZGWindow *window, int32_t minWidth, int32_t minHeight)
+void ZGSetWindowMinimumSize(ZGWindow *windowRef, int32_t minWidth, int32_t minHeight)
 {
-	SDL_SetWindowMinimumSize(window, minWidth, minHeight);
+	WindowController *windowController = (WindowController *)windowRef;
+	SDL_SetWindowMinimumSize(windowController->window, minWidth, minHeight);
 }
 
-void ZGGetWindowSize(ZGWindow *window, int32_t *width, int32_t *height)
+void ZGGetWindowSize(ZGWindow *windowRef, int32_t *width, int32_t *height)
 {
-	SDL_GetWindowSize(window, width, height);
+	WindowController *windowController = (WindowController *)windowRef;
+	SDL_GetWindowSize(windowController->windowRef, width, height);
 }
 #endif
 
 #ifndef linux
-void *ZGWindowHandle(ZGWindow *window)
+void *ZGWindowHandle(ZGWindow *windowRef)
 {
+	WindowController *windowController = (WindowController *)windowRef;
+	
 	SDL_SysWMinfo systemInfo;
 	SDL_VERSION(&systemInfo.version);
-	SDL_GetWindowWMInfo(window, &systemInfo);
+	SDL_GetWindowWMInfo(windowController->window, &systemInfo);
 	
 #ifdef MAC_OS_X
 	return systemInfo.info.cocoa.window;

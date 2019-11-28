@@ -232,7 +232,7 @@ static void compileAndLinkShader(Shader_gl *shader, uint16_t glslVersion, const 
 	glDeleteShader(fragmentShader);
 }
 
-static bool createOpenGLContext(ZGWindow **window, SDL_GLContext *glContext, uint16_t glslVersion, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, ZGWindowFlags videoFlags, bool fsaa)
+static bool createOpenGLContext(ZGWindow **window, SDL_GLContext *glContext, uint16_t glslVersion, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, bool *fullscreenFlag, bool fsaa)
 {
 	switch (glslVersion)
 	{
@@ -265,7 +265,7 @@ static bool createOpenGLContext(ZGWindow **window, SDL_GLContext *glContext, uin
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT);
 	}
 	
-	*window = ZGCreateWindow(windowTitle, windowWidth, windowHeight, videoFlags);
+	*window = ZGCreateWindow(windowTitle, windowWidth, windowHeight, fullscreenFlag);
 	
 	if (*window == NULL || (*glContext = SDL_GL_CreateContext(*window)) == NULL)
 	{
@@ -288,7 +288,7 @@ static bool createOpenGLContext(ZGWindow **window, SDL_GLContext *glContext, uin
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 			
-			*window = ZGCreateWindow(windowTitle, windowWidth, windowHeight, videoFlags);
+			*window = ZGCreateWindow(windowTitle, windowWidth, windowHeight, fullscreenFlag);
 			
 			if (*window == NULL)
 			{
@@ -326,17 +326,7 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 {
 	renderer->windowWidth = windowWidth;
 	renderer->windowHeight = windowHeight;
-	
-	ZGWindowFlags videoFlags = ZG_WINDOW_FLAG_NONE;
-	if (fullscreen)
-	{
-		videoFlags |= ZG_WINDOW_FLAG_FULLSCREEN;
-	}
 	renderer->fullscreen = fullscreen;
-
-#ifdef WINDOWS
-	renderer->windowsNativeFullscreenToggling = false;
-#endif
 	
 	// Buffer sizes
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
@@ -344,13 +334,13 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	
 	uint16_t glslVersion = GLSL_VERSION_410;
 	SDL_GLContext glContext = NULL;
-	if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, windowTitle, windowWidth, windowHeight, videoFlags, fsaa))
+	if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, windowTitle, windowWidth, windowHeight, &renderer->fullscreen, fsaa))
 	{
 		glslVersion = GLSL_VERSION_330;
-		if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, windowTitle, windowWidth, windowHeight, videoFlags, fsaa))
+		if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, windowTitle, windowWidth, windowHeight, &renderer->fullscreen, fsaa))
 		{
 			glslVersion = GLSL_VERSION_120;
-			if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, windowTitle, windowWidth, windowHeight, videoFlags, fsaa))
+			if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, windowTitle, windowWidth, windowHeight, &renderer->fullscreen, fsaa))
 			{
 				fprintf(stderr, "Failed to create OpenGL context with even glsl version %d\n", glslVersion);
 				ZGQuit();

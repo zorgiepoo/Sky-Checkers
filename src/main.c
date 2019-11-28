@@ -89,6 +89,12 @@ static GameState gGameState;
 
 static uint32_t gEscapeHeldDownTimer;
 
+typedef struct
+{
+	Renderer *renderer;
+	bool *needsToDrawScene;
+} WindowEventContext;
+
 #define MAX_CHARACTER_LIVES 10
 #define CHARACTER_ICON_DISPLACEMENT 5.0f
 #define CHARACTER_ICON_OFFSET -8.5f
@@ -1474,28 +1480,6 @@ static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawSc
 		case SDL_TEXTINPUT:
 			writeTextInput(event->text.text, SDL_TEXTINPUTEVENT_TEXT_SIZE);
 			break;
-		case SDL_WINDOWEVENT:
-			if (event->window.event == SDL_WINDOWEVENT_FOCUS_LOST)
-			{
-				pauseMusic();
-			}
-			else if (event->window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
-			{
-				unPauseMusic();
-			}
-			else if (event->window.event == SDL_WINDOWEVENT_HIDDEN)
-			{
-				*needsToDrawScene = false;
-			}
-			else if (event->window.event == SDL_WINDOWEVENT_SHOWN)
-			{
-				*needsToDrawScene = true;
-			}
-			else if (event->window.event == SDL_WINDOWEVENT_RESIZED)
-			{
-				updateViewport(renderer, event->window.data1, event->window.data2);
-			}
-			break;
 		case SDL_QUIT:
 			*quit = true;
 			break;
@@ -1562,6 +1546,29 @@ static void pollGamepads(GamepadManager *gamepadManager, const void *systemEvent
 	}
 }
 
+static void handleWindowEvent(ZGWindowEvent event, void *context)
+{
+	WindowEventContext *windowEventContext = context;
+	switch (event.type)
+	{
+		case ZGWindowEventTypeResize:
+			updateViewport(windowEventContext->renderer, event.width, event.height);
+			break;
+		case ZGWindowEventTypeFocusGained:
+			unPauseMusic();
+			break;
+		case ZGWindowEventTypeFocusLost:
+			pauseMusic();
+			break;
+		case ZGWindowEventTypeShown:
+			*windowEventContext->needsToDrawScene = true;
+			break;
+		case ZGWindowEventTypeHidden:
+			*windowEventContext->needsToDrawScene = false;
+			break;
+	}
+}
+
 static void eventLoop(Renderer *renderer, GamepadManager *gamepadManager)
 {
 	SDL_Event event;
@@ -1572,13 +1579,22 @@ static void eventLoop(Renderer *renderer, GamepadManager *gamepadManager)
 	int delay = 1000 / fps;
 	int thenTicks = -1;
 	int nowTicks;
+	
+	WindowEventContext windowEventContext;
+	windowEventContext.renderer = renderer;
+	windowEventContext.needsToDrawScene = &needsToDrawScene;
+	
+	ZGSetWindowEventHandler(renderer->window, &windowEventContext, handleWindowEvent);
 
 	while (!done)
 	{
 		while (SDL_PollEvent(&event))
 		{
 			eventInput(&event, renderer, &needsToDrawScene, &done);
+#ifndef MAC_OS_X
 			pollGamepads(gamepadManager, &event);
+			ZGPollWindowEvents(renderer->window, &event);
+#endif
 		}
 		
 		pollGamepads(gamepadManager, NULL);

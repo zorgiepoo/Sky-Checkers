@@ -63,8 +63,6 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 #ifdef linux
 	createRenderer_gl(renderer, windowTitle, windowWidth, windowHeight, fullscreen, vsync, fsaa);
 #endif
-	
-	ZGWindowHideCursor(renderer->window);
 }
 
 void updateViewport(Renderer *renderer, int32_t windowWidth, int32_t windowHeight)

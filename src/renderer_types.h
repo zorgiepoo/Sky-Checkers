@@ -180,7 +180,6 @@ typedef struct _Renderer
 			void *metalShaderFunctions;
 			bool metalWantsFsaa;
 			bool metalCreatedInitialPipelines;
-			bool metalIgnoreFirstFullscreenTransition;
 		};
 #endif
 
@@ -206,10 +205,6 @@ typedef struct _Renderer
 		};
 #endif
 	};
-
-#ifdef MAC_OS_X
-	bool macosInFullscreenTransition;
-#endif
 
 	// Private function pointers
 	// Note mat4_t is not passed in these function pointers or included in this file

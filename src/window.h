@@ -22,19 +22,30 @@
 #include "platforms.h"
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 typedef void ZGWindow;
-
 typedef enum
 {
-	ZG_WINDOW_FLAG_NONE,
-	ZG_WINDOW_FLAG_FULLSCREEN,
-} ZGWindowFlags;
+	ZGWindowEventTypeResize,
+	ZGWindowEventTypeFocusGained,
+	ZGWindowEventTypeFocusLost,
+	ZGWindowEventTypeShown,
+	ZGWindowEventTypeHidden
+} ZGWindowEventType;
 
-ZGWindow *ZGCreateWindow(const char *windowTitle, int32_t windowWidth, int32_t windowHeight, ZGWindowFlags flags);
+typedef union
+{
+	struct
+	{
+		int32_t width;
+		int32_t height;
+	};
+	ZGWindowEventType type;
+} ZGWindowEvent;
+
+ZGWindow *ZGCreateWindow(const char *windowTitle, int32_t windowWidth, int32_t windowHeight, bool *fullscreenFlag);
 void ZGDestroyWindow(ZGWindow *window);
-
-void ZGWindowHideCursor(ZGWindow *window);
 
 bool ZGWindowHasFocus(ZGWindow *window);
 
@@ -46,6 +57,12 @@ bool ZGSetWindowFullscreen(ZGWindow *window, bool enabled, const char **errorStr
 #ifdef WINDOWS
 void ZGSetWindowMinimumSize(ZGWindow *window, int32_t minWidth, int32_t minHeight);
 void ZGGetWindowSize(ZGWindow *window, int32_t *width, int32_t *height);
+#endif
+
+void ZGSetWindowEventHandler(ZGWindow *window, void *context, void (*windowEventHandler)(ZGWindowEvent, void *));
+
+#ifndef MAC_OS_X
+void ZGPollWindowEvents(ZGWindow *window, const void *systemEvent);
 #endif
 
 #ifndef linux

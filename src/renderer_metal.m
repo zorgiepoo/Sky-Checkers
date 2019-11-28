@@ -316,13 +316,8 @@ static void updateRealViewport(Renderer *renderer)
 
 void updateViewport_metal(Renderer *renderer, int32_t windowWidth, int32_t windowHeight)
 {
-	// Only update the window width/height here if necessary
-	// We set up a handler if the viewport resizes independent from SDL
-	if (!renderer->macosInFullscreenTransition && !renderer->fullscreen)
-	{
-		renderer->windowWidth = windowWidth;
-		renderer->windowHeight = windowHeight;
-	}
+	renderer->windowWidth = windowWidth;
+	renderer->windowHeight = windowHeight;
 }
 
 static void createPipelines(Renderer *renderer)
@@ -431,9 +426,7 @@ bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t w
 		renderer->metalRenderPassDescriptor = NULL;
 		renderer->metalDepthTestStencilState = NULL;
 		renderer->metalShaderFunctions = NULL;
-		renderer->macosInFullscreenTransition = false;
-		renderer->metalIgnoreFirstFullscreenTransition = false;
-		renderer->fullscreen = false;
+		renderer->fullscreen = fullscreen;
 		
 		// Find the preffered device for our game which isn't integrated, headless, or external
 		// Maybe one day I will support external/removable GPUs but my game isn't very demanding
@@ -490,7 +483,7 @@ bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t w
 			return false;
 		}
 		
-		renderer->window = ZGCreateWindow(windowTitle, windowWidth, windowHeight, ZG_WINDOW_FLAG_NONE);
+		renderer->window = ZGCreateWindow(windowTitle, windowWidth, windowHeight, &renderer->fullscreen);
 		if (renderer->window == NULL)
 		{
 			return false;
@@ -546,10 +539,6 @@ bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t w
 		renderer->drawVerticesFromIndicesPtr = drawVerticesFromIndices_metal;
 		renderer->drawTextureWithVerticesPtr = drawTextureWithVertices_metal;
 		renderer->drawTextureWithVerticesFromIndicesPtr = drawTextureWithVerticesFromIndices_metal;
-		
-		// Register for full screen notifications
-		renderer->metalIgnoreFirstFullscreenTransition = fullscreen;
-		registerForNativeFullscreenEvents((__bridge void *)window, renderer, fullscreen);
 	}
 	
 	return true;
@@ -557,18 +546,6 @@ bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t w
 
 void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *))
 {
-	if (renderer->metalIgnoreFirstFullscreenTransition)
-	{
-		if (renderer->fullscreen)
-		{
-			renderer->metalIgnoreFirstFullscreenTransition = false;
-		}
-		else
-		{
-			return;
-		}
-	}
-
 	@autoreleasepool
 	{
 		CAMetalLayer *metalLayer = (__bridge CAMetalLayer *)(renderer->metalLayer);
