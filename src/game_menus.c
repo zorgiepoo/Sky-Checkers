@@ -59,8 +59,8 @@ int gServerAddressStringIndex = 9;
 char gUserNameString[MAX_USER_NAME_SIZE] = "Kale";
 int gUserNameStringIndex = 4;
 
-static char *convertKeyCodeToString(unsigned theKeyCode);
-static unsigned getKey(void);
+static char *convertKeyCodeToString(unsigned int theKeyCode);
+static unsigned int getKey(void);
 
 static void drawUpAndDownArrowTriangles(Renderer *renderer, mat4_t modelViewMatrix)
 {
@@ -706,9 +706,9 @@ void blueLightningKeyMenuAction(void *context)
 	changeMenu(RIGHT);
 }
 
-void configureKey(unsigned *id)
+void configureKey(unsigned int *id)
 {
-	unsigned key = getKey();
+	unsigned int key = getKey();
 	
 	if (key != SDL_SCANCODE_UNKNOWN)
 		*id = key;
@@ -1255,196 +1255,32 @@ void initMenus(void)
 
 static char *convertKeyCodeToString(unsigned theKeyCode)
 {
-	switch (theKeyCode)
+	const char *name = SDL_GetScancodeName(theKeyCode);
+	if (name == NULL || strlen(name) == 0)
 	{
-		case SDL_SCANCODE_RIGHT:
-			sprintf(gKeyCode, "right arrow");
-			break;
-		case SDL_SCANCODE_LEFT:
-			sprintf(gKeyCode, "left arrow");
-			break;
-		case SDL_SCANCODE_UP:
-			sprintf(gKeyCode, "up arrow");
-			break;
-		case SDL_SCANCODE_DOWN:
-			sprintf(gKeyCode, "down arrow");
-			break;
-		case SDL_SCANCODE_SPACE:
-			sprintf(gKeyCode, "spacebar");
-			break;
-		case SDL_SCANCODE_INSERT:
-			sprintf(gKeyCode, "insert");
-			break;
-		case SDL_SCANCODE_HOME:
-			sprintf(gKeyCode, "home");
-			break;
-		case SDL_SCANCODE_END:
-			sprintf(gKeyCode, "end");
-			break;
-		case SDL_SCANCODE_PAGEUP:
-			sprintf(gKeyCode, "pageup");
-			break;
-		case SDL_SCANCODE_PAGEDOWN:
-			sprintf(gKeyCode, "pagedown");
-			break;
-		case SDL_SCANCODE_RSHIFT:
-		case SDL_SCANCODE_LSHIFT:
-			sprintf(gKeyCode, "shift");
-			break;
-		case SDL_SCANCODE_BACKSPACE:
-			sprintf(gKeyCode, "backspace");
-			break;
-		case SDL_SCANCODE_TAB:
-			sprintf(gKeyCode, "tab");
-			break;
-		case SDL_SCANCODE_F1:
-			sprintf(gKeyCode, "F1");
-			break;
-		case SDL_SCANCODE_F2:
-			sprintf(gKeyCode, "F2");
-			break;
-		case SDL_SCANCODE_F3:
-			sprintf(gKeyCode, "F3");
-			break;
-		case SDL_SCANCODE_F4:
-			sprintf(gKeyCode, "F4");
-			break;
-		case SDL_SCANCODE_F5:
-			sprintf(gKeyCode, "F5");
-			break;
-		case SDL_SCANCODE_F6:
-			sprintf(gKeyCode, "F6");
-			break;
-		case SDL_SCANCODE_F7:
-			sprintf(gKeyCode, "F7");
-			break;
-		case SDL_SCANCODE_F8:
-			sprintf(gKeyCode, "F8");
-			break;
-		case SDL_SCANCODE_F9:
-			sprintf(gKeyCode, "F9");
-			break;
-		case SDL_SCANCODE_F10:
-			sprintf(gKeyCode, "F10");
-			break;
-		case SDL_SCANCODE_F11:
-			sprintf(gKeyCode, "F11");
-			break;
-		case SDL_SCANCODE_F12:
-			sprintf(gKeyCode, "F12");
-			break;
-		case SDL_SCANCODE_F13:
-			sprintf(gKeyCode, "F13");
-			break;
-		case SDL_SCANCODE_F14:
-			sprintf(gKeyCode, "F14");
-			break;
-		case SDL_SCANCODE_F15:
-			sprintf(gKeyCode, "F15");
-			break;
-		case SDL_SCANCODE_CAPSLOCK:
-			sprintf(gKeyCode, "capslock");
-			break;
-		case SDL_SCANCODE_NUMLOCKCLEAR:
-			sprintf(gKeyCode, "numlock");
-			break;
-		case SDL_SCANCODE_SCROLLLOCK:
-			sprintf(gKeyCode, "scrollock");
-			break;
-		case SDL_SCANCODE_RCTRL:
-		case SDL_SCANCODE_LCTRL:
-			sprintf(gKeyCode, "control");
-			break;
-		case SDL_SCANCODE_RALT:
-		case SDL_SCANCODE_LALT:
-			sprintf(gKeyCode, "alt");
-			break;
-		case SDL_SCANCODE_RGUI:
-		case SDL_SCANCODE_LGUI:
-			sprintf(gKeyCode, "meta/command");
-			break;
-		case SDL_SCANCODE_KP_0:
-			sprintf(gKeyCode, "keypad 0");
-			break;
-		case SDL_SCANCODE_KP_1:
-			sprintf(gKeyCode, "keypad 1");
-			break;
-		case SDL_SCANCODE_KP_2:
-			sprintf(gKeyCode, "keypad 2");
-			break;
-		case SDL_SCANCODE_KP_3:
-			sprintf(gKeyCode, "keypad 3");
-			break;
-		case SDL_SCANCODE_KP_4:
-			sprintf(gKeyCode, "keypad 4");
-			break;
-		case SDL_SCANCODE_KP_5:
-			sprintf(gKeyCode, "keypad 5");
-			break;
-		case SDL_SCANCODE_KP_6:
-			sprintf(gKeyCode, "keypad 6");
-			break;
-		case SDL_SCANCODE_KP_7:
-			sprintf(gKeyCode, "keypad 7");
-			break;
-		case SDL_SCANCODE_KP_8:
-			sprintf(gKeyCode, "keypad 8");
-			break;
-		case SDL_SCANCODE_KP_9:
-			sprintf(gKeyCode, "keypad 9");
-			break;
-		case SDL_SCANCODE_KP_PERIOD:
-			sprintf(gKeyCode, "keypad .");
-			break;
-		case SDL_SCANCODE_KP_DIVIDE:
-			sprintf(gKeyCode, "keypad /");
-			break;
-		case SDL_SCANCODE_KP_MULTIPLY:
-			sprintf(gKeyCode, "keypad *");
-			break;
-		case SDL_SCANCODE_KP_MINUS:
-			sprintf(gKeyCode, "keypad -");
-			break;
-		case SDL_SCANCODE_KP_PLUS:
-			sprintf(gKeyCode, "keypad +");
-			break;
-		case SDL_SCANCODE_KP_ENTER:
-			sprintf(gKeyCode, "keypad enter");
-			break;
-		case SDL_SCANCODE_KP_EQUALS:
-			sprintf(gKeyCode, "keypad =");
-			break;
-			
-		default:
+		snprintf(gKeyCode, sizeof(gKeyCode) - 1, "keycode %d", theKeyCode);
+	}
+	else
+	{
+		snprintf(gKeyCode, sizeof(gKeyCode) - 1, "%s", name);
+		for (uint8_t index = 0; index < sizeof(gKeyCode); index++)
 		{
-			const char *name = SDL_GetScancodeName(theKeyCode);
-			if (name == NULL || strlen(name) == 0)
+			if (gKeyCode[index] == 0)
 			{
-				snprintf(gKeyCode, sizeof(gKeyCode) - 1, "keycode %d", theKeyCode);
+				break;
 			}
-			else
-			{
-				snprintf(gKeyCode, sizeof(gKeyCode) - 1, "%s", name);
-				for (uint8_t index = 0; index < sizeof(gKeyCode); index++)
-				{
-					if (gKeyCode[index] == 0)
-					{
-						break;
-					}
-					gKeyCode[index] = tolower(gKeyCode[index]);
-				}
-			}
+			gKeyCode[index] = tolower(gKeyCode[index]);
 		}
 	}
 	
 	return gKeyCode;
 }
 
-static unsigned getKey(void)
+static unsigned int getKey(void)
 {
 	SDL_Event event;
 	bool quit = false;
-	unsigned key = 0;
+	unsigned int key = 0;
 	
 	while (!quit)
 	{
