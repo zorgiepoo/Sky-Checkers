@@ -116,7 +116,7 @@
 		static NSCharacterSet *badCharacterSet;
 		if (badCharacterSet == nil)
 		{
-			NSMutableCharacterSet *goodCharacterSet = [NSMutableCharacterSet characterSetWithCharactersInString:@" "];
+			NSMutableCharacterSet *goodCharacterSet = [NSMutableCharacterSet characterSetWithCharactersInString:@" .:"];
 			[goodCharacterSet formUnionWithCharacterSet:[NSCharacterSet alphanumericCharacterSet]];
 			badCharacterSet = [goodCharacterSet invertedSet];
 		}
