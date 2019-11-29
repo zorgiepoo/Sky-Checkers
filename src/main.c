@@ -1473,11 +1473,30 @@ static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawSc
 					performNetworkUserNameBackspace();
 				}
 			}
+			
+			if (!(event->key.keysym.scancode == SDL_SCANCODE_RETURN && (SDL_GetModState() & metaMod) != 0) && gGameState == GAME_STATE_ON)
+			{
+				if (!gConsoleActivated)
+				{
+					performDownKeyAction(&gRedRoverInput, event);
+					performDownKeyAction(&gGreenTreeInput, event);
+					performDownKeyAction(&gPinkBubbleGumInput, event);
+					performDownKeyAction(&gBlueLightningInput, event);
+				}
+			}
 			break;
 		case SDL_KEYUP:
 			if (event->key.keysym.scancode == SDL_SCANCODE_ESCAPE)
 			{
 				gEscapeHeldDownTimer = 0;
+			}
+			
+			if (!(event->key.keysym.scancode == SDL_SCANCODE_RETURN && (SDL_GetModState() & metaMod) != 0) && gGameState == GAME_STATE_ON)
+			{
+				performUpKeyAction(&gRedRoverInput, event);
+				performUpKeyAction(&gGreenTreeInput, event);
+				performUpKeyAction(&gPinkBubbleGumInput, event);
+				performUpKeyAction(&gBlueLightningInput, event);
 			}
 			break;
 		case SDL_TEXTINPUT:
@@ -1486,35 +1505,6 @@ static void eventInput(SDL_Event *event, Renderer *renderer, bool *needsToDrawSc
 		case SDL_QUIT:
 			*quit = true;
 			break;
-	}
-	
-	if (gGameState == GAME_STATE_ON && gEscapeHeldDownTimer > 0 && ZGGetTicks() - gEscapeHeldDownTimer > 700)
-	{
-		exitGame(window);
-	}
-
-	/*
-	 * Perform up and down key character actions when playing the game
-	 * Make sure the user isn't trying to toggle fullscreen.
-	 * Other actions, such as changing menus are dealt before here
-	 */
-	if (!(event->key.keysym.scancode == SDL_SCANCODE_RETURN && (SDL_GetModState() & metaMod) != 0) &&
-		gGameState == GAME_STATE_ON && (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP))
-	{
-		if (!gConsoleActivated && event->type == SDL_KEYDOWN)
-		{
-			performDownKeyAction(&gRedRoverInput, event);
-			performDownKeyAction(&gGreenTreeInput, event);
-			performDownKeyAction(&gPinkBubbleGumInput, event);
-			performDownKeyAction(&gBlueLightningInput, event);
-		}
-		else if (event->type == SDL_KEYUP)
-		{
-			performUpKeyAction(&gRedRoverInput, event);
-			performUpKeyAction(&gGreenTreeInput, event);
-			performUpKeyAction(&gPinkBubbleGumInput, event);
-			performUpKeyAction(&gBlueLightningInput, event);
-		}
 	}
 }
 
@@ -1626,6 +1616,11 @@ static void eventLoop(Renderer *renderer, GamepadManager *gamepadManager)
 			if (gGameState == GAME_STATE_ON)
 			{
 				animate(renderer->window, ANIMATION_TIMER_INTERVAL);
+			}
+			
+			if (gGameState == GAME_STATE_ON && gEscapeHeldDownTimer > 0 && ZGGetTicks() - gEscapeHeldDownTimer > 700)
+			{
+				exitGame(renderer->window);
 			}
 			
 			if (gGameShouldReset)
