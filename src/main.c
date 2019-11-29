@@ -1152,12 +1152,13 @@ static void handleKeyDownEvent(ZGKeyboardEvent *event, Renderer *renderer)
 	{
 		setPendingKeyCode(keyCode);
 	}
-	else if (keyCode == ZG_KEYCODE_V && ZGTestMetaModifier(keyModifier) && SDL_HasClipboardText())
+	else if (keyCode == ZG_KEYCODE_V && ZGTestMetaModifier(keyModifier))
 	{
-		char *clipboardText = SDL_GetClipboardText();
+		char *clipboardText = ZGGetClipboardText();
 		if (clipboardText != NULL)
 		{
 			writeTextInput(clipboardText, 128);
+			ZGFreeClipboardText(clipboardText);
 		}
 	}
 #ifdef linux

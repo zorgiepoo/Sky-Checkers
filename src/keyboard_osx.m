@@ -128,3 +128,33 @@ const char *ZGGetKeyCodeName(uint16_t keyCode)
 	
 	return gKeyCodeNameBuffer;
 }
+
+char *ZGGetClipboardText(void)
+{
+	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+	NSString *string = [pasteboard stringForType:NSPasteboardTypeString];
+	if (string.length == 0)
+	{
+		return NULL;
+	}
+	
+	size_t bufferCount = 128;
+	char *buffer = calloc(128, sizeof(*buffer));
+	if (buffer == NULL)
+	{
+		return NULL;
+	}
+	
+	if (![string getCString:buffer maxLength:bufferCount - 1 encoding:NSUTF8StringEncoding])
+	{
+		free(buffer);
+		return NULL;
+	}
+	
+	return buffer;
+}
+
+void ZGFreeClipboardText(char *clipboardText)
+{
+	free(clipboardText);
+}

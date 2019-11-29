@@ -106,3 +106,6 @@ bool ZGTestReturnKeyCode(uint16_t keyCode);
 bool ZGTestMetaModifier(uint64_t modifier);
 
 const char *ZGGetKeyCodeName(uint16_t keyCode);
+
+char *ZGGetClipboardText(void);
+void ZGFreeClipboardText(char *clipboardText);

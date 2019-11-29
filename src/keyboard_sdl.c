@@ -38,3 +38,18 @@ const char *ZGGetKeyCodeName(uint16_t keyCode)
 {
 	return SDL_GetScancodeName((SDL_Scancode)keyCode);
 }
+
+char *ZGGetClipboardText(void)
+{
+	if (!SDL_HasClipboardText())
+	{
+		return NULL;
+	}
+
+	return SDL_GetClipboardText();
+}
+
+void ZGFreeClipboardText(char *clipboardText)
+{
+	SDL_free(clipboardText);
+}
