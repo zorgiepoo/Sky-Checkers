@@ -21,7 +21,7 @@
 
 #include "characters.h"
 #include "gamepad.h"
-#include "sdl.h"
+#include "keyboard.h"
 
 /* Keyboard input structure used for a character*/
 typedef struct
@@ -63,8 +63,8 @@ void initInput(Input *input, uint32_t right, uint32_t left, uint32_t up, uint32_
 
 Character *characterFromInput(Input *characterInput);
 
-void performDownKeyAction(Input *input, SDL_Event *event);
-void performUpKeyAction(Input *input, SDL_Event *event);
+void performDownKeyAction(Input *input, ZGKeyboardEvent *event);
+void performUpKeyAction(Input *input, ZGKeyboardEvent *event);
 
 void performGamepadAction(Input *input, GamepadEvent *gamepadEvent);
 

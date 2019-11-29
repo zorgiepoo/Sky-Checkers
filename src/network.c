@@ -24,7 +24,10 @@
 #include "audio.h"
 #include "time.h"
 #include "globals.h"
+
 #include <inttypes.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define MAX_PACKET_SIZE 500
 

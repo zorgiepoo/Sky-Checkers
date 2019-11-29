@@ -23,8 +23,12 @@
 typedef struct
 {
 	SDL_Window *window;
-	void (*eventHandler)(ZGWindowEvent, void *);
-	void *eventHandlerContext;
+	
+	void (*windowEventHandler)(ZGWindowEvent, void *);
+	void *windowEventHandlerContext;
+	
+	void (*keyboardEventHandler)(ZGKeyboardEvent, void *);
+	void *keyboardEventHandlerContext;
 } WindowController;
 
 ZGWindow *ZGCreateWindow(const char *windowTitle, int32_t windowWidth, int32_t windowHeight, bool *fullscreenFlag)
@@ -49,8 +53,10 @@ void ZGDestroyWindow(ZGWindow *windowRef)
 	SDL_DestroyWindow(windowController->window);
 	
 	windowController->window = NULL;
-	windowController->eventHandler = NULL;
-	windowController->eventHandlerContext = NULL;
+	windowController->windowEventHandler = NULL;
+	windowController->windowEventHandlerContext = NULL;
+	windowController->keyboardEventHandler = NULL;
+	windowController->keyboardEventHandlerContext = NULL;
 	
 	free(windowController);
 }
@@ -64,20 +70,29 @@ bool ZGWindowHasFocus(ZGWindow *windowRef)
 void ZGSetWindowEventHandler(ZGWindow *windowRef, void *context, void (*windowEventHandler)(ZGWindowEvent, void *))
 {
 	WindowController *windowController = (WindowController *)windowRef;
-	windowController->eventHandler = windowEventHandler;
-	windowController->eventHandlerContext = context;
+	windowController->windowEventHandler = windowEventHandler;
+	windowController->windowEventHandlerContext = context;
 }
 
-void ZGPollWindowEvents(ZGWindow *windowRef, const void *systemEvent)
+void ZGSetKeyboardEventHandler(ZGWindow *windowRef, void *context, void (*keyboardEventHandler)(ZGKeyboardEvent, void *))
 {
 	WindowController *windowController = (WindowController *)windowRef;
-	if (windowController->eventHandler == NULL || systemEvent == NULL) return;
+	windowController->keyboardEventHandler = keyboardEventHandler;
+	windowController->keyboardEventHandlerContext = context;
+}
+
+void ZGPollWindowAndKeyboardEvents(ZGWindow *windowRef, const void *systemEvent)
+{
+	WindowController *windowController = (WindowController *)windowRef;
+	if (systemEvent == NULL) return;
 	
 	const SDL_Event *sdlEvent = systemEvent;
 	switch (sdlEvent->type)
 	{
 		case SDL_WINDOWEVENT:
 		{
+			if (windowController->windowEventHandler == NULL) return;
+			
 			switch (sdlEvent->window.event)
 			{
 				case SDL_WINDOWEVENT_FOCUS_LOST:
@@ -85,28 +100,28 @@ void ZGPollWindowEvents(ZGWindow *windowRef, const void *systemEvent)
 					ZGWindowEvent event;
 					event.type = ZGWindowEventTypeFocusLost;
 
-					windowController->eventHandler(event, windowController->eventHandlerContext);
+					windowController->windowEventHandler(event, windowController->windowEventHandlerContext);
 				} break;
 				case SDL_WINDOWEVENT_FOCUS_GAINED:
 				{
 					ZGWindowEvent event;
 					event.type = ZGWindowEventTypeFocusGained;
 
-					windowController->eventHandler(event, windowController->eventHandlerContext);
+					windowController->windowEventHandler(event, windowController->windowEventHandlerContext);
 				} break;
 				case SDL_WINDOWEVENT_HIDDEN:
 				{
 					ZGWindowEvent event;
 					event.type = ZGWindowEventTypeHidden;
 
-					windowController->eventHandler(event, windowController->eventHandlerContext);
+					windowController->windowEventHandler(event, windowController->windowEventHandlerContext);
 				} break;
 				case SDL_WINDOWEVENT_SHOWN:
 				{
 					ZGWindowEvent event;
 					event.type = ZGWindowEventTypeShown;
 					
-					windowController->eventHandler(event, windowController->eventHandlerContext);
+					windowController->windowEventHandler(event, windowController->windowEventHandlerContext);
 				} break;
 				case SDL_WINDOWEVENT_RESIZED:
 				{
@@ -115,10 +130,47 @@ void ZGPollWindowEvents(ZGWindow *windowRef, const void *systemEvent)
 					event.width = sdlEvent->window.data1;
 					event.height = sdlEvent->window.data2;
 					
-					windowController->eventHandler(event, windowController->eventHandlerContext);
+					windowController->windowEventHandler(event, windowController->windowEventHandlerContext);
 				} break;
 			}
-		}
+		} break;
+		case SDL_KEYDOWN:
+		{
+			if (windowController->keyboardEventHandler != NULL)
+			{
+				ZGKeyboardEvent event;
+				event.type = ZGKeyboardEventTypeKeyDown;
+				event.keyCode = sdlEvent->key.keysym.scancode;
+				event.keyModifier = sdlEvent->key.keysym.mod;
+				event.timestamp = sdlEvent->key.timestamp;
+				
+				windowController->keyboardEventHandler(event, windowController->keyboardEventHandlerContext);
+			}
+		} break;
+		case SDL_KEYUP:
+		{
+			if (windowController->keyboardEventHandler != NULL)
+			{
+				ZGKeyboardEvent event;
+				event.type = ZGKeyboardEventTypeKeyUp;
+				event.keyCode = sdlEvent->key.keysym.scancode;
+				event.keyModifier = sdlEvent->key.keysym.mod;
+				event.timestamp = sdlEvent->key.timestamp;
+				
+				windowController->keyboardEventHandler(event, windowController->keyboardEventHandlerContext);
+			}
+		} break;
+		case SDL_TEXTINPUT:
+		{
+			if (windowController->keyboardEventHandler != NULL)
+			{
+				ZGKeyboardEvent event = {};
+				event.type = ZGKeyboardEventTypeTextInput;
+				strncpy(event.text, sdlEvent->text.text, sizeof(event.text));
+				
+				windowController->keyboardEventHandler(event, windowController->keyboardEventHandlerContext);
+			}
+		} break;
 	}
 }
 

@@ -75,55 +75,59 @@ static void prepareFiringFromInput(Input *input)
 	prepareFiringCharacterWeapon(input->character, input->character->x, input->character->y, input->character->pointing_direction, 0.0f);
 }
 
-void performDownKeyAction(Input *input, SDL_Event *event)
+void performDownKeyAction(Input *input, ZGKeyboardEvent *event)
 {
-	if (event->key.keysym.scancode == input->weap_id && !input->character->weap->animationState)
+	uint16_t keyCode = event->keyCode;
+	
+	if (keyCode == input->weap_id && !input->character->weap->animationState)
 	{
 		if (gGameHasStarted)
 		{
 			input->weap = true;
 		}
 	}
-	else if (input->right_ticks == 0 && event->key.keysym.scancode == input->r_id)
+	else if (input->right_ticks == 0 && keyCode == input->r_id)
 	{
-		input->right_ticks = event->key.timestamp;
+		input->right_ticks = event->timestamp;
 	}
-	else if (input->left_ticks == 0 && event->key.keysym.scancode == input->l_id)
+	else if (input->left_ticks == 0 && keyCode == input->l_id)
 	{
-		input->left_ticks = event->key.timestamp;
+		input->left_ticks = event->timestamp;
 	}
-	else if (input->up_ticks == 0 && event->key.keysym.scancode == input->u_id)
+	else if (input->up_ticks == 0 && keyCode == input->u_id)
 	{
-		input->up_ticks = event->key.timestamp;
+		input->up_ticks = event->timestamp;
 	}
-	else if (input->down_ticks == 0 && event->key.keysym.scancode == input->d_id)
+	else if (input->down_ticks == 0 && keyCode == input->d_id)
 	{
-		input->down_ticks = event->key.timestamp;
+		input->down_ticks = event->timestamp;
 	}
 }
 
-void performUpKeyAction(Input *input, SDL_Event *event)
+void performUpKeyAction(Input *input, ZGKeyboardEvent *event)
 {
 	if (input->right_ticks == 0 && input->left_ticks == 0 && input->down_ticks == 0 && input->up_ticks == 0 && !input->weap)
 		return;
 
-	if (event->key.keysym.scancode == input->r_id)
+	uint16_t keyCode = event->keyCode;
+	
+	if (keyCode == input->r_id)
 	{
 		input->right_ticks = 0;
 	}
-	else if (event->key.keysym.scancode == input->l_id)
+	else if (keyCode == input->l_id)
 	{
 		input->left_ticks = 0;
 	}
-	else if (event->key.keysym.scancode == input->u_id)
+	else if (keyCode == input->u_id)
 	{
 		input->up_ticks = 0;
 	}
-	else if (event->key.keysym.scancode == input->d_id)
+	else if (keyCode == input->d_id)
 	{
 		input->down_ticks = 0;
 	}
-	else if (event->key.keysym.scancode == input->weap_id)
+	else if (keyCode == input->weap_id)
 	{
 		if (gGameHasStarted)
 		{

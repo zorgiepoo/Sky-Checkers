@@ -19,9 +19,15 @@
 
 #import "window.h"
 #import "quit.h"
+#import "time.h"
+
 #import <Cocoa/Cocoa.h>
 
 @interface ZGGameView : NSView
+
+@property (nonatomic) void (*keyboardEventHandler)(ZGKeyboardEvent, void *);
+@property (nonatomic) void *keyboardEventHandlerContext;
+
 @end
 
 @implementation ZGGameView
@@ -56,7 +62,84 @@
     return YES;
 }
 
-- (void)keyDown:(NSEvent *)event
+- (void)keyDown:(NSEvent *)theEvent
+{
+	if (_keyboardEventHandler != NULL)
+	{
+		ZGKeyboardEvent event;
+		event.type = ZGKeyboardEventTypeKeyDown;
+		event.keyCode = theEvent.keyCode;
+		event.keyModifier = theEvent.modifierFlags;
+		event.timestamp = ZGGetTicks();
+		
+		_keyboardEventHandler(event, _keyboardEventHandlerContext);
+		
+		[self interpretKeyEvents:@[theEvent]];
+	}
+}
+
+- (void)keyUp:(NSEvent *)theEvent
+{
+	if (_keyboardEventHandler != NULL)
+	{
+		ZGKeyboardEvent event;
+		event.type = ZGKeyboardEventTypeKeyUp;
+		event.keyCode = theEvent.keyCode;
+		event.keyModifier = theEvent.modifierFlags;
+		event.timestamp = ZGGetTicks();
+		
+		_keyboardEventHandler(event, _keyboardEventHandlerContext);
+	}
+}
+
+- (void)insertText:(id)stringObject
+{
+	if (_keyboardEventHandler != NULL)
+	{
+		ZGKeyboardEvent event = {};
+		event.type = ZGKeyboardEventTypeTextInput;
+		
+		NSString *string;
+		if ([stringObject isKindOfClass:[NSAttributedString class]])
+		{
+			string = [(NSAttributedString *)string string];
+		}
+		else if ([stringObject isKindOfClass:[NSString class]])
+		{
+			string = stringObject;
+		}
+		else
+		{
+			return;
+		}
+		
+		static NSCharacterSet *badCharacterSet;
+		if (badCharacterSet == nil)
+		{
+			NSMutableCharacterSet *goodCharacterSet = [NSMutableCharacterSet characterSetWithCharactersInString:@" "];
+			[goodCharacterSet formUnionWithCharacterSet:[NSCharacterSet alphanumericCharacterSet]];
+			badCharacterSet = [goodCharacterSet invertedSet];
+		}
+		
+		NSString *strippedString = [string stringByTrimmingCharactersInSet:badCharacterSet];
+		if (strippedString.length == 0)
+		{
+			return;
+		}
+		
+		const char *utf8String = [strippedString UTF8String];
+		if (utf8String == NULL)
+		{
+			return;
+		}
+		
+		strncpy(event.text, utf8String, sizeof(event.text) / sizeof(event.text[0]));
+		
+		_keyboardEventHandler(event, _keyboardEventHandlerContext);
+	}
+}
+
+- (void)doCommandBySelector:(SEL)selector
 {
 }
 
@@ -265,6 +348,14 @@ void ZGSetWindowEventHandler(ZGWindow *window, void *context, void (*windowEvent
 	ZGGameWindowController *windowController = (__bridge ZGGameWindowController *)(window);
 	windowController.windowEventHandler = windowEventHandler;
 	windowController.windowEventHandlerContext = context;
+}
+
+void ZGSetKeyboardEventHandler(ZGWindow *window, void *context, void (*keyboardEventHandler)(ZGKeyboardEvent, void *))
+{
+	ZGGameWindowController *windowController = (__bridge ZGGameWindowController *)(window);
+	ZGGameView *gameView = (ZGGameView *)windowController.window.contentView;
+	gameView.keyboardEventHandler = keyboardEventHandler;
+	gameView.keyboardEventHandlerContext = context;
 }
 
 void *ZGWindowHandle(ZGWindow *window)

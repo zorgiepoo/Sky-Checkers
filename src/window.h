@@ -20,6 +20,7 @@
 #pragma once
 
 #include "platforms.h"
+#include "keyboard.h"
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -34,13 +35,11 @@ typedef enum
 	ZGWindowEventTypeHidden
 } ZGWindowEventType;
 
-typedef union
+typedef struct
 {
-	struct
-	{
-		int32_t width;
-		int32_t height;
-	};
+	int32_t width;
+	int32_t height;
+	
 	ZGWindowEventType type;
 } ZGWindowEvent;
 
@@ -60,9 +59,10 @@ void ZGGetWindowSize(ZGWindow *window, int32_t *width, int32_t *height);
 #endif
 
 void ZGSetWindowEventHandler(ZGWindow *window, void *context, void (*windowEventHandler)(ZGWindowEvent, void *));
+void ZGSetKeyboardEventHandler(ZGWindow *window, void *context, void (*keyboardEventHandler)(ZGKeyboardEvent, void *));
 
 #ifndef MAC_OS_X
-void ZGPollWindowEvents(ZGWindow *window, const void *systemEvent);
+void ZGPollWindowAndKeyboardEvents(ZGWindow *window, const void *systemEvent);
 #endif
 
 #ifndef linux

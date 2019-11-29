@@ -30,6 +30,9 @@
 #include "window.h"
 
 #include <stdbool.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdlib.h>
 
 Menu *gConfigureLivesMenu;
 Menu *gScreenResolutionVideoOptionMenu;
@@ -1248,7 +1251,7 @@ void initMenus(void)
 static char *convertKeyCodeToString(uint32_t theKeyCode)
 {
 	static char gKeyCode[64];
-	const char *name = SDL_GetScancodeName(theKeyCode);
+	const char *name = ZGGetKeyCodeName((uint16_t)theKeyCode);
 	if (name == NULL || strlen(name) == 0)
 	{
 		snprintf(gKeyCode, sizeof(gKeyCode) - 1, "keycode %d", theKeyCode);
@@ -1271,7 +1274,7 @@ static char *convertKeyCodeToString(uint32_t theKeyCode)
 
 void setPendingKeyCode(uint32_t code)
 {
-	if (code != SDL_SCANCODE_RETURN && code != SDL_SCANCODE_RETURN2 && code != SDL_SCANCODE_KP_ENTER && code != SDL_SCANCODE_ESCAPE && code != SDL_SCANCODE_UNKNOWN)
+	if (!ZGTestReturnKeyCode((uint16_t)code) && code != ZG_KEYCODE_ESCAPE)
 	{
 		*gMenuPendingKeyCode = code;
 		gMenuPendingOnKeyCode = false;

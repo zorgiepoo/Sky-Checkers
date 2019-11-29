@@ -152,10 +152,10 @@ static void initScene(Renderer *renderer)
 	if (!gValidDefaults)
 	{
 		// init the inputs
-		initInput(&gRedRoverInput, SDL_SCANCODE_B, SDL_SCANCODE_C, SDL_SCANCODE_F, SDL_SCANCODE_V, SDL_SCANCODE_G);
-		initInput(&gGreenTreeInput, SDL_SCANCODE_L, SDL_SCANCODE_J, SDL_SCANCODE_I, SDL_SCANCODE_K, SDL_SCANCODE_M);
-		initInput(&gBlueLightningInput, SDL_SCANCODE_D, SDL_SCANCODE_A, SDL_SCANCODE_W, SDL_SCANCODE_S, SDL_SCANCODE_Z);
-		initInput(&gPinkBubbleGumInput, SDL_SCANCODE_RIGHT, SDL_SCANCODE_LEFT, SDL_SCANCODE_UP, SDL_SCANCODE_DOWN, SDL_SCANCODE_SPACE);
+		initInput(&gRedRoverInput, ZG_KEYCODE_B, ZG_KEYCODE_C, ZG_KEYCODE_F, ZG_KEYCODE_V, ZG_KEYCODE_G);
+		initInput(&gGreenTreeInput, ZG_KEYCODE_L, ZG_KEYCODE_J, ZG_KEYCODE_I, ZG_KEYCODE_K, ZG_KEYCODE_M);
+		initInput(&gBlueLightningInput, ZG_KEYCODE_D, ZG_KEYCODE_A, ZG_KEYCODE_W, ZG_KEYCODE_S, ZG_KEYCODE_Z);
+		initInput(&gPinkBubbleGumInput, ZG_KEYCODE_RIGHT, ZG_KEYCODE_LEFT, ZG_KEYCODE_UP, ZG_KEYCODE_DOWN, ZG_KEYCODE_SPACE);
 
 		// init character states
 		gPinkBubbleGum.state = CHARACTER_HUMAN_STATE;
@@ -1141,23 +1141,18 @@ static void writeTextInput(const char *text, uint8_t maxSize)
 	}
 }
 
-static void handleKeyDownEvent(SDL_Event *event, Renderer *renderer)
+static void handleKeyDownEvent(ZGKeyboardEvent *event, Renderer *renderer)
 {
 	ZGWindow *window = renderer->window;
-#ifdef MAC_OS_X
-	SDL_Keymod metaMod = (KMOD_LGUI | KMOD_RGUI);
-#else
-	SDL_Keymod metaMod = (KMOD_LCTRL | KMOD_RCTRL);
-#endif
 	
-	SDL_Scancode scancode = event->key.keysym.scancode;
-	uint16_t mod = event->key.keysym.mod;
+	uint16_t keyCode = event->keyCode;
+	uint64_t keyModifier = event->keyModifier;
 	
 	if (gMenuPendingOnKeyCode)
 	{
-		setPendingKeyCode(scancode);
+		setPendingKeyCode(keyCode);
 	}
-	else if (scancode == SDL_SCANCODE_V && (mod & metaMod) != 0 && SDL_HasClipboardText())
+	else if (keyCode == ZG_KEYCODE_V && ZGTestMetaModifier(keyModifier) && SDL_HasClipboardText())
 	{
 		char *clipboardText = SDL_GetClipboardText();
 		if (clipboardText != NULL)
@@ -1166,7 +1161,7 @@ static void handleKeyDownEvent(SDL_Event *event, Renderer *renderer)
 		}
 	}
 #ifdef linux
-	else if (scancode == SDL_SCANCODE_RETURN && (mod & KMOD_ALT) != 0)
+	else if (ZGTestReturnKeyCode(keyCode) && ZGTestMetaModifier(keyModifier))
 	{
 		const char *fullscreenErrorString = NULL;
 		if (!ZGWindowIsFullscreen(renderer->window))
@@ -1194,9 +1189,8 @@ static void handleKeyDownEvent(SDL_Event *event, Renderer *renderer)
 	}
 #endif
 	else if (!gConsoleActivated && gGameState == GAME_STATE_ON && gGameWinner != NO_CHARACTER &&
-		(scancode == gPinkBubbleGumInput.weap_id || scancode == gRedRoverInput.weap_id ||
-		 scancode == gBlueLightningInput.weap_id || scancode == gGreenTreeInput.weap_id ||
-		scancode == SDL_SCANCODE_RETURN || scancode == SDL_SCANCODE_KP_ENTER))
+		(keyCode == gPinkBubbleGumInput.weap_id || keyCode == gRedRoverInput.weap_id ||
+		 keyCode == gBlueLightningInput.weap_id || keyCode == gGreenTreeInput.weap_id || ZGTestReturnKeyCode(keyCode)))
 	{
 		// new game
 		if (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE)
@@ -1204,7 +1198,7 @@ static void handleKeyDownEvent(SDL_Event *event, Renderer *renderer)
 			resetGame();
 		}
 	}
-	else if (scancode == SDL_SCANCODE_RETURN)
+	else if (ZGTestReturnKeyCode(keyCode))
 	{
 		if (gCurrentMenu == gConfigureLivesMenu)
 		{
@@ -1239,7 +1233,7 @@ static void handleKeyDownEvent(SDL_Event *event, Renderer *renderer)
 		}
 	}
 
-	else if (scancode == SDL_SCANCODE_DOWN)
+	else if (keyCode == ZG_KEYCODE_DOWN)
 	{
 		if (gNetworkAddressFieldIsActive)
 			return;
@@ -1315,7 +1309,7 @@ static void handleKeyDownEvent(SDL_Event *event, Renderer *renderer)
 		}
 	}
 
-	else if (scancode == SDL_SCANCODE_UP)
+	else if (keyCode == ZG_KEYCODE_UP)
 	{
 		if (gNetworkAddressFieldIsActive)
 			return;
@@ -1389,7 +1383,7 @@ static void handleKeyDownEvent(SDL_Event *event, Renderer *renderer)
 		}
 	}
 
-	else if (scancode == SDL_SCANCODE_ESCAPE)
+	else if (keyCode == ZG_KEYCODE_ESCAPE)
 	{
 		if (gGameState == GAME_STATE_OFF)
 		{
@@ -1442,7 +1436,7 @@ static void handleKeyDownEvent(SDL_Event *event, Renderer *renderer)
 		}
 	}
 
-	else if (scancode == SDL_SCANCODE_GRAVE && gGameState == GAME_STATE_ON)
+	else if (keyCode == ZG_KEYCODE_GRAVE && gGameState == GAME_STATE_ON)
 	{
 		if (gConsoleFlag)
 		{
@@ -1457,7 +1451,7 @@ static void handleKeyDownEvent(SDL_Event *event, Renderer *renderer)
 		}
 	}
 
-	else if (scancode == SDL_SCANCODE_BACKSPACE)
+	else if (keyCode == ZG_KEYCODE_BACKSPACE)
 	{
 		if (gConsoleActivated)
 		{
@@ -1473,7 +1467,7 @@ static void handleKeyDownEvent(SDL_Event *event, Renderer *renderer)
 		}
 	}
 	
-	if (!(scancode == SDL_SCANCODE_RETURN && (mod & metaMod) != 0) && gGameState == GAME_STATE_ON)
+	if ((keyCode != ZG_KEYCODE_ESCAPE || !ZGTestMetaModifier(keyModifier)) && gGameState == GAME_STATE_ON)
 	{
 		if (!gConsoleActivated)
 		{
@@ -1485,23 +1479,17 @@ static void handleKeyDownEvent(SDL_Event *event, Renderer *renderer)
 	}
 }
 
-static void handleKeyUpEvent(SDL_Event *event)
+static void handleKeyUpEvent(ZGKeyboardEvent *event)
 {
-	SDL_Scancode scancode = event->key.keysym.scancode;
-	uint16_t mod = event->key.keysym.mod;
+	uint16_t keyCode = event->keyCode;
+	uint64_t keyModifier = event->keyModifier;
 	
-	if (scancode == SDL_SCANCODE_ESCAPE)
+	if (keyCode == ZG_KEYCODE_ESCAPE)
 	{
 		gEscapeHeldDownTimer = 0;
 	}
 	
-#ifdef MAC_OS_X
-	SDL_Keymod metaMod = (KMOD_LGUI | KMOD_RGUI);
-#else
-	SDL_Keymod metaMod = (KMOD_LCTRL | KMOD_RCTRL);
-#endif
-	
-	if (!(scancode == SDL_SCANCODE_RETURN && (mod & metaMod) != 0) && gGameState == GAME_STATE_ON)
+	if ((keyCode != ZG_KEYCODE_ESCAPE || !ZGTestMetaModifier(keyModifier)) && gGameState == GAME_STATE_ON)
 	{
 		performUpKeyAction(&gRedRoverInput, event);
 		performUpKeyAction(&gGreenTreeInput, event);
@@ -1510,9 +1498,9 @@ static void handleKeyUpEvent(SDL_Event *event)
 	}
 }
 
-static void handleTextInputEvent(SDL_Event *event)
+static void handleTextInputEvent(ZGKeyboardEvent *event)
 {
-	writeTextInput(event->text.text, SDL_TEXTINPUTEVENT_TEXT_SIZE);
+	writeTextInput(event->text, sizeof(event->text));
 }
 
 #define MAX_ITERATIONS (25 * ANIMATION_TIMER_INTERVAL)
@@ -1571,6 +1559,22 @@ static void handleWindowEvent(ZGWindowEvent event, void *context)
 	}
 }
 
+static void handleKeyboardEvent(ZGKeyboardEvent event, void *context)
+{
+	switch (event.type)
+	{
+		case ZGKeyboardEventTypeKeyDown:
+			handleKeyDownEvent(&event, context);
+			break;
+		case ZGKeyboardEventTypeKeyUp:
+			handleKeyUpEvent(&event);
+			break;
+		case ZGKeyboardEventTypeTextInput:
+			handleTextInputEvent(&event);
+			break;
+	}
+}
+
 static void eventLoop(Renderer *renderer, GamepadManager *gamepadManager)
 {
 	SDL_Event event;
@@ -1587,29 +1591,21 @@ static void eventLoop(Renderer *renderer, GamepadManager *gamepadManager)
 	windowEventContext.needsToDrawScene = &needsToDrawScene;
 	
 	ZGSetWindowEventHandler(renderer->window, &windowEventContext, handleWindowEvent);
-
+	ZGSetKeyboardEventHandler(renderer->window, renderer, handleKeyboardEvent);
+	
 	while (!done)
 	{
 		while (SDL_PollEvent(&event))
 		{
 			switch (event.type)
 			{
-				case SDL_KEYDOWN:
-					handleKeyDownEvent(&event, renderer);
-					break;
-				case SDL_KEYUP:
-					handleKeyUpEvent(&event);
-					break;
-				case SDL_TEXTINPUT:
-					handleTextInputEvent(&event);
-					break;
 				case SDL_QUIT:
 					done = true;
 					break;
 			}
 #ifndef MAC_OS_X
 			pollGamepads(gamepadManager, &event);
-			ZGPollWindowEvents(renderer->window, &event);
+			ZGPollWindowAndKeyboardEvents(renderer->window, &event);
 #endif
 		}
 		

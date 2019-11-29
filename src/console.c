@@ -48,6 +48,10 @@
 #include "text.h"
 #include "globals.h"
 
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
 // "scc~: " length == 6
 static const unsigned int MIN_CONSOLE_STRING_LENGTH = 6;
 static char gConsoleString[100];

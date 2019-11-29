@@ -26,6 +26,8 @@
 #include "time.h"
 #include "globals.h"
 
+#include <stdlib.h>
+
 static void setNewDirection(Character *character);
 static void directCharacterBasedOnCollisions(Character *character, float currentTime);
 
