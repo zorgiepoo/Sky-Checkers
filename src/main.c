@@ -1150,11 +1150,14 @@ static void handleKeyDownEvent(SDL_Event *event, Renderer *renderer)
 	SDL_Keymod metaMod = (KMOD_LCTRL | KMOD_RCTRL);
 #endif
 	
+	SDL_Scancode scancode = event->key.keysym.scancode;
+	uint16_t mod = event->key.keysym.mod;
+	
 	if (gMenuPendingOnKeyCode)
 	{
-		setPendingKeyCode(event->key.keysym.scancode);
+		setPendingKeyCode(scancode);
 	}
-	else if (event->key.keysym.scancode == SDL_SCANCODE_V && (event->key.keysym.mod & metaMod) != 0 && SDL_HasClipboardText())
+	else if (scancode == SDL_SCANCODE_V && (mod & metaMod) != 0 && SDL_HasClipboardText())
 	{
 		char *clipboardText = SDL_GetClipboardText();
 		if (clipboardText != NULL)
@@ -1163,7 +1166,7 @@ static void handleKeyDownEvent(SDL_Event *event, Renderer *renderer)
 		}
 	}
 #ifdef linux
-	else if (event->key.keysym.scancode == SDL_SCANCODE_RETURN && (event->key.keysym.mod & KMOD_ALT) != 0)
+	else if (scancode == SDL_SCANCODE_RETURN && (mod & KMOD_ALT) != 0)
 	{
 		const char *fullscreenErrorString = NULL;
 		if (!ZGWindowIsFullscreen(renderer->window))
@@ -1191,9 +1194,9 @@ static void handleKeyDownEvent(SDL_Event *event, Renderer *renderer)
 	}
 #endif
 	else if (!gConsoleActivated && gGameState == GAME_STATE_ON && gGameWinner != NO_CHARACTER &&
-		(event->key.keysym.scancode == gPinkBubbleGumInput.weap_id || event->key.keysym.scancode == gRedRoverInput.weap_id ||
-		 event->key.keysym.scancode == gBlueLightningInput.weap_id || event->key.keysym.scancode == gGreenTreeInput.weap_id ||
-		event->key.keysym.scancode == SDL_SCANCODE_RETURN || event->key.keysym.scancode == SDL_SCANCODE_KP_ENTER))
+		(scancode == gPinkBubbleGumInput.weap_id || scancode == gRedRoverInput.weap_id ||
+		 scancode == gBlueLightningInput.weap_id || scancode == gGreenTreeInput.weap_id ||
+		scancode == SDL_SCANCODE_RETURN || scancode == SDL_SCANCODE_KP_ENTER))
 	{
 		// new game
 		if (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE)
@@ -1201,7 +1204,7 @@ static void handleKeyDownEvent(SDL_Event *event, Renderer *renderer)
 			resetGame();
 		}
 	}
-	else if (event->key.keysym.scancode == SDL_SCANCODE_RETURN)
+	else if (scancode == SDL_SCANCODE_RETURN)
 	{
 		if (gCurrentMenu == gConfigureLivesMenu)
 		{
@@ -1236,7 +1239,7 @@ static void handleKeyDownEvent(SDL_Event *event, Renderer *renderer)
 		}
 	}
 
-	else if (event->key.keysym.scancode == SDL_SCANCODE_DOWN)
+	else if (scancode == SDL_SCANCODE_DOWN)
 	{
 		if (gNetworkAddressFieldIsActive)
 			return;
@@ -1312,7 +1315,7 @@ static void handleKeyDownEvent(SDL_Event *event, Renderer *renderer)
 		}
 	}
 
-	else if (event->key.keysym.scancode == SDL_SCANCODE_UP)
+	else if (scancode == SDL_SCANCODE_UP)
 	{
 		if (gNetworkAddressFieldIsActive)
 			return;
@@ -1386,7 +1389,7 @@ static void handleKeyDownEvent(SDL_Event *event, Renderer *renderer)
 		}
 	}
 
-	else if (event->key.keysym.scancode == SDL_SCANCODE_ESCAPE)
+	else if (scancode == SDL_SCANCODE_ESCAPE)
 	{
 		if (gGameState == GAME_STATE_OFF)
 		{
@@ -1439,7 +1442,7 @@ static void handleKeyDownEvent(SDL_Event *event, Renderer *renderer)
 		}
 	}
 
-	else if (event->key.keysym.scancode == SDL_SCANCODE_GRAVE && gGameState == GAME_STATE_ON)
+	else if (scancode == SDL_SCANCODE_GRAVE && gGameState == GAME_STATE_ON)
 	{
 		if (gConsoleFlag)
 		{
@@ -1454,7 +1457,7 @@ static void handleKeyDownEvent(SDL_Event *event, Renderer *renderer)
 		}
 	}
 
-	else if (event->key.keysym.scancode == SDL_SCANCODE_BACKSPACE)
+	else if (scancode == SDL_SCANCODE_BACKSPACE)
 	{
 		if (gConsoleActivated)
 		{
@@ -1470,7 +1473,7 @@ static void handleKeyDownEvent(SDL_Event *event, Renderer *renderer)
 		}
 	}
 	
-	if (!(event->key.keysym.scancode == SDL_SCANCODE_RETURN && (SDL_GetModState() & metaMod) != 0) && gGameState == GAME_STATE_ON)
+	if (!(scancode == SDL_SCANCODE_RETURN && (mod & metaMod) != 0) && gGameState == GAME_STATE_ON)
 	{
 		if (!gConsoleActivated)
 		{
@@ -1484,7 +1487,10 @@ static void handleKeyDownEvent(SDL_Event *event, Renderer *renderer)
 
 static void handleKeyUpEvent(SDL_Event *event)
 {
-	if (event->key.keysym.scancode == SDL_SCANCODE_ESCAPE)
+	SDL_Scancode scancode = event->key.keysym.scancode;
+	uint16_t mod = event->key.keysym.mod;
+	
+	if (scancode == SDL_SCANCODE_ESCAPE)
 	{
 		gEscapeHeldDownTimer = 0;
 	}
@@ -1495,7 +1501,7 @@ static void handleKeyUpEvent(SDL_Event *event)
 	SDL_Keymod metaMod = (KMOD_LCTRL | KMOD_RCTRL);
 #endif
 	
-	if (!(event->key.keysym.scancode == SDL_SCANCODE_RETURN && (SDL_GetModState() & metaMod) != 0) && gGameState == GAME_STATE_ON)
+	if (!(scancode == SDL_SCANCODE_RETURN && (mod & metaMod) != 0) && gGameState == GAME_STATE_ON)
 	{
 		performUpKeyAction(&gRedRoverInput, event);
 		performUpKeyAction(&gGreenTreeInput, event);
