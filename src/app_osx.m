@@ -66,6 +66,10 @@
 	if (_runLoopHandler != NULL)
 	{
 		_timer = [NSTimer scheduledTimerWithTimeInterval:0.0 target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
+		
+		// Game should animate in common run loop mode
+		// One instance of this mode being used is when the user is navigating through the menu items in the menu bar
+		[[NSRunLoop currentRunLoop] addTimer:_timer forMode:NSRunLoopCommonModes];
 	}
 }
 
