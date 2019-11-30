@@ -139,7 +139,7 @@ char *ZGGetClipboardText(void)
 	}
 	
 	size_t bufferCount = 128;
-	char *buffer = calloc(128, sizeof(*buffer));
+	char *buffer = calloc(bufferCount, sizeof(*buffer));
 	if (buffer == NULL)
 	{
 		return NULL;
