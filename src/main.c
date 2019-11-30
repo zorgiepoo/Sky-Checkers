@@ -97,14 +97,13 @@ typedef struct
 	Renderer renderer;
 	bool needsToDrawScene;
 	
-	int delay;
-	int thenTicks;
-	int nowTicks;
 	double lastFrameTime;
 	double cyclesLeftOver;
+	uint32_t lastRunloopTime;
 } AppContext;
 
-#define FPS_RATE 30
+#define LOW_FPS_RATE 30
+#define HIGH_FPS_RATE 120
 
 #define MAX_CHARACTER_LIVES 10
 #define CHARACTER_ICON_DISPLACEMENT 5.0f
@@ -1564,9 +1563,11 @@ static void handleWindowEvent(ZGWindowEvent event, void *context)
 			break;
 		case ZGWindowEventTypeShown:
 			appContext->needsToDrawScene = true;
+			appContext->lastRunloopTime = 0;
 			break;
 		case ZGWindowEventTypeHidden:
 			appContext->needsToDrawScene = false;
+			appContext->lastRunloopTime = 0;
 			break;
 	}
 }
@@ -1633,9 +1634,7 @@ static void appLaunchedHandler(void *context)
 {
 	AppContext *appContext = context;
 	
-	appContext->delay = 1000 / FPS_RATE;
-	appContext->thenTicks = -1;
-	appContext->nowTicks = 0;
+	appContext->lastRunloopTime = 0;
 	appContext->lastFrameTime = 0.0;
 	appContext->cyclesLeftOver = 0.0;
 	appContext->needsToDrawScene = false;
@@ -1773,32 +1772,26 @@ static void runLoopHandler(void *context)
 	}
 	
 #ifndef _PROFILING
-	bool hasAppFocus = ZGWindowHasFocus(renderer->window);
-	// Restrict game to 30 fps when the fps flag is enabled as well as when we don't have app focus
-	// This will allow the game to use less processing power when it's in the background,
-	// which fixes a bug on macOS where the game can have huge CPU spikes when the window is completly obscured
-	if (gFpsFlag || !hasAppFocus)
+	bool targetHighRate = !gFpsFlag && ZGWindowHasFocus(renderer->window);
 #else
-	if (gFpsFlag)
+	bool targetHighRate = !gFpsFlag;
 #endif
+	uint32_t fpsRate = targetHighRate ? HIGH_FPS_RATE : LOW_FPS_RATE;
+	
+	uint32_t timeAfterRender = ZGGetTicks();
+	
+	if (appContext->lastRunloopTime > 0 && timeAfterRender > appContext->lastRunloopTime)
 	{
-		// time how long each draw-swap-delay cycle takes and adjust the delay to get closer to target framerate
-		if (appContext->thenTicks > 0)
+		uint32_t timeElapsed = timeAfterRender - appContext->lastRunloopTime;
+		uint32_t targetTime = (uint32_t)(1000.0 / fpsRate);
+		
+		if (timeElapsed < targetTime)
 		{
-			appContext->nowTicks = ZGGetTicks();
-			appContext->delay += (1000 / FPS_RATE - (appContext->nowTicks - appContext->thenTicks));
-			appContext->thenTicks = appContext->nowTicks;
-
-			if (appContext->delay < 0)
-				appContext->delay = 1000 / FPS_RATE;
+			ZGDelay(targetTime - timeElapsed);
 		}
-		else
-		{
-			appContext->thenTicks = ZGGetTicks();
-		}
-
-		ZGDelay(appContext->delay);
 	}
+	
+	appContext->lastRunloopTime = ZGGetTicks();
 }
 
 static void pollEventHandler(void *context, void *systemEvent)
