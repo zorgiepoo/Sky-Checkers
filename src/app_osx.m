@@ -20,12 +20,6 @@
 #import "app.h"
 #import <Cocoa/Cocoa.h>
 
-@interface NSApplication (Private)
-
-- (void)setAppleMenu:(NSMenu *)appleMenu;
-
-@end
-
 @interface ZGAppDelegate : NSObject <NSApplicationDelegate>
 @end
 
@@ -56,6 +50,14 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
+	NSString *resourcePath = [[NSBundle mainBundle] resourcePath];
+	NSFileManager *fileManager = [NSFileManager defaultManager];
+	if (![fileManager changeCurrentDirectoryPath:resourcePath])
+	{
+		fprintf(stderr, "Error: failed to change current working directory to: %s\n", resourcePath.fileSystemRepresentation);
+		abort();
+	}
+	
 	if (_appLaunchedHandler != NULL)
 	{
 		_appLaunchedHandler(_appContext);
@@ -86,76 +88,6 @@
 
 @end
 
-static void setUpCurrentWorkingDirectory(NSBundle *mainBundle)
-{
-	NSString *resourcePath = [mainBundle resourcePath];
-	
-	NSFileManager *fileManager = [NSFileManager defaultManager];
-	if (![fileManager changeCurrentDirectoryPath:resourcePath])
-	{
-		fprintf(stderr, "Error: failed to change current working directory to: %s\n", resourcePath.fileSystemRepresentation);
-		abort();
-	}
-}
-
-// TODO: Just use a nib file instead of this mess
-// This menu bar layout is borrowed from SDL
-static void setUpMenuBar(NSApplication *application, NSBundle *mainBundle)
-{
-	NSMenu *mainMenu = [[NSMenu alloc] init];
-	
-	[application setMainMenu:mainMenu];
-	
-	NSMenu *appleMenu = [[NSMenu alloc] initWithTitle:@""];
-	NSString *appName = [mainBundle objectForInfoDictionaryKey:@"CFBundleName"];
-	
-	[appleMenu addItemWithTitle:[NSString stringWithFormat:@"About %@", appName] action:@selector(orderFrontStandardAboutPanel:) keyEquivalent:@""];
-	
-	[appleMenu addItem:[NSMenuItem separatorItem]];
-	
-	[appleMenu addItemWithTitle:@"Preferences…" action:nil keyEquivalent:@","];
-	
-	[appleMenu addItem:[NSMenuItem separatorItem]];
-	
-	NSMenu *serviceMenu = [[NSMenu alloc] initWithTitle:@""];
-    NSMenuItem *servicesMenuItem = [appleMenu addItemWithTitle:@"Services" action:nil keyEquivalent:@""];
-    [servicesMenuItem setSubmenu:serviceMenu];
-	
-	[appleMenu addItem:[NSMenuItem separatorItem]];
-	
-	[appleMenu addItemWithTitle:[NSString stringWithFormat:@"Hide %@", appName] action:@selector(hide:) keyEquivalent:@"h"];
-	
-	NSMenuItem *hideOthersMenuItem = [appleMenu addItemWithTitle:@"Hide Others" action:@selector(hideOtherApplications:) keyEquivalent:@"h"];
-    [hideOthersMenuItem setKeyEquivalentModifierMask:(NSEventModifierFlagOption | NSEventModifierFlagCommand)];
-	
-	[appleMenu addItemWithTitle:@"Show All" action:@selector(unhideAllApplications:) keyEquivalent:@""];
-	
-	[appleMenu addItem:[NSMenuItem separatorItem]];
-	
-	[appleMenu addItemWithTitle:[NSString stringWithFormat:@"Quit %@", appName] action:@selector(terminate:) keyEquivalent:@"q"];
-	
-	NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:@"" action:nil keyEquivalent:@""];
-    [menuItem setSubmenu:appleMenu];
-    [mainMenu addItem:menuItem];
-	
-	[application setAppleMenu:appleMenu];
-	
-	NSMenu *windowMenu = [[NSMenu alloc] initWithTitle:@"Window"];
-	[windowMenu addItemWithTitle:@"Close" action:@selector(performClose:) keyEquivalent:@"w"];
-	[windowMenu addItemWithTitle:@"Minimize" action:@selector(performMiniaturize:) keyEquivalent:@"m"];
-	[windowMenu addItemWithTitle:@"Zoom" action:@selector(performZoom:) keyEquivalent:@""];
-	
-	NSMenuItem *toggleFullScreenMenuItem = [[NSMenuItem alloc] initWithTitle:@"Toggle Full Screen" action:@selector(toggleFullScreen:) keyEquivalent:@"f"];
-	[toggleFullScreenMenuItem setKeyEquivalentModifierMask:NSEventModifierFlagControl | NSEventModifierFlagCommand];
-	[windowMenu addItem:toggleFullScreenMenuItem];
-	
-	NSMenuItem *windowMenuItem = [[NSMenuItem alloc] initWithTitle:@"Window" action:nil keyEquivalent:@""];
-    [windowMenuItem setSubmenu:windowMenu];
-    [mainMenu addItem:windowMenuItem];
-	
-	[application setWindowsMenu:windowMenu];
-}
-
 int ZGAppInit(int argc, char *argv[], void *appContext, void (*appLaunchedHandler)(void *), void (*appTerminatedHandler)(void *), void (*runLoopHandler)(void *), void (*pollEventHandler)(void *, void *))
 {
 	@autoreleasepool
@@ -164,12 +96,6 @@ int ZGAppInit(int argc, char *argv[], void *appContext, void (*appLaunchedHandle
 		ZGAppDelegate *appDelegate = [[ZGAppDelegate alloc] initWithAppContext:appContext launchedHandler:appLaunchedHandler terminatedHandler:appTerminatedHandler runLoopHandler:runLoopHandler pollEventHandler:pollEventHandler];
 		application.delegate = appDelegate;
 		
-		NSBundle *mainBundle = [NSBundle mainBundle];
-		
-		setUpCurrentWorkingDirectory(mainBundle);
-		setUpMenuBar(application, mainBundle);
-		
-		[application run];
+		return NSApplicationMain(argc, (const char **)argv);
 	}
-	return 0;
 }

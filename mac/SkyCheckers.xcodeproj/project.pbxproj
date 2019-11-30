@@ -26,6 +26,7 @@
 		72817BCF2390CAFC00DB7677 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72817BCE2390CAFC00DB7677 /* CoreServices.framework */; };
 		72817BD22392B6FA00DB7677 /* app_osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 72817BD12392B6FA00DB7677 /* app_osx.m */; };
 		72817BD42392C33900DB7677 /* quit_osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 72817BD32392C33800DB7677 /* quit_osx.m */; };
+		72817BD82392F98300DB7677 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 72817BD72392F98300DB7677 /* MainMenu.xib */; };
 		7282C625231CEC640063D3CB /* audio_osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 7282C624231CEC640063D3CB /* audio_osx.m */; };
 		7282C627231CEE3C0063D3CB /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7282C626231CEE3C0063D3CB /* AVFoundation.framework */; };
 		729BE4BB2364124F00DC70F7 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 729BE4BA2364124F00DC70F7 /* IOKit.framework */; };
@@ -102,6 +103,7 @@
 		72817BD02392B6C500DB7677 /* app.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = app.h; path = ../src/app.h; sourceTree = "<group>"; };
 		72817BD12392B6FA00DB7677 /* app_osx.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = app_osx.m; path = ../src/app_osx.m; sourceTree = "<group>"; };
 		72817BD32392C33800DB7677 /* quit_osx.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = quit_osx.m; path = ../src/quit_osx.m; sourceTree = "<group>"; };
+		72817BD72392F98300DB7677 /* MainMenu.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MainMenu.xib; sourceTree = "<group>"; };
 		7282C624231CEC640063D3CB /* audio_osx.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = audio_osx.m; path = ../src/audio_osx.m; sourceTree = "<group>"; };
 		7282C626231CEE3C0063D3CB /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		729BE4B82364121800DC70F7 /* gamepad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gamepad.h; path = ../src/gamepad.h; sourceTree = "<group>"; };
@@ -283,6 +285,7 @@
 				8D1107310486CEB800E47090 /* Info.plist */,
 				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
 				72BE1BF1225708E000E3192A /* container-migration.plist */,
+				72817BD72392F98300DB7677 /* MainMenu.xib */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -370,6 +373,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */,
+				72817BD82392F98300DB7677 /* MainMenu.xib in Resources */,
 				72BE1BF2225708E000E3192A /* container-migration.plist in Resources */,
 				77C7A2640CFA8C6500295420 /* Data in Resources */,
 				771B6CA010BE60320014884B /* sc_icon.icns in Resources */,
@@ -453,7 +457,6 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				FRAMEWORK_SEARCH_PATHS = "$(FRAMEWORK_SEARCH_PATHS)";
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -476,14 +479,9 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				DEVELOPMENT_TEAM = ZCK58M894E;
 				ENABLE_HARDENED_RUNTIME = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Frameworks",
-				);
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G5;
 				INFOPLIST_FILE = Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				MTL_LANGUAGE_REVISION = UseDeploymentTarget;
@@ -508,15 +506,10 @@
 				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
 				ENABLE_HARDENED_RUNTIME = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Frameworks",
-				);
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				INFOPLIST_FILE = Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				MTL_LANGUAGE_REVISION = UseDeploymentTarget;
@@ -542,14 +535,9 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				DEVELOPMENT_TEAM = ZCK58M894E;
 				ENABLE_HARDENED_RUNTIME = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Frameworks",
-				);
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G5;
 				INFOPLIST_FILE = Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				MTL_LANGUAGE_REVISION = UseDeploymentTarget;
@@ -590,7 +578,6 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				FRAMEWORK_SEARCH_PATHS = "$(FRAMEWORK_SEARCH_PATHS)";
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -630,7 +617,6 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				FRAMEWORK_SEARCH_PATHS = "$(FRAMEWORK_SEARCH_PATHS)";
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
