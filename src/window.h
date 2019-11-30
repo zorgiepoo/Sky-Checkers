@@ -60,10 +60,7 @@ void ZGGetWindowSize(ZGWindow *window, int32_t *width, int32_t *height);
 
 void ZGSetWindowEventHandler(ZGWindow *window, void *context, void (*windowEventHandler)(ZGWindowEvent, void *));
 void ZGSetKeyboardEventHandler(ZGWindow *window, void *context, void (*keyboardEventHandler)(ZGKeyboardEvent, void *));
-
-#ifndef MAC_OS_X
 void ZGPollWindowAndKeyboardEvents(ZGWindow *window, const void *systemEvent);
-#endif
 
 #ifndef linux
 void *ZGWindowHandle(ZGWindow *window);

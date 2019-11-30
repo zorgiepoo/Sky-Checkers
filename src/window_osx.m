@@ -317,6 +317,10 @@ ZGWindow *ZGCreateWindow(const char *windowTitle, int32_t windowWidth, int32_t w
 	
 	[window setFrameUsingName:AUTOSAVE_FRAME_NAME];
 	[window setFrameAutosaveName:AUTOSAVE_FRAME_NAME];
+	if ([window respondsToSelector:@selector(setTabbingMode:)])
+	{
+		[window setTabbingMode:NSWindowTabbingModeDisallowed];
+	}
 	
 	ZGGameView *contentView = [[ZGGameView alloc] initWithFrame:window.frame];
 	window.contentView = contentView;
@@ -356,6 +360,11 @@ void ZGSetKeyboardEventHandler(ZGWindow *window, void *context, void (*keyboardE
 	ZGGameView *gameView = (ZGGameView *)windowController.window.contentView;
 	gameView.keyboardEventHandler = keyboardEventHandler;
 	gameView.keyboardEventHandlerContext = context;
+}
+
+void ZGPollWindowAndKeyboardEvents(ZGWindow *window, const void *systemEvent)
+{
+	// No need to do anything for macOS implementation
 }
 
 void *ZGWindowHandle(ZGWindow *window)

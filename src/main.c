@@ -17,7 +17,7 @@
  * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "sdl.h"
+#include "app.h"
 #include "platforms.h"
 #include "characters.h"
 #include "scenery.h"
@@ -35,6 +35,9 @@
 #include "gamepad.h"
 #include "globals.h"
 #include "window.h"
+
+#include <string.h>
+#include <stdlib.h>
 
 #define MATH_3D_IMPLEMENTATION
 #include "math_3d.h"
@@ -91,9 +94,17 @@ static uint32_t gEscapeHeldDownTimer;
 
 typedef struct
 {
-	Renderer *renderer;
-	bool *needsToDrawScene;
-} WindowEventContext;
+	Renderer renderer;
+	bool needsToDrawScene;
+	
+	int delay;
+	int thenTicks;
+	int nowTicks;
+	double lastFrameTime;
+	double cyclesLeftOver;
+} AppContext;
+
+#define FPS_RATE 30
 
 #define MAX_CHARACTER_LIVES 10
 #define CHARACTER_ICON_DISPLACEMENT 5.0f
@@ -1127,15 +1138,15 @@ static void writeTextInput(const char *text, uint8_t maxSize)
 			
 			if (gConsoleActivated)
 			{
-				writeConsoleText((Uint8)text[textIndex]);
+				writeConsoleText((uint8_t)text[textIndex]);
 			}
 			else if (gNetworkAddressFieldIsActive)
 			{
-				writeNetworkAddressText((Uint8)text[textIndex]);
+				writeNetworkAddressText((uint8_t)text[textIndex]);
 			}
 			else if (gNetworkUserNameFieldIsActive)
 			{
-				writeNetworkUserNameText((Uint8)text[textIndex]);
+				writeNetworkUserNameText((uint8_t)text[textIndex]);
 			}
 		}
 	}
@@ -1539,11 +1550,11 @@ static void pollGamepads(GamepadManager *gamepadManager, const void *systemEvent
 
 static void handleWindowEvent(ZGWindowEvent event, void *context)
 {
-	WindowEventContext *windowEventContext = context;
+	AppContext *appContext = context;
 	switch (event.type)
 	{
 		case ZGWindowEventTypeResize:
-			updateViewport(windowEventContext->renderer, event.width, event.height);
+			updateViewport(&appContext->renderer, event.width, event.height);
 			break;
 		case ZGWindowEventTypeFocusGained:
 			unPauseMusic();
@@ -1552,10 +1563,10 @@ static void handleWindowEvent(ZGWindowEvent event, void *context)
 			pauseMusic();
 			break;
 		case ZGWindowEventTypeShown:
-			*windowEventContext->needsToDrawScene = true;
+			appContext->needsToDrawScene = true;
 			break;
 		case ZGWindowEventTypeHidden:
-			*windowEventContext->needsToDrawScene = false;
+			appContext->needsToDrawScene = false;
 			break;
 	}
 }
@@ -1573,116 +1584,6 @@ static void handleKeyboardEvent(ZGKeyboardEvent event, void *context)
 		case ZGKeyboardEventTypeTextInput:
 			handleTextInputEvent(&event);
 			break;
-	}
-}
-
-static void eventLoop(Renderer *renderer, GamepadManager *gamepadManager)
-{
-	SDL_Event event;
-	bool needsToDrawScene = true;
-	bool done = false;
-
-	int fps = 30;
-	int delay = 1000 / fps;
-	int thenTicks = -1;
-	int nowTicks;
-	
-	WindowEventContext windowEventContext;
-	windowEventContext.renderer = renderer;
-	windowEventContext.needsToDrawScene = &needsToDrawScene;
-	
-	ZGSetWindowEventHandler(renderer->window, &windowEventContext, handleWindowEvent);
-	ZGSetKeyboardEventHandler(renderer->window, renderer, handleKeyboardEvent);
-	
-	while (!done)
-	{
-		while (SDL_PollEvent(&event))
-		{
-			switch (event.type)
-			{
-				case SDL_QUIT:
-					done = true;
-					break;
-			}
-#ifndef MAC_OS_X
-			pollGamepads(gamepadManager, &event);
-			ZGPollWindowAndKeyboardEvents(renderer->window, &event);
-#endif
-		}
-		
-		pollGamepads(gamepadManager, NULL);
-		
-		// Update game state
-		// http://ludobloom.com/tutorials/timestep.html
-		static double lastFrameTime = 0.0;
-		static double cyclesLeftOver = 0.0;
-		
-		double currentTime = ZGGetTicks() / 1000.0;
-		double updateIterations = ((currentTime - lastFrameTime) + cyclesLeftOver);
-		
-		if (updateIterations > MAX_ITERATIONS)
-		{
-			updateIterations = MAX_ITERATIONS;
-		}
-		
-		while (updateIterations > ANIMATION_TIMER_INTERVAL)
-		{
-			updateIterations -= ANIMATION_TIMER_INTERVAL;
-			
-			syncNetworkState(renderer->window, (float)ANIMATION_TIMER_INTERVAL);
-			
-			if (gGameState == GAME_STATE_ON)
-			{
-				animate(renderer->window, ANIMATION_TIMER_INTERVAL);
-			}
-			
-			if (gGameState == GAME_STATE_ON && gEscapeHeldDownTimer > 0 && ZGGetTicks() - gEscapeHeldDownTimer > 700)
-			{
-				exitGame(renderer->window);
-			}
-			
-			if (gGameShouldReset)
-			{
-				endGame(renderer->window, false);
-				initGame(renderer->window, false);
-			}
-		}
-		
-		cyclesLeftOver = updateIterations;
-		lastFrameTime = currentTime;
-		
-		if (needsToDrawScene)
-		{
-			renderFrame(renderer, drawScene);
-		}
-		
-#ifndef _PROFILING
-		bool hasAppFocus = ZGWindowHasFocus(renderer->window);
-		// Restrict game to 30 fps when the fps flag is enabled as well as when we don't have app focus
-		// This will allow the game to use less processing power when it's in the background,
-		// which fixes a bug on macOS where the game can have huge CPU spikes when the window is completly obscured
-		if (gFpsFlag || !hasAppFocus)
-#else
-		if (gFpsFlag)
-#endif
-		{
-			// time how long each draw-swap-delay cycle takes and adjust the delay to get closer to target framerate
-			if (thenTicks > 0)
-			{
-				nowTicks = ZGGetTicks();
-				delay += (1000 / fps - (nowTicks - thenTicks));
-				thenTicks = nowTicks;
-
-				if (delay < 0)
-					delay = 1000 / fps;
-			}
-			else
-			{
-				thenTicks = ZGGetTicks();
-			}
-
-			ZGDelay(delay);
-		}
 	}
 }
 
@@ -1728,20 +1629,19 @@ static void gamepadRemoved(GamepadIndex gamepadIndex)
 	}
 }
 
-int main(int argc, char *argv[])
+static void appLaunchedHandler(void *context)
 {
-	if (SDL_Init(SDL_INIT_VIDEO) < 0)
-	{
-        fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
-		ZGQuit();
-	}
+	AppContext *appContext = context;
 	
-#ifdef MAC_OS_X
-	setUpCurrentWorkingDirectory();
-#endif
-
+	appContext->delay = 1000 / FPS_RATE;
+	appContext->thenTicks = -1;
+	appContext->nowTicks = 0;
+	appContext->lastFrameTime = 0.0;
+	appContext->cyclesLeftOver = 0.0;
+	appContext->needsToDrawScene = false;
+	
 	initAudio();
-	
+		
 	// init random number generator
 	mt_init();
 
@@ -1754,10 +1654,11 @@ int main(int argc, char *argv[])
 	bool vsync = gVsyncFlag;
 #endif
 	
-	Renderer renderer;
-	createRenderer(&renderer, gWindowWidth, gWindowHeight, gFullscreenFlag, vsync, gFsaaFlag);
+	Renderer *renderer = &appContext->renderer;
 	
-	initText(&renderer);
+	createRenderer(renderer, gWindowWidth, gWindowHeight, gFullscreenFlag, vsync, gFsaaFlag);
+	
+	initText(renderer);
 	
 	// Initialize game related things
 	
@@ -1765,7 +1666,7 @@ int main(int argc, char *argv[])
 	gDrawFPS = true;
 #endif
 	
-	initScene(&renderer);
+	initScene(renderer);
 	
 	gGamepadManager = initGamepadManager("Data/gamecontrollerdb.txt", gamepadAdded, gamepadRemoved);
 	
@@ -1773,28 +1674,32 @@ int main(int argc, char *argv[])
 	 * Load a few font strings before a game starts up.
 	 * We don't want the user to experience slow font loading times during a game
 	 */
-	cacheString(&renderer, "Game begins in 1");
-	cacheString(&renderer, "Game begins in 2");
-	cacheString(&renderer, "Game begins in 3");
-	cacheString(&renderer, "Game begins in 4");
-	cacheString(&renderer, "Game begins in 5");
+	cacheString(renderer, "Game begins in 1");
+	cacheString(renderer, "Game begins in 2");
+	cacheString(renderer, "Game begins in 3");
+	cacheString(renderer, "Game begins in 4");
+	cacheString(renderer, "Game begins in 5");
 	
 	// Create netcode buffers and mutex's in case we need them later
 	initializeNetworkBuffers();
 	
 	if (gAudioMusicFlag)
 	{
-		bool windowFocus = ZGWindowHasFocus(renderer.window);
+		bool windowFocus = ZGWindowHasFocus(renderer->window);
 		playMainMenuMusic(!windowFocus);
 	}
-
-	// Start the game event loop
-	eventLoop(&renderer, gGamepadManager);
 	
-	// Prepare to quit
+	ZGSetWindowEventHandler(renderer->window, appContext, handleWindowEvent);
+	ZGSetKeyboardEventHandler(renderer->window, renderer, handleKeyboardEvent);
+}
+
+static void appTerminatedHandler(void *context)
+{
+	AppContext *appContext = context;
+	Renderer *renderer = &appContext->renderer;
 	
 	// Save user defaults
-	writeDefaults(&renderer);
+	writeDefaults(renderer);
 	
 	if (gNetworkConnection)
 	{
@@ -1814,11 +1719,99 @@ int main(int argc, char *argv[])
 		// Wait for the thread to finish before we terminate the main thread
 		while (gNetworkConnection != NULL)
 		{
-			syncNetworkState(renderer.window, (float)ANIMATION_TIMER_INTERVAL);
+			syncNetworkState(renderer->window, (float)ANIMATION_TIMER_INTERVAL);
 			ZGDelay(10);
 		}
 	}
+}
 
-	ZGQuit();
-    return 0;
+static void runLoopHandler(void *context)
+{
+	AppContext *appContext = context;
+	Renderer *renderer = &appContext->renderer;
+	
+	// Update game state
+	// http://ludobloom.com/tutorials/timestep.html
+	
+	double currentTime = ZGGetTicks() / 1000.0;
+	double updateIterations = ((currentTime - appContext->lastFrameTime) + appContext->cyclesLeftOver);
+	
+	if (updateIterations > MAX_ITERATIONS)
+	{
+		updateIterations = MAX_ITERATIONS;
+	}
+	
+	while (updateIterations > ANIMATION_TIMER_INTERVAL)
+	{
+		updateIterations -= ANIMATION_TIMER_INTERVAL;
+		
+		syncNetworkState(renderer->window, (float)ANIMATION_TIMER_INTERVAL);
+		
+		if (gGameState == GAME_STATE_ON)
+		{
+			animate(renderer->window, ANIMATION_TIMER_INTERVAL);
+		}
+		
+		if (gGameState == GAME_STATE_ON && gEscapeHeldDownTimer > 0 && ZGGetTicks() - gEscapeHeldDownTimer > 700)
+		{
+			exitGame(renderer->window);
+		}
+		
+		if (gGameShouldReset)
+		{
+			endGame(renderer->window, false);
+			initGame(renderer->window, false);
+		}
+	}
+	
+	appContext->cyclesLeftOver = updateIterations;
+	appContext->lastFrameTime = currentTime;
+	
+	if (appContext->needsToDrawScene)
+	{
+		renderFrame(renderer, drawScene);
+	}
+	
+#ifndef _PROFILING
+	bool hasAppFocus = ZGWindowHasFocus(renderer->window);
+	// Restrict game to 30 fps when the fps flag is enabled as well as when we don't have app focus
+	// This will allow the game to use less processing power when it's in the background,
+	// which fixes a bug on macOS where the game can have huge CPU spikes when the window is completly obscured
+	if (gFpsFlag || !hasAppFocus)
+#else
+	if (gFpsFlag)
+#endif
+	{
+		// time how long each draw-swap-delay cycle takes and adjust the delay to get closer to target framerate
+		if (appContext->thenTicks > 0)
+		{
+			appContext->nowTicks = ZGGetTicks();
+			appContext->delay += (1000 / FPS_RATE - (appContext->nowTicks - appContext->thenTicks));
+			appContext->thenTicks = appContext->nowTicks;
+
+			if (appContext->delay < 0)
+				appContext->delay = 1000 / FPS_RATE;
+		}
+		else
+		{
+			appContext->thenTicks = ZGGetTicks();
+		}
+
+		ZGDelay(appContext->delay);
+	}
+}
+
+static void pollEventHandler(void *context, void *systemEvent)
+{
+	AppContext *appContext = context;
+	Renderer *renderer = &appContext->renderer;
+	
+	pollGamepads(gGamepadManager, systemEvent);
+	ZGPollWindowAndKeyboardEvents(renderer->window, systemEvent);
+}
+
+int main(int argc, char *argv[])
+{
+	AppContext appContext = {};
+	return ZGAppInit(argc, argv, &appContext, appLaunchedHandler, appTerminatedHandler, runLoopHandler, pollEventHandler);
 }
