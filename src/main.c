@@ -1637,10 +1637,10 @@ static void appLaunchedHandler(void *context)
 	appContext->lastRunloopTime = 0;
 	appContext->lastFrameTime = 0.0;
 	appContext->cyclesLeftOver = 0.0;
-	appContext->needsToDrawScene = false;
+	appContext->needsToDrawScene = true;
 	
 	initAudio();
-		
+
 	// init random number generator
 	mt_init();
 
@@ -1664,6 +1664,8 @@ static void appLaunchedHandler(void *context)
 #ifdef _PROFILING
 	gDrawFPS = true;
 #endif
+	
+	gDrawFPS = true;
 	
 	initScene(renderer);
 	
@@ -1801,6 +1803,20 @@ static void pollEventHandler(void *context, void *systemEvent)
 	
 	pollGamepads(gGamepadManager, systemEvent);
 	ZGPollWindowAndKeyboardEvents(renderer->window, systemEvent);
+	
+#ifdef IOS_DEVICE
+	static bool once;
+	if (!once && gGameState == GAME_STATE_OFF)
+	{
+		GameMenuContext menuContext;
+		menuContext.gameState = &gGameState;
+		menuContext.window = renderer->window;
+		
+		invokeMenu(&menuContext);
+		
+		once = true;
+	}
+#endif
 }
 
 int main(int argc, char *argv[])

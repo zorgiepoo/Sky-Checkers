@@ -23,11 +23,17 @@
 #include "renderer_projection.h"
 #include "quit.h"
 #include "window.h"
+#include "platforms.h"
 
 #import <Metal/Metal.h>
+#import <QuartzCore/CALayer.h>
 #import <QuartzCore/CAMetalLayer.h>
+
+#ifdef IOS_DEVICE
+#import <UIKit/UIKit.h>
+#else
 #import <Cocoa/Cocoa.h>
-#import "osx.h"
+#endif
 
 // Don't use MTLPixelFormatDepth16Unorm which doesn't support 10.11 and doesn't work right on some configs (MBP11,2 / 10.13.6, but 10.14.2 works)
 #define DEPTH_STENCIL_PIXEL_FORMAT MTLPixelFormatDepth32Float
@@ -57,6 +63,53 @@ void drawTextureWithVertices_metal(Renderer *renderer, float *modelViewProjectio
 
 void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, float *modelViewProjectionMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
 
+#ifdef IOS_DEVICE
+
+@interface ZGMetalView : UIView
+@end
+
+@implementation ZGMetalView
+{
+	Renderer *_renderer;
+}
+
++ (Class)layerClass
+{
+	return [CAMetalLayer class];
+}
+
+- (instancetype)initWithFrame:(CGRect)frame scale:(CGFloat)scale renderer:(Renderer *)renderer
+{
+	self = [super initWithFrame:frame];
+	if (self != nil)
+	{
+		_renderer = renderer;
+		self.layer.contentsScale = scale;
+		
+		[self updateDrawableSize];
+	}
+	
+	return self;
+}
+
+- (void)layoutSubviews
+{
+	[super layoutSubviews];
+	[self updateDrawableSize];
+}
+
+- (void)updateDrawableSize
+{
+	CGSize size = self.bounds.size;
+	CGFloat contentsScale = self.layer.contentsScale;
+	CAMetalLayer *layer = (CAMetalLayer *)self.layer;
+	
+	layer.drawableSize = CGSizeMake(size.width * contentsScale, size.height * contentsScale);
+}
+
+@end
+
+#else
 // This class is mostly copied from SDL's SDL_cocoametalview to fit our own needs
 @interface ZGMetalView : NSView
 @end
@@ -131,6 +184,7 @@ void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, float *modelVi
 }
 
 @end
+#endif
 
 // If this changes, make sure to change MAX_PIPELINE_COUNT
 typedef enum
@@ -428,6 +482,8 @@ bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t w
 		renderer->metalShaderFunctions = NULL;
 		renderer->fullscreen = fullscreen;
 		
+		id<MTLDevice> preferredDevice = nil;
+#ifndef IOS_DEVICE
 		// Find the preffered device for our game which isn't integrated, headless, or external
 		// Maybe one day I will support external/removable GPUs but my game isn't very demanding
 		NSArray<id<MTLDevice>> *devices = MTLCopyAllDevices();
@@ -474,7 +530,8 @@ bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t w
 			}
 		}];
 		
-		id<MTLDevice> preferredDevice = preferredDevices.lastObject;
+		preferredDevice = preferredDevices.lastObject;
+#endif
 		
 		id<MTLDevice> device = (preferredDevice != nil) ? preferredDevice : MTLCreateSystemDefaultDevice();
 		if (device == nil)
@@ -489,6 +546,13 @@ bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t w
 			return false;
 		}
 		
+#ifdef IOS_DEVICE
+		UIWindow *window = (__bridge UIWindow *)(ZGWindowHandle(renderer->window));
+		UIView *contentView = window.rootViewController.view;
+		
+		ZGMetalView *metalView = [[ZGMetalView alloc] initWithFrame:contentView.frame scale:window.screen.nativeScale renderer:renderer];
+		[contentView addSubview:metalView];
+#else
 		NSWindow *window = (__bridge NSWindow *)(ZGWindowHandle(renderer->window));
 		NSView *contentView = window.contentView;
 		
@@ -497,18 +561,21 @@ bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t w
 		// because it does a bunch of stuff we don't need for SDL's own renderer
 		ZGMetalView *metalView = [[ZGMetalView alloc] initWithFrame:contentView.frame renderer:renderer];
 		[contentView addSubview:metalView];
+#endif
 		
 		CAMetalLayer *metalLayer = (CAMetalLayer *)metalView.layer;
 		metalLayer.device = device;
 		// Don't set framebufferOnly to NO like SDL does for its own renderer.
 		// It does that to support an option (at cost of potential performance) that we don't need.
 		
+#ifndef IOS_DEVICE
 		if (@available(macOS 10.13, *))
 		{
 			metalLayer.displaySyncEnabled = vsync;
 			renderer->vsync = vsync;
 		}
 		else
+#endif
 		{
 			renderer->vsync = true;
 		}

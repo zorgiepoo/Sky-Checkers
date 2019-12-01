@@ -22,6 +22,12 @@
 #ifdef __APPLE__
 #ifdef __MACH__
 #define MAC_OS_X
+
+#import <TargetConditionals.h>
+#if TARGET_OS_IPHONE
+#define IOS_DEVICE
+#endif
+
 #endif
 #endif
 

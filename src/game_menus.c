@@ -1010,6 +1010,7 @@ void audioMusicOptionsMenuAction(void *context)
 	}
 }
 
+#ifndef IOS_DEVICE
 void drawQuitMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -3.21f, -20.00f});	
@@ -1020,6 +1021,7 @@ void quitMenuAction(void *context)
 {
 	ZGSendQuitEvent();
 }
+#endif
 
 void initMenus(void)
 {
@@ -1050,7 +1052,9 @@ void initMenus(void)
 	Menu *audioOptionsMenu =					malloc(sizeof(Menu));
 	Menu *audioEffectsOptionsMenu =				malloc(sizeof(Menu));
 	Menu *audioMusicOptionsMenu =				malloc(sizeof(Menu));
+#ifndef IOS_DEVICE
 	Menu *quitMenu =							malloc(sizeof(Menu));
+#endif
 	
 	// set action and drawing functions
 	playMenu->draw = drawPlayMenu;
@@ -1123,8 +1127,10 @@ void initMenus(void)
 	audioMusicOptionsMenu->draw = drawAudioMusicOptionsMenu;
 	audioMusicOptionsMenu->action = audioMusicOptionsMenuAction;
 	
+#ifndef IOS_DEVICE
 	quitMenu->draw = drawQuitMenu;
 	quitMenu->action = quitMenuAction;
+#endif
 	
 	// character config menu keys
 	
@@ -1209,7 +1215,9 @@ void initMenus(void)
 	addSubMenu(&gMainMenu, networkPlayMenu);
 	addSubMenu(&gMainMenu, gameOptionsMenu);
 	addSubMenu(&gMainMenu, audioOptionsMenu);
+#ifndef IOS_DEVICE
 	addSubMenu(&gMainMenu, quitMenu);
+#endif
 	
 	addSubMenu(networkPlayMenu, networkServerMenu);
 	addSubMenu(networkPlayMenu, networkClientMenu);

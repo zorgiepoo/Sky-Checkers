@@ -17,12 +17,29 @@
 * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#import "gamepad.h"
+#import <Foundation/Foundation.h>
 
-#include "platforms.h"
+struct _GamepadManager
+{
+};
 
-void ZGQuit(void);
+GamepadManager *initGamepadManager(const char *databasePath, GamepadCallback addedCallback, GamepadCallback removalCallback)
+{
+	GamepadManager *gamepadManager = calloc(1, sizeof(*gamepadManager));
+	return gamepadManager;
+}
 
-#ifndef IOS_DEVICE
-void ZGSendQuitEvent(void);
-#endif
+GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *systemEvent, uint16_t *eventCount)
+{
+	if (eventCount != NULL)
+	{
+		*eventCount = 0;
+	}
+	return NULL;
+}
+
+const char *gamepadName(GamepadManager *gamepadManager, GamepadIndex index)
+{
+	return "";
+}

@@ -18,7 +18,7 @@
  */
 
 #import "osx.h"
-#import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
 
 FILE *getUserDataFile(const char *mode)
 {
