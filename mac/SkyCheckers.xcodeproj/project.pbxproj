@@ -31,7 +31,6 @@
 		72817C7123934C4100DB7677 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 72817C6F23934C4100DB7677 /* LaunchScreen.storyboard */; };
 		72817C7923934DB500DB7677 /* audio_osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 7282C624231CEC640063D3CB /* audio_osx.m */; };
 		72817C8A23934E7300DB7677 /* characters.c in Sources */ = {isa = PBXBuildFile; fileRef = 72817C8923934E7300DB7677 /* characters.c */; };
-		72817C8C23934EAA00DB7677 /* quit_ios.m in Sources */ = {isa = PBXBuildFile; fileRef = 72817C8B23934EAA00DB7677 /* quit_ios.m */; };
 		72817C8D23934F1900DB7677 /* time_osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 727DAE27235C1F650030B29D /* time_osx.m */; };
 		72817C8E23934F2400DB7677 /* font_osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 72011849232758ED004C2532 /* font_osx.m */; };
 		72817C9023934F5B00DB7677 /* defaults_osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 770FFA0710B8F465009FD46A /* defaults_osx.m */; };
@@ -61,6 +60,7 @@
 		72817CAC2393861700DB7677 /* console.c in Sources */ = {isa = PBXBuildFile; fileRef = 77DC8A510B2FA1DD0080334C /* console.c */; };
 		72817CAD2393862A00DB7677 /* menu.c in Sources */ = {isa = PBXBuildFile; fileRef = 774F33D70BB48A9A00884B83 /* menu.c */; };
 		72817CAE2393D45E00DB7677 /* sc_icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 771B6C9F10BE60320014884B /* sc_icon.icns */; };
+		72817CB123946C0000DB7677 /* quit_osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 72817BD32392C33800DB7677 /* quit_osx.m */; };
 		7282C625231CEC640063D3CB /* audio_osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 7282C624231CEC640063D3CB /* audio_osx.m */; };
 		7282C627231CEE3C0063D3CB /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7282C626231CEE3C0063D3CB /* AVFoundation.framework */; };
 		729BE4BB2364124F00DC70F7 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 729BE4BA2364124F00DC70F7 /* IOKit.framework */; };
@@ -142,7 +142,6 @@
 		72817C7023934C4100DB7677 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		72817C7223934C4100DB7677 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		72817C8923934E7300DB7677 /* characters.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = characters.c; path = ../src/characters.c; sourceTree = "<group>"; };
-		72817C8B23934EAA00DB7677 /* quit_ios.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = quit_ios.m; path = ../src/quit_ios.m; sourceTree = "<group>"; };
 		72817C912393675900DB7677 /* window_ios.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = window_ios.m; path = ../src/window_ios.m; sourceTree = "<group>"; };
 		72817C9C2393808B00DB7677 /* gamepad_ios.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = gamepad_ios.m; path = ../src/gamepad_ios.m; sourceTree = "<group>"; };
 		72817C9E239381F000DB7677 /* keyboard_ios.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = keyboard_ios.m; path = ../src/keyboard_ios.m; sourceTree = "<group>"; };
@@ -315,7 +314,6 @@
 				72817C9E239381F000DB7677 /* keyboard_ios.m */,
 				727DAE24235C10A50030B29D /* quit.h */,
 				72817BD32392C33800DB7677 /* quit_osx.m */,
-				72817C8B23934EAA00DB7677 /* quit_ios.m */,
 				729BE4B82364121800DC70F7 /* gamepad.h */,
 				729BE4C0236667EE00DC70F7 /* gamepad_osx.m */,
 				72817C9C2393808B00DB7677 /* gamepad_ios.m */,
@@ -497,6 +495,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				72817CB123946C0000DB7677 /* quit_osx.m in Sources */,
 				72817CAD2393862A00DB7677 /* menu.c in Sources */,
 				72817CAC2393861700DB7677 /* console.c in Sources */,
 				72817CAB2393860E00DB7677 /* network.c in Sources */,
@@ -523,7 +522,6 @@
 				72817CA12393827700DB7677 /* app_ios.m in Sources */,
 				72817C8D23934F1900DB7677 /* time_osx.m in Sources */,
 				72817C9F239381F000DB7677 /* keyboard_ios.m in Sources */,
-				72817C8C23934EAA00DB7677 /* quit_ios.m in Sources */,
 				72817C7923934DB500DB7677 /* audio_osx.m in Sources */,
 				72817C9D2393808B00DB7677 /* gamepad_ios.m in Sources */,
 			);

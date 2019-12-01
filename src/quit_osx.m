@@ -18,14 +18,21 @@
 */
 
 #import "quit.h"
+#import "platforms.h"
+#import <stdlib.h>
+
+#ifndef IOS_DEVICE
 #import <Cocoa/Cocoa.h>
+#endif
 
 void ZGQuit(void)
 {
 	exit(0);
 }
 
+#ifndef IOS_DEVICE
 void ZGSendQuitEvent(void)
 {
 	[NSApp terminate:nil];
 }
+#endif
