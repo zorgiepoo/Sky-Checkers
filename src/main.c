@@ -1665,8 +1665,6 @@ static void appLaunchedHandler(void *context)
 	gDrawFPS = true;
 #endif
 	
-	gDrawFPS = true;
-	
 	initScene(renderer);
 	
 	gGamepadManager = initGamepadManager("Data/gamecontrollerdb.txt", gamepadAdded, gamepadRemoved);
