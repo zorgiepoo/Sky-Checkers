@@ -71,11 +71,16 @@
  
  **/
 
+/*
+ Note: This library has been altered for skycheckers to use half float datatype in ARM when available
+ */
+
 #ifndef MATH_3D_HEADER
 #define MATH_3D_HEADER
 
 #include <math.h>
 #include <stdio.h>
+#include "float.h"
 
 
 // Define PI directly because we would need to define the _BSD_SOURCE or
@@ -96,23 +101,23 @@
 // So you can just upload the vectors into shaders as they are.
 //
 
-typedef struct { float x, y, z; } vec3_t;
-static inline vec3_t vec3(float x, float y, float z)        { return (vec3_t){ x, y, z }; }
+typedef struct { ZGFloat x, y, z; } vec3_t;
+static inline vec3_t vec3(ZGFloat x, ZGFloat y, ZGFloat z)        { return (vec3_t){ x, y, z }; }
 
 static inline vec3_t v3_add   (vec3_t a, vec3_t b)          { return (vec3_t){ a.x + b.x, a.y + b.y, a.z + b.z }; }
-static inline vec3_t v3_adds  (vec3_t a, float s)           { return (vec3_t){ a.x + s,   a.y + s,   a.z + s   }; }
+static inline vec3_t v3_adds  (vec3_t a, ZGFloat s)           { return (vec3_t){ a.x + s,   a.y + s,   a.z + s   }; }
 static inline vec3_t v3_sub   (vec3_t a, vec3_t b)          { return (vec3_t){ a.x - b.x, a.y - b.y, a.z - b.z }; }
-static inline vec3_t v3_subs  (vec3_t a, float s)           { return (vec3_t){ a.x - s,   a.y - s,   a.z - s   }; }
+static inline vec3_t v3_subs  (vec3_t a, ZGFloat s)           { return (vec3_t){ a.x - s,   a.y - s,   a.z - s   }; }
 static inline vec3_t v3_mul   (vec3_t a, vec3_t b)          { return (vec3_t){ a.x * b.x, a.y * b.y, a.z * b.z }; }
-static inline vec3_t v3_muls  (vec3_t a, float s)           { return (vec3_t){ a.x * s,   a.y * s,   a.z * s   }; }
+static inline vec3_t v3_muls  (vec3_t a, ZGFloat s)           { return (vec3_t){ a.x * s,   a.y * s,   a.z * s   }; }
 static inline vec3_t v3_div   (vec3_t a, vec3_t b)          { return (vec3_t){ a.x / b.x, a.y / b.y, a.z / b.z }; }
-static inline vec3_t v3_divs  (vec3_t a, float s)           { return (vec3_t){ a.x / s,   a.y / s,   a.z / s   }; }
-static inline float  v3_length(vec3_t v)                    { return sqrtf(v.x*v.x + v.y*v.y + v.z*v.z);          }
+static inline vec3_t v3_divs  (vec3_t a, ZGFloat s)           { return (vec3_t){ a.x / s,   a.y / s,   a.z / s   }; }
+static inline ZGFloat  v3_length(vec3_t v)                    { return sqrtf(v.x*v.x + v.y*v.y + v.z*v.z);          }
 static inline vec3_t v3_norm  (vec3_t v);
-static inline float  v3_dot   (vec3_t a, vec3_t b)          { return a.x*b.x + a.y*b.y + a.z*b.z;                 }
+static inline ZGFloat  v3_dot   (vec3_t a, vec3_t b)          { return a.x*b.x + a.y*b.y + a.z*b.z;                 }
 static inline vec3_t v3_proj  (vec3_t v, vec3_t onto);
 static inline vec3_t v3_cross (vec3_t a, vec3_t b);
-static inline float  v3_angle_between(vec3_t a, vec3_t b);
+static inline ZGFloat  v3_angle_between(vec3_t a, vec3_t b);
 
 
 //
@@ -155,35 +160,35 @@ static inline float  v3_angle_between(vec3_t a, vec3_t b);
 typedef union {
 	// The first index is the column index, the second the row index. The memory
 	// layout of nested arrays in C matches the memory layout expected by OpenGL.
-	float m[4][4];
+	ZGFloat m[4][4];
 	// OpenGL expects the first 4 floats to be the first column of the matrix.
 	// So we need to define the named members column by column for the names to
 	// match the memory locations of the array elements.
 	struct {
-		float m00, m01, m02, m03;
-		float m10, m11, m12, m13;
-		float m20, m21, m22, m23;
-		float m30, m31, m32, m33;
+		ZGFloat m00, m01, m02, m03;
+		ZGFloat m10, m11, m12, m13;
+		ZGFloat m20, m21, m22, m23;
+		ZGFloat m30, m31, m32, m33;
 	};
 } mat4_t;
 
 static inline mat4_t mat4(
-						  float m00, float m10, float m20, float m30,
-						  float m01, float m11, float m21, float m31,
-						  float m02, float m12, float m22, float m32,
-						  float m03, float m13, float m23, float m33
+						  ZGFloat m00, ZGFloat m10, ZGFloat m20, ZGFloat m30,
+						  ZGFloat m01, ZGFloat m11, ZGFloat m21, ZGFloat m31,
+						  ZGFloat m02, ZGFloat m12, ZGFloat m22, ZGFloat m32,
+						  ZGFloat m03, ZGFloat m13, ZGFloat m23, ZGFloat m33
 						  );
 
 static inline mat4_t m4_identity     (void);
 static inline mat4_t m4_translation  (vec3_t offset);
 static inline mat4_t m4_scaling      (vec3_t scale);
-static inline mat4_t m4_rotation_x   (float angle_in_rad);
-static inline mat4_t m4_rotation_y   (float angle_in_rad);
-static inline mat4_t m4_rotation_z   (float angle_in_rad);
-mat4_t m4_rotation     (float angle_in_rad, vec3_t axis);
+static inline mat4_t m4_rotation_x   (ZGFloat angle_in_rad);
+static inline mat4_t m4_rotation_y   (ZGFloat angle_in_rad);
+static inline mat4_t m4_rotation_z   (ZGFloat angle_in_rad);
+mat4_t m4_rotation     (ZGFloat angle_in_rad, vec3_t axis);
 
-mat4_t m4_ortho        (float left, float right, float bottom, float top, float back, float front);
-mat4_t m4_perspective  (float vertical_field_of_view_in_deg, float aspect_ratio, float near_view_distance, float far_view_distance);
+mat4_t m4_ortho        (ZGFloat left, ZGFloat right, ZGFloat bottom, ZGFloat top, ZGFloat back, ZGFloat front);
+mat4_t m4_perspective  (ZGFloat vertical_field_of_view_in_deg, ZGFloat aspect_ratio, ZGFloat near_view_distance, ZGFloat far_view_distance);
 mat4_t m4_look_at      (vec3_t from, vec3_t to, vec3_t up);
 
 static inline mat4_t m4_transpose    (mat4_t matrix);
@@ -204,7 +209,7 @@ void   m4_fprintp      (FILE* stream, mat4_t matrix, int width, int precision);
 //
 
 static inline vec3_t v3_norm(vec3_t v) {
-	float len = v3_length(v);
+	ZGFloat len = v3_length(v);
 	if (len > 0)
 		return (vec3_t){ v.x / len, v.y / len, v.z / len };
 	else
@@ -223,7 +228,7 @@ static inline vec3_t v3_cross(vec3_t a, vec3_t b) {
 	};
 }
 
-static inline float v3_angle_between(vec3_t a, vec3_t b) {
+static inline ZGFloat v3_angle_between(vec3_t a, vec3_t b) {
 	return acosf( v3_dot(a, b) / (v3_length(a) * v3_length(b)) );
 }
 
@@ -233,10 +238,10 @@ static inline float v3_angle_between(vec3_t a, vec3_t b) {
 //
 
 static inline mat4_t mat4(
-						  float m00, float m10, float m20, float m30,
-						  float m01, float m11, float m21, float m31,
-						  float m02, float m12, float m22, float m32,
-						  float m03, float m13, float m23, float m33
+						  ZGFloat m00, ZGFloat m10, ZGFloat m20, ZGFloat m30,
+						  ZGFloat m01, ZGFloat m11, ZGFloat m21, ZGFloat m31,
+						  ZGFloat m02, ZGFloat m12, ZGFloat m22, ZGFloat m32,
+						  ZGFloat m03, ZGFloat m13, ZGFloat m23, ZGFloat m33
 						  ) {
 	return (mat4_t){
 		.m[0][0] = m00, .m[1][0] = m10, .m[2][0] = m20, .m[3][0] = m30,
@@ -265,7 +270,7 @@ static inline mat4_t m4_translation(vec3_t offset) {
 }
 
 static inline mat4_t m4_scaling(vec3_t scale) {
-	float x = scale.x, y = scale.y, z = scale.z;
+	ZGFloat x = scale.x, y = scale.y, z = scale.z;
 	return mat4(
 				x,  0,  0,  0,
 				0,  y,  0,  0,
@@ -274,8 +279,8 @@ static inline mat4_t m4_scaling(vec3_t scale) {
 				);
 }
 
-static inline mat4_t m4_rotation_x(float angle_in_rad) {
-	float s = sinf(angle_in_rad), c = cosf(angle_in_rad);
+static inline mat4_t m4_rotation_x(ZGFloat angle_in_rad) {
+	ZGFloat s = sinf(angle_in_rad), c = cosf(angle_in_rad);
 	return mat4(
 				1,  0,  0,  0,
 				0,  c, -s,  0,
@@ -284,8 +289,8 @@ static inline mat4_t m4_rotation_x(float angle_in_rad) {
 				);
 }
 
-static inline mat4_t m4_rotation_y(float angle_in_rad) {
-	float s = sinf(angle_in_rad), c = cosf(angle_in_rad);
+static inline mat4_t m4_rotation_y(ZGFloat angle_in_rad) {
+	ZGFloat s = sinf(angle_in_rad), c = cosf(angle_in_rad);
 	return mat4(
 				c,  0,  s,  0,
 				0,  1,  0,  0,
@@ -294,8 +299,8 @@ static inline mat4_t m4_rotation_y(float angle_in_rad) {
 				);
 }
 
-static inline mat4_t m4_rotation_z(float angle_in_rad) {
-	float s = sinf(angle_in_rad), c = cosf(angle_in_rad);
+static inline mat4_t m4_rotation_z(ZGFloat angle_in_rad) {
+	ZGFloat s = sinf(angle_in_rad), c = cosf(angle_in_rad);
 	return mat4(
 				c, -s,  0,  0,
 				s,  c,  0,  0,
@@ -328,7 +333,7 @@ static inline mat4_t m4_mul(mat4_t a, mat4_t b) {
 	
 	for(int i = 0; i < 4; i++) {
 		for(int j = 0; j < 4; j++) {
-			float sum = 0;
+			ZGFloat sum = 0;
 			for(int k = 0; k < 4; k++) {
 				sum += a.m[k][j] * b.m[i][k];
 			}
@@ -352,10 +357,10 @@ static inline mat4_t m4_mul(mat4_t a, mat4_t b) {
  *
  * https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
  */
-mat4_t m4_rotation(float angle_in_rad, vec3_t axis) {
+mat4_t m4_rotation(ZGFloat angle_in_rad, vec3_t axis) {
 	vec3_t normalized_axis = v3_norm(axis);
-	float x = normalized_axis.x, y = normalized_axis.y, z = normalized_axis.z;
-	float c = cosf(angle_in_rad), s = sinf(angle_in_rad);
+	ZGFloat x = normalized_axis.x, y = normalized_axis.y, z = normalized_axis.z;
+	ZGFloat c = cosf(angle_in_rad), s = sinf(angle_in_rad);
 	
 	return mat4(
 				c + x*x*(1-c),            x*y*(1-c) - z*s,      x*z*(1-c) + y*s,  0,
@@ -393,11 +398,11 @@ mat4_t m4_rotation(float angle_in_rad, vec3_t axis) {
  * https://msdn.microsoft.com/en-us/library/windows/desktop/dd373965(v=vs.85).aspx
  * https://unspecified.wordpress.com/2012/06/21/calculating-the-gluperspective-matrix-and-other-opengl-matrix-maths/
  */
-mat4_t m4_ortho(float left, float right, float bottom, float top, float back, float front) {
-	float l = left, r = right, b = bottom, t = top, n = front, f = back;
-	float tx = -(r + l) / (r - l);
-	float ty = -(t + b) / (t - b);
-	float tz = -(f + n) / (f - n);
+mat4_t m4_ortho(ZGFloat left, ZGFloat right, ZGFloat bottom, ZGFloat top, ZGFloat back, ZGFloat front) {
+	ZGFloat l = left, r = right, b = bottom, t = top, n = front, f = back;
+	ZGFloat tx = -(r + l) / (r - l);
+	ZGFloat ty = -(t + b) / (t - b);
+	ZGFloat tz = -(f + n) / (f - n);
 	return mat4(
 				2 / (r - l),  0,            0,            tx,
 				0,            2 / (t - b),  0,            ty,
@@ -426,11 +431,11 @@ mat4_t m4_ortho(float left, float right, float bottom, float top, float back, fl
  *
  * https://unspecified.wordpress.com/2012/06/21/calculating-the-gluperspective-matrix-and-other-opengl-matrix-maths/
  */
-mat4_t m4_perspective(float vertical_field_of_view_in_deg, float aspect_ratio, float near_view_distance, float far_view_distance) {
-	float fovy_in_rad = vertical_field_of_view_in_deg / 180 * (float)M_PI;
-	float f = 1.0f / tanf(fovy_in_rad / 2.0f);
-	float ar = aspect_ratio;
-	float nd = near_view_distance, fd = far_view_distance;
+mat4_t m4_perspective(ZGFloat vertical_field_of_view_in_deg, ZGFloat aspect_ratio, ZGFloat near_view_distance, ZGFloat far_view_distance) {
+	ZGFloat fovy_in_rad = vertical_field_of_view_in_deg / 180 * (ZGFloat)M_PI;
+	ZGFloat f = 1.0f / tanf(fovy_in_rad / 2.0f);
+	ZGFloat ar = aspect_ratio;
+	ZGFloat nd = near_view_distance, fd = far_view_distance;
 	
 	return mat4(
 				f / ar,           0,                0,                0,
@@ -522,30 +527,30 @@ mat4_t m4_look_at(vec3_t from, vec3_t to, vec3_t up) {
  */
 mat4_t m4_invert_affine(mat4_t matrix) {
 	// Create shorthands to access matrix members
-	float m00 = matrix.m00,  m10 = matrix.m10,  m20 = matrix.m20,  m30 = matrix.m30;
-	float m01 = matrix.m01,  m11 = matrix.m11,  m21 = matrix.m21,  m31 = matrix.m31;
-	float m02 = matrix.m02,  m12 = matrix.m12,  m22 = matrix.m22,  m32 = matrix.m32;
+	ZGFloat m00 = matrix.m00,  m10 = matrix.m10,  m20 = matrix.m20,  m30 = matrix.m30;
+	ZGFloat m01 = matrix.m01,  m11 = matrix.m11,  m21 = matrix.m21,  m31 = matrix.m31;
+	ZGFloat m02 = matrix.m02,  m12 = matrix.m12,  m22 = matrix.m22,  m32 = matrix.m32;
 	
 	// Invert 3x3 part of the 4x4 matrix that contains the rotation, etc.
 	// That part is called R from here on.
 	
 	// Calculate cofactor matrix of R
-	float c00 =   m11*m22 - m12*m21,   c10 = -(m01*m22 - m02*m21),  c20 =   m01*m12 - m02*m11;
-	float c01 = -(m10*m22 - m12*m20),  c11 =   m00*m22 - m02*m20,   c21 = -(m00*m12 - m02*m10);
-	float c02 =   m10*m21 - m11*m20,   c12 = -(m00*m21 - m01*m20),  c22 =   m00*m11 - m01*m10;
+	ZGFloat c00 =   m11*m22 - m12*m21,   c10 = -(m01*m22 - m02*m21),  c20 =   m01*m12 - m02*m11;
+	ZGFloat c01 = -(m10*m22 - m12*m20),  c11 =   m00*m22 - m02*m20,   c21 = -(m00*m12 - m02*m10);
+	ZGFloat c02 =   m10*m21 - m11*m20,   c12 = -(m00*m21 - m01*m20),  c22 =   m00*m11 - m01*m10;
 	
 	// Caclculate the determinant by using the already calculated determinants
 	// in the cofactor matrix.
 	// Second sign is already minus from the cofactor matrix.
-	float det = m00*c00 + m10*c10 + m20 * c20;
+	ZGFloat det = m00*c00 + m10*c10 + m20 * c20;
 	if (fabsf(det) < 0.00001)
 		return m4_identity();
 	
 	// Calcuate inverse of R by dividing the transposed cofactor matrix by the
 	// determinant.
-	float i00 = c00 / det,  i10 = c01 / det,  i20 = c02 / det;
-	float i01 = c10 / det,  i11 = c11 / det,  i21 = c12 / det;
-	float i02 = c20 / det,  i12 = c21 / det,  i22 = c22 / det;
+	ZGFloat i00 = c00 / det,  i10 = c01 / det,  i20 = c02 / det;
+	ZGFloat i01 = c10 / det,  i11 = c11 / det,  i21 = c12 / det;
+	ZGFloat i02 = c20 / det,  i12 = c21 / det,  i22 = c22 / det;
 	
 	// Combine the inverted R with the inverted translation
 	return mat4(
@@ -570,7 +575,7 @@ vec3_t m4_mul_pos(mat4_t matrix, vec3_t position) {
 						 matrix.m02 * position.x + matrix.m12 * position.y + matrix.m22 * position.z + matrix.m32
 						 );
 	
-	float w = matrix.m03 * position.x + matrix.m13 * position.y + matrix.m23 * position.z + matrix.m33;
+	ZGFloat w = matrix.m03 * position.x + matrix.m13 * position.y + matrix.m23 * position.z + matrix.m33;
 	if (w != 0 && w != 1)
 		return vec3(result.x / w, result.y / w, result.z / w);
 	
@@ -595,7 +600,7 @@ vec3_t m4_mul_dir(mat4_t matrix, vec3_t direction) {
 						 matrix.m02 * direction.x + matrix.m12 * direction.y + matrix.m22 * direction.z
 						 );
 	
-	float w = matrix.m03 * direction.x + matrix.m13 * direction.y + matrix.m23 * direction.z;
+	ZGFloat w = matrix.m03 * direction.x + matrix.m13 * direction.y + matrix.m23 * direction.z;
 	if (w != 0 && w != 1)
 		return vec3(result.x / w, result.y / w, result.z / w);
 	

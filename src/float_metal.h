@@ -19,24 +19,18 @@
 
 #pragma once
 
-#ifdef __APPLE__
-#ifdef __MACH__
-#define MAC_OS_X
+#include "platforms.h"
 
-#import <TargetConditionals.h>
-#if TARGET_OS_IPHONE
-#define IOS_DEVICE
+#ifdef NATIVE_IOS_DEVICE
 
-#if !TARGET_OS_SIMULATOR
-#define NATIVE_IOS_DEVICE
-#endif
-#endif
+#define ZGMatrixFloat4x4 matrix_half4x4
+#define ZGFloat4 half4
+#define ZGFloat2 half2
+
+#else
+
+#define ZGMatrixFloat4x4 matrix_float4x4
+#define ZGFloat4 float4
+#define ZGFloat2 float2
 
 #endif
-#endif
-
-#ifdef _WIN32
-#define WINDOWS
-#endif
-
-// linux is OK already

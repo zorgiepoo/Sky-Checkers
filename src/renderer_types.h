@@ -24,6 +24,7 @@ extern "C" {
 #endif
 
 #include "platforms.h"
+#include "float.h"
 #include "window.h"
 #include <stdbool.h>
 #include <stdint.h>
@@ -47,10 +48,10 @@ typedef enum
 
 typedef struct
 {
-	float red;
-	float green;
-	float blue;
-	float alpha;
+	ZGFloat red;
+	ZGFloat green;
+	ZGFloat blue;
+	ZGFloat alpha;
 } color4_t;
 
 typedef struct
@@ -140,7 +141,7 @@ typedef struct
 typedef struct _Renderer
 {
 	ZGWindow *window;
-	float projectionMatrix[16];
+	ZGFloat projectionMatrix[16];
 
 	// Width and height of drawable in pixels
 	int32_t drawableWidth;
@@ -216,10 +217,10 @@ typedef struct _Renderer
 	BufferObject(*createIndexBufferObjectPtr)(struct _Renderer *, const void *data, uint32_t size);
 	BufferArrayObject(*createVertexArrayObjectPtr)(struct _Renderer *, const void *, uint32_t);
 	BufferArrayObject(*createVertexAndTextureCoordinateArrayObjectPtr)(struct _Renderer *, const void *, uint32_t, uint32_t);
-	void(*drawVerticesPtr)(struct _Renderer *, float *, RendererMode, BufferArrayObject, uint32_t, color4_t, RendererOptions);
-	void(*drawVerticesFromIndicesPtr)(struct _Renderer *, float *, RendererMode, BufferArrayObject, BufferObject, uint32_t, color4_t, RendererOptions);
-	void(*drawTextureWithVerticesPtr)(struct _Renderer *, float *, TextureObject, RendererMode, BufferArrayObject, uint32_t, color4_t, RendererOptions);
-	void(*drawTextureWithVerticesFromIndicesPtr)(struct _Renderer *, float *, TextureObject, RendererMode, BufferArrayObject, BufferObject, uint32_t, color4_t, RendererOptions);
+	void(*drawVerticesPtr)(struct _Renderer *, ZGFloat *, RendererMode, BufferArrayObject, uint32_t, color4_t, RendererOptions);
+	void(*drawVerticesFromIndicesPtr)(struct _Renderer *, ZGFloat *, RendererMode, BufferArrayObject, BufferObject, uint32_t, color4_t, RendererOptions);
+	void(*drawTextureWithVerticesPtr)(struct _Renderer *, ZGFloat *, TextureObject, RendererMode, BufferArrayObject, uint32_t, color4_t, RendererOptions);
+	void(*drawTextureWithVerticesFromIndicesPtr)(struct _Renderer *, ZGFloat *, TextureObject, RendererMode, BufferArrayObject, BufferObject, uint32_t, color4_t, RendererOptions);
 } Renderer;
 
 #ifdef __cplusplus

@@ -71,15 +71,15 @@ static void drawUpAndDownArrowTriangles(Renderer *renderer, mat4_t modelViewMatr
 	static bool initializedBuffer;
 	if (!initializedBuffer)
 	{
-		float vertices[] =
+		ZGFloat vertices[] =
 		{
-			0.0f, 0.6f, 0.0f,
-			-0.2f, 0.2f, 0.0f,
-			0.2f, 0.2f, 0.0f,
+			0.0f, 0.6f, 0.0f, 1.0f,
+			-0.2f, 0.2f, 0.0f, 1.0f,
+			0.2f, 0.2f, 0.0f, 1.0f,
 			
-			0.0f, -0.6f, 0.0f,
-			-0.2f, -0.2f, 0.0f,
-			0.2f, -0.2f, 0.0f,
+			0.0f, -0.6f, 0.0f, 1.0f,
+			-0.2f, -0.2f, 0.0f, 1.0f,
+			0.2f, -0.2f, 0.0f, 1.0f
 		};
 		
 		vertexArrayObject = createVertexArrayObject(renderer, vertices, sizeof(vertices));

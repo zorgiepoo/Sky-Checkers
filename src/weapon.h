@@ -24,7 +24,7 @@
 typedef struct
 {
 	float x, y, z;
-	float red, green, blue;
+	ZGFloat red, green, blue;
 	float initialX, initialY;
 	float compensation;
 	

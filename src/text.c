@@ -46,13 +46,13 @@ void initText(Renderer *renderer)
 	
 	gTextRenderings = calloc(MAX_TEXT_RENDERING_COUNT, sizeof(*gTextRenderings));
 	
-	const float verticesAndTextureCoordinates[] =
+	const ZGFloat verticesAndTextureCoordinates[] =
 	{
 		// vertices
-		-1.0f, -1.0f, 0.0f,
-		-1.0f, 1.0f, 0.0f,
-		1.0f, 1.0f, 0.0f,
-		1.0f, -1.0f, 0.0f,
+		-1.0f, -1.0f, 0.0f, 1.0f,
+		-1.0f, 1.0f, 0.0f, 1.0f,
+		1.0f, 1.0f, 0.0f, 1.0f,
+		1.0f, -1.0f, 0.0f, 1.0f,
 		
 		// texture coordinates
 		0.0f, 1.0f,
@@ -64,15 +64,15 @@ void initText(Renderer *renderer)
 #if defined(MAC_OS_X) && _DEBUG
 	// Work around issue where text is distorted while debugging on some machines via Xcode by ignoring the first created vertex buffer.
 	// This is not a game bug.
-	createVertexAndTextureCoordinateArrayObject(renderer, verticesAndTextureCoordinates, 12 * sizeof(*verticesAndTextureCoordinates), 8 * sizeof(*verticesAndTextureCoordinates));
+	createVertexAndTextureCoordinateArrayObject(renderer, verticesAndTextureCoordinates, 16 * sizeof(*verticesAndTextureCoordinates), 8 * sizeof(*verticesAndTextureCoordinates));
 #endif
 	
-	gFontVertexAndTextureBufferObject = createVertexAndTextureCoordinateArrayObject(renderer, verticesAndTextureCoordinates, 12 * sizeof(*verticesAndTextureCoordinates), 8 * sizeof(*verticesAndTextureCoordinates));
+	gFontVertexAndTextureBufferObject = createVertexAndTextureCoordinateArrayObject(renderer, verticesAndTextureCoordinates, 16 * sizeof(*verticesAndTextureCoordinates), 8 * sizeof(*verticesAndTextureCoordinates));
 	
 	gFontIndicesBufferObject = rectangleIndexBufferObject(renderer);
 }
 
-void drawStringf(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, float width, float height, const char *format, ...)
+void drawStringf(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, ZGFloat width, ZGFloat height, const char *format, ...)
 {
 	va_list ap;
 	char buffer[256];
@@ -196,7 +196,7 @@ int cacheString(Renderer *renderer, const char *string)
 	return cachedIndex;
 }
 
-void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, float width, float height, const char *string)
+void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, ZGFloat width, ZGFloat height, const char *string)
 {
 	int index = cacheString(renderer, string);
 	if (index == -1) return;
@@ -207,7 +207,7 @@ void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, floa
 	drawTextureWithVerticesFromIndices(renderer, transformMatrix, gTextRenderings[index].texture, RENDERER_TRIANGLE_MODE, gFontVertexAndTextureBufferObject, gFontIndicesBufferObject, 6, color, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
 }
 
-void drawStringScaled(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, float scale, const char *string)
+void drawStringScaled(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, ZGFloat scale, const char *string)
 {
 	int index = cacheString(renderer, string);
 	if (index == -1) return;
@@ -221,7 +221,7 @@ void drawStringScaled(Renderer *renderer, mat4_t modelViewMatrix, color4_t color
 	drawTextureWithVerticesFromIndices(renderer, transformMatrix, gTextRenderings[index].texture, RENDERER_TRIANGLE_MODE, gFontVertexAndTextureBufferObject, gFontIndicesBufferObject, 6, color, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
 }
 
-void drawStringLeftAligned(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, float scale, const char *string)
+void drawStringLeftAligned(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, ZGFloat scale, const char *string)
 {
 	int index = cacheString(renderer, string);
 	if (index == -1) return;

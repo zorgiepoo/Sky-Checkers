@@ -118,7 +118,7 @@ BufferArrayObject createVertexAndTextureCoordinateArrayObject(Renderer *renderer
 	return renderer->createVertexAndTextureCoordinateArrayObjectPtr(renderer, verticesAndTextureCoordinates, verticesSize, textureCoordinatesSize);
 }
 
-static mat4_t computeModelViewProjectionMatrix(float *projectionFloatMatrix, mat4_t modelViewMatrix)
+static mat4_t computeModelViewProjectionMatrix(ZGFloat *projectionFloatMatrix, mat4_t modelViewMatrix)
 {
 	mat4_t projectionMatrix = *(mat4_t *)projectionFloatMatrix;
 	return m4_mul(projectionMatrix, modelViewMatrix);

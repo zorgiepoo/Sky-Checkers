@@ -128,12 +128,12 @@ static void drawBlackBox(Renderer *renderer)
 	
 	if (!initializedBuffers)
 	{
-		const float vertices[] =
+		const ZGFloat vertices[] =
 		{
-			-9.5f, 9.5f, 0.0f,
-			9.5f, 9.5f, 0.0f,
-			9.5f, -9.5f, 0.0f,
-			-9.5f, -9.5f, 0.0f
+			-9.5f, 9.5f, 0.0f, 1.0,
+			9.5f, 9.5f, 0.0f, 1.0,
+			9.5f, -9.5f, 0.0f, 1.0,
+			-9.5f, -9.5f, 0.0f, 1.0
 		};
 		
 		vertexArrayObject = createVertexArrayObject(renderer, vertices, sizeof(vertices));
@@ -1772,6 +1772,7 @@ static void runLoopHandler(void *context)
 	}
 	
 	bool shouldCapFPS = !ZGWindowHasFocus(renderer->window) || !renderer->vsync;
+	shouldCapFPS = false;
 	if (shouldCapFPS)
 	{
 #ifndef _PROFILING

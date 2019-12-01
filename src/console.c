@@ -83,12 +83,12 @@ void drawConsole(Renderer *renderer)
 	
 	if (!initializedBuffers)
 	{
-		const float vertices[] =
+		const ZGFloat vertices[] =
 		{
-			10.0f, 1.0f, 1.0f,
-			10.0f, -1.0f, 1.0f,
-			-10.0f, -1.0f, 1.0f,
-			-10.0f, 1.0f, 1.0f,
+			10.0f, 1.0f, 1.0f, 1.0f,
+			10.0f, -1.0f, 1.0f, 1.0f,
+			-10.0f, -1.0f, 1.0f, 1.0f,
+			-10.0f, 1.0f, 1.0f, 1.0f,
 		};
 		
 		vertexArrayObject = createVertexArrayObject(renderer, vertices, sizeof(vertices));

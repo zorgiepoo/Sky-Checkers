@@ -48,67 +48,67 @@ void drawWeapon(Renderer *renderer, Weapon *weap)
 	
 	if (!initializedBuffers)
 	{
-		const float vertices[] =
+		const ZGFloat vertices[] =
 		{
 			// Cube part
 			
 			// right face
-			-1.0f, -1.0f, 1.0f,
-			-1.0f, 1.0f, 1.0f,
-			1.0f, 1.0f, 1.0f,
-			1.0f, -1.0f, 1.0f,
+			-1.0f, -1.0f, 1.0f, 1.0f,
+			-1.0f, 1.0f, 1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f, 1.0f,
+			1.0f, -1.0f, 1.0f, 1.0f,
 			
 			// left face
-			-1.0f, -1.0f, -1.0f,
-			-1.0f, 1.0f, -1.0f,
-			1.0f, 1.0f, -1.0f,
-			1.0f, -1.0f, -1.0f,
+			-1.0f, -1.0f, -1.0f, 1.0f,
+			-1.0f, 1.0f, -1.0f, 1.0f,
+			1.0f, 1.0f, -1.0f, 1.0f,
+			1.0f, -1.0f, -1.0f, 1.0f,
 			
 			// front face
-			1.0f, 1.0f, 1.0f,
-			1.0f, -1.0f, 1.0f,
-			1.0f, -1.0f, -1.0f,
-			1.0f, 1.0f, -1.0f,
+			1.0f, 1.0f, 1.0f, 1.0f,
+			1.0f, -1.0f, 1.0f, 1.0f,
+			1.0f, -1.0f, -1.0f, 1.0f,
+			1.0f, 1.0f, -1.0f, 1.0f,
 			
 			// back face
-			-1.0f, -1.0f, 1.0f,
-			-1.0f, 1.0f, 1.0f,
-			-1.0f, 1.0f, -1.0f,
-			-1.0f, -1.0f, -1.0f,
+			-1.0f, -1.0f, 1.0f, 1.0f,
+			-1.0f, 1.0f, 1.0f, 1.0f,
+			-1.0f, 1.0f, -1.0f, 1.0f,
+			-1.0f, -1.0f, -1.0f, 1.0f,
 			
 			// top face
-			-1.0f, 1.0f, 1.0f,
-			-1.0f, 1.0f, -1.0f,
-			1.0f, 1.0f, -1.0f,
-			1.0f, 1.0f, 1.0f,
+			-1.0f, 1.0f, 1.0f, 1.0f,
+			-1.0f, 1.0f, -1.0f, 1.0f,
+			1.0f, 1.0f, -1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f, 1.0f,
 			
 			// bottom face
-			-1.0f, -1.0f, 1.0f,
-			-1.0f, -1.0f, -1.0f,
-			1.0f, -1.0f, -1.0f,
-			1.0f, -1.0f, 1.0f,
+			-1.0f, -1.0f, 1.0f, 1.0f,
+			-1.0f, -1.0f, -1.0f, 1.0f,
+			1.0f, -1.0f, -1.0f, 1.0f,
+			1.0f, -1.0f, 1.0f, 1.0f,
 			
 			// Prism part
 			
 			// right side
-			1.0f, 1.0f, 1.0f,
-			1.0f, -1.0f, 1.0f,
-			3.0f, 0.0f, 0.0f,
+			1.0f, 1.0f, 1.0f, 1.0f,
+			1.0f, -1.0f, 1.0f, 1.0f,
+			3.0f, 0.0f, 0.0f, 1.0f,
 			
 			// left side
-			1.0f, 1.0f, -1.0f,
-			1.0f, -1.0f, -1.0f,
-			3.0f, 0.0f, 0.0f,
+			1.0f, 1.0f, -1.0f, 1.0f,
+			1.0f, -1.0f, -1.0f, 1.0f,
+			3.0f, 0.0f, 0.0f, 1.0f,
 			
 			// top side
-			1.0f, 1.0f, 1.0f,
-			1.0f, 1.0f, -1.0f,
-			3.0f, 0.0f, 0.0f,
+			1.0f, 1.0f, 1.0f, 1.0f,
+			1.0f, 1.0f, -1.0f, 1.0f,
+			3.0f, 0.0f, 0.0f, 1.0f,
 			
 			// bottom side
-			1.0f, -1.0f, 1.0f,
-			1.0f, -1.0f, -1.0f,
-			3.0f, 0.0f, 0.0f
+			1.0f, -1.0f, 1.0f, 1.0f,
+			1.0f, -1.0f, -1.0f, 1.0f,
+			3.0f, 0.0f, 0.0f, 1.0f
 		};
 		
 		const uint16_t indices[] =
@@ -160,30 +160,30 @@ void drawWeapon(Renderer *renderer, Weapon *weap)
 		initializedBuffers = true;
 	}
 	
-	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((float)M_PI / 180.0f));
+	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((ZGFloat)M_PI / 180.0f));
 	mat4_t worldTranslationMatrix = m4_translation((vec3_t){-7.0f, 12.5f, -23.0f});
 	mat4_t modelTranslationMatrix = m4_translation((vec3_t){weap->x, weap->y, weap->z});
 	
 	mat4_t weaponMatrix = m4_mul(m4_mul(worldRotationMatrix, worldTranslationMatrix), modelTranslationMatrix);
 	
-	float weaponRotationAngle = 0.0f;
+	ZGFloat weaponRotationAngle = 0.0f;
 	int direction = weap->direction;
 	if (direction == LEFT)
 	{
-		weaponRotationAngle = (float)M_PI;
+		weaponRotationAngle = (ZGFloat)M_PI;
 	}
 	else if (direction == UP)
 	{
-		weaponRotationAngle = (float)M_PI / 2.0f;
+		weaponRotationAngle = (ZGFloat)M_PI / 2.0f;
 	}
 	else if (direction == DOWN)
 	{
-		weaponRotationAngle = 3.0f * (float)M_PI / 2.0f;
+		weaponRotationAngle = 3.0f * (ZGFloat)M_PI / 2.0f;
 	}
 	
 	mat4_t weaponRotationMatrix = m4_rotation_z(weaponRotationAngle);
 	mat4_t modelViewMatrix = m4_mul(weaponMatrix, weaponRotationMatrix);
 	
-	float colorFactor = 0.2f;
+	ZGFloat colorFactor = 0.2f;
 	drawVerticesFromIndices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertexArrayObject, indicesBufferObject, 48, (color4_t){weap->red * colorFactor, weap->green * colorFactor, weap->blue * colorFactor, 1.0f}, RENDERER_OPTION_NONE);
 }

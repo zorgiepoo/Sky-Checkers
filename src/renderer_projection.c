@@ -21,10 +21,10 @@
 #include "math_3d.h"
 #include <string.h>
 
-float computeProjectionAspectRatio(Renderer *renderer)
+ZGFloat computeProjectionAspectRatio(Renderer *renderer)
 {
 	// The aspect ratio is not quite correct, which is a mistake I made a long time ago that is too troubling to fix properly
-	return (float)(renderer->drawableWidth / renderer->drawableHeight);
+	return (ZGFloat)(renderer->drawableWidth / renderer->drawableHeight);
 }
 
 static mat4_t computeGLProjectionMatrix(Renderer *renderer)

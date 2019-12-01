@@ -201,26 +201,26 @@ void loadCharacterTextures(Renderer *renderer)
 }
 
 // http://www.songho.ca/opengl/gl_sphere.html
-static void buildSphere(float *vertices, float *textureCoordinates, unsigned short *indices, int stackCount, int sectorCount, float radius)
+static void buildSphere(ZGFloat *vertices, ZGFloat *textureCoordinates, unsigned short *indices, int stackCount, int sectorCount, ZGFloat radius)
 {
-	float stackStep = (float)M_PI / stackCount;
-	float sectorStep = 2 * (float)M_PI / sectorCount;
+	float stackStep = (ZGFloat)M_PI / stackCount;
+	float sectorStep = 2 * (ZGFloat)M_PI / sectorCount;
 	
 	int vertexIndex = 0;
 	int textureCoordinateIndex = 0;
 	
 	for (int stackIndex = 0; stackIndex <= stackCount; stackIndex++)
 	{
-		float stackAngle = ((float)M_PI / 2.0f) - stackIndex * stackStep;
-		float xy = radius * cosf(stackAngle);
-		float z = radius * sinf(stackAngle);
+		ZGFloat stackAngle = ((ZGFloat)M_PI / 2.0f) - stackIndex * stackStep;
+		ZGFloat xy = radius * cosf(stackAngle);
+		ZGFloat z = radius * sinf(stackAngle);
 		
 		for (int sectorIndex = 0; sectorIndex <= sectorCount; sectorIndex++)
 		{
-			float sectorAngle = sectorIndex * sectorStep;
+			ZGFloat sectorAngle = sectorIndex * sectorStep;
 			
-			float x = xy * cosf(sectorAngle);
-			float y = xy * sinf(sectorAngle);
+			ZGFloat x = xy * cosf(sectorAngle);
+			ZGFloat y = xy * sinf(sectorAngle);
 			
 			vertices[vertexIndex] = x;
 			vertexIndex++;
@@ -228,9 +228,11 @@ static void buildSphere(float *vertices, float *textureCoordinates, unsigned sho
 			vertexIndex++;
 			vertices[vertexIndex] = z;
 			vertexIndex++;
+			vertices[vertexIndex] = 1.0f;
+			vertexIndex++;
 			
-			float s = (float)sectorIndex / sectorCount;
-			float t = (float)stackIndex / stackCount;
+			ZGFloat s = (ZGFloat)sectorIndex / sectorCount;
+			ZGFloat t = (ZGFloat)stackIndex / stackCount;
 			
 			textureCoordinates[textureCoordinateIndex] = s;
 			textureCoordinateIndex++;
@@ -275,11 +277,11 @@ static void buildSphere(float *vertices, float *textureCoordinates, unsigned sho
 }
 
 // https://stackoverflow.com/questions/27238793/texture-mapping-a-circle
-static void buildCircle(float *vertices, float *textureCoordinates, float radius, int numberOfPoints)
+static void buildCircle(ZGFloat *vertices, ZGFloat *textureCoordinates, ZGFloat radius, int numberOfPoints)
 {
-	float theta = 2 * (float)M_PI / (float)numberOfPoints;
-	float cosTheta = cosf(theta);
-	float sinTheta = sinf(theta);
+	ZGFloat theta = 2 * (ZGFloat)M_PI / (ZGFloat)numberOfPoints;
+	ZGFloat cosTheta = cosf(theta);
+	ZGFloat sinTheta = sinf(theta);
 	
 	int vertexIndex = 0;
 	int textureCoordinateIndex = 0;
@@ -290,14 +292,16 @@ static void buildCircle(float *vertices, float *textureCoordinates, float radius
 	vertexIndex++;
 	vertices[vertexIndex] = 0.0f;
 	vertexIndex++;
+	vertices[vertexIndex] = 1.0f;
+	vertexIndex++;
 	
 	textureCoordinates[textureCoordinateIndex] = 0.5f;
 	textureCoordinateIndex++;
 	textureCoordinates[textureCoordinateIndex] = 0.5f;
 	textureCoordinateIndex++;
 	
-	float x = radius;
-	float y = 0.0f;
+	ZGFloat x = radius;
+	ZGFloat y = 0.0f;
 	
 	for (int pointIndex = 0; pointIndex <= numberOfPoints; pointIndex++)
 	{
@@ -307,9 +311,11 @@ static void buildCircle(float *vertices, float *textureCoordinates, float radius
 		vertexIndex++;
 		vertices[vertexIndex] = 0.0f;
 		vertexIndex++;
+		vertices[vertexIndex] = 1.0f;
+		vertexIndex++;
 		
-		float textureX = (x / radius + 1.0f) * 0.5f;
-		float textureY = (y / radius + 1.0f) * 0.5f;
+		ZGFloat textureX = (x / radius + 1.0f) * 0.5f;
+		ZGFloat textureY = (y / radius + 1.0f) * 0.5f;
 		
 		textureCoordinates[textureCoordinateIndex] = textureX;
 		textureCoordinateIndex++;
@@ -324,6 +330,8 @@ static void buildCircle(float *vertices, float *textureCoordinates, float radius
 			vertexIndex++;
 			vertices[vertexIndex] = 0.0f;
 			vertexIndex++;
+			vertices[vertexIndex] = 1.0f;
+			vertexIndex++;
 			
 			textureCoordinates[textureCoordinateIndex] = 0.5f;
 			textureCoordinateIndex++;
@@ -331,7 +339,7 @@ static void buildCircle(float *vertices, float *textureCoordinates, float radius
 			textureCoordinateIndex++;
 		}
 		
-		float lastX = x;
+		ZGFloat lastX = x;
 		x = cosTheta * x - sinTheta * y;
 		y = sinTheta * lastX + cosTheta * y;
 	}
@@ -340,8 +348,8 @@ static void buildCircle(float *vertices, float *textureCoordinates, float radius
 void buildCharacterModels(Renderer *renderer)
 {
 	// Build character model
-	float *characterVerticesAndTextureCoordinates;
-	size_t characterVerticesSize = sizeof(*characterVerticesAndTextureCoordinates) * 2883;
+	ZGFloat *characterVerticesAndTextureCoordinates;
+	size_t characterVerticesSize = sizeof(*characterVerticesAndTextureCoordinates) * 3844;
 	size_t characterTextureCoordinatesSize = sizeof(*characterVerticesAndTextureCoordinates) * 1922;
 	
 	characterVerticesAndTextureCoordinates = malloc(characterVerticesSize + characterTextureCoordinatesSize);
@@ -360,8 +368,8 @@ void buildCharacterModels(Renderer *renderer)
 	free(characterIndices);
 	
 	// Build character icon model
-	float *iconVerticesAndTextureCoordinates;
-	size_t iconVerticesSize = sizeof(*iconVerticesAndTextureCoordinates) * 1806;
+	ZGFloat *iconVerticesAndTextureCoordinates;
+	size_t iconVerticesSize = sizeof(*iconVerticesAndTextureCoordinates) * 2408;
 	size_t iconTextureCoordinatesSize = sizeof(*iconVerticesAndTextureCoordinates) * 1204;
 	
 	iconVerticesAndTextureCoordinates = malloc(iconVerticesSize + iconTextureCoordinatesSize);
@@ -373,18 +381,18 @@ void buildCharacterModels(Renderer *renderer)
 	free(iconVerticesAndTextureCoordinates);
 }
 
-static float zRotationForCharacter(Character *character)
+static ZGFloat zRotationForCharacter(Character *character)
 {
 	switch (character->pointing_direction)
 	{
 		case RIGHT:
-			return (float)M_PI;
+			return (ZGFloat)M_PI;
 		case LEFT:
 			return 0.0f;
 		case DOWN:
-			return 100.0f * ((float)M_PI / 180.0f);
+			return 100.0f * ((ZGFloat)M_PI / 180.0f);
 		case UP:
-			return 3.0f * (float)M_PI / 2.0f;
+			return 3.0f * (ZGFloat)M_PI / 2.0f;
 	}
 	return 0.0f;
 }
@@ -423,7 +431,7 @@ static void testAndDrawCharacterIfNeeded(Renderer *renderer, Character *characte
 
 void drawCharacters(Renderer *renderer, RendererOptions options)
 {
-	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((float)M_PI / 180.0f));
+	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((ZGFloat)M_PI / 180.0f));
 	mat4_t worldTranslationMatrix = m4_translation((vec3_t){-7.0f, 12.5f, -25.0f});
 	mat4_t worldMatrix = m4_mul(worldRotationMatrix, worldTranslationMatrix);
 	
@@ -435,7 +443,7 @@ void drawCharacters(Renderer *renderer, RendererOptions options)
 
 static mat4_t characterIconModelViewMatrix(mat4_t modelViewMatrix)
 {
-	return m4_mul(modelViewMatrix, m4_rotation_x((float)M_PI));
+	return m4_mul(modelViewMatrix, m4_rotation_x((ZGFloat)M_PI));
 }
 
 static void drawCharacterIcon(Renderer *renderer, mat4_t modelViewMatrix, Character *character)
@@ -485,7 +493,7 @@ static mat4_t playerLabelModelViewMatrix(mat4_t modelViewMatrix)
 	return m4_mul(modelViewMatrix, m4_translation((vec3_t){0.5f, 0.0f, 0.0f}));
 }
 
-static void drawCharacterLives(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, Character *character, float livesWidth, float livesHeight, const char *playerNumberString, float playerLabelWidth, float playerLabelHeight)
+static void drawCharacterLives(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, Character *character, ZGFloat livesWidth, ZGFloat livesHeight, const char *playerNumberString, ZGFloat playerLabelWidth, ZGFloat playerLabelHeight)
 {
 	if (character->lives != 0)
 	{
@@ -519,11 +527,11 @@ void drawAllCharacterInfo(Renderer *renderer, const mat4_t *iconTranslations, bo
 	const color4_t greenTreeColor = (color4_t){0.0f, 1.0f, 0.0f, 1.0f};
 	const color4_t blueLightningColor = (color4_t){0.0f, 0.0f, 1.0f, 1.0f};
 	
-	const float playerLabelWidth = 1.0f / 1.52f;
-	const float playerLabelHeight = 0.5f / 1.52f;
+	const ZGFloat playerLabelWidth = 1.0f / 1.52f;
+	const ZGFloat playerLabelHeight = 0.5f / 1.52f;
 	
-	const float livesWidth = 0.5f / 1.52f;
-	const float livesHeight = 0.5f / 1.52f;
+	const ZGFloat livesWidth = 0.5f / 1.52f;
+	const ZGFloat livesHeight = 0.5f / 1.52f;
 	
 	drawCharacterLives(renderer, pinkBubbleGumModelViewMatrix, pinkBubbleGumColor, &gPinkBubbleGum, livesWidth, livesHeight, "[P1]", playerLabelWidth, playerLabelHeight);
 	drawCharacterLives(renderer, redRoverModelViewMatrix, redRoverColor, &gRedRover, livesWidth, livesHeight, "[P2]", playerLabelWidth, playerLabelHeight);

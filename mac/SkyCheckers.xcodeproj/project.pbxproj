@@ -147,6 +147,8 @@
 		72817C9C2393808B00DB7677 /* gamepad_ios.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = gamepad_ios.m; path = ../src/gamepad_ios.m; sourceTree = "<group>"; };
 		72817C9E239381F000DB7677 /* keyboard_ios.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = keyboard_ios.m; path = ../src/keyboard_ios.m; sourceTree = "<group>"; };
 		72817CA02393827700DB7677 /* app_ios.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = app_ios.m; path = ../src/app_ios.m; sourceTree = "<group>"; };
+		72817CAF23944C0100DB7677 /* float.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = float.h; path = ../src/float.h; sourceTree = "<group>"; };
+		72817CB02394522000DB7677 /* float_metal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = float_metal.h; path = ../src/float_metal.h; sourceTree = "<group>"; };
 		7282C624231CEC640063D3CB /* audio_osx.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = audio_osx.m; path = ../src/audio_osx.m; sourceTree = "<group>"; };
 		7282C626231CEE3C0063D3CB /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		729BE4B82364121800DC70F7 /* gamepad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gamepad.h; path = ../src/gamepad.h; sourceTree = "<group>"; };
@@ -289,6 +291,8 @@
 				772B6A840D15CBA000A216BD /* network.c */,
 				77DC8A500B2FA1DD0080334C /* console.h */,
 				77DC8A510B2FA1DD0080334C /* console.c */,
+				72817CAF23944C0100DB7677 /* float.h */,
+				72817CB02394522000DB7677 /* float_metal.h */,
 				721A006B21AA74E90099D093 /* renderer_types.h */,
 				72A14F3021A71C6800606E14 /* renderer.h */,
 				72A14F2F21A71C6700606E14 /* renderer.c */,

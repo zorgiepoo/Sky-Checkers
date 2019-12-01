@@ -252,13 +252,13 @@ void drawSky(Renderer *renderer, RendererOptions options)
 	
 	if (!initializedBuffers)
 	{
-		float vertexAndTextureCoordinates[] =
+		ZGFloat vertexAndTextureCoordinates[] =
 		{
 			// vertices
-			-16.0f, 16.0f, 0.0f,
-			16.0f, 16.0f, 0.0f,
-			16.0f, -16.0f, 0.0f,
-			-16.0f, -16.0f, 0.0f,
+			-16.0f, 16.0f, 0.0f, 1.0f,
+			16.0f, 16.0f, 0.0f, 1.0f,
+			16.0f, -16.0f, 0.0f, 1.0f,
+			-16.0f, -16.0f, 0.0f, 1.0f,
 			
 			// texture coordinates
 			0.0f, 0.0f,
@@ -267,7 +267,7 @@ void drawSky(Renderer *renderer, RendererOptions options)
 			0.0f, 1.0f
 		};
 		
-		vertexAndTextureArrayObject = createVertexAndTextureCoordinateArrayObject(renderer, vertexAndTextureCoordinates, 12 * sizeof(*vertexAndTextureCoordinates), 8 * sizeof(*vertexAndTextureCoordinates));
+		vertexAndTextureArrayObject = createVertexAndTextureCoordinateArrayObject(renderer, vertexAndTextureCoordinates, 16 * sizeof(*vertexAndTextureCoordinates), 8 * sizeof(*vertexAndTextureCoordinates));
 		indicesBufferObject = rectangleIndexBufferObject(renderer);
 		
 		initializedBuffers = true;
@@ -286,33 +286,33 @@ void drawTiles(Renderer *renderer)
 	
 	if (!initializedBuffers)
 	{
-		float verticesAndTextureCoordinates[] =
+		ZGFloat verticesAndTextureCoordinates[] =
 		{
 			// Vertices
 			
 			// Bottom
-			-1.0f, -1.0f, 1.0f,
-			-1.0f, -1.0f, -1.0f,
-			1.0f, -1.0f, -1.0f,
-			1.0f, -1.0f, 1.0f,
+			-1.0f, -1.0f, 1.0f, 1.0f,
+			-1.0f, -1.0f, -1.0f, 1.0f,
+			1.0f, -1.0f, -1.0f, 1.0f,
+			1.0f, -1.0f, 1.0f, 1.0f,
 			
 			// Left
-			-1.0f, 1.0f, 1.0f,
-			-1.0f, 1.0f, -1.0f,
-			-1.0f, -1.0f, -1.0f,
-			-1.0f, -1.0f, 1.0f,
+			-1.0f, 1.0f, 1.0f, 1.0f,
+			-1.0f, 1.0f, -1.0f, 1.0f,
+			-1.0f, -1.0f, -1.0f, 1.0f,
+			-1.0f, -1.0f, 1.0f, 1.0f,
 			
 			// Right
-			1.0f, 1.0f, 1.0f,
-			1.0f, 1.0f, -1.0f,
-			1.0f, -1.0f, -1.0f,
-			1.0f, -1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f, 1.0f,
+			1.0f, 1.0f, -1.0f, 1.0f,
+			1.0f, -1.0f, -1.0f, 1.0f,
+			1.0f, -1.0f, 1.0f, 1.0f,
 			
 			// Front
-			-1.0f, 1.0f, 1.0f,
-			-1.0f, -1.0f, 1.0f,
-			1.0f, -1.0f, 1.0f,
-			1.0f, 1.0f, 1.0f,
+			-1.0f, 1.0f, 1.0f, 1.0f,
+			-1.0f, -1.0f, 1.0f, 1.0f,
+			1.0f, -1.0f, 1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f, 1.0f,
 			
 			// Texture coordinates
 			// Bottom
@@ -359,14 +359,14 @@ void drawTiles(Renderer *renderer)
 			14, 15, 12
 		};
 		
-		vertexAndTextureCoordinateArrayObject = createVertexAndTextureCoordinateArrayObject(renderer, verticesAndTextureCoordinates, sizeof(*verticesAndTextureCoordinates) * 48, sizeof(*verticesAndTextureCoordinates) * 32);
+		vertexAndTextureCoordinateArrayObject = createVertexAndTextureCoordinateArrayObject(renderer, verticesAndTextureCoordinates, sizeof(*verticesAndTextureCoordinates) * 64, sizeof(*verticesAndTextureCoordinates) * 32);
 		
 		indicesBufferObject = createIndexBufferObject(renderer, indices, sizeof(indices));
 		
 		initializedBuffers = true;
 	}
 	
-	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((float)M_PI / 180.0f));
+	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((ZGFloat)M_PI / 180.0f));
 	
 	for (int i = 0; i < NUMBER_OF_TILES; i++)
 	{

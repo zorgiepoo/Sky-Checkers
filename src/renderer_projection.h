@@ -30,7 +30,7 @@ extern "C" {
 #define PROJECTION_NEAR_VIEW_DISTANCE 10.0f
 #define PROJECTION_FAR_VIEW_DISTANCE 300.0f
 
-float computeProjectionAspectRatio(Renderer *renderer);
+ZGFloat computeProjectionAspectRatio(Renderer *renderer);
 
 void updateGLProjectionMatrix(Renderer *renderer);
 
