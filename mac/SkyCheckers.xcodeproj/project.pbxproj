@@ -11,8 +11,8 @@
 		7201184723260D93004C2532 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7201184623260D93004C2532 /* CoreGraphics.framework */; };
 		7201184A232758ED004C2532 /* font_osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 72011849232758ED004C2532 /* font_osx.m */; };
 		721A007121AA7B420099D093 /* renderer_metal.m in Sources */ = {isa = PBXBuildFile; fileRef = 721A007021AA7B420099D093 /* renderer_metal.m */; };
-		721A007321AA7CBE0099D093 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721A007221AA7CBE0099D093 /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
-		721A007521AA7D350099D093 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721A007421AA7D350099D093 /* QuartzCore.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		721A007321AA7CBE0099D093 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721A007221AA7CBE0099D093 /* Metal.framework */; settings = {ATTRIBUTES = (Required, ); }; };
+		721A007521AA7D350099D093 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 721A007421AA7D350099D093 /* QuartzCore.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		721A007721AB11CD0099D093 /* shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 721A007621AB11CC0099D093 /* shaders.metal */; };
 		7272B29E21E5CBEB00C305D3 /* renderer_projection.c in Sources */ = {isa = PBXBuildFile; fileRef = 7272B29D21E5CBEB00C305D3 /* renderer_projection.c */; };
 		727DAE23235BFFBB0030B29D /* mt_random.c in Sources */ = {isa = PBXBuildFile; fileRef = 727DAE22235BFFBB0030B29D /* mt_random.c */; };
