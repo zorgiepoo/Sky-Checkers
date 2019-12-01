@@ -17,7 +17,7 @@
  * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
  */
  
- #include "linux.h"
+ #include "defaults.h"
  #include <sys/stat.h>
  #include <sys/types.h>
  #include <stdlib.h>
@@ -41,4 +41,12 @@
 	}
 
 	return file;
+ }
+
+ void getDefaultUserName(char *defaultUserName, int maxLength)
+ {
+ 	if (maxLength > 0)
+ 	{
+ 		defaultUserName[0] = '\0';
+ 	}
  }

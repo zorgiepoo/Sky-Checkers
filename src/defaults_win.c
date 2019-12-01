@@ -17,7 +17,7 @@
  * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
  */
  
-#include "windows.h"
+#include "defaults.h"
 #include <Shlwapi.h>
 #include <ShlObj.h>
 #include <windows.h>
@@ -40,4 +40,12 @@ FILE *getUserDataFile(const char *mode)
 	}
 	
 	return file;
+}
+
+void getDefaultUserName(char *defaultUserName, int maxLength)
+{
+	if (maxLength > 0)
+	{
+		defaultUserName[0] = '\0';
+	}
 }

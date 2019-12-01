@@ -17,7 +17,7 @@
  * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#import "osx.h"
+#import "defaults.h"
 #import <Foundation/Foundation.h>
 
 FILE *getUserDataFile(const char *mode)

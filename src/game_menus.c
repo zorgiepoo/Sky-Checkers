@@ -56,8 +56,8 @@ bool gNetworkUserNameFieldIsActive =		false;
 char gServerAddressString[MAX_SERVER_ADDRESS_SIZE] = "localhost";
 int gServerAddressStringIndex = 9;
 
-char gUserNameString[MAX_USER_NAME_SIZE] = "Kale";
-int gUserNameStringIndex = 4;
+char gUserNameString[MAX_USER_NAME_SIZE];
+int gUserNameStringIndex = 0;
 
 bool gMenuPendingOnKeyCode = false;
 static uint32_t *gMenuPendingKeyCode;

@@ -35,24 +35,13 @@
 #include "gamepad.h"
 #include "globals.h"
 #include "window.h"
+#include "defaults.h"
 
 #include <string.h>
 #include <stdlib.h>
 
 #define MATH_3D_IMPLEMENTATION
 #include "math_3d.h"
-
-#ifdef MAC_OS_X
-#include "osx.h"
-#endif
-
-#ifdef WINDOWS
-#include "linux.h"
-#endif
-
-#ifdef linux
-#include "linux.h"
-#endif
 
 bool gGameHasStarted;
 bool gGameShouldReset;
@@ -276,17 +265,18 @@ read_input_cleanup:
 static void readDefaults(void)
 {
 	// this would be a good time to get the default user name
-#ifdef MAC_OS_X
 	getDefaultUserName(gUserNameString, MAX_USER_NAME_SIZE - 1);
 	gUserNameStringIndex = (int)strlen(gUserNameString);
-#else
-	char *randomNames[] = { "Tale", "Backer", "Hop", "Expel", "Rida", "Tao", "Eyez", "Phia", "Sync", "Witty", "Poet", "Roost", "Kuro", "Spot", "Carb", "Unow", "Gil", "Needle", "Oxy", "Kale" };
-	
-	int randomNameIndex = (int)(mt_random() % (sizeof(randomNames) / sizeof(randomNames[0])));
-	char *randomName = randomNames[randomNameIndex];
-	
-	strncpy(gUserNameString, randomName, MAX_USER_NAME_SIZE - 1);
-#endif
+	if (gUserNameStringIndex == 0)
+	{
+		char *randomNames[] = { "Tale", "Backer", "Hop", "Expel", "Rida", "Tao", "Eyez", "Phia", "Sync", "Witty", "Poet", "Roost", "Kuro", "Spot", "Carb", "Unow", "Gil", "Needle", "Oxy", "Kale" };
+		
+		int randomNameIndex = (int)(mt_random() % (sizeof(randomNames) / sizeof(randomNames[0])));
+		char *randomName = randomNames[randomNameIndex];
+		
+		strncpy(gUserNameString, randomName, MAX_USER_NAME_SIZE - 1);
+		gUserNameStringIndex = (int)strlen(gUserNameString);
+	}
 
 	FILE *fp = getUserDataFile("rb");
 
