@@ -68,7 +68,7 @@ void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, float *modelVi
 
 + (Class)layerClass
 {
-	return NSClassFromString(@"CAMetalLayer");
+	return [CAMetalLayer class];
 }
 
 - (instancetype)initWithFrame:(NSRect)frame renderer:(Renderer *)renderer
