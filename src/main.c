@@ -1772,7 +1772,6 @@ static void runLoopHandler(void *context)
 	}
 	
 	bool shouldCapFPS = !ZGWindowHasFocus(renderer->window) || !renderer->vsync;
-	shouldCapFPS = false;
 	if (shouldCapFPS)
 	{
 #ifndef _PROFILING
