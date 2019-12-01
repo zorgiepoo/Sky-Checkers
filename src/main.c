@@ -102,8 +102,7 @@ typedef struct
 	uint32_t lastRunloopTime;
 } AppContext;
 
-#define LOW_FPS_RATE 30
-#define HIGH_FPS_RATE 120
+#define MAX_FPS_RATE 120
 
 #define MAX_CHARACTER_LIVES 10
 #define CHARACTER_ICON_DISPLACEMENT 5.0f
@@ -1771,22 +1770,15 @@ static void runLoopHandler(void *context)
 		renderFrame(renderer, drawScene);
 	}
 	
-	bool shouldCapFPS = !ZGWindowHasFocus(renderer->window) || !renderer->vsync;
+	bool shouldCapFPS = !appContext->needsToDrawScene || !renderer->vsync;
 	if (shouldCapFPS)
 	{
-#ifndef _PROFILING
-		bool targetHighRate = !gFpsFlag && ZGWindowHasFocus(renderer->window);
-#else
-		bool targetHighRate = !gFpsFlag;
-#endif
-		uint32_t fpsRate = targetHighRate ? HIGH_FPS_RATE : LOW_FPS_RATE;
-		
 		uint32_t timeAfterRender = ZGGetTicks();
 		
 		if (appContext->lastRunloopTime > 0 && timeAfterRender > appContext->lastRunloopTime)
 		{
 			uint32_t timeElapsed = timeAfterRender - appContext->lastRunloopTime;
-			uint32_t targetTime = (uint32_t)(1000.0 / fpsRate);
+			uint32_t targetTime = (uint32_t)(1000.0 / MAX_FPS_RATE);
 			
 			if (timeElapsed < targetTime)
 			{
