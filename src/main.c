@@ -1771,27 +1771,31 @@ static void runLoopHandler(void *context)
 		renderFrame(renderer, drawScene);
 	}
 	
-#ifndef _PROFILING
-	bool targetHighRate = !gFpsFlag && ZGWindowHasFocus(renderer->window);
-#else
-	bool targetHighRate = !gFpsFlag;
-#endif
-	uint32_t fpsRate = targetHighRate ? HIGH_FPS_RATE : LOW_FPS_RATE;
-	
-	uint32_t timeAfterRender = ZGGetTicks();
-	
-	if (appContext->lastRunloopTime > 0 && timeAfterRender > appContext->lastRunloopTime)
+	bool shouldCapFPS = !ZGWindowHasFocus(renderer->window) || !renderer->vsync;
+	if (shouldCapFPS)
 	{
-		uint32_t timeElapsed = timeAfterRender - appContext->lastRunloopTime;
-		uint32_t targetTime = (uint32_t)(1000.0 / fpsRate);
+#ifndef _PROFILING
+		bool targetHighRate = !gFpsFlag && ZGWindowHasFocus(renderer->window);
+#else
+		bool targetHighRate = !gFpsFlag;
+#endif
+		uint32_t fpsRate = targetHighRate ? HIGH_FPS_RATE : LOW_FPS_RATE;
 		
-		if (timeElapsed < targetTime)
+		uint32_t timeAfterRender = ZGGetTicks();
+		
+		if (appContext->lastRunloopTime > 0 && timeAfterRender > appContext->lastRunloopTime)
 		{
-			ZGDelay(targetTime - timeElapsed);
+			uint32_t timeElapsed = timeAfterRender - appContext->lastRunloopTime;
+			uint32_t targetTime = (uint32_t)(1000.0 / fpsRate);
+			
+			if (timeElapsed < targetTime)
+			{
+				ZGDelay(targetTime - timeElapsed);
+			}
 		}
+		
+		appContext->lastRunloopTime = ZGGetTicks();
 	}
-	
-	appContext->lastRunloopTime = ZGGetTicks();
 }
 
 static void pollEventHandler(void *context, void *systemEvent)
