@@ -20,7 +20,11 @@
 #pragma once
 
 #include "platforms.h"
+
+#ifndef IOS_DEVICE
 #include "keyboard.h"
+#endif
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -59,8 +63,12 @@ void ZGGetWindowSize(ZGWindow *window, int32_t *width, int32_t *height);
 #endif
 
 void ZGSetWindowEventHandler(ZGWindow *window, void *context, void (*windowEventHandler)(ZGWindowEvent, void *));
+
+#ifndef IOS_DEVICE
 void ZGSetKeyboardEventHandler(ZGWindow *window, void *context, void (*keyboardEventHandler)(ZGKeyboardEvent, void *));
-void ZGPollWindowAndKeyboardEvents(ZGWindow *window, const void *systemEvent);
+#endif
+
+void ZGPollWindowAndInputEvents(ZGWindow *window, const void *systemEvent);
 
 #ifndef linux
 void *ZGWindowHandle(ZGWindow *window);

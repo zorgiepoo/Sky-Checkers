@@ -21,7 +21,11 @@
 
 #include "characters.h"
 #include "gamepad.h"
+#include "platforms.h"
+
+#ifndef IOS_DEVICE
 #include "keyboard.h"
+#endif
 
 /* Keyboard input structure used for a character*/
 typedef struct
@@ -59,12 +63,18 @@ extern Input gGreenTreeInput;
 extern Input gPinkBubbleGumInput;
 extern Input gBlueLightningInput;
 
-void initInput(Input *input, uint32_t right, uint32_t left, uint32_t up, uint32_t down, uint32_t weapon);
+void initInput(Input *input);
+
+#ifndef IOS_DEVICE
+void setInputKeys(Input *input, uint32_t right, uint32_t left, uint32_t up, uint32_t down, uint32_t weapon);
+#endif
 
 Character *characterFromInput(Input *characterInput);
 
+#ifndef IOS_DEVICE
 void performDownKeyAction(Input *input, ZGKeyboardEvent *event);
 void performUpKeyAction(Input *input, ZGKeyboardEvent *event);
+#endif
 
 void performGamepadAction(Input *input, GamepadEvent *gamepadEvent);
 

@@ -150,11 +150,18 @@ static void initScene(Renderer *renderer)
 	if (!gValidDefaults)
 	{
 		// init the inputs
-		initInput(&gRedRoverInput, ZG_KEYCODE_B, ZG_KEYCODE_C, ZG_KEYCODE_F, ZG_KEYCODE_V, ZG_KEYCODE_G);
-		initInput(&gGreenTreeInput, ZG_KEYCODE_L, ZG_KEYCODE_J, ZG_KEYCODE_I, ZG_KEYCODE_K, ZG_KEYCODE_M);
-		initInput(&gBlueLightningInput, ZG_KEYCODE_D, ZG_KEYCODE_A, ZG_KEYCODE_W, ZG_KEYCODE_S, ZG_KEYCODE_Z);
-		initInput(&gPinkBubbleGumInput, ZG_KEYCODE_RIGHT, ZG_KEYCODE_LEFT, ZG_KEYCODE_UP, ZG_KEYCODE_DOWN, ZG_KEYCODE_SPACE);
+		initInput(&gRedRoverInput);
+		initInput(&gGreenTreeInput);
+		initInput(&gBlueLightningInput);
+		initInput(&gPinkBubbleGumInput);
 
+#ifndef IOS_DEVICE
+		setInputKeys(&gRedRoverInput, ZG_KEYCODE_B, ZG_KEYCODE_C, ZG_KEYCODE_F, ZG_KEYCODE_V, ZG_KEYCODE_G);
+		setInputKeys(&gGreenTreeInput, ZG_KEYCODE_L, ZG_KEYCODE_J, ZG_KEYCODE_I, ZG_KEYCODE_K, ZG_KEYCODE_M);
+		setInputKeys(&gBlueLightningInput, ZG_KEYCODE_D, ZG_KEYCODE_A, ZG_KEYCODE_W, ZG_KEYCODE_S, ZG_KEYCODE_Z);
+		setInputKeys(&gPinkBubbleGumInput, ZG_KEYCODE_RIGHT, ZG_KEYCODE_LEFT, ZG_KEYCODE_UP, ZG_KEYCODE_DOWN, ZG_KEYCODE_SPACE);
+#endif
+		
 		// init character states
 		gPinkBubbleGum.state = CHARACTER_HUMAN_STATE;
 		gRedRover.state = CHARACTER_AI_STATE;
@@ -224,7 +231,8 @@ static bool scanLineTerminatingString(FILE *fp, char *destBuffer, size_t maxBuff
 	return success;
 }
 
-static bool readCharacterInputDefaults(FILE *fp, const char *characterName, Input *input, int defaultsVersion)
+#ifndef IOS_DEVICE
+static bool readCharacterKeyboardDefaults(FILE *fp, const char *characterName, Input *input, int defaultsVersion)
 {
 	bool readInputDefaults = false;
 	
@@ -253,7 +261,8 @@ static bool readCharacterInputDefaults(FILE *fp, const char *characterName, Inpu
 	int weapon = 0;
 	if (fscanf(fp, " key weapon: %d\n", &weapon) < 1) goto read_input_cleanup;
 	
-	initInput(input, right, left, up, down, weapon);
+	initInput(input);
+	setInputKeys(input, right, left, up, down, weapon);
 	
 	readInputDefaults = true;
 	
@@ -261,6 +270,7 @@ read_input_cleanup:
 	
 	return readInputDefaults;
 }
+#endif
 
 static void readDefaults(void)
 {
@@ -424,10 +434,12 @@ static void readDefaults(void)
 		gNumberOfNetHumans = 1;
 	}
 	
-	if (!readCharacterInputDefaults(fp, "Pink Bubblegum", &gPinkBubbleGumInput, defaultsVersion)) goto cleanup;
-	if (!readCharacterInputDefaults(fp, "Red Rover", &gRedRoverInput, defaultsVersion)) goto cleanup;
-	if (!readCharacterInputDefaults(fp, "Green Tree", &gGreenTreeInput, defaultsVersion)) goto cleanup;
-	if (!readCharacterInputDefaults(fp, "Blue Lightning", &gBlueLightningInput, defaultsVersion)) goto cleanup;
+#ifndef IOS_DEVICE
+	if (!readCharacterKeyboardDefaults(fp, "Pink Bubblegum", &gPinkBubbleGumInput, defaultsVersion)) goto cleanup;
+	if (!readCharacterKeyboardDefaults(fp, "Red Rover", &gRedRoverInput, defaultsVersion)) goto cleanup;
+	if (!readCharacterKeyboardDefaults(fp, "Green Tree", &gGreenTreeInput, defaultsVersion)) goto cleanup;
+	if (!readCharacterKeyboardDefaults(fp, "Blue Lightning", &gBlueLightningInput, defaultsVersion)) goto cleanup;
+#endif
 	
 	if (!scanExpectedString(fp, "Server IP Address: ")) goto cleanup;
 	if (!scanLineTerminatingString(fp, gServerAddressString, sizeof(gServerAddressString))) goto cleanup;
@@ -458,6 +470,7 @@ cleanup:
 	fclose(fp);
 }
 
+#ifndef IOS_DEVICE
 static void writeCharacterInput(FILE *fp, const char *characterName, Input *input)
 {
 	fprintf(fp, "%s key right: %i\n", characterName, input->r_id);
@@ -468,6 +481,7 @@ static void writeCharacterInput(FILE *fp, const char *characterName, Input *inpu
 	
 	fprintf(fp, "\n");
 }
+#endif
 
 static void writeDefaults(Renderer *renderer)
 {
@@ -513,6 +527,7 @@ static void writeDefaults(Renderer *renderer)
 
 	// Character defaults
 	
+#ifndef IOS_DEVICE
 	writeCharacterInput(fp, "Pink Bubblegum", &gPinkBubbleGumInput);
 	fprintf(fp, "\n");
 	
@@ -523,8 +538,9 @@ static void writeDefaults(Renderer *renderer)
 	fprintf(fp, "\n");
 	
 	writeCharacterInput(fp, "Blue Lightning", &gBlueLightningInput);
-	
 	fprintf(fp, "\n");
+#endif
+	
 	fprintf(fp, "Server IP Address: %s\n", gServerAddressString);
 
 	fprintf(fp, "\n");
@@ -1140,6 +1156,7 @@ static void writeTextInput(const char *text, uint8_t maxSize)
 	}
 }
 
+#ifndef IOS_DEVICE
 static void handleKeyDownEvent(ZGKeyboardEvent *event, Renderer *renderer)
 {
 	ZGWindow *window = renderer->window;
@@ -1502,6 +1519,7 @@ static void handleTextInputEvent(ZGKeyboardEvent *event)
 {
 	writeTextInput(event->text, sizeof(event->text));
 }
+#endif
 
 #define MAX_ITERATIONS (25 * ANIMATION_TIMER_INTERVAL)
 
@@ -1561,6 +1579,7 @@ static void handleWindowEvent(ZGWindowEvent event, void *context)
 	}
 }
 
+#ifndef IOS_DEVICE
 static void handleKeyboardEvent(ZGKeyboardEvent event, void *context)
 {
 	switch (event.type)
@@ -1576,6 +1595,7 @@ static void handleKeyboardEvent(ZGKeyboardEvent event, void *context)
 			break;
 	}
 }
+#endif
 
 static void gamepadAdded(GamepadIndex gamepadIndex)
 {
@@ -1678,7 +1698,9 @@ static void appLaunchedHandler(void *context)
 	}
 	
 	ZGSetWindowEventHandler(renderer->window, appContext, handleWindowEvent);
+#ifndef IOS_DEVICE
 	ZGSetKeyboardEventHandler(renderer->window, renderer, handleKeyboardEvent);
+#endif
 }
 
 static void appTerminatedHandler(void *context)
@@ -1786,7 +1808,7 @@ static void pollEventHandler(void *context, void *systemEvent)
 	Renderer *renderer = &appContext->renderer;
 	
 	pollGamepads(gGamepadManager, systemEvent);
-	ZGPollWindowAndKeyboardEvents(renderer->window, systemEvent);
+	ZGPollWindowAndInputEvents(renderer->window, systemEvent);
 	
 #ifdef IOS_DEVICE
 	static bool once;

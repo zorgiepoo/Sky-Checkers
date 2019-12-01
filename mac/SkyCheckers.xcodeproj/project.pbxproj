@@ -45,7 +45,6 @@
 		72817C9A2393803900DB7677 /* texture_osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 727DAE4D235D284F0030B29D /* texture_osx.m */; };
 		72817C9B2393805B00DB7677 /* text.c in Sources */ = {isa = PBXBuildFile; fileRef = 776592630BA35B4300167AF7 /* text.c */; };
 		72817C9D2393808B00DB7677 /* gamepad_ios.m in Sources */ = {isa = PBXBuildFile; fileRef = 72817C9C2393808B00DB7677 /* gamepad_ios.m */; };
-		72817C9F239381F000DB7677 /* keyboard_ios.m in Sources */ = {isa = PBXBuildFile; fileRef = 72817C9E239381F000DB7677 /* keyboard_ios.m */; };
 		72817CA12393827700DB7677 /* app_ios.m in Sources */ = {isa = PBXBuildFile; fileRef = 72817CA02393827700DB7677 /* app_ios.m */; };
 		72817CA2239385DC00DB7677 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 774A441E0B2BEA57000C04D9 /* main.c */; };
 		72817CA3239385E400DB7677 /* game_menus.c in Sources */ = {isa = PBXBuildFile; fileRef = 77C7A4FB0CFD292600295420 /* game_menus.c */; };
@@ -144,7 +143,6 @@
 		72817C8923934E7300DB7677 /* characters.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = characters.c; path = ../src/characters.c; sourceTree = "<group>"; };
 		72817C912393675900DB7677 /* window_ios.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = window_ios.m; path = ../src/window_ios.m; sourceTree = "<group>"; };
 		72817C9C2393808B00DB7677 /* gamepad_ios.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = gamepad_ios.m; path = ../src/gamepad_ios.m; sourceTree = "<group>"; };
-		72817C9E239381F000DB7677 /* keyboard_ios.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = keyboard_ios.m; path = ../src/keyboard_ios.m; sourceTree = "<group>"; };
 		72817CA02393827700DB7677 /* app_ios.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = app_ios.m; path = ../src/app_ios.m; sourceTree = "<group>"; };
 		72817CAF23944C0100DB7677 /* float.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = float.h; path = ../src/float.h; sourceTree = "<group>"; };
 		72817CB02394522000DB7677 /* float_metal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = float_metal.h; path = ../src/float_metal.h; sourceTree = "<group>"; };
@@ -311,7 +309,6 @@
 				72817C912393675900DB7677 /* window_ios.m */,
 				72817BC52390A98D00DB7677 /* keyboard.h */,
 				72817BCA2390C11D00DB7677 /* keyboard_osx.m */,
-				72817C9E239381F000DB7677 /* keyboard_ios.m */,
 				727DAE24235C10A50030B29D /* quit.h */,
 				72817BD32392C33800DB7677 /* quit_osx.m */,
 				729BE4B82364121800DC70F7 /* gamepad.h */,
@@ -521,7 +518,6 @@
 				72817C922393675900DB7677 /* window_ios.m in Sources */,
 				72817CA12393827700DB7677 /* app_ios.m in Sources */,
 				72817C8D23934F1900DB7677 /* time_osx.m in Sources */,
-				72817C9F239381F000DB7677 /* keyboard_ios.m in Sources */,
 				72817C7923934DB500DB7677 /* audio_osx.m in Sources */,
 				72817C9D2393808B00DB7677 /* gamepad_ios.m in Sources */,
 			);

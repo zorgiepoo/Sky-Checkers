@@ -81,7 +81,7 @@ void ZGSetKeyboardEventHandler(ZGWindow *windowRef, void *context, void (*keyboa
 	windowController->keyboardEventHandlerContext = context;
 }
 
-void ZGPollWindowAndKeyboardEvents(ZGWindow *windowRef, const void *systemEvent)
+void ZGPollWindowAndInputEvents(ZGWindow *windowRef, const void *systemEvent)
 {
 	WindowController *windowController = (WindowController *)windowRef;
 	if (systemEvent == NULL) return;

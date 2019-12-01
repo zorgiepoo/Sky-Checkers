@@ -78,11 +78,7 @@ void ZGSetWindowEventHandler(ZGWindow *window, void *context, void (*windowEvent
 {
 }
 
-void ZGSetKeyboardEventHandler(ZGWindow *window, void *context, void (*keyboardEventHandler)(ZGKeyboardEvent, void *))
-{
-}
-
-void ZGPollWindowAndKeyboardEvents(ZGWindow *window, const void *systemEvent)
+void ZGPollWindowAndInputEvents(ZGWindow *window, const void *systemEvent)
 {
 }
 

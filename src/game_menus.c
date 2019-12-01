@@ -59,11 +59,13 @@ int gServerAddressStringIndex = 9;
 char gUserNameString[MAX_USER_NAME_SIZE];
 int gUserNameStringIndex = 0;
 
+#ifndef IOS_DEVICE
 bool gMenuPendingOnKeyCode = false;
 static uint32_t *gMenuPendingKeyCode;
 
 static char *convertKeyCodeToString(uint32_t theKeyCode);
 static void configureKey(uint32_t *id);
+#endif
 
 static void drawUpAndDownArrowTriangles(Renderer *renderer, mat4_t modelViewMatrix)
 {
@@ -517,6 +519,7 @@ void playerOptionsMenuAction(void *context)
 	changeMenu(RIGHT);
 }
 
+#ifndef IOS_DEVICE
 void drawConfigureKeysMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.00f, -20.00f});	
@@ -527,6 +530,7 @@ void configureKeysMenuAction(void *context)
 {
 	changeMenu(RIGHT);
 }
+#endif
 
 void drawPinkBubbleGumPlayerOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
@@ -710,6 +714,8 @@ void blueLightningKeyMenuAction(void *context)
 }
 
 // start configuration menus
+
+#ifndef IOS_DEVICE
 
 static void drawKeyboardConfigurationInstructions(Renderer *renderer)
 {
@@ -952,6 +958,8 @@ void blueLightningFireKeyMenuAction(void *context)
 	configureKey(&gBlueLightningInput.weap_id);
 }
 
+#endif
+
 // Audio options
 void drawAudioOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
@@ -1046,9 +1054,11 @@ void initMenus(void)
 	gBlueLightningPlayerOptionsMenu =			malloc(sizeof(Menu));
 	gAIModeOptionsMenu =						malloc(sizeof(Menu));
 	gConfigureLivesMenu =						malloc(sizeof(Menu));
+#ifndef IOS_DEVICE
 	Menu *configureKeysMenu =					malloc(sizeof(Menu));
 	// Four characters that each have their own menu + five configured menu actions (right, up, left, down, fire)
 	Menu *characterConfigureKeys = 				malloc(sizeof(Menu) * 4 * 6);
+#endif
 	Menu *audioOptionsMenu =					malloc(sizeof(Menu));
 	Menu *audioEffectsOptionsMenu =				malloc(sizeof(Menu));
 	Menu *audioMusicOptionsMenu =				malloc(sizeof(Menu));
@@ -1115,8 +1125,10 @@ void initMenus(void)
 	gConfigureLivesMenu->draw = drawConfigureLivesMenu;
 	gConfigureLivesMenu->action = NULL;
 	
+#ifndef IOS_DEVICE
 	configureKeysMenu->draw = drawConfigureKeysMenu;
 	configureKeysMenu->action = configureKeysMenuAction;
+#endif
 	
 	audioOptionsMenu->draw = drawAudioOptionsMenu;
 	audioOptionsMenu->action = audioOptionsMenuAction;
@@ -1132,6 +1144,7 @@ void initMenus(void)
 	quitMenu->action = quitMenuAction;
 #endif
 	
+#ifndef IOS_DEVICE
 	// character config menu keys
 	
 	// pinkBubbleGum configs
@@ -1209,6 +1222,7 @@ void initMenus(void)
 	
 	characterConfigureKeys[23].draw = drawBlueLightningConfigFireKey;
 	characterConfigureKeys[23].action = blueLightningFireKeyMenuAction;
+#endif
 		
 	// Add Menus
 	addSubMenu(&gMainMenu, playMenu);
@@ -1239,11 +1253,14 @@ void initMenus(void)
 	addSubMenu(playerOptionsMenu, gAIModeOptionsMenu);
 	addSubMenu(playerOptionsMenu, gConfigureLivesMenu);
 	
+#ifndef IOS_DEVICE
 	addSubMenu(gameOptionsMenu, configureKeysMenu);
+#endif
 	
 	addSubMenu(audioOptionsMenu, audioEffectsOptionsMenu);
 	addSubMenu(audioOptionsMenu, audioMusicOptionsMenu);
 	
+#ifndef IOS_DEVICE
 	// Configure keys submenus
 	for (int characterIndex = 0; characterIndex < 4; characterIndex++)
 	{
@@ -1254,8 +1271,10 @@ void initMenus(void)
 			addSubMenu(&characterConfigureKeys[characterIndex * 6], &characterConfigureKeys[characterIndex * 6 + submenuIndex]);
 		}
 	}
+#endif
 }
 
+#ifndef IOS_DEVICE
 static char *convertKeyCodeToString(uint32_t theKeyCode)
 {
 	static char gKeyCode[64];
@@ -1294,3 +1313,4 @@ void configureKey(uint32_t *id)
 	gMenuPendingKeyCode = id;
 	gMenuPendingOnKeyCode = true;
 }
+#endif

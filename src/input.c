@@ -28,7 +28,7 @@ Input gGreenTreeInput;
 Input gPinkBubbleGumInput;
 Input gBlueLightningInput;
 
-void initInput(Input *input, uint32_t right, uint32_t left, uint32_t up, uint32_t down, uint32_t weapon)
+void initInput(Input *input)
 {
 	input->right_ticks = 0;
 	input->left_ticks = 0;
@@ -38,14 +38,19 @@ void initInput(Input *input, uint32_t right, uint32_t left, uint32_t up, uint32_
 	
 	input->priority = 0;
 	
+	input->gamepadIndex = INVALID_GAMEPAD_INDEX;
+}
+
+#ifndef IOS_DEVICE
+void setInputKeys(Input *input, uint32_t right, uint32_t left, uint32_t up, uint32_t down, uint32_t weapon)
+{
 	input->r_id = right;
 	input->l_id = left;
 	input->u_id = up;
 	input->d_id = down;
 	input->weap_id = weapon;
-	
-	input->gamepadIndex = INVALID_GAMEPAD_INDEX;
 }
+#endif
 
 /* Returns the Character that corresponds to the characterInput. This is more reliable than using input->character when there's a network connection alive because the character pointer variable may be different */
 Character *characterFromInput(Input *characterInput)
@@ -75,6 +80,7 @@ static void prepareFiringFromInput(Input *input)
 	prepareFiringCharacterWeapon(input->character, input->character->x, input->character->y, input->character->pointing_direction, 0.0f);
 }
 
+#ifndef IOS_DEVICE
 void performDownKeyAction(Input *input, ZGKeyboardEvent *event)
 {
 	uint16_t keyCode = event->keyCode;
@@ -136,6 +142,7 @@ void performUpKeyAction(Input *input, ZGKeyboardEvent *event)
 		input->weap = false;
 	}
 }
+#endif
 
 void performGamepadAction(Input *input, GamepadEvent *gamepadEvent)
 {
