@@ -1,8 +1,3 @@
-xcopy /y /d "%~1\glew-2.1.0\bin\Release\x64\glew32.dll" "%~2"
-
-
-xcopy /y /d "%~1\glew-2.1.0\LICENSE.glew.txt" "%~2"
-
 
 xcopy /y /d "%~1\SDL2-2.0.9\lib\x64\SDL2.dll" "%~2"
 

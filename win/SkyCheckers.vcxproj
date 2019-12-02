@@ -202,8 +202,8 @@
     <LibraryPath>$(ProjectDir)glew-2.1.0\lib\Release\x64;$(ProjectDir)SDL2-2.0.9\lib\x64;$(ProjectDir)SDL2_ttf-2.0.14\lib\x64;$(ProjectDir)SDL2_mixer-2.0.4\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)glew-2.1.0\include;$(ProjectDir)SDL2-2.0.9\include;$(ProjectDir)SDL2_ttf-2.0.14\include;$(ProjectDir)SDL2_mixer-2.0.4\include;$(ProjectDir);$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)glew-2.1.0\lib\Release\x64;$(ProjectDir)SDL2-2.0.9\lib\x64;$(ProjectDir)SDL2_ttf-2.0.14\lib\x64;$(ProjectDir)SDL2_mixer-2.0.4\lib\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)SDL2-2.0.9\include;$(ProjectDir)SDL2_ttf-2.0.14\include;$(ProjectDir)SDL2_mixer-2.0.4\include;$(ProjectDir);$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)SDL2-2.0.9\lib\x64;$(ProjectDir)SDL2_ttf-2.0.14\lib\x64;$(ProjectDir)SDL2_mixer-2.0.4\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(ProjectDir)glew-2.1.0\include;$(ProjectDir)SDL2-2.0.9\include;$(ProjectDir)SDL2_ttf-2.0.14\include;$(ProjectDir)SDL2_mixer-2.0.4\include;$(ProjectDir);$(IncludePath)</IncludePath>
@@ -243,7 +243,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glew32.lib;opengl32.lib;d3d11.lib;dxgi.lib;SDL2.lib;SDL2main.lib;SDL2_ttf.lib;SDL2_mixer.lib;ws2_32.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;SDL2.lib;SDL2main.lib;SDL2_ttf.lib;SDL2_mixer.lib;ws2_32.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
