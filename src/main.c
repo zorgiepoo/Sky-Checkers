@@ -1136,6 +1136,7 @@ static void drawScene(Renderer *renderer)
 	}
 }
 
+#ifndef IOS_DEVICE
 static void writeTextInput(const char *text, uint8_t maxSize)
 {
 	if (gConsoleActivated || gNetworkAddressFieldIsActive || gNetworkUserNameFieldIsActive)
@@ -1163,7 +1164,6 @@ static void writeTextInput(const char *text, uint8_t maxSize)
 	}
 }
 
-#ifndef IOS_DEVICE
 static void handleKeyDownEvent(ZGKeyboardEvent *event, Renderer *renderer)
 {
 	ZGWindow *window = renderer->window;
@@ -1586,7 +1586,15 @@ static void handleWindowEvent(ZGWindowEvent event, void *context)
 	}
 }
 
-#ifndef IOS_DEVICE
+#ifdef IOS_DEVICE
+static void handleTouchEvent(ZGTouchEvent event, void *context)
+{
+	if (gGameState == GAME_STATE_ON)
+	{
+		performTouchAction(&gPinkBubbleGumInput, &event);
+	}
+}
+#else
 static void handleKeyboardEvent(ZGKeyboardEvent event, void *context)
 {
 	switch (event.type)
@@ -1705,7 +1713,9 @@ static void appLaunchedHandler(void *context)
 	}
 	
 	ZGSetWindowEventHandler(renderer->window, appContext, handleWindowEvent);
-#ifndef IOS_DEVICE
+#ifdef IOS_DEVICE
+	ZGSetTouchEventHandler(renderer->window, renderer, handleTouchEvent);
+#else
 	ZGSetKeyboardEventHandler(renderer->window, renderer, handleKeyboardEvent);
 #endif
 }

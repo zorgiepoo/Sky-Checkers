@@ -23,7 +23,9 @@
 #include "gamepad.h"
 #include "platforms.h"
 
-#ifndef IOS_DEVICE
+#ifdef IOS_DEVICE
+#include "touch.h"
+#else
 #include "keyboard.h"
 #endif
 
@@ -71,7 +73,9 @@ void setInputKeys(Input *input, uint32_t right, uint32_t left, uint32_t up, uint
 
 Character *characterFromInput(Input *characterInput);
 
-#ifndef IOS_DEVICE
+#ifdef IOS_DEVICE
+void performTouchAction(Input *input, ZGTouchEvent *event);
+#else
 void performDownKeyAction(Input *input, ZGKeyboardEvent *event);
 void performUpKeyAction(Input *input, ZGKeyboardEvent *event);
 #endif

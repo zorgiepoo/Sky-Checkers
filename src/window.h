@@ -21,7 +21,9 @@
 
 #include "platforms.h"
 
-#ifndef IOS_DEVICE
+#ifdef IOS_DEVICE
+#include "touch.h"
+#else
 #include "keyboard.h"
 #endif
 
@@ -64,7 +66,9 @@ void ZGGetWindowSize(ZGWindow *window, int32_t *width, int32_t *height);
 
 void ZGSetWindowEventHandler(ZGWindow *window, void *context, void (*windowEventHandler)(ZGWindowEvent, void *));
 
-#ifndef IOS_DEVICE
+#ifdef IOS_DEVICE
+void ZGSetTouchEventHandler(ZGWindow *window, void *context, void (*touchEventHandler)(ZGTouchEvent, void *));
+#else
 void ZGSetKeyboardEventHandler(ZGWindow *window, void *context, void (*keyboardEventHandler)(ZGKeyboardEvent, void *));
 #endif
 

@@ -18,9 +18,17 @@
 */
 
 #import "window.h"
+#include "time.h"
 #import <UIKit/UIKit.h>
 
-@interface ZGViewController : UIViewController
+#define ZGTapRecognizerName @"ZGTapRecognizerName"
+#define ZGPannedRecognizerName @"ZGPannedRecognizerName"
+
+@interface ZGViewController : UIViewController <UIGestureRecognizerDelegate>
+
+@property (nonatomic) void (*touchEventHandler)(ZGTouchEvent, void *);
+@property (nonatomic) void *touchEventContext;
+
 @end
 
 @implementation ZGViewController
@@ -43,7 +51,77 @@
 	UIView *view = [[UIView alloc] initWithFrame:_frame];
 	view.backgroundColor = UIColor.blackColor;
 	
+	UIPanGestureRecognizer *panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(viewGesturePanned:)];
+	
+	panGestureRecognizer.name = ZGPannedRecognizerName;
+	panGestureRecognizer.maximumNumberOfTouches = 1;
+	panGestureRecognizer.delegate = self;
+	
+	[view addGestureRecognizer:panGestureRecognizer];
+	
+	UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(viewGestureTapped:)];
+	
+	tapGestureRecognizer.name = ZGTapRecognizerName;
+	tapGestureRecognizer.delegate = self;
+	
+	[view addGestureRecognizer:tapGestureRecognizer];
+	
 	self.view = view;
+}
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer;
+{
+	NSArray<NSString *> *gestureNames = @[ZGTapRecognizerName, ZGPannedRecognizerName];
+	return [gestureNames containsObject:gestureRecognizer.name] && [gestureNames containsObject:otherGestureRecognizer.name];
+}
+
+- (void)viewGesturePanned:(UIPanGestureRecognizer *)gestureRecognizer
+{
+	switch (gestureRecognizer.state)
+	{
+		case UIGestureRecognizerStateChanged:
+		{
+			if (_touchEventHandler != NULL)
+			{
+				CGPoint velocity = [gestureRecognizer velocityInView:self.view];
+				
+				ZGTouchEvent event = {};
+				event.deltaX = (float)velocity.x;
+				event.deltaY = (float)velocity.y;
+				event.timestamp = ZGGetTicks();
+				event.type = ZGTouchEventTypePanChanged;
+				
+				_touchEventHandler(event, _touchEventContext);
+			}
+		} break;
+		case UIGestureRecognizerStateFailed:
+		case UIGestureRecognizerStateCancelled:
+		case UIGestureRecognizerStateEnded:
+			if (_touchEventHandler != NULL)
+			{
+				ZGTouchEvent event = {};
+				event.type = ZGTouchEventTypePanEnded;
+				
+				_touchEventHandler(event, _touchEventContext);
+			}
+			break;
+		case UIGestureRecognizerStatePossible:
+		case UIGestureRecognizerStateBegan:
+			break;
+	}
+}
+
+- (void)viewGestureTapped:(UITapGestureRecognizer *)tapGestureRecognizer
+{
+	if (tapGestureRecognizer.state == UIGestureRecognizerStateEnded)
+	{
+		if (_touchEventHandler != NULL)
+		{
+			ZGTouchEvent event = {};
+			event.type = ZGTouchEventTypeTap;
+			_touchEventHandler(event, _touchEventContext);
+		}
+	}
 }
 
 - (BOOL)prefersStatusBarHidden
@@ -76,6 +154,15 @@ bool ZGWindowHasFocus(ZGWindow *windowRef)
 
 void ZGSetWindowEventHandler(ZGWindow *window, void *context, void (*windowEventHandler)(ZGWindowEvent, void *))
 {
+}
+
+void ZGSetTouchEventHandler(ZGWindow *windowRef, void *context, void (*touchEventHandler)(ZGTouchEvent, void *))
+{
+	UIWindow *window = (__bridge UIWindow *)(windowRef);
+	ZGViewController *viewController = (ZGViewController *)window.rootViewController;
+	assert([viewController isKindOfClass:[ZGViewController class]]);
+	viewController.touchEventHandler = touchEventHandler;
+	viewController.touchEventContext = context;
 }
 
 void ZGPollWindowAndInputEvents(ZGWindow *window, const void *systemEvent)

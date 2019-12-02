@@ -80,7 +80,63 @@ static void prepareFiringFromInput(Input *input)
 	prepareFiringCharacterWeapon(input->character, input->character->x, input->character->y, input->character->pointing_direction, 0.0f);
 }
 
-#ifndef IOS_DEVICE
+#ifdef IOS_DEVICE
+#define MIN_DELTA_THRESHOLD 60.0f
+void performTouchAction(Input *input, ZGTouchEvent *event)
+{
+	switch (event->type)
+	{
+		case ZGTouchEventTypeTap:
+			if (!input->weap && !input->character->weap->animationState)
+			{
+				prepareFiringFromInput(input);
+			}
+			break;
+		case ZGTouchEventTypePanChanged:
+		{
+			float absoluteDeltaX = fabsf(event->deltaX);
+			float absoluteDeltaY = fabsf(event->deltaY);
+			if (fabsf(absoluteDeltaX - absoluteDeltaY) >= MIN_DELTA_THRESHOLD)
+			{
+				if (absoluteDeltaX > absoluteDeltaY)
+				{
+					if (absoluteDeltaX >= MIN_DELTA_THRESHOLD)
+					{
+						if (event->deltaX > 0)
+						{
+							input->right_ticks = event->timestamp;
+						}
+						else
+						{
+							input->left_ticks = event->timestamp;
+						}
+					}
+				}
+				else
+				{
+					if (absoluteDeltaY >= MIN_DELTA_THRESHOLD)
+					{
+						if (event->deltaY > 0)
+						{
+							input->down_ticks = event->timestamp;
+						}
+						else
+						{
+							input->up_ticks = event->timestamp;
+						}
+					}
+				}
+			}
+		} break;
+		case ZGTouchEventTypePanEnded:
+			input->right_ticks = 0;
+			input->left_ticks = 0;
+			input->down_ticks = 0;
+			input->up_ticks = 0;
+			break;
+	}
+}
+#else
 void performDownKeyAction(Input *input, ZGKeyboardEvent *event)
 {
 	uint16_t keyCode = event->keyCode;
