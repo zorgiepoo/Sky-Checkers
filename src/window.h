@@ -74,6 +74,5 @@ void ZGSetKeyboardEventHandler(ZGWindow *window, void *context, void (*keyboardE
 
 void ZGPollWindowAndInputEvents(ZGWindow *window, const void *systemEvent);
 
-#ifndef linux
 void *ZGWindowHandle(ZGWindow *window);
-#endif
+

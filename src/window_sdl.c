@@ -209,11 +209,12 @@ void ZGGetWindowSize(ZGWindow *windowRef, int32_t *width, int32_t *height)
 }
 #endif
 
-#ifndef linux
 void *ZGWindowHandle(ZGWindow *windowRef)
 {
 	WindowController *windowController = (WindowController *)windowRef;
-	
+#ifdef linux
+	return windowController->window;
+#else
 	SDL_SysWMinfo systemInfo;
 	SDL_VERSION(&systemInfo.version);
 	SDL_GetWindowWMInfo(windowController->window, &systemInfo);
@@ -225,5 +226,6 @@ void *ZGWindowHandle(ZGWindow *windowRef)
 #ifdef WINDOWS
 	return systemInfo.info.win.window;
 #endif
-}
 #endif
+}
+

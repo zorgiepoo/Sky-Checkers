@@ -262,7 +262,7 @@ static bool createOpenGLContext(ZGWindow **window, SDL_GLContext *glContext, uin
 	
 	*window = ZGCreateWindow(windowTitle, windowWidth, windowHeight, fullscreenFlag);
 	
-	if (*window == NULL || (*glContext = SDL_GL_CreateContext(*window)) == NULL)
+	if (*window == NULL || (*glContext = SDL_GL_CreateContext(ZGWindowHandle(*window))) == NULL)
 	{
 		if (!fsaa)
 		{
@@ -290,7 +290,7 @@ static bool createOpenGLContext(ZGWindow **window, SDL_GLContext *glContext, uin
 				return false;
 			}
 			
-			*glContext = SDL_GL_CreateContext(*window);
+			*glContext = SDL_GL_CreateContext(ZGWindowHandle(*window));
 			if (*glContext == NULL)
 			{
 				ZGDestroyWindow(*window);
@@ -310,7 +310,7 @@ static void updateViewport_gl(Renderer *renderer, int32_t windowWidth, int32_t w
 		renderer->windowHeight = windowHeight;
 	}
 
-	SDL_GL_GetDrawableSize(renderer->window, &renderer->drawableWidth, &renderer->drawableHeight);
+	SDL_GL_GetDrawableSize(ZGWindowHandle(renderer->window), &renderer->drawableWidth, &renderer->drawableHeight);
 	
 	glViewport(0, 0, renderer->drawableWidth, renderer->drawableHeight);
 	
@@ -343,7 +343,7 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 		}
 	}
 	
-	if (SDL_GL_MakeCurrent(renderer->window, glContext) != 0)
+	if (SDL_GL_MakeCurrent(ZGWindowHandle(renderer->window), glContext) != 0)
 	{
 		fprintf(stderr, "Couldn't make OpenGL context current: %s\n", SDL_GetError());
 		ZGQuit();
@@ -414,7 +414,7 @@ void renderFrame_gl(Renderer *renderer, void (*drawFunc)(Renderer *))
 	
 	drawFunc(renderer);
 	
-	SDL_GL_SwapWindow(renderer->window);
+	SDL_GL_SwapWindow(ZGWindowHandle(renderer->window));
 	
 #ifdef _DEBUG
 	GLenum error;
@@ -506,7 +506,7 @@ BufferArrayObject createVertexArrayObject_gl(Renderer *renderer, const void *ver
 	
 	const GLuint vertexAttributeIndex = 0;
 	glEnableVertexAttribArray(vertexAttributeIndex);
-	glVertexAttribPointer(vertexAttributeIndex, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid *)0);
+	glVertexAttribPointer(vertexAttributeIndex, 4, GL_FLOAT, GL_FALSE, 0, (GLvoid *)0);
 	
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -526,7 +526,7 @@ BufferArrayObject createVertexAndTextureCoordinateArrayObject_gl(Renderer *rende
 	glBufferData(GL_ARRAY_BUFFER, verticesSize + textureCoordinatesSize, verticesAndTextureCoordinates, GL_STATIC_DRAW);
 	
 	glEnableVertexAttribArray(VERTEX_ATTRIBUTE);
-	glVertexAttribPointer(VERTEX_ATTRIBUTE, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid *)0);
+	glVertexAttribPointer(VERTEX_ATTRIBUTE, 4, GL_FLOAT, GL_FALSE, 0, (GLvoid *)0);
 	
 	glEnableVertexAttribArray(TEXTURE_ATTRIBUTE);
 	glVertexAttribPointer(TEXTURE_ATTRIBUTE, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid *)(uintptr_t)verticesSize);
