@@ -41,6 +41,8 @@ ZGWindow *ZGCreateWindow(const char *windowTitle, int32_t windowWidth, int32_t w
 	{
 		videoFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 	}
+
+	SDL_ShowCursor(SDL_DISABLE);
 	
 	WindowController *windowController = calloc(1, sizeof(*windowController));
 	windowController->window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags);
