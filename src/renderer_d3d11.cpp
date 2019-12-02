@@ -270,7 +270,7 @@ static bool createShader(Renderer *renderer, Shader_d3d11 *shader, const char *v
 
 	vertexInputLayoutDescription[0].SemanticName = "POSITION";
 	vertexInputLayoutDescription[0].SemanticIndex = 0;
-	vertexInputLayoutDescription[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	vertexInputLayoutDescription[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	vertexInputLayoutDescription[0].InputSlot = 0;
 	vertexInputLayoutDescription[0].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
 	vertexInputLayoutDescription[0].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
@@ -1084,7 +1084,7 @@ static void encodeVertices(Renderer *renderer, BufferArrayObject vertexArrayObje
 	ID3D11DeviceContext *context = (ID3D11DeviceContext *)renderer->d3d11Context;
 	
 	ID3D11Buffer *vertexBuffer = (ID3D11Buffer *)vertexArrayObject.d3d11Object;
-	UINT stride = sizeof(float) * 3;
+	UINT stride = sizeof(float) * 4;
 	UINT offset = 0;
 	context->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
 }
@@ -1095,7 +1095,7 @@ static void encodeVerticesAndTextureCoordinates(Renderer *renderer, BufferArrayO
 
 	ID3D11Buffer *vertexAndTextureCoordinateBuffer = (ID3D11Buffer *)vertexAndTextureArrayObject.d3d11Object;
 	ID3D11Buffer *bufferArray[] = { vertexAndTextureCoordinateBuffer , vertexAndTextureCoordinateBuffer };
-	UINT strides[] = { sizeof(float) * 3, sizeof(float) * 2 };
+	UINT strides[] = { sizeof(float) * 4, sizeof(float) * 2 };
 	UINT offsets[] = { 0, vertexAndTextureArrayObject.d3d11VerticesSize };
 
 	context->IASetVertexBuffers(0, 2, bufferArray, strides, offsets);
