@@ -66,7 +66,7 @@ ZGThread ZGCreateThread(ZGThreadFunction function, const char *name, void *data)
 	
 	dataWrapper->function = function;
 	dataWrapper->data = data;
-#ifdef PTHREAD_SETNAME_AVAILABLE
+#ifdef MAC_OS_X
 	if (name != NULL)
 	{
 		dataWrapper->name = strdup(name);
