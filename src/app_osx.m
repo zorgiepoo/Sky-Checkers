@@ -19,6 +19,7 @@
 
 #import "app.h"
 #import <Cocoa/Cocoa.h>
+#import <IOKit/pwr_mgt/IOPMLib.h>
 
 @interface ZGAppDelegate : NSObject <NSApplicationDelegate>
 @end
@@ -101,5 +102,32 @@ int ZGAppInit(int argc, char *argv[], void *appContext, void (*appLaunchedHandle
 		application.delegate = appDelegate;
 		
 		return NSApplicationMain(argc, (const char **)argv);
+	}
+}
+
+void ZGAppSetAllowsScreenSaver(bool allowsScreenSaver)
+{
+	static IOPMAssertionID assertionID;
+	static bool hasLiveAssertion = false;
+	
+	if (!allowsScreenSaver)
+	{
+		if (!hasLiveAssertion)
+		{
+			IOReturn result = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep, kIOPMAssertionLevelOn, CFSTR("Gameplay"), &assertionID);
+			
+			if (result == kIOReturnSuccess)
+			{
+				hasLiveAssertion = true;
+			}
+		}
+	}
+	else
+	{
+		if (hasLiveAssertion)
+		{
+			IOPMAssertionRelease(assertionID);
+			hasLiveAssertion = false;
+		}
 	}
 }

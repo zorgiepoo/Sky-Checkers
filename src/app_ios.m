@@ -94,3 +94,9 @@ int ZGAppInit(int argc, char *argv[], void *appContext, void (*appLaunchedHandle
 		return UIApplicationMain(argc, argv, nil, NSStringFromClass([ZGAppDelegate class]));
 	}
 }
+
+void ZGAppSetAllowsScreenSaver(bool allowsScreenSaver)
+{
+	UIApplication *application = [UIApplication sharedApplication];
+	[application setIdleTimerDisabled:!allowsScreenSaver];
+}

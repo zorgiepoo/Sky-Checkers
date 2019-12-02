@@ -26,6 +26,8 @@
 
 int ZGAppInit(int argc, char *argv[], void *appContext, void (*appLaunchedHandler)(void *), void (*appTerminatedHandler)(void *), void (*runLoopHandler)(void *), void (*pollEventHandler)(void *, void *))
 {
+	SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
+
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
         fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
@@ -65,4 +67,22 @@ int ZGAppInit(int argc, char *argv[], void *appContext, void (*appLaunchedHandle
 	
 	ZGQuit();
 	return 0;
+}
+
+void ZGAppSetAllowsScreenSaver(bool allowsScreenSaver)
+{
+	if (!allowsScreenSaver)
+	{
+		if (SDL_IsScreenSaverEnabled())
+		{
+			SDL_DisableScreenSaver();
+		}
+	}
+	else
+	{
+		if (!SDL_IsScreenSaverEnabled())
+		{
+			SDL_EnableScreenSaver();
+		}
+	}
 }

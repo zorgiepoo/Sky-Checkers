@@ -19,4 +19,8 @@
 
 #pragma once
 
+#include <stdbool.h>
+
 int ZGAppInit(int argc, char *argv[], void *appContext, void (*appLaunchedHandler)(void *), void (*appTerminatedHandler)(void *), void (*runLoopHandler)(void *), void (*pollEventHandler)(void *, void *));
+
+void ZGAppSetAllowsScreenSaver(bool allowsScreenSaver);

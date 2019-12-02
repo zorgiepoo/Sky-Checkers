@@ -677,6 +677,11 @@ void initGame(ZGWindow *window, bool firstGame)
 		bool windowFocus = ZGWindowHasFocus(window);
 		playGameMusic(!windowFocus);
 	}
+	
+	if (firstGame)
+	{
+		ZGAppSetAllowsScreenSaver(false);
+	}
 }
 
 void endGame(ZGWindow *window, bool lastGame)
@@ -707,6 +712,8 @@ void endGame(ZGWindow *window, bool lastGame)
 			bool windowFocus = ZGWindowHasFocus(window);
 			playMainMenuMusic(!windowFocus);
 		}
+		
+		ZGAppSetAllowsScreenSaver(true);
 	}
 }
 
