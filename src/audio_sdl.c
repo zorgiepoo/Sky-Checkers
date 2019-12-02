@@ -31,7 +31,7 @@
 #include <SDL2/SDL_mixer.h>
 #endif
 
-static SDL_bool gInitializedAudio = SDL_FALSE;
+static bool gInitializedAudio = SDL_FALSE;
 
 static Mix_Music *gMainMenuMusic = NULL;
 static Mix_Music *gGameMusic = NULL;
@@ -78,7 +78,7 @@ void initAudio(void)
 	gInitializedAudio = SDL_TRUE;
 }
 
-void playMainMenuMusic(SDL_bool paused)
+void playMainMenuMusic(bool paused)
 {
 	if (!gInitializedAudio) return;
 	
@@ -93,7 +93,7 @@ void playMainMenuMusic(SDL_bool paused)
 	}
 }
 
-void playGameMusic(SDL_bool paused)
+void playGameMusic(bool paused)
 {
 	if (!gInitializedAudio) return;
 	

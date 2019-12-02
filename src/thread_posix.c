@@ -20,15 +20,13 @@
 #include "thread.h"
 #include "quit.h"
 #include "platforms.h"
-#include <pthread.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <time.h>
 #include <errno.h>
-
-#define PTHREAD_SETNAME_AVAILABLE MAC_OS_X
+#include <pthread.h>
 
 typedef struct
 {
@@ -41,7 +39,7 @@ static void *threadFunctionWrapper(void *context)
 {
 	ThreadDataWrapper *dataWrapper = context;
 	
-#ifdef PTHREAD_SETNAME_AVAILABLE
+#ifdef MAC_OS_X
 	if (dataWrapper->name != NULL)
 	{
 		pthread_setname_np(dataWrapper->name);

@@ -24,12 +24,7 @@
 #include "texture.h"
 #include "quit.h"
 #include "window.h"
-#include "sdl.h"
-
-#ifdef WINDOWS
-#include <GL/glew.h>
-#include "SDL_opengl.h"
-#endif
+#include "sdl_include.h"
 
 #ifdef linux
 #include <GL/glew.h>

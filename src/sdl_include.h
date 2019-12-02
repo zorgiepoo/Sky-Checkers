@@ -21,11 +21,6 @@
 
 #include "platforms.h"
 
-#ifdef MAC_OS_X
-#include "SDL2/SDL.h"
-#include "SDL2/SDL_syswm.h"
-#endif
-
 #ifdef WINDOWS
 #include "SDL.h"
 #include "SDL_syswm.h"
@@ -34,3 +29,4 @@
 #ifdef linux
 #include <SDL2/SDL.h>
 #endif
+
