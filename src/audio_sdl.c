@@ -18,6 +18,10 @@
  */
 
 #include "audio.h"
+#include "platforms.h"
+#include "sdl_include.h"
+
+#include <stdio.h>
 
 #ifdef WINDOWS
 #include "SDL_mixer.h"

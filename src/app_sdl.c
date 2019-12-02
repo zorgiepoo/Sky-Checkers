@@ -18,10 +18,11 @@
 */
 
 #include "app.h"
-#include "sdl.h"
+#include "sdl_include.h"
 #include "quit.h"
+#include "platforms.h"
 
-#include <unistd.h>
+#include <stdio.h>
 #include <stdbool.h>
 
 int ZGAppInit(int argc, char *argv[], void *appContext, void (*appLaunchedHandler)(void *), void (*appTerminatedHandler)(void *), void (*runLoopHandler)(void *), void (*pollEventHandler)(void *, void *))
@@ -31,14 +32,6 @@ int ZGAppInit(int argc, char *argv[], void *appContext, void (*appLaunchedHandle
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
         fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
-		ZGQuit();
-	}
-	
-	// The current working directory should point to our base path, particularly on macOS
-	const char *baseDirectory = SDL_GetBasePath();
-	if (baseDirectory != NULL && chdir(baseDirectory) != 0)
-	{
-		fprintf(stderr, "Failed to change current working directory to %s\n", baseDirectory);
 		ZGQuit();
 	}
 	

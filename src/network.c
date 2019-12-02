@@ -28,7 +28,10 @@
 #include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/time.h>
+
+#ifdef IOS_DEVICE
+#include <sys/time.h> // for select()
+#endif
 
 #define MAX_PACKET_SIZE 500
 

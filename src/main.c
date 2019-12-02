@@ -1844,6 +1844,6 @@ static void pollEventHandler(void *context, void *systemEvent)
 
 int main(int argc, char *argv[])
 {
-	AppContext appContext = {};
+	AppContext appContext = {0};
 	return ZGAppInit(argc, argv, &appContext, appLaunchedHandler, appTerminatedHandler, runLoopHandler, pollEventHandler);
 }

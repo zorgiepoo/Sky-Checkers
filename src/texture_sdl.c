@@ -18,7 +18,7 @@
  */
 
 #include "texture.h"
-#include "maincore.h"
+#include "sdl_include.h"
 #include "quit.h"
 
 static void *create8BitPixelDataWithAlpha(SDL_Surface *surface)

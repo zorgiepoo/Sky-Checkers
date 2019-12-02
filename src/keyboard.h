@@ -24,7 +24,7 @@
 #include <stdbool.h>
 
 #ifndef MAC_OS_X
-#include "sdl.h"
+#include "sdl_include.h"
 typedef enum
 {
 	ZG_KEYCODE_B = SDL_SCANCODE_B,

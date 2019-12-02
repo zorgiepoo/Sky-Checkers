@@ -18,7 +18,7 @@
 */
 
 #include "time.h"
-#include "maincore.h"
+#include "sdl_include.h"
 
 uint32_t ZGGetTicks(void)
 {

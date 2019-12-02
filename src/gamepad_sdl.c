@@ -18,7 +18,7 @@
 */
 
 #include "gamepad.h"
-#include "maincore.h"
+#include "sdl_include.h"
 
 #include <stdbool.h>
 #include <string.h>

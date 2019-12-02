@@ -18,7 +18,7 @@
 */
 
 #include "quit.h"
-#include "sdl.h"
+#include "sdl_include.h"
 #include <stdlib.h>
 
 void ZGQuit(void)

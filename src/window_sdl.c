@@ -18,7 +18,7 @@
 */
 
 #include "window.h"
-#include "sdl.h"
+#include "sdl_include.h"
 
 typedef struct
 {
@@ -164,7 +164,7 @@ void ZGPollWindowAndInputEvents(ZGWindow *windowRef, const void *systemEvent)
 		{
 			if (windowController->keyboardEventHandler != NULL)
 			{
-				ZGKeyboardEvent event = {};
+				ZGKeyboardEvent event = {0};
 				event.type = ZGKeyboardEventTypeTextInput;
 				strncpy(event.text, sdlEvent->text.text, sizeof(event.text));
 				
@@ -203,7 +203,7 @@ void ZGSetWindowMinimumSize(ZGWindow *windowRef, int32_t minWidth, int32_t minHe
 void ZGGetWindowSize(ZGWindow *windowRef, int32_t *width, int32_t *height)
 {
 	WindowController *windowController = (WindowController *)windowRef;
-	SDL_GetWindowSize(windowController->windowRef, width, height);
+	SDL_GetWindowSize(windowController->window, width, height);
 }
 #endif
 
