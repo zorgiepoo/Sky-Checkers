@@ -166,7 +166,10 @@ void ZGPollWindowAndInputEvents(ZGWindow *windowRef, const void *systemEvent)
 		{
 			if (windowController->keyboardEventHandler != NULL)
 			{
-				ZGKeyboardEvent event = {0};
+				ZGKeyboardEvent event;
+				event.keyCode = 0;
+				event.keyModifier = 0;
+				event.timestamp = 0;
 				event.type = ZGKeyboardEventTypeTextInput;
 				strncpy(event.text, sdlEvent->text.text, sizeof(event.text));
 				
