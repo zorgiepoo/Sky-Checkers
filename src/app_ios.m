@@ -55,7 +55,7 @@ static ZGAppCallbacks gAppCallbacks;
 	
 	if (gAppCallbacks.runLoopHandler != NULL)
 	{
-		_timer = [NSTimer scheduledTimerWithTimeInterval:0.0 target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
+		_timer = [NSTimer scheduledTimerWithTimeInterval:0.004 target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
 		[[NSRunLoop currentRunLoop] addTimer:_timer forMode:NSRunLoopCommonModes];
 	}
 	
