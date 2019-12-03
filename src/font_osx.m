@@ -50,12 +50,15 @@ TextData createTextData(const char *string)
 
 	CTFramesetterRef framesetter = CTFramesetterCreateWithAttributedString((CFAttributedStringRef)text);
 
-	CGSize constraints = CGSizeMake(CGFLOAT_MAX , CGFLOAT_MAX);
+	CGSize constraints = CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX);
 	CFRange cfTextRange = CFRangeMake(textRange.location, textRange.length);
 	CGSize frameSize = CTFramesetterSuggestFrameSizeWithConstraints(framesetter, cfTextRange, NULL, constraints, NULL);
 
 	CGPathRef path = CGPathCreateWithRect(CGRectMake(0.0, 0.0, frameSize.width, frameSize.height), NULL);
 	CTFrameRef frame = CTFramesetterCreateFrame(framesetter, cfTextRange, path, NULL);
+	
+	CFRelease(framesetter);
+	CGPathRelease(path);
 	
 	CGBitmapInfo bitmapInfo = (CGBitmapInfo)kCGImageAlphaPremultipliedLast;
 
@@ -63,6 +66,8 @@ TextData createTextData(const char *string)
 
 	CGContextSetRGBFillColor(context, 1.0, 1.0, 1.0, 1.0);
 	CTFrameDraw(frame, context);
+	
+	CFRelease(frame);
 
 	return (TextData)context;
 }
