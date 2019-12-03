@@ -217,13 +217,6 @@
 	return self;
 }
 
-- (void)windowWillEnterFullScreen:(NSNotification *)notification
-{
-	// Hide the cursor in fullscreen to prevent the cursor from showing up during full screen transition.
-	// The cursor would otherwise show up briefly due to the cursor rects being not being updated during the transition.
-	[NSCursor hide];
-}
-
 - (void)windowDidEnterFullScreen:(NSNotification *)notification
 {
 	if (_fullscreenFlag != NULL)
@@ -234,7 +227,6 @@
 
 - (void)windowDidExitFullScreen:(NSNotification *)notification
 {
-	[NSCursor unhide];
 	[self.window invalidateCursorRectsForView:self.window.contentView];
 	
 	if (_fullscreenFlag != NULL)
