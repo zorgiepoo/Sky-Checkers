@@ -129,6 +129,11 @@
 	return YES;
 }
 
+- (BOOL)prefersHomeIndicatorAutoHidden
+{
+	return YES;
+}
+
 @end
 
 ZGWindow *ZGCreateWindow(const char *windowTitle, int32_t windowWidth, int32_t windowHeight, bool *fullscreenFlag)
