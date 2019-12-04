@@ -36,7 +36,7 @@ static ZGAppCallbacks gAppCallbacks;
 
 @implementation ZGAppDelegate
 {
-	NSTimer *_timer;
+	CADisplayLink *_displayLink;
 }
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
@@ -55,8 +55,8 @@ static ZGAppCallbacks gAppCallbacks;
 	
 	if (gAppCallbacks.runLoopHandler != NULL)
 	{
-		_timer = [NSTimer scheduledTimerWithTimeInterval:0.004 target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
-		[[NSRunLoop currentRunLoop] addTimer:_timer forMode:NSRunLoopCommonModes];
+		_displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(runLoop:)];
+		[_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
 	}
 	
 	return YES;
@@ -64,8 +64,8 @@ static ZGAppCallbacks gAppCallbacks;
 
 - (void)applicationWillTerminate:(UIApplication *)application
 {
-	[_timer invalidate];
-	_timer = nil;
+	[_displayLink invalidate];
+	_displayLink = nil;
 	
 	if (gAppCallbacks.terminatedHandler != NULL)
 	{
@@ -73,7 +73,7 @@ static ZGAppCallbacks gAppCallbacks;
 	}
 }
 
-- (void)runLoop:(NSTimer *)timer
+- (void)runLoop:(CADisplayLink *)displayLink
 {
 	gAppCallbacks.pollEventHandler(gAppCallbacks.context, NULL);
 	gAppCallbacks.runLoopHandler(gAppCallbacks.context);
