@@ -50,12 +50,14 @@ typedef struct
 	uint32_t up_ticks;
 	uint32_t down_ticks;
 	
+#ifndef IOS_DEVICE
 	// right, left, up, down, weapon ids - their assigned keyboard keys.
 	uint32_t r_id;
 	uint32_t l_id;
 	uint32_t u_id;
 	uint32_t d_id;
 	uint32_t weap_id;
+#endif
 	
 	GamepadIndex gamepadIndex;
 } Input;
