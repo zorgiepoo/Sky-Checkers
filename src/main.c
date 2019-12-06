@@ -1548,6 +1548,8 @@ static void pollGamepads(GamepadManager *gamepadManager, const void *systemEvent
 	for (uint16_t gamepadEventIndex = 0; gamepadEventIndex < gamepadEventsCount; gamepadEventIndex++)
 	{
 		GamepadEvent *gamepadEvent = &gamepadEvents[gamepadEventIndex];
+		
+		printf("gamepad id: %d, %d\n", gamepadEvent->index, gamepadEvent->button);
 
 		performGamepadAction(&gRedRoverInput, gamepadEvent);
 		performGamepadAction(&gGreenTreeInput, gamepadEvent);
@@ -1612,25 +1614,25 @@ static void handleKeyboardEvent(ZGKeyboardEvent event, void *context)
 }
 #endif
 
-static void gamepadAdded(GamepadIndex gamepadIndex)
+static void gamepadAdded(GamepadIndex gamepadIndex, void *context)
 {
-	for (uint16_t gamepadIndex = 0; gamepadIndex < sizeof(gGamepads) / sizeof(*gGamepads); gamepadIndex++)
+	for (uint16_t index = 0; index < sizeof(gGamepads) / sizeof(*gGamepads); index++)
 	{
-		if (gGamepads[gamepadIndex] == INVALID_GAMEPAD_INDEX)
+		if (gGamepads[index] == INVALID_GAMEPAD_INDEX)
 		{
-			gGamepads[gamepadIndex] = gamepadIndex;
+			gGamepads[index] = gamepadIndex;
 			break;
 		}
 	}
 }
 
-static void gamepadRemoved(GamepadIndex gamepadIndex)
+static void gamepadRemoved(GamepadIndex gamepadIndex, void *context)
 {
-	for (uint16_t gamepadIndex = 0; gamepadIndex < sizeof(gGamepads) / sizeof(*gGamepads); gamepadIndex++)
+	for (uint16_t index = 0; index < sizeof(gGamepads) / sizeof(*gGamepads); index++)
 	{
-		if (gGamepads[gamepadIndex] == gamepadIndex)
+		if (gGamepads[index] == gamepadIndex)
 		{
-			gGamepads[gamepadIndex] = INVALID_GAMEPAD_INDEX;
+			gGamepads[index] = INVALID_GAMEPAD_INDEX;
 			
 			if (gPinkBubbleGumInput.gamepadIndex == gamepadIndex)
 			{
@@ -1691,7 +1693,7 @@ static void appLaunchedHandler(void *context)
 	
 	initScene(renderer);
 	
-	gGamepadManager = initGamepadManager("Data/gamecontrollerdb.txt", gamepadAdded, gamepadRemoved);
+	gGamepadManager = initGamepadManager("Data/gamecontrollerdb.txt", gamepadAdded, gamepadRemoved, NULL);
 	
 	/*
 	 * Load a few font strings before a game starts up.

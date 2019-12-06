@@ -76,9 +76,9 @@ typedef struct
 	GamepadIndex index;
 } GamepadEvent;
 
-typedef void (*GamepadCallback)(GamepadIndex index);
+typedef void (*GamepadCallback)(GamepadIndex index, void *context);
 
-GamepadManager *initGamepadManager(const char *databasePath, GamepadCallback addedCallback, GamepadCallback removalCallback);
+GamepadManager *initGamepadManager(const char *databasePath, GamepadCallback addedCallback, GamepadCallback removalCallback, void *context);
 
 GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *systemEvent, uint16_t *eventCount);
 

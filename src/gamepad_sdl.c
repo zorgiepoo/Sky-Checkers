@@ -35,6 +35,7 @@ struct _GamepadManager
 {
 	GamepadCallback addedCallback;
 	GamepadCallback removalCallback;
+	void *context;
 	GamepadEvent lastEvent;
 	Gamepad gamepads[MAX_GAMEPADS];
 };
@@ -81,13 +82,13 @@ static void _notifyGamepadAdded(GamepadManager *gamepadManager, Sint32 joystickI
 			
 			if (gamepadManager->addedCallback != NULL)
 			{
-				gamepadManager->addedCallback((GamepadIndex)joystickInstanceID);
+				gamepadManager->addedCallback((GamepadIndex)joystickInstanceID, gamepadManager->context);
 			}
 		}
 	}
 }
 
-GamepadManager *initGamepadManager(const char *databasePath, GamepadCallback addedCallback, GamepadCallback removalCallback)
+GamepadManager *initGamepadManager(const char *databasePath, GamepadCallback addedCallback, GamepadCallback removalCallback, void *context)
 {
 	if (SDL_Init(SDL_INIT_GAMECONTROLLER) != 0)
 	{
@@ -108,6 +109,7 @@ GamepadManager *initGamepadManager(const char *databasePath, GamepadCallback add
 	
 	gamepadManager->addedCallback = addedCallback;
 	gamepadManager->removalCallback = removalCallback;
+	gamepadManager->context = context;
 	
 	// Scan already connected devices
 	for (Sint32 joystickIndex = 0; joystickIndex < SDL_NumJoysticks(); joystickIndex++)
@@ -195,7 +197,7 @@ GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *syst
 
 			if (gamepadManager->removalCallback != NULL)
 			{
-				gamepadManager->removalCallback((GamepadIndex)joystickInstanceID);
+				gamepadManager->removalCallback((GamepadIndex)joystickInstanceID, gamepadManager->context);
 			}
 			break;
 		}

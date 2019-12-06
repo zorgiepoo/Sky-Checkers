@@ -19,6 +19,8 @@
 
 #import "gamepad.h"
 #import "time.h"
+#import "gamepad_gccontroller.h"
+
 #import <Foundation/Foundation.h>
 #import <IOKit/IOKitLib.h>
 #import <IOKit/IOCFPlugIn.h>
@@ -77,16 +79,19 @@ typedef struct _Gamepad
 	GamepadElementMapping elementMappings[GAMEPAD_BUTTON_MAX];
 	char name[GAMEPAD_NAME_SIZE];
 	GamepadIndex index;
+	bool gcController;
 } Gamepad;
 
 struct _GamepadManager
 {
+	struct GC_NAME(_GamepadManager) *gcManager;
 	IOHIDManagerRef hidManager;
 	Gamepad gamepads[MAX_GAMEPADS];
 	GamepadEvent eventsBuffer[GAMEPAD_EVENT_BUFFER_CAPACITY];
 	CFStringRef database;
 	GamepadCallback addedCallback;
 	GamepadCallback removalCallback;
+	void *context;
 	GamepadIndex nextGamepadIndex;
 };
 
@@ -319,6 +324,11 @@ static void _hidDeviceMatchingCallback(void *context, IOReturn result, void *sen
 	uint16_t newGamepadIndex = MAX_GAMEPADS;
 	for (uint16_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
 	{
+		if (gamepadManager->gamepads[gamepadIndex].gcController)
+		{
+			continue;
+		}
+		
 		if (gamepadManager->gamepads[gamepadIndex].device == device)
 		{
 			return;
@@ -336,8 +346,34 @@ static void _hidDeviceMatchingCallback(void *context, IOReturn result, void *sen
 		return;
 	}
 	
+	int32_t vendorID = _gamepadIdentifierInfo(device, CFSTR(kIOHIDVendorIDKey));
+	int32_t productID = _gamepadIdentifierInfo(device, CFSTR(kIOHIDProductIDKey));
+	int32_t versionID = _gamepadIdentifierInfo(device, CFSTR(kIOHIDVersionNumberKey));
+	
+	BOOL gcXboxOneDualShockSupport;
+	if (@available(macOS 10.15, *))
+	{
+		gcXboxOneDualShockSupport = YES;
+	}
+	else
+	{
+		gcXboxOneDualShockSupport = NO;
+	}
+	
+	// Filter out some of the controllers we know GCController supports
+	if ((gcXboxOneDualShockSupport && vendorID == 0x45e && (productID == 0x2e0 || productID == 0x2fd)) || // Xbox One
+		(gcXboxOneDualShockSupport && vendorID == 0x54c && (productID == 0x9cc || productID == 0x5c4)) || // Dual Shock 4
+		(vendorID == 0x1038 && productID == 0x1420) || // SteelSeries Nimbus
+		(vendorID == 0x0111 && productID == 0x1420) || // SteelSeries Nimbus (wireless)
+		(vendorID == 0x1038 && productID == 0x5) || // SteelSeries Stratus (possibly)
+		(vendorID == 0x0F0D && productID == 0x0090) || // HoriPad Ultimate
+		(vendorID == 0x0738 && productID == 0x5262)) // Mad Catz Micro C.T.R.L.i, although I'm not too sure
+	{
+		return;
+	}
+	
 	char name[GAMEPAD_NAME_SIZE] = {0};
-	CFTypeRef productProperty = IOHIDDeviceGetProperty(device, CFSTR(kIOHIDProductKey));
+	CFTypeRef productProperty = IOHIDDeviceGetProperty(device, CFSTR(kIOHIDManufacturerKey));
 	if (productProperty != NULL && CFGetTypeID(productProperty) == CFStringGetTypeID())
 	{
 		if (!CFStringGetCString(productProperty, name, sizeof(name), kCFStringEncodingUTF8))
@@ -349,10 +385,6 @@ static void _hidDeviceMatchingCallback(void *context, IOReturn result, void *sen
 	{
 		strncpy(name, "Unknown", sizeof(name));
 	}
-	
-	int32_t vendorID = _gamepadIdentifierInfo(device, CFSTR(kIOHIDVendorIDKey));
-	int32_t productID = _gamepadIdentifierInfo(device, CFSTR(kIOHIDProductIDKey));
-	int32_t versionID = _gamepadIdentifierInfo(device, CFSTR(kIOHIDVersionNumberKey));
 	
 	// Generate a guid matching what SDL uses
 	NSString *guidString;
@@ -392,11 +424,12 @@ static void _hidDeviceMatchingCallback(void *context, IOReturn result, void *sen
 	Gamepad *newGamepad = &gamepadManager->gamepads[newGamepadIndex];
 	CFRetain(device);
 	newGamepad->device = device;
+	newGamepad->gcController = false;
 	newGamepad->index = gamepadManager->nextGamepadIndex;
 	gamepadManager->nextGamepadIndex++;
 	
 	const char *mappingName = foundGamepadMapping[1].UTF8String;
-	strncpy(newGamepad->name, mappingName, sizeof(newGamepad->name));
+	strncpy(newGamepad->name, mappingName, sizeof(newGamepad->name) - 1);
 	
 	// Create element mappings
 	NSDictionary<NSString *, NSNumber *> *buttonStringMappings =
@@ -487,7 +520,7 @@ static void _hidDeviceMatchingCallback(void *context, IOReturn result, void *sen
 	
 	if (gamepadManager->addedCallback != NULL)
 	{
-		gamepadManager->addedCallback(newGamepad->index);
+		gamepadManager->addedCallback(newGamepad->index, gamepadManager->context);
 	}
 }
 
@@ -505,8 +538,13 @@ static void _hidDeviceRemovalCallback(void *context, IOReturn result, void *send
 	GamepadManager *gamepadManager = context;
 	for (uint16_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
 	{
-		if (gamepadManager->gamepads[gamepadIndex].device == device)
+		if (!gamepadManager->gamepads[gamepadIndex].gcController && gamepadManager->gamepads[gamepadIndex].device == device)
 		{
+			if (gamepadManager->removalCallback != NULL)
+			{
+				gamepadManager->removalCallback(gamepadIndex, gamepadManager->context);
+			}
+			
 			_freeElements(&gamepadManager->gamepads[gamepadIndex].buttonElements);
 			_freeElements(&gamepadManager->gamepads[gamepadIndex].hatElements);
 			_freeElements(&gamepadManager->gamepads[gamepadIndex].axisElements);
@@ -514,11 +552,6 @@ static void _hidDeviceRemovalCallback(void *context, IOReturn result, void *send
 			CFRelease(device);
 			
 			memset(&gamepadManager->gamepads[gamepadIndex], 0, sizeof(gamepadManager->gamepads[gamepadIndex]));
-			
-			if (gamepadManager->removalCallback != NULL)
-			{
-				gamepadManager->removalCallback(gamepadIndex);
-			}
 			
 			break;
 		}
@@ -530,7 +563,56 @@ static NSDictionary<NSString *, NSNumber *> *_matchingCriteriaForUsage(NSInteger
 	return @{@kIOHIDDeviceUsagePageKey : @(kHIDPage_GenericDesktop), @kIOHIDDeviceUsageKey : @(usage)};
 }
 
-GamepadManager *initGamepadManager(const char *databasePath, GamepadCallback addedCallback, GamepadCallback removalCallback)
+static void _gcGamepadAdded(GamepadIndex index, void *context)
+{
+	GamepadManager *gamepadManager = context;
+	
+	for (uint16_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
+	{
+		Gamepad *gamepad = &gamepadManager->gamepads[gamepadIndex];
+		if (!gamepad->gcController && gamepad->device == NULL)
+		{
+			gamepad->gcController = true;
+			gamepad->index = index;
+			
+			const char *gamepadName = GC_NAME(gamepadName)(gamepadManager->gcManager, index);
+			if (gamepadName != NULL)
+			{
+				strncpy(gamepad->name, gamepadName, sizeof(gamepad->name) - 1);
+			}
+			
+			if (gamepadManager->addedCallback != NULL)
+			{
+				gamepadManager->addedCallback(index, context);
+			}
+			
+			break;
+		}
+	}
+}
+
+static void _gcGamepadRemoved(GamepadIndex index, void *context)
+{
+	GamepadManager *gamepadManager = context;
+	
+	for (uint16_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
+	{
+		Gamepad *gamepad = &gamepadManager->gamepads[gamepadIndex];
+		if (gamepad->gcController && gamepad->index == index)
+		{
+			if (gamepadManager->removalCallback != NULL)
+			{
+				gamepadManager->removalCallback(index, context);
+			}
+			
+			memset(gamepad, 0, sizeof(*gamepad));
+			
+			break;
+		}
+	}
+}
+
+GamepadManager *initGamepadManager(const char *databasePath, GamepadCallback addedCallback, GamepadCallback removalCallback, void *context)
 {
 	CGEventSourceRef eventSource = CGEventSourceCreate(kCGEventSourceStateHIDSystemState);
 	CGEventSourceSetLocalEventsSuppressionInterval(eventSource, 0.0);
@@ -538,8 +620,11 @@ GamepadManager *initGamepadManager(const char *databasePath, GamepadCallback add
 	GamepadManager *gamepadManager = calloc(sizeof(*gamepadManager), 1);
 	assert(gamepadManager != NULL);
 	
+	gamepadManager->gcManager = GC_NAME(initGamepadManager)(databasePath, _gcGamepadAdded, _gcGamepadRemoved, gamepadManager);
+	
 	gamepadManager->addedCallback = addedCallback;
 	gamepadManager->removalCallback = removalCallback;
+	gamepadManager->context = context;
 	
 	NSError *gamepadDatabaseError = nil;
 	NSString *gamepadDatabase = [NSString stringWithContentsOfFile:@(databasePath) encoding:NSUTF8StringEncoding error:&gamepadDatabaseError];
@@ -587,6 +672,20 @@ GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *syst
 	for (uint16_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
 	{
 		Gamepad *gamepad = &gamepadManager->gamepads[gamepadIndex];
+		
+		if (gamepad->gcController)
+		{
+			uint16_t gcEventCount = 0;
+			GamepadEvent *gcEvents = GC_NAME(pollGamepadEvents)(gamepadManager->gcManager, systemEvent, &gcEventCount);
+			if (gcEventCount > 0)
+			{
+				memcpy(&gamepadManager->eventsBuffer[eventIndex], gcEvents, gcEventCount * sizeof(*gcEvents));
+				eventIndex += gcEventCount;
+			}
+			
+			continue;
+		}
+		
 		if (gamepad->device == NULL) continue;
 		
 		for (GamepadButton gamepadButton = 0; gamepadButton < GAMEPAD_BUTTON_MAX; gamepadButton++)
@@ -717,7 +816,7 @@ const char *gamepadName(GamepadManager *gamepadManager, GamepadIndex index)
 	for (uint16_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
 	{
 		Gamepad *gamepad = &gamepadManager->gamepads[gamepadIndex];
-		if (gamepad->device == NULL || gamepad->index != index) continue;
+		if ((!gamepad->gcController && gamepad->device == NULL) || gamepad->index != index) continue;
 		
 		return gamepad->name;
 	}

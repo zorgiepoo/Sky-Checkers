@@ -17,38 +17,22 @@
 * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#import "gamepad.h"
+#import "gamepad_gccontroller.h"
 #import "time.h"
+
 #import <Foundation/Foundation.h>
 #import <GameController/GameController.h>
 
-typedef struct _Gamepad
-{
-	void *controller;
-	GamepadState lastStates[GAMEPAD_BUTTON_MAX];
-	char name[GAMEPAD_NAME_SIZE];
-	GamepadIndex index;
-} Gamepad;
-
-struct _GamepadManager
-{
-	Gamepad gamepads[MAX_GAMEPADS];
-	GamepadEvent eventsBuffer[GAMEPAD_EVENT_BUFFER_CAPACITY];
-	GamepadCallback addedCallback;
-	GamepadCallback removalCallback;
-	GamepadIndex nextGamepadIndex;
-};
-
-static void _removeController(GamepadManager *gamepadManager, GCController *controller)
+static void _removeController(struct GC_NAME(_GamepadManager) *gamepadManager, GCController *controller)
 {
 	for (uint16_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
 	{
-		Gamepad *gamepad = &gamepadManager->gamepads[gamepadIndex];
+		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[gamepadIndex];
 		if (gamepad->controller == (__bridge void *)(controller))
 		{
 			if (gamepadManager->removalCallback != NULL)
 			{
-				gamepadManager->removalCallback(gamepad->index);
+				gamepadManager->removalCallback(gamepad->index, gamepadManager->context);
 			}
 			
 			CFRelease(gamepad->controller);
@@ -58,12 +42,12 @@ static void _removeController(GamepadManager *gamepadManager, GCController *cont
 	}
 }
 
-static void _addController(GamepadManager *gamepadManager, GCController *controller)
+static void _addController(struct GC_NAME(_GamepadManager) *gamepadManager, GCController *controller)
 {
 	uint16_t availableGamepadIndex = MAX_GAMEPADS;
 	for (uint16_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
 	{
-		Gamepad *gamepad = &gamepadManager->gamepads[gamepadIndex];
+		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[gamepadIndex];
 		if (gamepad->controller == (__bridge void *)(controller))
 		{
 			return;
@@ -76,7 +60,7 @@ static void _addController(GamepadManager *gamepadManager, GCController *control
 	
 	if (availableGamepadIndex < MAX_GAMEPADS)
 	{
-		Gamepad *gamepad = &gamepadManager->gamepads[availableGamepadIndex];
+		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[availableGamepadIndex];
 		gamepad->controller = (void *)CFBridgingRetain(controller);
 		NSString *vendorName = controller.vendorName;
 		if (vendorName != nil)
@@ -92,16 +76,21 @@ static void _addController(GamepadManager *gamepadManager, GCController *control
 		
 		if (gamepadManager->addedCallback != NULL)
 		{
-			gamepadManager->addedCallback(gamepad->index);
+			gamepadManager->addedCallback(gamepad->index, gamepadManager->context);
 		}
 	}
 }
 
-GamepadManager *initGamepadManager(const char *databasePath, GamepadCallback addedCallback, GamepadCallback removalCallback)
+struct GC_NAME(_GamepadManager) *GC_NAME(initGamepadManager)(const char *databasePath, GamepadCallback addedCallback, GamepadCallback removalCallback, void *context)
 {
-	GamepadManager *gamepadManager = calloc(1, sizeof(*gamepadManager));
+	struct GC_NAME(_GamepadManager) *gamepadManager = calloc(1, sizeof(*gamepadManager));
 	gamepadManager->addedCallback = addedCallback;
 	gamepadManager->removalCallback = removalCallback;
+	gamepadManager->context = context;
+	
+	// On macOS, there is a HID gamepad implementation as well.
+	// Offset our gamepad indexes large enough so that they won't collide realistically
+	gamepadManager->nextGamepadIndex = UINT32_MAX / 2;
 	
 	for (GCController *controller in [GCController controllers])
 	{
@@ -119,7 +108,7 @@ GamepadManager *initGamepadManager(const char *databasePath, GamepadCallback add
 	return gamepadManager;
 }
 
-static void _addButtonEventIfNeeded(Gamepad *gamepad, GamepadButton button, GCControllerButtonInput *buttonInput, GamepadEvent *eventsBuffer, uint16_t *eventIndex)
+static void _addButtonEventIfNeeded(GC_NAME(Gamepad) *gamepad, GamepadButton button, GCControllerButtonInput *buttonInput, GamepadEvent *eventsBuffer, uint16_t *eventIndex)
 {
 	BOOL pressed = buttonInput.pressed;
 	if ((GamepadState)pressed != gamepad->lastStates[button])
@@ -135,7 +124,7 @@ static void _addButtonEventIfNeeded(Gamepad *gamepad, GamepadButton button, GCCo
 	}
 }
 
-GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *systemEvent, uint16_t *eventCount)
+GamepadEvent *GC_NAME(pollGamepadEvents)(struct GC_NAME(_GamepadManager) *gamepadManager, const void *systemEvent, uint16_t *eventCount)
 {
 	if (systemEvent != NULL)
 	{
@@ -146,7 +135,7 @@ GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *syst
 	uint16_t eventIndex = 0;
 	for (uint16_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
 	{
-		Gamepad *gamepad = &gamepadManager->gamepads[gamepadIndex];
+		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[gamepadIndex];
 		GCController *controller = (__bridge GCController *)(gamepad->controller);
 		if (controller != nil)
 		{
@@ -161,8 +150,11 @@ GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *syst
 				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_RIGHTSHOULDER, extendedGamepad.rightShoulder, gamepadManager->eventsBuffer, &eventIndex);
 				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_LEFTTRIGGER, extendedGamepad.leftTrigger, gamepadManager->eventsBuffer, &eventIndex);
 				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_RIGHTTRIGGER, extendedGamepad.rightTrigger, gamepadManager->eventsBuffer, &eventIndex);
-				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_START, extendedGamepad.buttonMenu, gamepadManager->eventsBuffer, &eventIndex);
-				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_BACK, extendedGamepad.buttonOptions, gamepadManager->eventsBuffer, &eventIndex);
+				if (@available(iOS 13.0, macOS 10.15, *))
+				{
+					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_START, extendedGamepad.buttonMenu, gamepadManager->eventsBuffer, &eventIndex);
+					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_BACK, extendedGamepad.buttonOptions, gamepadManager->eventsBuffer, &eventIndex);
+				}
 				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_UP, extendedGamepad.dpad.up, gamepadManager->eventsBuffer, &eventIndex);
 				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_DOWN, extendedGamepad.dpad.down, gamepadManager->eventsBuffer, &eventIndex);
 				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_LEFT, extendedGamepad.dpad.left, gamepadManager->eventsBuffer, &eventIndex);
@@ -175,7 +167,10 @@ GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *syst
 				{
 					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_A, microGamepad.buttonA, gamepadManager->eventsBuffer, &eventIndex);
 					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_B, microGamepad.buttonX, gamepadManager->eventsBuffer, &eventIndex);
-					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_START, microGamepad.buttonMenu, gamepadManager->eventsBuffer, &eventIndex);
+					if (@available(iOS 13.0, macOS 10.15, *))
+					{
+						_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_START, microGamepad.buttonMenu, gamepadManager->eventsBuffer, &eventIndex);
+					}
 					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_UP, microGamepad.dpad.up, gamepadManager->eventsBuffer, &eventIndex);
 					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_DOWN, microGamepad.dpad.down, gamepadManager->eventsBuffer, &eventIndex);
 					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_LEFT, microGamepad.dpad.left, gamepadManager->eventsBuffer, &eventIndex);
@@ -189,11 +184,11 @@ GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *syst
 	return gamepadManager->eventsBuffer;
 }
 
-const char *gamepadName(GamepadManager *gamepadManager, GamepadIndex index)
+const char *GC_NAME(gamepadName)(struct GC_NAME(_GamepadManager) *gamepadManager, GamepadIndex index)
 {
 	for (uint16_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
 	{
-		Gamepad *gamepad = &gamepadManager->gamepads[gamepadIndex];
+		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[gamepadIndex];
 		if (gamepad->index == index)
 		{
 			return gamepad->name;
