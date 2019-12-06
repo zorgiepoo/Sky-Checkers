@@ -23,6 +23,7 @@
 #include <stdint.h>
 
 #define MAX_GAMEPADS 8
+#define GAMEPAD_NAME_SIZE 256
 
 typedef enum
 {
@@ -42,6 +43,8 @@ typedef enum
 	GAMEPAD_BUTTON_DPAD_RIGHT,
 	GAMEPAD_BUTTON_MAX
 } GamepadButton;
+
+#define GAMEPAD_EVENT_BUFFER_CAPACITY (MAX_GAMEPADS * GAMEPAD_BUTTON_MAX)
 
 typedef enum
 {

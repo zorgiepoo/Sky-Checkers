@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "72817C5E23934C3E00DB7677"
-               BuildableName = "SkyCheckers-iOS.app"
+               BuildableName = "SkyCheckers.app"
                BlueprintName = "SkyCheckers-iOS"
                ReferencedContainer = "container:SkyCheckers.xcodeproj">
             </BuildableReference>
@@ -45,7 +45,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "72817C5E23934C3E00DB7677"
-            BuildableName = "SkyCheckers-iOS.app"
+            BuildableName = "SkyCheckers.app"
             BlueprintName = "SkyCheckers-iOS"
             ReferencedContainer = "container:SkyCheckers.xcodeproj">
          </BuildableReference>
@@ -62,7 +62,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "72817C5E23934C3E00DB7677"
-            BuildableName = "SkyCheckers-iOS.app"
+            BuildableName = "SkyCheckers.app"
             BlueprintName = "SkyCheckers-iOS"
             ReferencedContainer = "container:SkyCheckers.xcodeproj">
          </BuildableReference>

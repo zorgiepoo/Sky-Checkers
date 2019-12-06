@@ -25,8 +25,6 @@
 #import <IOKit/hid/IOHIDLib.h>
 #import <IOKit/hid/IOHIDKeys.h>
 
-#define GAMEPAD_EVENT_BUFFER_CAPACITY (MAX_GAMEPADS * GAMEPAD_BUTTON_MAX)
-
 #define AXIS_DEADZONE_THRESHOLD 0.3
 #define AXIS_MIN_SCALE (-1.0)
 #define AXIS_MAX_SCALE 1.0
@@ -68,8 +66,6 @@ typedef struct
 		GamepadAxisDirection axisDirection;
 	};
 } GamepadElementMapping;
-
-#define GAMEPAD_NAME_SIZE 256
 
 typedef struct _Gamepad
 {
