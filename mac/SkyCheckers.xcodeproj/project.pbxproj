@@ -54,6 +54,8 @@
 		729BE4C1236667EE00DC70F7 /* gamepad_osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 729BE4C0236667EE00DC70F7 /* gamepad_osx.m */; };
 		72A14F3121A71C6900606E14 /* renderer.c in Sources */ = {isa = PBXBuildFile; fileRef = 72A14F2F21A71C6700606E14 /* renderer.c */; };
 		72A5D135239C1725004C12D6 /* menus_ios.m in Sources */ = {isa = PBXBuildFile; fileRef = 72A5D134239C1725004C12D6 /* menus_ios.m */; };
+		72A5D138239C1F21004C12D6 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72A5D137239C1F21004C12D6 /* Foundation.framework */; };
+		72A5D13B239C1F8D004C12D6 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72A5D13A239C1F8D004C12D6 /* AppKit.framework */; };
 		72BE1BF2225708E000E3192A /* container-migration.plist in Resources */ = {isa = PBXBuildFile; fileRef = 72BE1BF1225708E000E3192A /* container-migration.plist */; };
 		72EBBB92239A1C9300DD4470 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72EBBB91239A1C9300DD4470 /* CoreServices.framework */; };
 		72EBBB94239A1C9C00DD4470 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72EBBB93239A1C9C00DD4470 /* Carbon.framework */; };
@@ -64,7 +66,6 @@
 		72EBBB9E239A1CBC00DD4470 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72EBBB9D239A1CBC00DD4470 /* AVFoundation.framework */; };
 		72EBBBA0239A1CC400DD4470 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72EBBB9F239A1CC400DD4470 /* QuartzCore.framework */; };
 		72EBBBA2239A1CCA00DD4470 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72EBBBA1239A1CCA00DD4470 /* Metal.framework */; };
-		72EBBBA4239A1CE100DD4470 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72EBBBA3239A1CE100DD4470 /* Cocoa.framework */; };
 		72EBBBA9239A1D8100DD4470 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72EBBBA8239A1D8100DD4470 /* GameController.framework */; };
 		72EBBBAB239A1D8C00DD4470 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72EBBBAA239A1D8C00DD4470 /* UIKit.framework */; };
 		72EBBBAD239A1D9600DD4470 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72EBBBAC239A1D9600DD4470 /* Foundation.framework */; };
@@ -152,10 +153,11 @@
 		72A14F2F21A71C6700606E14 /* renderer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = renderer.c; path = ../src/renderer.c; sourceTree = "<group>"; };
 		72A14F3021A71C6800606E14 /* renderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = renderer.h; path = ../src/renderer.h; sourceTree = "<group>"; };
 		72A5D134239C1725004C12D6 /* menus_ios.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = menus_ios.m; path = ../src/menus_ios.m; sourceTree = "<group>"; };
+		72A5D137239C1F21004C12D6 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		72A5D13A239C1F8D004C12D6 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		72B6149322E0305D007B50B9 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		72BE1BF02257089300E3192A /* SkyCheckers.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SkyCheckers.entitlements; sourceTree = "<group>"; };
 		72BE1BF1225708E000E3192A /* container-migration.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "container-migration.plist"; sourceTree = "<group>"; };
-		72EBBB8F239A1C8B00DD4470 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		72EBBB91239A1C9300DD4470 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		72EBBB93239A1C9C00DD4470 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
 		72EBBB95239A1CA200DD4470 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
@@ -165,7 +167,6 @@
 		72EBBB9D239A1CBC00DD4470 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		72EBBB9F239A1CC400DD4470 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		72EBBBA1239A1CCA00DD4470 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
-		72EBBBA3239A1CE100DD4470 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		72EBBBA8239A1D8100DD4470 /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS13.2.sdk/System/Library/Frameworks/GameController.framework; sourceTree = DEVELOPER_DIR; };
 		72EBBBAA239A1D8C00DD4470 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS13.2.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
 		72EBBBAC239A1D9600DD4470 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS13.2.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
@@ -230,8 +231,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				72A5D13B239C1F8D004C12D6 /* AppKit.framework in Frameworks */,
+				72A5D138239C1F21004C12D6 /* Foundation.framework in Frameworks */,
 				72EBBBBD239A215500DD4470 /* GameController.framework in Frameworks */,
-				72EBBBA4239A1CE100DD4470 /* Cocoa.framework in Frameworks */,
 				72EBBBA2239A1CCA00DD4470 /* Metal.framework in Frameworks */,
 				72EBBBA0239A1CC400DD4470 /* QuartzCore.framework in Frameworks */,
 				72EBBB9E239A1CBC00DD4470 /* AVFoundation.framework in Frameworks */,
@@ -379,8 +381,9 @@
 		72EBBB8E239A1C8B00DD4470 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				72A5D13A239C1F8D004C12D6 /* AppKit.framework */,
+				72A5D137239C1F21004C12D6 /* Foundation.framework */,
 				72EBBBBC239A215500DD4470 /* GameController.framework */,
-				72EBBBA3239A1CE100DD4470 /* Cocoa.framework */,
 				72EBBBA1239A1CCA00DD4470 /* Metal.framework */,
 				72EBBB9F239A1CC400DD4470 /* QuartzCore.framework */,
 				72EBBB9D239A1CBC00DD4470 /* AVFoundation.framework */,
@@ -390,7 +393,6 @@
 				72EBBB95239A1CA200DD4470 /* IOKit.framework */,
 				72EBBB93239A1C9C00DD4470 /* Carbon.framework */,
 				72EBBB91239A1C9300DD4470 /* CoreServices.framework */,
-				72EBBB8F239A1C8B00DD4470 /* AppKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";

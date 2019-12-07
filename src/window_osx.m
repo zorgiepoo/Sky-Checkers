@@ -21,7 +21,8 @@
 #import "quit.h"
 #import "time.h"
 
-#import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
+#import <AppKit/AppKit.h>
 
 @interface ZGGameView : NSView
 

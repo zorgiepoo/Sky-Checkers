@@ -19,7 +19,8 @@
 
 #import "keyboard.h"
 
-#import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
+#import <AppKit/AppKit.h>
 #import <CoreServices/CoreServices.h>
 #import <Carbon/Carbon.h>
 

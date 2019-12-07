@@ -28,11 +28,12 @@
 #import <Metal/Metal.h>
 #import <QuartzCore/CALayer.h>
 #import <QuartzCore/CAMetalLayer.h>
+#import <Foundation/Foundation.h>
 
 #ifdef IOS_DEVICE
 #import <UIKit/UIKit.h>
 #else
-#import <Cocoa/Cocoa.h>
+#import <AppKit/AppKit.h>
 #endif
 
 // Don't use MTLPixelFormatDepth16Unorm which doesn't support 10.11 and doesn't work right on some configs (MBP11,2 / 10.13.6, but 10.14.2 works)

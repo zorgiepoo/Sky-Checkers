@@ -18,7 +18,8 @@
 */
 
 #import "app.h"
-#import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
+#import <AppKit/AppKit.h>
 #import <IOKit/pwr_mgt/IOPMLib.h>
 
 @interface ZGAppDelegate : NSObject <NSApplicationDelegate>

@@ -22,7 +22,8 @@
 #import <stdlib.h>
 
 #ifndef IOS_DEVICE
-#import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
+#import <AppKit/AppKit.h>
 #endif
 
 void ZGQuit(void)
