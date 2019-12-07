@@ -20,9 +20,17 @@
 #include "window.h"
 #include "sdl_include.h"
 
+#ifdef linux
+bool _ZGWindowIsFullscreen(ZGWindow *window);
+bool _ZGSetWindowFullscreen(ZGWindow *window, bool enabled, const char **errorString);
+#endif
+
 typedef struct
 {
 	SDL_Window *window;
+#ifdef linux
+	bool *fullscreenFlag;
+#endif
 	
 	void (*windowEventHandler)(ZGWindowEvent, void *);
 	void *windowEventHandlerContext;
@@ -45,6 +53,9 @@ ZGWindow *ZGCreateWindow(const char *windowTitle, int32_t windowWidth, int32_t w
 	SDL_ShowCursor(SDL_DISABLE);
 	
 	WindowController *windowController = calloc(1, sizeof(*windowController));
+#ifdef linux
+	windowController->fullscreenFlag =  fullscreenFlag;
+#endif
 	windowController->window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags);
 	return windowController;
 }
@@ -138,6 +149,35 @@ void ZGPollWindowAndInputEvents(ZGWindow *windowRef, const void *systemEvent)
 		} break;
 		case SDL_KEYDOWN:
 		{
+#ifdef linux
+			if (ZGTestReturnKeyCode(keyCode) && ZGTestMetaModifier(keyModifier))
+			{
+				const char *fullscreenErrorString = NULL;
+				if (!_ZGWindowIsFullscreen(windowController))
+				{
+					if (!_ZGSetWindowFullscreen(windowController, true, &fullscreenErrorString))
+					{
+						fprintf(stderr, "Failed to set fullscreen because: %s\n", fullscreenErrorString);
+					}
+					else
+					{
+						*windowController->fullscreenFlag = true;
+					}
+				}
+				else
+				{
+					if (!_ZGSetWindowFullscreen(windowController, false, &fullscreenErrorString))
+					{
+						fprintf(stderr, "Failed to escape fullscreen because: %s\n", fullscreenErrorString);
+					}
+					else
+					{
+						*windowController->fullscreenFlag = false;
+					}
+				}
+			}
+			else
+#endif
 			if (windowController->keyboardEventHandler != NULL)
 			{
 				ZGKeyboardEvent event;
@@ -180,13 +220,13 @@ void ZGPollWindowAndInputEvents(ZGWindow *windowRef, const void *systemEvent)
 }
 
 #ifdef linux
-bool ZGWindowIsFullscreen(ZGWindow *windowRef)
+bool _ZGWindowIsFullscreen(ZGWindow *windowRef)
 {
 	WindowController *windowController = (WindowController *)windowRef;
 	return (SDL_GetWindowFlags(windowController->window) & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)) != 0;
 }
 
-bool ZGSetWindowFullscreen(ZGWindow *windowRef, bool enabled, const char **errorString)
+bool _ZGSetWindowFullscreen(ZGWindow *windowRef, bool enabled, const char **errorString)
 {
 	WindowController *windowController = (WindowController *)windowRef;
 	bool result = SDL_SetWindowFullscreen(windowController->window, enabled ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0) == 0;

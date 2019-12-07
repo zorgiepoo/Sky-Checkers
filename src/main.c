@@ -1199,34 +1199,6 @@ static void handleKeyDownEvent(ZGKeyboardEvent *event, Renderer *renderer)
 			ZGFreeClipboardText(clipboardText);
 		}
 	}
-#ifdef linux
-	else if (ZGTestReturnKeyCode(keyCode) && ZGTestMetaModifier(keyModifier))
-	{
-		const char *fullscreenErrorString = NULL;
-		if (!ZGWindowIsFullscreen(renderer->window))
-		{
-			if (!ZGSetWindowFullscreen(renderer->window, true, &fullscreenErrorString))
-			{
-				fprintf(stderr, "Failed to set fullscreen because: %s\n", fullscreenErrorString);
-			}
-			else
-			{
-				renderer->fullscreen = true;
-			}
-		}
-		else
-		{
-			if (!ZGSetWindowFullscreen(renderer->window, false, &fullscreenErrorString))
-			{
-				fprintf(stderr, "Failed to escape fullscreen because: %s\n", fullscreenErrorString);
-			}
-			else
-			{
-				renderer->fullscreen = false;
-			}
-		}
-	}
-#endif
 	else if (!gConsoleActivated && gGameState == GAME_STATE_ON && gGameWinner != NO_CHARACTER &&
 		(keyCode == gPinkBubbleGumInput.weap_id || keyCode == gRedRoverInput.weap_id ||
 		 keyCode == gBlueLightningInput.weap_id || keyCode == gGreenTreeInput.weap_id || ZGTestReturnKeyCode(keyCode)))
