@@ -35,10 +35,6 @@ typedef struct GC_NAME(_Gamepad)
 	GamepadState lastStates[GAMEPAD_BUTTON_MAX];
 	char name[GAMEPAD_NAME_SIZE];
 	GamepadIndex index;
-#if USE_GC_SPI
-	int32_t vendorID;
-	int32_t productID;
-#endif
 } GC_NAME(Gamepad);
 
 struct GC_NAME(_GamepadManager)

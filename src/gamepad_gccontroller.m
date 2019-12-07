@@ -43,7 +43,7 @@ extern CFTypeRef IOHIDServiceClientCopyProperty(IOHIDServiceClientRef service, C
 @end
 
 // https://stackoverflow.com/questions/33509296/supporting-both-gccontroller-and-iohiddeviceref
-static void _retrieveVendorAndProductIDs(GC_NAME(Gamepad) *gamepad, GCController *controller)
+static bool _hasMatchingController(GCController *controller, int32_t vendorID, int32_t productID)
 {
 	if ([controller respondsToSelector:@selector(hidServices)])
 	{
@@ -55,22 +55,18 @@ static void _retrieveVendorAndProductIDs(GC_NAME(Gamepad) *gamepad, GCController
 				IOHIDServiceClientRef service = [hidServiceInfo service];
 				if (service != NULL)
 				{
-					NSNumber *vendorID = CFBridgingRelease(IOHIDServiceClientCopyProperty(service, CFSTR(kIOHIDVendorIDKey)));
-					if (vendorID != nil)
-					{
-						gamepad->vendorID = vendorID.intValue;
-					}
+					NSNumber *vendorRef = CFBridgingRelease(IOHIDServiceClientCopyProperty(service, CFSTR(kIOHIDVendorIDKey)));
+					NSNumber *productRef = CFBridgingRelease(IOHIDServiceClientCopyProperty(service, CFSTR(kIOHIDProductIDKey)));
 					
-					NSNumber *productID = CFBridgingRelease(IOHIDServiceClientCopyProperty(service, CFSTR(kIOHIDProductIDKey)));
-					if (productID != nil)
+					if (vendorID == vendorRef.intValue && productID == productRef.intValue)
 					{
-						gamepad->productID = productID.intValue;
+						return true;
 					}
 				}
 			}
-			break;
 		}
 	}
+	return false;
 }
 
 #endif
@@ -140,9 +136,6 @@ static void _addController(struct GC_NAME(_GamepadManager) *gamepadManager, GCCo
 		}
 		
 		gamepad->index = gamepadManager->nextGamepadIndex;
-#if USE_GC_SPI
-		_retrieveVendorAndProductIDs(gamepad, controller);
-#endif
 		gamepadManager->nextGamepadIndex++;
 		
 		if (gamepadManager->addedCallback != NULL)
@@ -260,7 +253,7 @@ const char *GC_NAME(gamepadName)(struct GC_NAME(_GamepadManager) *gamepadManager
 	for (uint16_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
 	{
 		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[gamepadIndex];
-		if (gamepad->index == index)
+		if (gamepad->controller != NULL && gamepad->index == index)
 		{
 			return gamepad->name;
 		}
@@ -274,12 +267,13 @@ bool GC_NAME(hasControllerMatching)(struct GC_NAME(_GamepadManager) *gamepadMana
 	for (uint16_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
 	{
 		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[gamepadIndex];
-		if (gamepad->vendorID == vendorID && gamepad->productID == productID)
+		
+		GCController *controller = (__bridge GCController *)(gamepad->controller);
+		if (controller != nil && _hasMatchingController(controller, vendorID, productID))
 		{
 			return true;
 		}
 	}
-
 	return false;
 }
 #endif
