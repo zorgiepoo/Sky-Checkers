@@ -723,11 +723,7 @@ static void drawKeyboardConfigurationInstructions(Renderer *renderer)
 	
 	color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 1.0f};
 	
-	drawString(renderer, translationMatrix, textColor, 100.0f / 14.0f, 5.0f / 14.0f, "Enter: map controller input; Escape: cancel; Spacebar: clear.");
-	
-	mat4_t noticeModelViewMatrix = m4_mul(translationMatrix, m4_translation((vec3_t){0.0f / 14.0f, -20.0f / 14.0f, 0.0f / 14.0f}));
-	
-	drawString(renderer, noticeModelViewMatrix, textColor, 50.0f / 16.0f, 5.0f / 16.0f, "(Controllers only work in-game)");
+	drawString(renderer, translationMatrix, textColor, 100.0f / 14.0f, 5.0f / 14.0f, "Enter: map keyboard input; Escape: cancel");
 }
 
 void drawPinkBubbleGumConfigRightKey(Renderer *renderer, color4_t preferredColor)
