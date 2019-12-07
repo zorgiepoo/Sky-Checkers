@@ -133,7 +133,7 @@
 			return;
 		}
 		
-		strncpy(event.text, utf8String, sizeof(event.text) / sizeof(event.text[0]));
+		strncpy(event.text, utf8String, sizeof(event.text) / sizeof(event.text[0]) - 1);
 		
 		_keyboardEventHandler(event, _keyboardEventHandlerContext);
 	}

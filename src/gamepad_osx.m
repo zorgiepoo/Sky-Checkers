@@ -387,12 +387,12 @@ static void _hidDeviceMatchingCallback(void *context, IOReturn result, void *sen
 	{
 		if (!CFStringGetCString(productProperty, name, sizeof(name), kCFStringEncodingUTF8))
 		{
-			strncpy(name, "Unknown", sizeof(name));
+			strncpy(name, "Unknown", sizeof(name) - 1);
 		}
 	}
 	else
 	{
-		strncpy(name, "Unknown", sizeof(name));
+		strncpy(name, "Unknown", sizeof(name) - 1);
 	}
 	
 	// Generate a guid matching what SDL uses

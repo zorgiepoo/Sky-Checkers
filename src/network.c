@@ -269,8 +269,7 @@ void syncNetworkState(ZGWindow *window, float timeDelta)
 					
 					if (character->netName != NULL)
 					{
-						char disconnectedMessage[] = "DISCON";
-						strncpy(character->netName, "DISCON", sizeof(disconnectedMessage) + 1);
+						strncpy(character->netName, "DISCON", MAX_USER_NAME_SIZE - 1);
 					}
 					
 					if (gNetworkConnection->type == NETWORK_SERVER_TYPE)

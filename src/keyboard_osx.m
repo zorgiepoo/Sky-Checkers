@@ -78,7 +78,7 @@ const char *ZGGetKeyCodeName(uint16_t keyCode)
 			const char *utf8String = [existingMapping UTF8String];
 			if (utf8String != NULL)
 			{
-				strncpy(gKeyCodeNameBuffer, utf8String, sizeof(gKeyCodeNameBuffer) / sizeof(*gKeyCodeNameBuffer));
+				strncpy(gKeyCodeNameBuffer, utf8String, sizeof(gKeyCodeNameBuffer) / sizeof(*gKeyCodeNameBuffer) - 1);
 				return gKeyCodeNameBuffer;
 			}
 		}
@@ -117,7 +117,7 @@ const char *ZGGetKeyCodeName(uint16_t keyCode)
 		return NULL;
 	}
 	
-	strncpy(gKeyCodeNameBuffer, utf8String, sizeof(gKeyCodeNameBuffer) / sizeof(*gKeyCodeNameBuffer));
+	strncpy(gKeyCodeNameBuffer, utf8String, sizeof(gKeyCodeNameBuffer) / sizeof(*gKeyCodeNameBuffer) - 1);
 	
 	if (gMappingTable == nil)
 	{

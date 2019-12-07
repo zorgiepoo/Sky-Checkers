@@ -27,20 +27,24 @@
  
  FILE *getUserDataFile(const char *mode)
  {
-	FILE *file = NULL;
-	char dataDirectory[256];
-	strcpy(dataDirectory, getenv("HOME"));
-	strcat(dataDirectory, "/.skycheckers/");
-	
-	int success = mkdir(dataDirectory, 0777);
-
-	if (success == 0 || errno == EEXIST)
+	char *homeEnv = getenv("HOME");
+	if (homeEnv == NULL)
 	{
-		strcat(dataDirectory, "user_data.txt");
-		file = fopen(dataDirectory, mode);
+		return NULL;
 	}
 
-	return file;
+	char dataDirectory[PATH_MAX + 1] = {0};
+
+	strncpy(dataDirectory, homeEnv, sizeof(dataDirectory) - 1);
+	strncat(dataDirectory, "/.skycheckers/", sizeof(dataDirectory) - 1 - strlen(dataDirectory));
+	
+	int success = mkdir(dataDirectory, 0777);
+	if (success == 0 || errno == EEXIST)
+	{
+		strncat(dataDirectory, "user_data.txt", sizeof(dataDirectory) - 1 - strlen(dataDirectory));
+		return fopen(dataDirectory, mode);
+	}
+	return NULL;
  }
 
  void getDefaultUserName(char *defaultUserName, int maxLength)
