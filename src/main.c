@@ -1548,8 +1548,6 @@ static void pollGamepads(GamepadManager *gamepadManager, const void *systemEvent
 	for (uint16_t gamepadEventIndex = 0; gamepadEventIndex < gamepadEventsCount; gamepadEventIndex++)
 	{
 		GamepadEvent *gamepadEvent = &gamepadEvents[gamepadEventIndex];
-		
-		printf("gamepad id: %d, %d\n", gamepadEvent->index, gamepadEvent->button);
 
 		performGamepadAction(&gRedRoverInput, gamepadEvent);
 		performGamepadAction(&gGreenTreeInput, gamepadEvent);

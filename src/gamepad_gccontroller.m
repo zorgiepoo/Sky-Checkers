@@ -23,6 +23,58 @@
 #import <Foundation/Foundation.h>
 #import <GameController/GameController.h>
 
+#if USE_GC_SPI
+
+#import <IOKit/hid/IOHIDKeys.h>
+
+typedef void* IOHIDServiceClientRef;
+extern CFTypeRef IOHIDServiceClientCopyProperty(IOHIDServiceClientRef service, CFStringRef key);
+
+@interface GCController (Private)
+
+- (NSArray *)hidServices;
+
+@end
+
+@interface NSObject (Private)
+
+- (IOHIDServiceClientRef)service;
+
+@end
+
+// https://stackoverflow.com/questions/33509296/supporting-both-gccontroller-and-iohiddeviceref
+static void _retrieveVendorAndProductIDs(GC_NAME(Gamepad) *gamepad, GCController *controller)
+{
+	if ([controller respondsToSelector:@selector(hidServices)])
+	{
+		NSArray *hidServices = [controller hidServices];
+		for (id hidServiceInfo in hidServices)
+		{
+			if ([hidServiceInfo respondsToSelector:@selector(service)])
+			{
+				IOHIDServiceClientRef service = [hidServiceInfo service];
+				if (service != NULL)
+				{
+					NSNumber *vendorID = CFBridgingRelease(IOHIDServiceClientCopyProperty(service, CFSTR(kIOHIDVendorIDKey)));
+					if (vendorID != nil)
+					{
+						gamepad->vendorID = vendorID.intValue;
+					}
+					
+					NSNumber *productID = CFBridgingRelease(IOHIDServiceClientCopyProperty(service, CFSTR(kIOHIDProductIDKey)));
+					if (productID != nil)
+					{
+						gamepad->productID = productID.intValue;
+					}
+				}
+			}
+			break;
+		}
+	}
+}
+
+#endif
+
 static void _removeController(struct GC_NAME(_GamepadManager) *gamepadManager, GCController *controller)
 {
 	for (uint16_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
@@ -88,6 +140,9 @@ static void _addController(struct GC_NAME(_GamepadManager) *gamepadManager, GCCo
 		}
 		
 		gamepad->index = gamepadManager->nextGamepadIndex;
+#if USE_GC_SPI
+		_retrieveVendorAndProductIDs(gamepad, controller);
+#endif
 		gamepadManager->nextGamepadIndex++;
 		
 		if (gamepadManager->addedCallback != NULL)
@@ -212,3 +267,19 @@ const char *GC_NAME(gamepadName)(struct GC_NAME(_GamepadManager) *gamepadManager
 	}
 	return NULL;
 }
+
+#if USE_GC_SPI
+bool GC_NAME(hasControllerMatching)(struct GC_NAME(_GamepadManager) *gamepadManager, int32_t vendorID, int32_t productID)
+{
+	for (uint16_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
+	{
+		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[gamepadIndex];
+		if (gamepad->vendorID == vendorID && gamepad->productID == productID)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+#endif

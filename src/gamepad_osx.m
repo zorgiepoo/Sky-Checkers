@@ -72,6 +72,8 @@ typedef struct
 typedef struct _Gamepad
 {
 	IOHIDDeviceRef device;
+	int32_t vendorID;
+	int32_t productID;
 	ElementArray axisElements;
 	ElementArray buttonElements;
 	ElementArray hatElements;
@@ -372,6 +374,13 @@ static void _hidDeviceMatchingCallback(void *context, IOReturn result, void *sen
 		return;
 	}
 	
+#if USE_GC_SPI
+	if (GC_NAME(hasControllerMatching)(gamepadManager->gcManager, vendorID, productID))
+	{
+		return;
+	}
+#endif
+	
 	char name[GAMEPAD_NAME_SIZE] = {0};
 	CFTypeRef productProperty = IOHIDDeviceGetProperty(device, CFSTR(kIOHIDManufacturerKey));
 	if (productProperty != NULL && CFGetTypeID(productProperty) == CFStringGetTypeID())
@@ -424,6 +433,8 @@ static void _hidDeviceMatchingCallback(void *context, IOReturn result, void *sen
 	Gamepad *newGamepad = &gamepadManager->gamepads[newGamepadIndex];
 	CFRetain(device);
 	newGamepad->device = device;
+	newGamepad->vendorID = vendorID;
+	newGamepad->productID = productID;
 	newGamepad->gcController = false;
 	newGamepad->index = gamepadManager->nextGamepadIndex;
 	gamepadManager->nextGamepadIndex++;
@@ -533,26 +544,30 @@ static void _freeElements(ElementArray *elements)
 	free(elements->element);
 }
 
+static void _removeGamepad(GamepadManager *gamepadManager, uint16_t index)
+{
+	if (gamepadManager->removalCallback != NULL)
+	{
+		gamepadManager->removalCallback(gamepadManager->gamepads[index].index, gamepadManager->context);
+	}
+	
+	_freeElements(&gamepadManager->gamepads[index].buttonElements);
+	_freeElements(&gamepadManager->gamepads[index].hatElements);
+	_freeElements(&gamepadManager->gamepads[index].axisElements);
+	
+	CFRelease(gamepadManager->gamepads[index].device);
+	
+	memset(&gamepadManager->gamepads[index], 0, sizeof(gamepadManager->gamepads[index]));
+}
+
 static void _hidDeviceRemovalCallback(void *context, IOReturn result, void *sender, IOHIDDeviceRef device)
 {
 	GamepadManager *gamepadManager = context;
-	for (uint16_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
+	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
 	{
-		if (!gamepadManager->gamepads[gamepadIndex].gcController && gamepadManager->gamepads[gamepadIndex].device == device)
+		if (!gamepadManager->gamepads[index].gcController && gamepadManager->gamepads[index].device == device)
 		{
-			if (gamepadManager->removalCallback != NULL)
-			{
-				gamepadManager->removalCallback(gamepadIndex, gamepadManager->context);
-			}
-			
-			_freeElements(&gamepadManager->gamepads[gamepadIndex].buttonElements);
-			_freeElements(&gamepadManager->gamepads[gamepadIndex].hatElements);
-			_freeElements(&gamepadManager->gamepads[gamepadIndex].axisElements);
-			
-			CFRelease(device);
-			
-			memset(&gamepadManager->gamepads[gamepadIndex], 0, sizeof(gamepadManager->gamepads[gamepadIndex]));
-			
+			_removeGamepad(gamepadManager, index);
 			break;
 		}
 	}
@@ -563,46 +578,64 @@ static NSDictionary<NSString *, NSNumber *> *_matchingCriteriaForUsage(NSInteger
 	return @{@kIOHIDDeviceUsagePageKey : @(kHIDPage_GenericDesktop), @kIOHIDDeviceUsageKey : @(usage)};
 }
 
-static void _gcGamepadAdded(GamepadIndex index, void *context)
+static void _gcGamepadAdded(GamepadIndex gcIndex, void *context)
 {
 	GamepadManager *gamepadManager = context;
 	
-	for (uint16_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
+#if USE_GC_SPI
+	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
 	{
-		Gamepad *gamepad = &gamepadManager->gamepads[gamepadIndex];
+		Gamepad *gamepad = &gamepadManager->gamepads[index];
+		if (!gamepad->gcController && gamepad->device != NULL && GC_NAME(hasControllerMatching)(gamepadManager->gcManager, gamepad->vendorID, gamepad->productID))
+		{
+			_removeGamepad(gamepadManager, index);
+		}
+	}
+#endif
+	
+	Gamepad *nextFreeGamepad = NULL;
+	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
+	{
+		Gamepad *gamepad = &gamepadManager->gamepads[index];
 		if (!gamepad->gcController && gamepad->device == NULL)
 		{
-			gamepad->gcController = true;
-			gamepad->index = index;
-			
-			const char *gamepadName = GC_NAME(gamepadName)(gamepadManager->gcManager, index);
-			if (gamepadName != NULL)
-			{
-				strncpy(gamepad->name, gamepadName, sizeof(gamepad->name) - 1);
-			}
-			
-			if (gamepadManager->addedCallback != NULL)
-			{
-				gamepadManager->addedCallback(index, context);
-			}
-			
+			nextFreeGamepad = gamepad;
 			break;
 		}
 	}
+	
+	if (nextFreeGamepad == NULL)
+	{
+		return;
+	}
+	
+	nextFreeGamepad->gcController = true;
+	nextFreeGamepad->index = gcIndex;
+	
+	const char *gamepadName = GC_NAME(gamepadName)(gamepadManager->gcManager, nextFreeGamepad->index);
+	if (gamepadName != NULL)
+	{
+		strncpy(nextFreeGamepad->name, gamepadName, sizeof(nextFreeGamepad->name) - 1);
+	}
+	
+	if (gamepadManager->addedCallback != NULL)
+	{
+		gamepadManager->addedCallback(nextFreeGamepad->index, context);
+	}
 }
 
-static void _gcGamepadRemoved(GamepadIndex index, void *context)
+static void _gcGamepadRemoved(GamepadIndex gcIndex, void *context)
 {
 	GamepadManager *gamepadManager = context;
 	
-	for (uint16_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
+	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
 	{
-		Gamepad *gamepad = &gamepadManager->gamepads[gamepadIndex];
-		if (gamepad->gcController && gamepad->index == index)
+		Gamepad *gamepad = &gamepadManager->gamepads[index];
+		if (gamepad->gcController && gamepad->index == gcIndex)
 		{
 			if (gamepadManager->removalCallback != NULL)
 			{
-				gamepadManager->removalCallback(index, context);
+				gamepadManager->removalCallback(gcIndex, context);
 			}
 			
 			memset(gamepad, 0, sizeof(*gamepad));
@@ -669,9 +702,9 @@ GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *syst
 	}
 	
 	uint16_t eventIndex = 0;
-	for (uint16_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
+	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
 	{
-		Gamepad *gamepad = &gamepadManager->gamepads[gamepadIndex];
+		Gamepad *gamepad = &gamepadManager->gamepads[index];
 		
 		if (gamepad->gcController)
 		{

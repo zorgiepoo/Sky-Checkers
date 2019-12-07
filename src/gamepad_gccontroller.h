@@ -19,11 +19,14 @@
 
 #import "gamepad.h"
 #import "platforms.h"
+#import <stdbool.h>
 
 #ifdef IOS_DEVICE
 #define GC_NAME(x) x
+#define USE_GC_SPI 0
 #else
 #define GC_NAME(x) GC_##x
+#define USE_GC_SPI 1
 #endif
 
 typedef struct GC_NAME(_Gamepad)
@@ -32,6 +35,10 @@ typedef struct GC_NAME(_Gamepad)
 	GamepadState lastStates[GAMEPAD_BUTTON_MAX];
 	char name[GAMEPAD_NAME_SIZE];
 	GamepadIndex index;
+#if USE_GC_SPI
+	int32_t vendorID;
+	int32_t productID;
+#endif
 } GC_NAME(Gamepad);
 
 struct GC_NAME(_GamepadManager)
@@ -49,3 +56,7 @@ struct GC_NAME(_GamepadManager) *GC_NAME(initGamepadManager)(const char *databas
 GamepadEvent *GC_NAME(pollGamepadEvents)(struct GC_NAME(_GamepadManager) *gamepadManager, const void *systemEvent, uint16_t *eventCount);
 
 const char *GC_NAME(gamepadName)(struct GC_NAME(_GamepadManager) *gamepadManager, GamepadIndex index);
+
+#if USE_GC_SPI
+bool GC_NAME(hasControllerMatching)(struct GC_NAME(_GamepadManager) *gamepadManager, int32_t vendorID, int32_t productID);
+#endif
