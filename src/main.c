@@ -22,7 +22,6 @@
 #include "characters.h"
 #include "scenery.h"
 #include "input.h"
-#include "console.h"
 #include "animation.h"
 #include "weapon.h"
 #include "text.h"
@@ -36,6 +35,10 @@
 #include "globals.h"
 #include "window.h"
 #include "defaults.h"
+
+#ifndef IOS_DEVICE
+#include "console.h"
+#endif
 
 #include <string.h>
 #include <stdlib.h>
@@ -79,10 +82,12 @@ bool gValidDefaults = false;
 int gCharacterLives =							5;
 int gCharacterNetLives =						5;
 
-// Fullscreen video state.
-static bool gConsoleActivated =				false;
-bool gDrawFPS =								false;
-bool gDrawPings = false;
+#ifndef IOS_DEVICE
+static bool gConsoleActivated;
+#endif
+
+bool gDrawFPS;
+bool gDrawPings;
 
 static GameState gGameState;
 
@@ -182,7 +187,9 @@ static void initScene(Renderer *renderer)
 	gPinkBubbleGumInput.character = &gPinkBubbleGum;
 	gBlueLightningInput.character = &gBlueLightning;
 
+#ifndef IOS_DEVICE
 	initConsole();
+#endif
 
 	gGameState = GAME_STATE_OFF;
 
@@ -1022,20 +1029,24 @@ static void drawScene(Renderer *renderer)
 			}
 		}
 		
+#ifndef IOS_DEVICE
 		if (gConsoleActivated)
 		{
 			// Console at z = -25.0f
 			drawConsole(renderer);
 		}
+#endif
 		
 		// Winning/Losing text at z = -25.0f
 		if (gGameWinner != NO_CHARACTER)
 		{
+#ifndef IOS_DEVICE
 			if (gConsoleActivated)
 			{
 				// Console text at z = -23.0f
 				drawConsoleText(renderer);
 			}
+#endif
 			
 			// Renders at z = -22.0f
 			drawBlackBox(renderer);
@@ -1100,11 +1111,13 @@ static void drawScene(Renderer *renderer)
 		}
 		else
 		{
+#ifndef IOS_DEVICE
 			if (gConsoleActivated)
 			{
 				// Console text at z =  -24.0f
 				drawConsoleText(renderer);
 			}
+#endif
 		}
 		
 		if (gDrawFPS)
@@ -1303,7 +1316,12 @@ static void pollGamepads(GamepadManager *gamepadManager, const void *systemEvent
 		performGamepadAction(&gBlueLightningInput, gamepadEvent);
 	}
 	
-	if (!gConsoleActivated && gGameState == GAME_STATE_ON && gGameWinner != NO_CHARACTER && (gNetworkConnection == NULL || gNetworkConnection->type == NETWORK_SERVER_TYPE) && (gRedRoverInput.weap || gGreenTreeInput.weap || gPinkBubbleGumInput.weap || gBlueLightningInput.weap))
+#ifndef IOS_DEVICE
+	bool consoleActivated = gConsoleActivated;
+#else
+	bool consoleActivated = false;
+#endif
+	if (!consoleActivated && gGameState == GAME_STATE_ON && gGameWinner != NO_CHARACTER && (gNetworkConnection == NULL || gNetworkConnection->type == NETWORK_SERVER_TYPE) && (gRedRoverInput.weap || gGreenTreeInput.weap || gPinkBubbleGumInput.weap || gBlueLightningInput.weap))
 	{
 		resetGame();
 	}

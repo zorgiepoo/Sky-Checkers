@@ -18,7 +18,6 @@
  */
 
 #include "scenery.h"
-#include "console.h"
 #include "collision.h"
 #include "math_3d.h"
 #include "texture.h"

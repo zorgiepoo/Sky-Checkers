@@ -48,7 +48,6 @@
 		72817CA92393860100DB7677 /* animation.c in Sources */ = {isa = PBXBuildFile; fileRef = 774686A00B750F7200F73E92 /* animation.c */; };
 		72817CAA2393860600DB7677 /* ai.c in Sources */ = {isa = PBXBuildFile; fileRef = 778FA7900D0656FA002A3C26 /* ai.c */; };
 		72817CAB2393860E00DB7677 /* network.c in Sources */ = {isa = PBXBuildFile; fileRef = 772B6A840D15CBA000A216BD /* network.c */; };
-		72817CAC2393861700DB7677 /* console.c in Sources */ = {isa = PBXBuildFile; fileRef = 77DC8A510B2FA1DD0080334C /* console.c */; };
 		72817CAE2393D45E00DB7677 /* sc_icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 771B6C9F10BE60320014884B /* sc_icon.icns */; };
 		72817CB123946C0000DB7677 /* quit_osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 72817BD32392C33800DB7677 /* quit_osx.m */; };
 		7282C625231CEC640063D3CB /* audio_osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 7282C624231CEC640063D3CB /* audio_osx.m */; };
@@ -525,7 +524,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				72817CB123946C0000DB7677 /* quit_osx.m in Sources */,
-				72817CAC2393861700DB7677 /* console.c in Sources */,
 				72817CAB2393860E00DB7677 /* network.c in Sources */,
 				72817CAA2393860600DB7677 /* ai.c in Sources */,
 				72817CA92393860100DB7677 /* animation.c in Sources */,
