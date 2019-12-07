@@ -64,7 +64,7 @@ static void _addController(struct GC_NAME(_GamepadManager) *gamepadManager, GCCo
 		gamepad->controller = (void *)CFBridgingRetain(controller);
 		NSString *vendorName = controller.vendorName;
 		NSString *productDescription;
-		if (@available(macOS 10.15, iOS 10.13, *))
+		if (@available(macOS 10.15, iOS 13, *))
 		{
 			NSString *productCategory = controller.productCategory;
 			if (vendorName != nil)
