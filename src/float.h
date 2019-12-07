@@ -21,7 +21,7 @@
 
 #include "platforms.h"
 
-#ifdef NATIVE_IOS_DEVICE
+#if PLATFORM_IOS && !PLATFORM_IOS_SIMULATOR
 #import <arm_neon.h>
 typedef float16_t ZGFloat;
 #else

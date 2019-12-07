@@ -58,13 +58,11 @@ typedef struct
 {
 	union
 	{
-#ifdef MAC_OS_X
+#if PLATFORM_APPLE
 		void *metalObject;
-#endif
-#ifdef WINDOWS
+#elif PLATFORM_WINDOWS
 		void *d3d11Object;
-#endif
-#ifdef linux
+#elif PLATFORM_LINUX
 		uint32_t glObject;
 #endif
 	};
@@ -74,21 +72,19 @@ typedef struct
 {
 	union
 	{
-#ifdef MAC_OS_X
+#if PLATFORM_APPLE
 		struct
 		{
 			void *metalObject;
 			uint32_t metalVerticesSize;
 		};
-#endif
-#ifdef WINDOWS
+#elif PLATFORM_WINDOWS
 		struct
 		{
 			void *d3d11Object;
 			uint32_t d3d11VerticesSize;
 		};
-#endif
-#ifdef linux
+#elif PLATFORM_LINUX
 		uint32_t glObject;
 #endif
 	};
@@ -98,13 +94,11 @@ typedef struct
 {
 	union
 	{
-#ifdef MAC_OS_X
+#if PLATFORM_APPLE
 		void *metalObject;
-#endif
-#ifdef WINDOWS
+#elif PLATFORM_WINDOWS
 		void *d3d11Object;
-#endif
-#ifdef linux
+#elif PLATFORM_LINUX
 		uint32_t glObject;
 #endif
 	};
@@ -116,7 +110,7 @@ typedef enum
 	PIXEL_FORMAT_BGRA32
 } PixelFormat;
 
-#ifdef linux
+#if PLATFORM_LINUX
 typedef struct
 {
 	int32_t program;
@@ -125,9 +119,7 @@ typedef struct
 	int32_t colorUniformLocation;
 	int32_t textureUniformLocation;
 } Shader_gl;
-#endif
-
-#ifdef WINDOWS
+#elif PLATFORM_WINDOWS
 typedef struct
 {
 	void *vertexShader;
@@ -159,16 +151,14 @@ typedef struct _Renderer
 
 	union
 	{
-#ifdef linux
+#if PLATFORM_LINUX
 		// Private GL data
 		struct
 		{
 			Shader_gl glPositionTextureShader;
 			Shader_gl glPositionShader;
 		};
-#endif
-
-#ifdef MAC_OS_X
+#elif PLATFORM_APPLE
 		// Private metal data
 		struct
 		{
@@ -182,9 +172,7 @@ typedef struct _Renderer
 			bool metalWantsFsaa;
 			bool metalCreatedInitialPipelines;
 		};
-#endif
-
-#ifdef WINDOWS
+#elif PLATFORM_WINDOWS
 		// Private D3D11 data
 		struct
 		{

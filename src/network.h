@@ -19,11 +19,12 @@
 
 #pragma once
 
+#include "platforms.h"
 #include "characters.h"
 #include "thread.h"
 #include "window.h"
 
-#ifdef WINDOWS
+#if PLATFORM_WINDOWS
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #else
@@ -41,7 +42,7 @@
 
 #define NETWORK_PORT "4893"
 
-#ifdef WINDOWS
+#if PLATFORM_WINDOWS
 typedef SOCKET socket_t;
 typedef int socket_size_t;
 #else

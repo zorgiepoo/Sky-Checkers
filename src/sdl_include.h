@@ -21,12 +21,9 @@
 
 #include "platforms.h"
 
-#ifdef WINDOWS
+#if PLATFORM_WINDOWS
 #include "SDL.h"
 #include "SDL_syswm.h"
-#endif
-
-#ifdef linux
+#elif PLATFORM_LINUX
 #include <SDL2/SDL.h>
 #endif
-

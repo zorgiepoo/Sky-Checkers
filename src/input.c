@@ -41,7 +41,7 @@ void initInput(Input *input)
 	input->gamepadIndex = INVALID_GAMEPAD_INDEX;
 }
 
-#ifndef IOS_DEVICE
+#if !PLATFORM_IOS
 void setInputKeys(Input *input, uint32_t right, uint32_t left, uint32_t up, uint32_t down, uint32_t weapon)
 {
 	input->r_id = right;
@@ -80,7 +80,7 @@ static void prepareFiringFromInput(Input *input)
 	prepareFiringCharacterWeapon(input->character, input->character->x, input->character->y, input->character->pointing_direction, 0.0f);
 }
 
-#ifdef IOS_DEVICE
+#if PLATFORM_IOS
 #define MIN_DELTA_THRESHOLD 60.0f
 void performTouchAction(Input *input, ZGTouchEvent *event)
 {

@@ -439,7 +439,7 @@ void networkServerPlayMenuAction(void *context)
 			continue;
 		}
 		
-#ifdef WINDOWS
+#if PLATFORM_WINDOWS
 		int addressLength = (int)serverInfo->ai_addrlen;
 #else
 		socklen_t addressLength = serverInfo->ai_addrlen;

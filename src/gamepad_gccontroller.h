@@ -21,7 +21,7 @@
 #import "platforms.h"
 #import <stdbool.h>
 
-#ifdef IOS_DEVICE
+#if PLATFORM_IOS
 #define GC_NAME(x) x
 #define USE_GC_SPI 0
 #else

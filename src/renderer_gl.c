@@ -19,17 +19,14 @@
 
 #include "renderer_gl.h"
 
-#include "platforms.h"
 #include "renderer_projection.h"
 #include "texture.h"
 #include "quit.h"
 #include "window.h"
 #include "sdl_include.h"
 
-#ifdef linux
 #include <GL/glew.h>
 #include <SDL2/SDL_opengl.h>
-#endif
 
 #define VERTEX_ATTRIBUTE 0
 #define TEXTURE_ATTRIBUTE 1

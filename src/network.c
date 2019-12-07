@@ -28,7 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef IOS_DEVICE
+#if PLATFORM_IOS
 #include <sys/time.h> // for select()
 #endif
 
@@ -736,7 +736,7 @@ static void sendData(socket_t socket, void *data, size_t size, SocketAddress *ad
 	}
 }
 
-#ifdef WINDOWS
+#if PLATFORM_WINDOWS
 static int
 #else
 static ssize_t
@@ -2470,7 +2470,7 @@ GameMessage *popNetworkMessages(GameMessageArray *messageArray, uint32_t *count)
 
 void initializeNetwork(void)
 {
-#ifdef WINDOWS
+#if PLATFORM_WINDOWS
 	WSADATA wsaData;
 	
 	if (WSAStartup(MAKEWORD(1, 1), &wsaData) != 0)
@@ -2482,7 +2482,7 @@ void initializeNetwork(void)
 
 void deinitializeNetwork(void)
 {
-#ifdef WINDOWS
+#if PLATFORM_WINDOWS
 	WSACleanup();
 #endif
 }
@@ -2555,7 +2555,7 @@ void sendToServer(GameMessage message)
 
 void closeSocket(socket_t sockfd)
 {
-#ifdef WINDOWS
+#if PLATFORM_WINDOWS
 	closesocket(sockfd);
 #else
 	close(sockfd);

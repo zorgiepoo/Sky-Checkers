@@ -23,11 +23,9 @@
 
 #include <stdio.h>
 
-#ifdef WINDOWS
+#if PLATFORM_WINDOWS
 #include "SDL_mixer.h"
-#endif
-
-#ifdef linux
+#elif PLATFORM_LINUX
 #include <SDL2/SDL_mixer.h>
 #endif
 

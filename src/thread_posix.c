@@ -39,7 +39,7 @@ static void *threadFunctionWrapper(void *context)
 {
 	ThreadDataWrapper *dataWrapper = context;
 	
-#ifdef MAC_OS_X
+#if PLATFORM_APPLE
 	if (dataWrapper->name != NULL)
 	{
 		pthread_setname_np(dataWrapper->name);
@@ -66,7 +66,7 @@ ZGThread ZGCreateThread(ZGThreadFunction function, const char *name, void *data)
 	
 	dataWrapper->function = function;
 	dataWrapper->data = data;
-#ifdef MAC_OS_X
+#if PLATFORM_APPLE
 	if (name != NULL)
 	{
 		dataWrapper->name = strdup(name);

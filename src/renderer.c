@@ -24,21 +24,17 @@
 #include <string.h>
 #include <ctype.h>
 
-#ifdef MAC_OS_X
+#if PLATFORM_APPLE
 #include "renderer_metal.h"
-#endif
-
-#ifdef WINDOWS
+#elif PLATFORM_WINDOWS
 #include "renderer_d3d11.h"
-#endif
-
-#ifdef linux
+#elif PLATFORM_LINUX
 #include "renderer_gl.h"
 #endif
 
 void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, bool fullscreen, bool vsync, bool fsaa)
 {
-#ifndef MAC_OS_X
+#if !PLATFORM_APPLE
 	const char *windowTitle = "SkyCheckers";
 #else
 	const char *windowTitle = "";
@@ -51,16 +47,11 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 		fprintf(stderr, "NOTICE: Force disabling anti-aliasing usage!!\n");
 	}
 	
-#ifdef MAC_OS_X
-	// Metal
+#if PLATFORM_APPLE
 	createRenderer_metal(renderer, windowTitle, windowWidth, windowHeight, fullscreen, vsync, fsaa);
-#endif
-	
-#ifdef WINDOWS
+#elif PLATFORM_WINDOWS
 	createRenderer_d3d11(renderer, windowTitle, windowWidth, windowHeight, fullscreen, vsync, fsaa);
-#endif
-	
-#ifdef linux
+#elif PLATFORM_LINUX
 	createRenderer_gl(renderer, windowTitle, windowWidth, windowHeight, fullscreen, vsync, fsaa);
 #endif
 }

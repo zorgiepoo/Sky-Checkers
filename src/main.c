@@ -36,7 +36,7 @@
 #include "window.h"
 #include "defaults.h"
 
-#ifndef IOS_DEVICE
+#if !PLATFORM_IOS
 #include "console.h"
 #endif
 
@@ -82,7 +82,7 @@ bool gValidDefaults = false;
 int gCharacterLives =							5;
 int gCharacterNetLives =						5;
 
-#ifndef IOS_DEVICE
+#if !PLATFORM_IOS
 static bool gConsoleActivated;
 #endif
 
@@ -166,7 +166,7 @@ static void initScene(Renderer *renderer)
 		initInput(&gBlueLightningInput);
 		initInput(&gPinkBubbleGumInput);
 
-#ifndef IOS_DEVICE
+#if !PLATFORM_IOS
 		setInputKeys(&gRedRoverInput, ZG_KEYCODE_B, ZG_KEYCODE_C, ZG_KEYCODE_F, ZG_KEYCODE_V, ZG_KEYCODE_G);
 		setInputKeys(&gGreenTreeInput, ZG_KEYCODE_L, ZG_KEYCODE_J, ZG_KEYCODE_I, ZG_KEYCODE_K, ZG_KEYCODE_M);
 		setInputKeys(&gBlueLightningInput, ZG_KEYCODE_D, ZG_KEYCODE_A, ZG_KEYCODE_W, ZG_KEYCODE_S, ZG_KEYCODE_Z);
@@ -187,7 +187,7 @@ static void initScene(Renderer *renderer)
 	gPinkBubbleGumInput.character = &gPinkBubbleGum;
 	gBlueLightningInput.character = &gBlueLightning;
 
-#ifndef IOS_DEVICE
+#if !PLATFORM_IOS
 	initConsole();
 #endif
 
@@ -244,7 +244,7 @@ static bool scanLineTerminatingString(FILE *fp, char *destBuffer, size_t maxBuff
 	return success;
 }
 
-#ifndef IOS_DEVICE
+#if !PLATFORM_IOS
 static bool readCharacterKeyboardDefaults(FILE *fp, const char *characterName, Input *input, int defaultsVersion)
 {
 	bool readInputDefaults = false;
@@ -447,7 +447,7 @@ static void readDefaults(void)
 		gNumberOfNetHumans = 1;
 	}
 	
-#ifndef IOS_DEVICE
+#if !PLATFORM_IOS
 	if (!readCharacterKeyboardDefaults(fp, "Pink Bubblegum", &gPinkBubbleGumInput, defaultsVersion)) goto cleanup;
 	if (!readCharacterKeyboardDefaults(fp, "Red Rover", &gRedRoverInput, defaultsVersion)) goto cleanup;
 	if (!readCharacterKeyboardDefaults(fp, "Green Tree", &gGreenTreeInput, defaultsVersion)) goto cleanup;
@@ -483,7 +483,7 @@ cleanup:
 	fclose(fp);
 }
 
-#ifndef IOS_DEVICE
+#if !PLATFORM_IOS
 static void writeCharacterInput(FILE *fp, const char *characterName, Input *input)
 {
 	fprintf(fp, "%s key right: %i\n", characterName, input->r_id);
@@ -540,7 +540,7 @@ static void writeDefaults(Renderer *renderer)
 
 	// Character defaults
 	
-#ifndef IOS_DEVICE
+#if !PLATFORM_IOS
 	writeCharacterInput(fp, "Pink Bubblegum", &gPinkBubbleGumInput);
 	fprintf(fp, "\n");
 	
@@ -1029,7 +1029,7 @@ static void drawScene(Renderer *renderer)
 			}
 		}
 		
-#ifndef IOS_DEVICE
+#if !PLATFORM_IOS
 		if (gConsoleActivated)
 		{
 			// Console at z = -25.0f
@@ -1040,7 +1040,7 @@ static void drawScene(Renderer *renderer)
 		// Winning/Losing text at z = -25.0f
 		if (gGameWinner != NO_CHARACTER)
 		{
-#ifndef IOS_DEVICE
+#if !PLATFORM_IOS
 			if (gConsoleActivated)
 			{
 				// Console text at z = -23.0f
@@ -1111,7 +1111,7 @@ static void drawScene(Renderer *renderer)
 		}
 		else
 		{
-#ifndef IOS_DEVICE
+#if !PLATFORM_IOS
 			if (gConsoleActivated)
 			{
 				// Console text at z =  -24.0f
@@ -1170,7 +1170,7 @@ static void drawScene(Renderer *renderer)
 	}
 }
 
-#ifndef IOS_DEVICE
+#if !PLATFORM_IOS
 static void handleKeyDownEvent(ZGKeyboardEvent *event, Renderer *renderer)
 {
 	ZGWindow *window = renderer->window;
@@ -1316,7 +1316,7 @@ static void pollGamepads(GamepadManager *gamepadManager, const void *systemEvent
 		performGamepadAction(&gBlueLightningInput, gamepadEvent);
 	}
 	
-#ifndef IOS_DEVICE
+#if !PLATFORM_IOS
 	bool consoleActivated = gConsoleActivated;
 #else
 	bool consoleActivated = false;
@@ -1352,7 +1352,7 @@ static void handleWindowEvent(ZGWindowEvent event, void *context)
 	}
 }
 
-#ifdef IOS_DEVICE
+#if PLATFORM_IOS
 static void handleTouchEvent(ZGTouchEvent event, void *context)
 {
 	if (gGameState == GAME_STATE_ON)
@@ -1485,7 +1485,7 @@ static void appLaunchedHandler(void *context)
 	}
 	
 	ZGSetWindowEventHandler(renderer->window, appContext, handleWindowEvent);
-#ifdef IOS_DEVICE
+#if PLATFORM_IOS
 	ZGSetTouchEventHandler(renderer->window, renderer, handleTouchEvent);
 #else
 	ZGSetKeyboardEventHandler(renderer->window, renderer, handleKeyboardEvent);

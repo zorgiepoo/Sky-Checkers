@@ -26,11 +26,7 @@ bool ZGTestReturnKeyCode(uint16_t keyCode)
 
 bool ZGTestMetaModifier(uint64_t modifier)
 {
-#ifdef MAC_OS_X
-	SDL_Keymod metaModifier = (KMOD_LGUI | KMOD_RGUI);
-#else
 	SDL_Keymod metaModifier = (KMOD_LCTRL | KMOD_RCTRL);
-#endif
 	return (metaModifier & modifier) != 0;
 }
 

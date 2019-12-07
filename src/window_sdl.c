@@ -20,7 +20,7 @@
 #include "window.h"
 #include "sdl_include.h"
 
-#ifdef linux
+#if PLATFORM_LINUX
 bool _ZGWindowIsFullscreen(ZGWindow *window);
 bool _ZGSetWindowFullscreen(ZGWindow *window, bool enabled, const char **errorString);
 #endif
@@ -28,7 +28,7 @@ bool _ZGSetWindowFullscreen(ZGWindow *window, bool enabled, const char **errorSt
 typedef struct
 {
 	SDL_Window *window;
-#ifdef linux
+#if PLATFORM_LINUX
 	bool *fullscreenFlag;
 #endif
 	
@@ -42,7 +42,7 @@ typedef struct
 ZGWindow *ZGCreateWindow(const char *windowTitle, int32_t windowWidth, int32_t windowHeight, bool *fullscreenFlag)
 {
 	Uint32 videoFlags = SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE;
-#ifdef linux
+#if PLATFORM_LINUX
 	videoFlags |= SDL_WINDOW_OPENGL;
 #endif
 	if (fullscreenFlag != NULL && *fullscreenFlag)
@@ -53,7 +53,7 @@ ZGWindow *ZGCreateWindow(const char *windowTitle, int32_t windowWidth, int32_t w
 	SDL_ShowCursor(SDL_DISABLE);
 	
 	WindowController *windowController = calloc(1, sizeof(*windowController));
-#ifdef linux
+#if PLATFORM_LINUX
 	windowController->fullscreenFlag =  fullscreenFlag;
 #endif
 	windowController->window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags);
@@ -149,7 +149,7 @@ void ZGPollWindowAndInputEvents(ZGWindow *windowRef, const void *systemEvent)
 		} break;
 		case SDL_KEYDOWN:
 		{
-#ifdef linux
+#if PLATFORM_LINUX
 			if (ZGTestReturnKeyCode(keyCode) && ZGTestMetaModifier(keyModifier))
 			{
 				const char *fullscreenErrorString = NULL;
@@ -219,7 +219,7 @@ void ZGPollWindowAndInputEvents(ZGWindow *windowRef, const void *systemEvent)
 	}
 }
 
-#ifdef linux
+#if PLATFORM_LINUX
 bool _ZGWindowIsFullscreen(ZGWindow *windowRef)
 {
 	WindowController *windowController = (WindowController *)windowRef;
@@ -238,7 +238,7 @@ bool _ZGSetWindowFullscreen(ZGWindow *windowRef, bool enabled, const char **erro
 }
 #endif
 
-#ifdef WINDOWS
+#if PLATFORM_WINDOWS
 void ZGSetWindowMinimumSize(ZGWindow *windowRef, int32_t minWidth, int32_t minHeight)
 {
 	WindowController *windowController = (WindowController *)windowRef;
@@ -255,20 +255,14 @@ void ZGGetWindowSize(ZGWindow *windowRef, int32_t *width, int32_t *height)
 void *ZGWindowHandle(ZGWindow *windowRef)
 {
 	WindowController *windowController = (WindowController *)windowRef;
-#ifdef linux
+#if PLATFORM_LINUX
 	return windowController->window;
-#else
+#elif PLATFORM_WINDOWS
 	SDL_SysWMinfo systemInfo;
 	SDL_VERSION(&systemInfo.version);
 	SDL_GetWindowWMInfo(windowController->window, &systemInfo);
 	
-#ifdef MAC_OS_X
-	return systemInfo.info.cocoa.window;
-#endif
-	
-#ifdef WINDOWS
 	return systemInfo.info.win.window;
-#endif
 #endif
 }
 

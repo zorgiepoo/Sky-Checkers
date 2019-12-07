@@ -19,24 +19,27 @@
 
 #pragma once
 
-#ifdef __APPLE__
-#ifdef __MACH__
-#define MAC_OS_X
-
+#if defined(__APPLE__) && defined(__MACH__)
 #import <TargetConditionals.h>
-#if TARGET_OS_IPHONE
-#define IOS_DEVICE
-
-#if !TARGET_OS_SIMULATOR
-#define NATIVE_IOS_DEVICE
-#endif
-#endif
-
-#endif
-#endif
-
-#ifdef _WIN32
-#define WINDOWS
+#define PLATFORM_APPLE 1
+#define PLATFORM_OSX TARGET_OS_OSX
+#define PLATFORM_IOS TARGET_OS_IPHONE
+#define PLATFORM_IOS_SIMULATOR TARGET_OS_SIMULATOR
+#else
+#define PLATFORM_APPLE 0
+#define PLATFORM_OSX 0
+#define PLATFORM_IOS 0
+#define PLATFORM_IOS_SIMULATOR 0
 #endif
 
-// linux is OK already
+#if defined(_WIN32)
+#define PLATFORM_WINDOWS 1
+#else
+#define PLATFORM_WINDOWS 0
+#endif
+
+#if defined(linux)
+#define PLATFORM_LINUX 1
+#else
+#define PLATFORM_LINUX 0
+#endif

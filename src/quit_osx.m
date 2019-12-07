@@ -21,7 +21,7 @@
 #import "platforms.h"
 #import <stdlib.h>
 
-#ifndef IOS_DEVICE
+#if PLATFORM_OSX
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #endif
@@ -31,7 +31,7 @@ void ZGQuit(void)
 	exit(0);
 }
 
-#ifndef IOS_DEVICE
+#if PLATFORM_OSX
 void ZGSendQuitEvent(void)
 {
 	[NSApp terminate:nil];

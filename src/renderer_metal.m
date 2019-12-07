@@ -30,7 +30,7 @@
 #import <QuartzCore/CAMetalLayer.h>
 #import <Foundation/Foundation.h>
 
-#ifdef IOS_DEVICE
+#if PLATFORM_IOS
 #import <UIKit/UIKit.h>
 #else
 #import <AppKit/AppKit.h>
@@ -64,7 +64,7 @@ void drawTextureWithVertices_metal(Renderer *renderer, ZGFloat *modelViewProject
 
 void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, ZGFloat *modelViewProjectionMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
 
-#ifdef IOS_DEVICE
+#if PLATFORM_IOS
 
 @interface ZGMetalView : UIView
 @end
@@ -484,7 +484,7 @@ bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t w
 		renderer->fullscreen = fullscreen;
 		
 		id<MTLDevice> preferredDevice = nil;
-#ifndef IOS_DEVICE
+#if PLATFORM_OSX
 		// Find the preffered device for our game which isn't integrated, headless, or external
 		// Maybe one day I will support external/removable GPUs but my game isn't very demanding
 		NSArray<id<MTLDevice>> *devices = MTLCopyAllDevices();
@@ -547,7 +547,7 @@ bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t w
 			return false;
 		}
 		
-#ifdef IOS_DEVICE
+#if PLATFORM_IOS
 		UIWindow *window = (__bridge UIWindow *)(ZGWindowHandle(renderer->window));
 		UIView *contentView = window.rootViewController.view;
 		
@@ -569,7 +569,7 @@ bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t w
 		// Don't set framebufferOnly to NO like SDL does for its own renderer.
 		// It does that to support an option (at cost of potential performance) that we don't need.
 		
-#ifndef IOS_DEVICE
+#if PLATFORM_OSX
 		if (@available(macOS 10.13, *))
 		{
 			metalLayer.displaySyncEnabled = vsync;

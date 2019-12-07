@@ -18,12 +18,11 @@
 */
 
 #include "font.h"
+#include "platforms.h"
 
-#ifdef WINDOWS
+#if PLATFORM_WINDOWS
 #include "SDL_ttf.h"
-#endif
-
-#ifdef linux
+#elif PLATFORM_LINUX
 #include <SDL2/SDL_ttf.h>
 #endif
 

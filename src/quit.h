@@ -23,6 +23,6 @@
 
 void ZGQuit(void);
 
-#ifndef IOS_DEVICE
+#if !PLATFORM_IOS
 void ZGSendQuitEvent(void);
 #endif

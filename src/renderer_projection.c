@@ -41,7 +41,7 @@ void updateGLProjectionMatrix(Renderer *renderer)
 	memcpy(renderer->projectionMatrix, glProjectionMatrix.m, sizeof(glProjectionMatrix.m));
 }
 
-#ifdef MAC_OS_X
+#if PLATFORM_APPLE
 void updateMetalProjectionMatrix(Renderer *renderer)
 {
 	mat4_t glProjectionMatrix = computeGLProjectionMatrix(renderer);

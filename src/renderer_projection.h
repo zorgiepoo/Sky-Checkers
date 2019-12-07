@@ -34,7 +34,7 @@ ZGFloat computeProjectionAspectRatio(Renderer *renderer);
 
 void updateGLProjectionMatrix(Renderer *renderer);
 
-#ifdef MAC_OS_X
+#if PLATFORM_APPLE
 void updateMetalProjectionMatrix(Renderer *renderer);
 #endif
 

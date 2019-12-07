@@ -21,7 +21,7 @@
 
 #include "platforms.h"
 
-#ifdef IOS_DEVICE
+#if PLATFORM_IOS
 #include "touch.h"
 #else
 #include "keyboard.h"
@@ -54,14 +54,14 @@ void ZGDestroyWindow(ZGWindow *window);
 
 bool ZGWindowHasFocus(ZGWindow *window);
 
-#ifdef WINDOWS
+#if PLATFORM_WINDOWS
 void ZGSetWindowMinimumSize(ZGWindow *window, int32_t minWidth, int32_t minHeight);
 void ZGGetWindowSize(ZGWindow *window, int32_t *width, int32_t *height);
 #endif
 
 void ZGSetWindowEventHandler(ZGWindow *window, void *context, void (*windowEventHandler)(ZGWindowEvent, void *));
 
-#ifdef IOS_DEVICE
+#if PLATFORM_IOS
 void ZGSetTouchEventHandler(ZGWindow *window, void *context, void (*touchEventHandler)(ZGTouchEvent, void *));
 #else
 void ZGSetKeyboardEventHandler(ZGWindow *window, void *context, void (*keyboardEventHandler)(ZGKeyboardEvent, void *));

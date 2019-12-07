@@ -23,7 +23,7 @@
 #include "gamepad.h"
 #include "platforms.h"
 
-#ifdef IOS_DEVICE
+#if PLATFORM_IOS
 #include "touch.h"
 #else
 #include "keyboard.h"
@@ -50,7 +50,7 @@ typedef struct
 	uint32_t up_ticks;
 	uint32_t down_ticks;
 	
-#ifndef IOS_DEVICE
+#if !PLATFORM_IOS
 	// right, left, up, down, weapon ids - their assigned keyboard keys.
 	uint32_t r_id;
 	uint32_t l_id;
@@ -69,13 +69,13 @@ extern Input gBlueLightningInput;
 
 void initInput(Input *input);
 
-#ifndef IOS_DEVICE
+#if !PLATFORM_IOS
 void setInputKeys(Input *input, uint32_t right, uint32_t left, uint32_t up, uint32_t down, uint32_t weapon);
 #endif
 
 Character *characterFromInput(Input *characterInput);
 
-#ifdef IOS_DEVICE
+#if PLATFORM_IOS
 void performTouchAction(Input *input, ZGTouchEvent *event);
 #else
 void performDownKeyAction(Input *input, ZGKeyboardEvent *event);

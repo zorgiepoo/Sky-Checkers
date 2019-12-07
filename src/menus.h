@@ -24,7 +24,7 @@
 #include "window.h"
 #include "renderer.h"
 
-#ifdef IOS_DEVICE
+#if PLATFORM_IOS
 #include "touch.h"
 #else
 #include "keyboard.h"
@@ -34,7 +34,7 @@ void initMenus(void);
 
 void drawMenus(Renderer *renderer);
 
-#ifdef IOS_DEVICE
+#if PLATFORM_IOS
 void performTouchMenuAction(ZGTouchEvent *event, ZGWindow *window);
 #else
 void performKeyboardMenuAction(ZGKeyboardEvent *event, GameState *gameState, ZGWindow *window);
