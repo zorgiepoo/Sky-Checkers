@@ -1580,6 +1580,16 @@ static void handleTouchEvent(ZGTouchEvent event, void *context)
 	{
 		performTouchAction(&gPinkBubbleGumInput, &event);
 	}
+	else if (event.type == ZGTouchEventTypeTap)
+	{
+		Renderer *renderer = context;
+		
+		GameMenuContext menuContext;
+		menuContext.gameState = &gGameState;
+		menuContext.window = renderer->window;
+		
+		invokeMenu(&menuContext);
+	}
 }
 #else
 static void handleKeyboardEvent(ZGKeyboardEvent event, void *context)
@@ -1814,20 +1824,6 @@ static void pollEventHandler(void *context, void *systemEvent)
 	
 	pollGamepads(gGamepadManager, systemEvent);
 	ZGPollWindowAndInputEvents(renderer->window, systemEvent);
-	
-#ifdef IOS_DEVICE
-	static bool once;
-	if (!once && gGameState == GAME_STATE_OFF)
-	{
-		GameMenuContext menuContext;
-		menuContext.gameState = &gGameState;
-		menuContext.window = renderer->window;
-		
-		invokeMenu(&menuContext);
-		
-		once = true;
-	}
-#endif
 }
 
 int main(int argc, char *argv[])
