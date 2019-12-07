@@ -587,9 +587,16 @@ void initGame(ZGWindow *window, bool firstGame)
 		if (gNetworkConnection != NULL)
 		{
 			gPinkBubbleGumInput.gamepadIndex = gGamepads[0];
+			setPlayerIndex(gGamepadManager, gPinkBubbleGumInput.gamepadIndex, 0);
+			
 			gRedRoverInput.gamepadIndex = gGamepads[1];
+			setPlayerIndex(gGamepadManager, gRedRoverInput.gamepadIndex, 0);
+			
 			gGreenTreeInput.gamepadIndex = gGamepads[2];
+			setPlayerIndex(gGamepadManager, gGreenTreeInput.gamepadIndex, 0);
+			
 			gBlueLightningInput.gamepadIndex = gGamepads[3];
+			setPlayerIndex(gGamepadManager, gBlueLightningInput.gamepadIndex, 0);
 		}
 		else
 		{
@@ -640,6 +647,7 @@ void initGame(ZGWindow *window, bool firstGame)
 						}
 						
 						characterInputs[characterMappingIndex]->gamepadIndex = gGamepads[gamepadMappingIndex];
+						setPlayerIndex(gGamepadManager, characterInputs[characterMappingIndex]->gamepadIndex, characterMappingIndex);
 						
 						const char *controllerName = gamepadName(gGamepadManager, gGamepads[gamepadMappingIndex]);
 						if (controllerName != NULL)
@@ -697,9 +705,16 @@ void endGame(ZGWindow *window, bool lastGame)
 	
 	if (lastGame)
 	{
+		setPlayerIndex(gGamepadManager, gPinkBubbleGumInput.gamepadIndex, UNSET_PLAYER_INDEX);
 		gPinkBubbleGumInput.gamepadIndex = INVALID_GAMEPAD_INDEX;
+		
+		setPlayerIndex(gGamepadManager, gRedRoverInput.gamepadIndex, UNSET_PLAYER_INDEX);
 		gRedRoverInput.gamepadIndex = INVALID_GAMEPAD_INDEX;
+		
+		setPlayerIndex(gGamepadManager, gGreenTreeInput.gamepadIndex, UNSET_PLAYER_INDEX);
 		gGreenTreeInput.gamepadIndex = INVALID_GAMEPAD_INDEX;
+		
+		setPlayerIndex(gGamepadManager, gBlueLightningInput.gamepadIndex, UNSET_PLAYER_INDEX);
 		gBlueLightningInput.gamepadIndex = INVALID_GAMEPAD_INDEX;
 		
 		memset(gPinkBubbleGum.controllerName, 0, MAX_CONTROLLER_NAME_SIZE);
@@ -1619,6 +1634,7 @@ static void gamepadAdded(GamepadIndex gamepadIndex, void *context)
 		if (gGamepads[index] == INVALID_GAMEPAD_INDEX)
 		{
 			gGamepads[index] = gamepadIndex;
+			setPlayerIndex(gGamepadManager, gamepadIndex, UNSET_PLAYER_INDEX);
 			break;
 		}
 	}

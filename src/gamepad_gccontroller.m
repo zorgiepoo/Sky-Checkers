@@ -73,9 +73,9 @@ static bool _hasMatchingController(GCController *controller, int32_t vendorID, i
 
 static void _removeController(struct GC_NAME(_GamepadManager) *gamepadManager, GCController *controller)
 {
-	for (uint16_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
+	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
 	{
-		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[gamepadIndex];
+		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[index];
 		if (gamepad->controller == (__bridge void *)(controller))
 		{
 			if (gamepadManager->removalCallback != NULL)
@@ -93,16 +93,16 @@ static void _removeController(struct GC_NAME(_GamepadManager) *gamepadManager, G
 static void _addController(struct GC_NAME(_GamepadManager) *gamepadManager, GCController *controller)
 {
 	uint16_t availableGamepadIndex = MAX_GAMEPADS;
-	for (uint16_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
+	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
 	{
-		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[gamepadIndex];
+		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[index];
 		if (gamepad->controller == (__bridge void *)(controller))
 		{
 			return;
 		}
 		else if (gamepad->controller == nil && availableGamepadIndex == MAX_GAMEPADS)
 		{
-			availableGamepadIndex = gamepadIndex;
+			availableGamepadIndex = index;
 		}
 	}
 	
@@ -197,9 +197,9 @@ GamepadEvent *GC_NAME(pollGamepadEvents)(struct GC_NAME(_GamepadManager) *gamepa
 	}
 	
 	uint16_t eventIndex = 0;
-	for (uint16_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
+	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
 	{
-		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[gamepadIndex];
+		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[index];
 		GCController *controller = (__bridge GCController *)(gamepad->controller);
 		if (controller != nil)
 		{
@@ -248,12 +248,12 @@ GamepadEvent *GC_NAME(pollGamepadEvents)(struct GC_NAME(_GamepadManager) *gamepa
 	return gamepadManager->eventsBuffer;
 }
 
-const char *GC_NAME(gamepadName)(struct GC_NAME(_GamepadManager) *gamepadManager, GamepadIndex index)
+const char *GC_NAME(gamepadName)(struct GC_NAME(_GamepadManager) *gamepadManager, GamepadIndex gcIndex)
 {
-	for (uint16_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
+	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
 	{
-		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[gamepadIndex];
-		if (gamepad->controller != NULL && gamepad->index == index)
+		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[index];
+		if (gamepad->controller != NULL && gamepad->index == gcIndex)
 		{
 			return gamepad->name;
 		}
@@ -261,12 +261,27 @@ const char *GC_NAME(gamepadName)(struct GC_NAME(_GamepadManager) *gamepadManager
 	return NULL;
 }
 
+void GC_NAME(setPlayerIndex)(struct GC_NAME(_GamepadManager) *gamepadManager, GamepadIndex gcIndex, int64_t playerIndex)
+{
+	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
+	{
+		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[index];
+		
+		GCController *controller = (__bridge GCController *)(gamepad->controller);
+		if (controller != nil && gamepad->index == gcIndex)
+		{
+			controller.playerIndex = playerIndex;
+			break;
+		}
+	}
+}
+
 #if USE_GC_SPI
 bool GC_NAME(hasControllerMatching)(struct GC_NAME(_GamepadManager) *gamepadManager, int32_t vendorID, int32_t productID)
 {
-	for (uint16_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
+	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
 	{
-		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[gamepadIndex];
+		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[index];
 		
 		GCController *controller = (__bridge GCController *)(gamepad->controller);
 		if (controller != nil && _hasMatchingController(controller, vendorID, productID))

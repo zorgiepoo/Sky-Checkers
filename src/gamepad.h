@@ -66,6 +66,7 @@ typedef struct _GamepadManager GamepadManager;
 typedef uint32_t GamepadIndex;
 
 #define INVALID_GAMEPAD_INDEX ((GamepadIndex)-1)
+#define UNSET_PLAYER_INDEX (-1)
 
 typedef struct
 {
@@ -83,3 +84,5 @@ GamepadManager *initGamepadManager(const char *databasePath, GamepadCallback add
 GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *systemEvent, uint16_t *eventCount);
 
 const char *gamepadName(GamepadManager *gamepadManager, GamepadIndex index);
+
+void setPlayerIndex(GamepadManager *gamepadManager, GamepadIndex index, int64_t playerIndex);

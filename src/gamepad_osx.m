@@ -324,21 +324,21 @@ static void _hidDeviceMatchingCallback(void *context, IOReturn result, void *sen
 {
 	GamepadManager *gamepadManager = context;
 	uint16_t newGamepadIndex = MAX_GAMEPADS;
-	for (uint16_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
+	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
 	{
-		if (gamepadManager->gamepads[gamepadIndex].gcController)
+		if (gamepadManager->gamepads[index].gcController)
 		{
 			continue;
 		}
 		
-		if (gamepadManager->gamepads[gamepadIndex].device == device)
+		if (gamepadManager->gamepads[index].device == device)
 		{
 			return;
 		}
 		
-		if (newGamepadIndex == MAX_GAMEPADS && gamepadManager->gamepads[gamepadIndex].device == NULL)
+		if (newGamepadIndex == MAX_GAMEPADS && gamepadManager->gamepads[index].device == NULL)
 		{
-			newGamepadIndex = gamepadIndex;
+			newGamepadIndex = index;
 		}
 	}
 	
@@ -844,15 +844,27 @@ GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *syst
 	return gamepadManager->eventsBuffer;
 }
 
-const char *gamepadName(GamepadManager *gamepadManager, GamepadIndex index)
+const char *gamepadName(GamepadManager *gamepadManager, GamepadIndex gamepadIndex)
 {
-	for (uint16_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
+	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
 	{
-		Gamepad *gamepad = &gamepadManager->gamepads[gamepadIndex];
-		if ((!gamepad->gcController && gamepad->device == NULL) || gamepad->index != index) continue;
+		Gamepad *gamepad = &gamepadManager->gamepads[index];
+		if ((!gamepad->gcController && gamepad->device == NULL) || gamepad->index != gamepadIndex) continue;
 		
 		return gamepad->name;
 	}
 	
 	return NULL;
+}
+
+void setPlayerIndex(GamepadManager *gamepadManager, GamepadIndex gamepadIndex, int64_t playerIndex)
+{
+	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
+	{
+		Gamepad *gamepad = &gamepadManager->gamepads[index];
+		if (gamepad->gcController && gamepad->index == gamepadIndex)
+		{
+			GC_NAME(setPlayerIndex)(gamepadManager->gcManager, gamepadIndex, playerIndex);
+		}
+	}
 }

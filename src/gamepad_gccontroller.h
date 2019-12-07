@@ -53,6 +53,8 @@ GamepadEvent *GC_NAME(pollGamepadEvents)(struct GC_NAME(_GamepadManager) *gamepa
 
 const char *GC_NAME(gamepadName)(struct GC_NAME(_GamepadManager) *gamepadManager, GamepadIndex index);
 
+void GC_NAME(setPlayerIndex)(struct GC_NAME(_GamepadManager) *gamepadManager, GamepadIndex index, int64_t playerIndex);
+
 #if USE_GC_SPI
 bool GC_NAME(hasControllerMatching)(struct GC_NAME(_GamepadManager) *gamepadManager, int32_t vendorID, int32_t productID);
 #endif
