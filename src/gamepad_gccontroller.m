@@ -63,14 +63,30 @@ static void _addController(struct GC_NAME(_GamepadManager) *gamepadManager, GCCo
 		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[availableGamepadIndex];
 		gamepad->controller = (void *)CFBridgingRetain(controller);
 		NSString *vendorName = controller.vendorName;
-		if (vendorName != nil)
+		NSString *productDescription;
+		if (@available(macOS 10.15, iOS 10.13, *))
 		{
-			const char *vendorNameUTF8 = vendorName.UTF8String;
-			if (vendorNameUTF8 != NULL)
+			NSString *productCategory = controller.productCategory;
+			if (vendorName != nil)
 			{
-				strncpy(gamepad->name, vendorNameUTF8, sizeof(gamepad->name) - 1);
+				productDescription = [NSString stringWithFormat:@"%@ %@", vendorName, productCategory];
+			}
+			else
+			{
+				productDescription = productCategory;
 			}
 		}
+		else
+		{
+			productDescription = vendorName;
+		}
+		
+		const char *productDescriptionUTF8 = [productDescription UTF8String];
+		if (productDescriptionUTF8 != NULL)
+		{
+			strncpy(gamepad->name, productDescriptionUTF8, sizeof(gamepad->name) - 1);
+		}
+		
 		gamepad->index = gamepadManager->nextGamepadIndex;
 		gamepadManager->nextGamepadIndex++;
 		
