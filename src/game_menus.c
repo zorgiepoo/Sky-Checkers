@@ -1301,9 +1301,12 @@ static char *convertKeyCodeToString(uint32_t theKeyCode)
 
 void setPendingKeyCode(uint32_t code)
 {
-	if (!ZGTestReturnKeyCode((uint16_t)code) && code != ZG_KEYCODE_ESCAPE)
+	if (!ZGTestReturnKeyCode((uint16_t)code))
 	{
-		*gMenuPendingKeyCode = code;
+		if (code != ZG_KEYCODE_ESCAPE)
+		{
+			*gMenuPendingKeyCode = code;
+		}
 		gMenuPendingOnKeyCode = false;
 	}
 }
