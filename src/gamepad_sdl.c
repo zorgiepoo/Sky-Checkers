@@ -241,3 +241,7 @@ const char *gamepadName(GamepadManager *gamepadManager, GamepadIndex index)
 	SDL_GameController *controller = SDL_GameControllerFromInstanceID(index);
 	return SDL_GameControllerName(controller);
 }
+
+void setPlayerIndex(GamepadManager *gamepadManager, GamepadIndex index, int64_t playerIndex)
+{
+}
