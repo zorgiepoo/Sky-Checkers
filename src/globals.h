@@ -23,6 +23,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#define MAX_CHARACTER_LIVES 10
+
 typedef enum
 {
 	GAME_STATE_OFF = 0,
@@ -51,3 +53,11 @@ extern int gCharacterNetLives;
 
 extern bool gAudioEffectsFlag;
 extern bool gAudioMusicFlag;
+
+#define MAX_SERVER_ADDRESS_SIZE	512
+extern char gServerAddressString[MAX_SERVER_ADDRESS_SIZE];
+extern int gServerAddressStringIndex;
+
+#define MAX_USER_NAME_SIZE	8
+extern char gUserNameString[MAX_USER_NAME_SIZE];
+extern int gUserNameStringIndex;

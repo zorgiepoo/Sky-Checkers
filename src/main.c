@@ -27,7 +27,7 @@
 #include "weapon.h"
 #include "text.h"
 #include "audio.h"
-#include "game_menus.h"
+#include "menus.h"
 #include "network.h"
 #include "mt_random.h"
 #include "quit.h"
@@ -66,6 +66,13 @@ static bool gFsaaFlag = true;
 static int32_t gWindowWidth = 800;
 static int32_t gWindowHeight = 500;
 
+// online fields
+char gServerAddressString[MAX_SERVER_ADDRESS_SIZE] = "localhost";
+int gServerAddressStringIndex = 9;
+
+char gUserNameString[MAX_USER_NAME_SIZE];
+int gUserNameStringIndex = 0;
+
 bool gValidDefaults = false;
 
 // Lives
@@ -93,7 +100,6 @@ typedef struct
 
 #define MAX_FPS_RATE 120
 
-#define MAX_CHARACTER_LIVES 10
 #define CHARACTER_ICON_DISPLACEMENT 5.0f
 #define CHARACTER_ICON_OFFSET -8.5f
 
@@ -1152,33 +1158,6 @@ static void drawScene(Renderer *renderer)
 }
 
 #ifndef IOS_DEVICE
-static void writeTextInput(const char *text, uint8_t maxSize)
-{
-	if (gConsoleActivated || gNetworkAddressFieldIsActive || gNetworkUserNameFieldIsActive)
-	{
-		for (uint8_t textIndex = 0; textIndex < maxSize; textIndex++)
-		{
-			if (text[textIndex] == 0x0 || text[textIndex] == 0x1 || text[textIndex] == '`' || text[textIndex] == '~')
-			{
-				break;
-			}
-			
-			if (gConsoleActivated)
-			{
-				writeConsoleText((uint8_t)text[textIndex]);
-			}
-			else if (gNetworkAddressFieldIsActive)
-			{
-				writeNetworkAddressText((uint8_t)text[textIndex]);
-			}
-			else if (gNetworkUserNameFieldIsActive)
-			{
-				writeNetworkUserNameText((uint8_t)text[textIndex]);
-			}
-		}
-	}
-}
-
 static void handleKeyDownEvent(ZGKeyboardEvent *event, Renderer *renderer)
 {
 	ZGWindow *window = renderer->window;
@@ -1186,18 +1165,9 @@ static void handleKeyDownEvent(ZGKeyboardEvent *event, Renderer *renderer)
 	uint16_t keyCode = event->keyCode;
 	uint64_t keyModifier = event->keyModifier;
 	
-	if (gMenuPendingOnKeyCode)
+	if (gGameState == GAME_STATE_OFF)
 	{
-		setPendingKeyCode(keyCode);
-	}
-	else if (keyCode == ZG_KEYCODE_V && ZGTestMetaModifier(keyModifier))
-	{
-		char *clipboardText = ZGGetClipboardText();
-		if (clipboardText != NULL)
-		{
-			writeTextInput(clipboardText, 128);
-			ZGFreeClipboardText(clipboardText);
-		}
+		performKeyboardMenuAction(event, &gGameState, renderer->window);
 	}
 	else if (!gConsoleActivated && gGameState == GAME_STATE_ON && gGameWinner != NO_CHARACTER &&
 		(keyCode == gPinkBubbleGumInput.weap_id || keyCode == gRedRoverInput.weap_id ||
@@ -1209,228 +1179,13 @@ static void handleKeyDownEvent(ZGKeyboardEvent *event, Renderer *renderer)
 			resetGame();
 		}
 	}
-	else if (ZGTestReturnKeyCode(keyCode))
+	else if (ZGTestReturnKeyCode(keyCode) && gConsoleActivated)
 	{
-		if (gCurrentMenu == gConfigureLivesMenu)
-		{
-			gDrawArrowsForCharacterLivesFlag = !gDrawArrowsForCharacterLivesFlag;
-			if (gAudioEffectsFlag)
-			{
-				playMenuSound();
-			}
-		}
-
-		else if (gCurrentMenu == gAIModeOptionsMenu || gCurrentMenu == gAINetModeOptionsMenu)
-		{
-			gDrawArrowsForAIModeFlag = !gDrawArrowsForAIModeFlag;
-			if (gAudioEffectsFlag)
-			{
-				playMenuSound();
-			}
-		}
-
-		else if (gGameState == GAME_STATE_OFF)
-		{
-			GameMenuContext menuContext;
-			menuContext.gameState = &gGameState;
-			menuContext.window = window;
-			
-			invokeMenu(&menuContext);
-		}
-
-		else if (gConsoleActivated)
-		{
-			executeConsoleCommand();
-		}
+		executeConsoleCommand();
 	}
-
-	else if (keyCode == ZG_KEYCODE_DOWN)
-	{
-		if (gNetworkAddressFieldIsActive)
-			return;
-
-		if (gDrawArrowsForCharacterLivesFlag)
-		{
-			if (gCharacterLives == 1)
-				gCharacterLives = MAX_CHARACTER_LIVES;
-			else
-				gCharacterLives--;
-		}
-		else if (gDrawArrowsForNetPlayerLivesFlag)
-		{
-			if (gCharacterNetLives == 1)
-			{
-				gCharacterNetLives = MAX_CHARACTER_LIVES;
-			}
-			else
-			{
-				gCharacterNetLives--;
-			}
-		}
-
-		else if (gDrawArrowsForAIModeFlag)
-		{
-			if (isChildBeingDrawn(gAIModeOptionsMenu))
-			{
-				if (gAIMode == AI_EASY_MODE)
-					gAIMode = AI_HARD_MODE;
-				else if (gAIMode == AI_MEDIUM_MODE)
-					gAIMode = AI_EASY_MODE;
-				else /* if (gAIMode == AI_HARD_MODE) */
-					gAIMode = AI_MEDIUM_MODE;
-			}
-			else if (isChildBeingDrawn(gAINetModeOptionsMenu))
-			{
-				if (gAINetMode == AI_EASY_MODE)
-					gAINetMode = AI_HARD_MODE;
-				else if (gAINetMode == AI_MEDIUM_MODE)
-					gAINetMode = AI_EASY_MODE;
-				else /* if (gAINetMode == AI_HARD_MODE) */
-					gAINetMode = AI_MEDIUM_MODE;
-			}
-		}
-		
-		else if (gDrawArrowsForNumberOfNetHumansFlag)
-		{
-			gNumberOfNetHumans--;
-			if (gNumberOfNetHumans <= 0)
-			{
-				gNumberOfNetHumans = 3;
-			}
-		}
-
-		else if (gGameState == GAME_STATE_OFF)
-		{
-			changeMenu(DOWN);
-
-			if (gCurrentMenu == gRedRoverPlayerOptionsMenu && gPinkBubbleGum.state == CHARACTER_AI_STATE)
-			{
-				changeMenu(DOWN);
-			}
-
-			if (gCurrentMenu == gGreenTreePlayerOptionsMenu && gRedRover.state == CHARACTER_AI_STATE)
-			{
-				changeMenu(DOWN);
-			}
-
-			if (gCurrentMenu == gBlueLightningPlayerOptionsMenu && gGreenTree.state == CHARACTER_AI_STATE)
-			{
-				changeMenu(DOWN);
-			}
-		}
-	}
-
-	else if (keyCode == ZG_KEYCODE_UP)
-	{
-		if (gNetworkAddressFieldIsActive)
-			return;
-
-		if (gDrawArrowsForCharacterLivesFlag)
-		{
-			if (gCharacterLives == 10)
-				gCharacterLives = 1;
-			else
-				gCharacterLives++;
-		}
-		else if (gDrawArrowsForNetPlayerLivesFlag)
-		{
-			if (gCharacterNetLives == 10)
-			{
-				gCharacterNetLives = 1;
-			}
-			else
-			{
-				gCharacterNetLives++;
-			}
-		}
-		else if (gDrawArrowsForAIModeFlag)
-		{
-			if (isChildBeingDrawn(gAIModeOptionsMenu))
-			{
-				if (gAIMode == AI_EASY_MODE)
-					gAIMode = AI_MEDIUM_MODE;
-				else if (gAIMode == AI_MEDIUM_MODE)
-					gAIMode = AI_HARD_MODE;
-				else /* if (gAIMode == AI_HARD_MODE) */
-					gAIMode = AI_EASY_MODE;
-			}
-			else if (isChildBeingDrawn(gAINetModeOptionsMenu))
-			{
-				if (gAINetMode == AI_EASY_MODE)
-					gAINetMode = AI_MEDIUM_MODE;
-				else if (gAINetMode == AI_MEDIUM_MODE)
-					gAINetMode = AI_HARD_MODE;
-				else /* if (gAINetMode == AI_HARD_MODE) */
-					gAINetMode = AI_EASY_MODE;
-			}
-		}
-		else if (gDrawArrowsForNumberOfNetHumansFlag)
-		{
-			gNumberOfNetHumans++;
-			if (gNumberOfNetHumans >= 4)
-			{
-				gNumberOfNetHumans = 1;
-			}
-		}
-
-		else if (gGameState == GAME_STATE_OFF)
-		{
-			changeMenu(UP);
-
-			if (gCurrentMenu == gBlueLightningPlayerOptionsMenu && gGreenTree.state == CHARACTER_AI_STATE)
-			{
-				changeMenu(UP);
-			}
-
-			if (gCurrentMenu == gGreenTreePlayerOptionsMenu && gRedRover.state == CHARACTER_AI_STATE)
-			{
-				changeMenu(UP);
-			}
-
-			if (gCurrentMenu == gRedRoverPlayerOptionsMenu && gPinkBubbleGum.state == CHARACTER_AI_STATE)
-			{
-				changeMenu(UP);
-			}
-		}
-	}
-
 	else if (keyCode == ZG_KEYCODE_ESCAPE)
 	{
-		if (gGameState == GAME_STATE_OFF)
-		{
-			if (gEscapeHeldDownTimer == 0)
-			{
-				if (gNetworkAddressFieldIsActive)
-				{
-					gNetworkAddressFieldIsActive = false;
-				}
-				else if (gNetworkUserNameFieldIsActive)
-				{
-					gNetworkUserNameFieldIsActive = false;
-				}
-				else if (gDrawArrowsForCharacterLivesFlag)
-				{
-					gDrawArrowsForCharacterLivesFlag = false;
-				}
-				else if (gDrawArrowsForNetPlayerLivesFlag)
-				{
-					gDrawArrowsForNetPlayerLivesFlag = false;
-				}
-				else if (gDrawArrowsForAIModeFlag)
-				{
-					gDrawArrowsForAIModeFlag = false;
-				}
-				else if (gDrawArrowsForNumberOfNetHumansFlag)
-				{
-					gDrawArrowsForNumberOfNetHumansFlag = false;
-				}
-				else
-				{
-					changeMenu(LEFT);
-				}
-			}
-		}
-		else if (gGameState == GAME_STATE_ON)
+		if (gGameState == GAME_STATE_ON)
 		{
 			if (gConsoleActivated)
 			{
@@ -1446,7 +1201,6 @@ static void handleKeyDownEvent(ZGKeyboardEvent *event, Renderer *renderer)
 			}
 		}
 	}
-
 	else if (keyCode == ZG_KEYCODE_GRAVE && gGameState == GAME_STATE_ON)
 	{
 		if (gConsoleFlag)
@@ -1461,20 +1215,11 @@ static void handleKeyDownEvent(ZGKeyboardEvent *event, Renderer *renderer)
 			}
 		}
 	}
-
 	else if (keyCode == ZG_KEYCODE_BACKSPACE)
 	{
 		if (gConsoleActivated)
 		{
 			performConsoleBackspace();
-		}
-		else if (gNetworkAddressFieldIsActive)
-		{
-			performNetworkAddressBackspace();
-		}
-		else if (gNetworkUserNameFieldIsActive)
-		{
-			performNetworkUserNameBackspace();
 		}
 	}
 	
@@ -1495,7 +1240,7 @@ static void handleKeyUpEvent(ZGKeyboardEvent *event)
 	uint16_t keyCode = event->keyCode;
 	uint64_t keyModifier = event->keyModifier;
 	
-	if (keyCode == ZG_KEYCODE_ESCAPE)
+	if (keyCode == ZG_KEYCODE_ESCAPE && gGameState == GAME_STATE_ON)
 	{
 		gEscapeHeldDownTimer = 0;
 	}
@@ -1511,7 +1256,23 @@ static void handleKeyUpEvent(ZGKeyboardEvent *event)
 
 static void handleTextInputEvent(ZGKeyboardEvent *event)
 {
-	writeTextInput(event->text, sizeof(event->text));
+	if (gGameState == GAME_STATE_OFF)
+	{
+		performKeyboardMenuTextInputAction(event);
+	}
+	else if (gGameState == GAME_STATE_ON && gConsoleActivated)
+	{
+		char *text = event->text;
+		for (uint8_t textIndex = 0; textIndex < sizeof(event->text); textIndex++)
+		{
+			if (text[textIndex] == 0x0 || text[textIndex] == 0x1 || text[textIndex] == '`' || text[textIndex] == '~')
+			{
+				break;
+			}
+			
+			writeConsoleText((uint8_t)text[textIndex]);
+		}
+	}
 }
 #endif
 
@@ -1580,15 +1341,10 @@ static void handleTouchEvent(ZGTouchEvent event, void *context)
 	{
 		performTouchAction(&gPinkBubbleGumInput, &event);
 	}
-	else if (event.type == ZGTouchEventTypeTap)
+	else if (gGameState == GAME_STATE_OFF)
 	{
 		Renderer *renderer = context;
-		
-		GameMenuContext menuContext;
-		menuContext.gameState = &gGameState;
-		menuContext.window = renderer->window;
-		
-		invokeMenu(&menuContext);
+		performTouchMenuAction(&event, renderer->window);
 	}
 }
 #else

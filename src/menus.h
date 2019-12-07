@@ -19,19 +19,24 @@
 
 #pragma once
 
-#include "math_3d.h"
+#include "platforms.h"
+#include "globals.h"
+#include "window.h"
 #include "renderer.h"
 
-void initConsole(void);
+#ifdef IOS_DEVICE
+#include "touch.h"
+#else
+#include "keyboard.h"
+#endif
 
-void drawConsole(Renderer *renderer);
+void initMenus(void);
 
-void writeConsoleText(uint8_t text);
+void drawMenus(Renderer *renderer);
 
-bool performConsoleBackspace(void);
-
-void drawConsoleText(Renderer *renderer);
-
-void executeConsoleCommand(void);
-
-void clearConsole(void);
+#ifdef IOS_DEVICE
+void performTouchMenuAction(ZGTouchEvent *event, ZGWindow *window);
+#else
+void performKeyboardMenuAction(ZGKeyboardEvent *event, GameState *gameState, ZGWindow *window);
+void performKeyboardMenuTextInputAction(ZGKeyboardEvent *event);
+#endif

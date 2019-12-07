@@ -17,7 +17,7 @@
  * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "game_menus.h"
+#include "menus.h"
 #include "input.h"
 #include "text.h"
 #include "network.h"
@@ -25,47 +25,254 @@
 #include "math_3d.h"
 #include "renderer.h"
 #include "quit.h"
-#include "globals.h"
 #include "platforms.h"
-#include "window.h"
 
 #include <stdbool.h>
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
 
-Menu *gConfigureLivesMenu;
-Menu *gScreenResolutionVideoOptionMenu;
-Menu *gRefreshRateVideoOptionMenu;
+typedef struct _Menu
+{
+	struct _Menu *above;
+	struct _Menu *under;
+	
+	// The child on the top of the child list.
+	struct _Menu *mainChild;
+	
+	// This is the last child that you've went to that was a child of the parent.
+	// if the favorite child exists, then we go to it instead of the main child.
+	struct _Menu *favoriteChild;
+	
+	struct _Menu *parent;
+	
+	// Function that gets called when the menu is invoked.
+	// invokeMenu() calls this, of which you have to call yourself (like when a return key is pressed for example).
+	void (*action)(void *context);
+	
+	// drawMenus() calls this function to draw the menu.
+	// you have control over how this function draws.
+	void (*draw)(Renderer *renderer, color4_t preferredColor);
+} Menu;
 
-Menu *gAIModeOptionsMenu;
-Menu *gAINetModeOptionsMenu;
+static void initMainMenu(void);
 
-Menu *gRedRoverPlayerOptionsMenu;
-Menu *gGreenTreePlayerOptionsMenu;
-Menu *gBlueLightningPlayerOptionsMenu;
+static void addSubMenu(Menu *parentMenu, Menu *childMenu);
 
-bool gDrawArrowsForCharacterLivesFlag =		false;
-bool gDrawArrowsForAIModeFlag =				false;
-bool gDrawArrowsForNumberOfNetHumansFlag =	false;
-bool gDrawArrowsForNetPlayerLivesFlag =		false;
+static bool isChildBeingDrawn(Menu *child);
 
-bool gNetworkAddressFieldIsActive =			false;
-bool gNetworkUserNameFieldIsActive =		false;
+static void invokeMenu(void *context);
+static void changeMenu(int direction);
 
-char gServerAddressString[MAX_SERVER_ADDRESS_SIZE] = "localhost";
-int gServerAddressStringIndex = 9;
+static Menu *gConfigureLivesMenu;
 
-char gUserNameString[MAX_USER_NAME_SIZE];
-int gUserNameStringIndex = 0;
+static Menu *gAIModeOptionsMenu;
+static Menu *gAINetModeOptionsMenu;
 
-#ifndef IOS_DEVICE
-bool gMenuPendingOnKeyCode = false;
+static Menu *gRedRoverPlayerOptionsMenu;
+static Menu *gGreenTreePlayerOptionsMenu;
+static Menu *gBlueLightningPlayerOptionsMenu;
+
+static bool gDrawArrowsForCharacterLivesFlag;
+static bool gDrawArrowsForAIModeFlag;
+static bool gDrawArrowsForNumberOfNetHumansFlag;
+static bool gDrawArrowsForNetPlayerLivesFlag;
+
+static bool gNetworkAddressFieldIsActive;
+static bool gNetworkUserNameFieldIsActive;
+
+static bool gMenuPendingOnKeyCode = false;
 static uint32_t *gMenuPendingKeyCode;
 
 static char *convertKeyCodeToString(uint32_t theKeyCode);
 static void configureKey(uint32_t *id);
-#endif
+
+static void writeNetworkAddressText(uint8_t text);
+static void writeNetworkUserNameText(uint8_t text);
+static void performNetworkAddressBackspace(void);
+static void performNetworkUserNameBackspace(void);
+
+void setPendingKeyCode(uint32_t keyCode);
+
+#pragma mark Menu
+
+// Everyone is a type of child of gMainMenu. gMainMenu has no parent.
+static Menu gMainMenu;
+// the current selected menu.
+static Menu *gCurrentMenu = NULL;
+
+static void initMainMenu(void)
+{
+	gMainMenu.above = NULL;
+	gMainMenu.under = NULL;
+	gMainMenu.parent = NULL;
+	gMainMenu.mainChild = NULL;
+	gMainMenu.favoriteChild = NULL;
+	
+	gMainMenu.draw = NULL;
+	gMainMenu.action = NULL;
+}
+
+static void addSubMenu(Menu *parentMenu, Menu *childMenu)
+{
+	// Prepare the child.
+	childMenu->above = NULL;
+	childMenu->under = NULL;
+	
+	// These two are important to do if the child becomes a parent later on.
+	childMenu->mainChild = NULL;
+	childMenu->favoriteChild = NULL;
+	
+	if (parentMenu->mainChild == NULL)
+	{
+		// parent has no childs and is new.
+		// add the mainChild.
+		parentMenu->mainChild = childMenu;
+		
+		// set gCurrentMenu to the child if it's the first child of gMainMenu.
+		if (parentMenu == &gMainMenu)
+			gCurrentMenu = childMenu;
+	}
+	else
+	{
+		if (parentMenu->mainChild->under == NULL)
+		{
+			// There's only one child (the mainChild) under this parent.
+			
+			// Add the second child and make the connections.
+			parentMenu->mainChild->under = childMenu;
+			childMenu->under = parentMenu->mainChild;
+			childMenu->above = parentMenu->mainChild;
+			parentMenu->mainChild->above = childMenu;
+		}
+		else
+		{
+			Menu *secondLastMenu;
+			
+			// This is the last menu for now, but it'll become the second last one.
+			secondLastMenu = parentMenu->mainChild->above;
+			
+			// Add the child.
+			secondLastMenu->under = childMenu;
+			
+			// Make connections.
+			childMenu->under = parentMenu->mainChild;
+			parentMenu->mainChild->above = childMenu;
+			childMenu->above = secondLastMenu;
+		}
+	}
+	
+	childMenu->parent = parentMenu;
+}
+
+static bool isChildBeingDrawn(Menu *child)
+{
+	return child->parent == gCurrentMenu->parent;
+}
+
+static void invokeMenu(void *context)
+{
+	if (gAudioEffectsFlag)
+	{
+		playMenuSound();
+	}
+	
+	if (gCurrentMenu->action != NULL)
+		gCurrentMenu->action(context);
+	else
+		fprintf(stderr, "gCurrentMenu's action() function is NULL\n");
+}
+
+void drawMenus(Renderer *renderer)
+{
+	Menu *theMenu;
+	
+	if (gCurrentMenu->parent == NULL)
+	{
+		fprintf(stderr, "Parent is NULL drawMenu():\n");
+		return;
+	}
+	
+	// Don't enter in the while loop if there's only one item.
+	if (gCurrentMenu->under == NULL)
+	{
+		if (gCurrentMenu->draw != NULL)
+		{
+			// Use a selected color
+			gCurrentMenu->draw(renderer, (color4_t){1.0f, 1.0f, 1.0f, 0.7f});
+		}
+		else
+		{
+			fprintf(stderr, "Current menu's draw function is NULL. Under if (gCurrentMenu->under == NULL) condition\n");
+		}
+		return;
+	}
+	
+	theMenu = gCurrentMenu;
+	
+	// iterate through menus and draw each one of them.
+	while ((theMenu = theMenu->under) != gCurrentMenu)
+	{
+		if (theMenu->draw != NULL)
+		{
+			// Use a non-selected color
+			theMenu->draw(renderer, (color4_t){179.0f / 255.0f, 179.0f / 255.0f, 179.0f / 255.0f, 0.5f});
+		}
+		else
+		{
+			fprintf(stderr, "theMenu's draw function is NULL. Under while ((theMenu = theMenu->under) != gCurrentMenu)\n");
+		}
+	}
+	
+	// draw the last child that didn't get to be in the loop
+	if (gCurrentMenu->draw != NULL)
+	{
+		gCurrentMenu->draw(renderer, (color4_t){1.0f, 1.0f, 1.0f, 0.7f});
+	}
+	else
+	{
+		fprintf(stderr, "Current menu's draw function is NULL. Last step in drawMenus\n");
+	}
+}
+
+static void changeMenu(int direction)
+{
+	if (direction == RIGHT)
+	{
+		if (gCurrentMenu->mainChild != NULL)
+		{
+			if (gCurrentMenu->favoriteChild != NULL)
+				gCurrentMenu = gCurrentMenu->favoriteChild;
+			else
+				gCurrentMenu = gCurrentMenu->mainChild;
+		}
+	}
+	else if (direction == LEFT)
+	{
+		if (gCurrentMenu->parent != NULL && gCurrentMenu->parent != &gMainMenu)
+		{
+			gCurrentMenu->parent->favoriteChild = gCurrentMenu;
+			gCurrentMenu = gCurrentMenu->parent;
+		}
+	}
+	else if (direction == DOWN)
+	{
+		if (gCurrentMenu->under != NULL)
+			gCurrentMenu = gCurrentMenu->under;
+	}
+	else if (direction == UP)
+	{
+		if (gCurrentMenu->above != NULL)
+			gCurrentMenu = gCurrentMenu->above;
+	}
+	
+	if (gAudioEffectsFlag)
+	{
+		playMenuSound();
+	}
+}
+
+#pragma mark Game menus
 
 static void drawUpAndDownArrowTriangles(Renderer *renderer, mat4_t modelViewMatrix)
 {
@@ -519,7 +726,6 @@ void playerOptionsMenuAction(void *context)
 	changeMenu(RIGHT);
 }
 
-#ifndef IOS_DEVICE
 void drawConfigureKeysMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.00f, -20.00f});	
@@ -530,7 +736,6 @@ void configureKeysMenuAction(void *context)
 {
 	changeMenu(RIGHT);
 }
-#endif
 
 void drawPinkBubbleGumPlayerOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
@@ -714,8 +919,6 @@ void blueLightningKeyMenuAction(void *context)
 }
 
 // start configuration menus
-
-#ifndef IOS_DEVICE
 
 static void drawKeyboardConfigurationInstructions(Renderer *renderer)
 {
@@ -954,8 +1157,6 @@ void blueLightningFireKeyMenuAction(void *context)
 	configureKey(&gBlueLightningInput.weap_id);
 }
 
-#endif
-
 // Audio options
 void drawAudioOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
@@ -1014,7 +1215,6 @@ void audioMusicOptionsMenuAction(void *context)
 	}
 }
 
-#ifndef IOS_DEVICE
 void drawQuitMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -3.21f, -20.00f});	
@@ -1025,7 +1225,6 @@ void quitMenuAction(void *context)
 {
 	ZGSendQuitEvent();
 }
-#endif
 
 void initMenus(void)
 {
@@ -1050,17 +1249,13 @@ void initMenus(void)
 	gBlueLightningPlayerOptionsMenu =			malloc(sizeof(Menu));
 	gAIModeOptionsMenu =						malloc(sizeof(Menu));
 	gConfigureLivesMenu =						malloc(sizeof(Menu));
-#ifndef IOS_DEVICE
 	Menu *configureKeysMenu =					malloc(sizeof(Menu));
 	// Four characters that each have their own menu + five configured menu actions (right, up, left, down, fire)
 	Menu *characterConfigureKeys = 				malloc(sizeof(Menu) * 4 * 6);
-#endif
 	Menu *audioOptionsMenu =					malloc(sizeof(Menu));
 	Menu *audioEffectsOptionsMenu =				malloc(sizeof(Menu));
 	Menu *audioMusicOptionsMenu =				malloc(sizeof(Menu));
-#ifndef IOS_DEVICE
 	Menu *quitMenu =							malloc(sizeof(Menu));
-#endif
 	
 	// set action and drawing functions
 	playMenu->draw = drawPlayMenu;
@@ -1121,10 +1316,8 @@ void initMenus(void)
 	gConfigureLivesMenu->draw = drawConfigureLivesMenu;
 	gConfigureLivesMenu->action = NULL;
 	
-#ifndef IOS_DEVICE
 	configureKeysMenu->draw = drawConfigureKeysMenu;
 	configureKeysMenu->action = configureKeysMenuAction;
-#endif
 	
 	audioOptionsMenu->draw = drawAudioOptionsMenu;
 	audioOptionsMenu->action = audioOptionsMenuAction;
@@ -1135,12 +1328,9 @@ void initMenus(void)
 	audioMusicOptionsMenu->draw = drawAudioMusicOptionsMenu;
 	audioMusicOptionsMenu->action = audioMusicOptionsMenuAction;
 	
-#ifndef IOS_DEVICE
 	quitMenu->draw = drawQuitMenu;
 	quitMenu->action = quitMenuAction;
-#endif
 	
-#ifndef IOS_DEVICE
 	// character config menu keys
 	
 	// pinkBubbleGum configs
@@ -1218,16 +1408,13 @@ void initMenus(void)
 	
 	characterConfigureKeys[23].draw = drawBlueLightningConfigFireKey;
 	characterConfigureKeys[23].action = blueLightningFireKeyMenuAction;
-#endif
 		
 	// Add Menus
 	addSubMenu(&gMainMenu, playMenu);
 	addSubMenu(&gMainMenu, networkPlayMenu);
 	addSubMenu(&gMainMenu, gameOptionsMenu);
 	addSubMenu(&gMainMenu, audioOptionsMenu);
-#ifndef IOS_DEVICE
 	addSubMenu(&gMainMenu, quitMenu);
-#endif
 	
 	addSubMenu(networkPlayMenu, networkServerMenu);
 	addSubMenu(networkPlayMenu, networkClientMenu);
@@ -1249,14 +1436,11 @@ void initMenus(void)
 	addSubMenu(playerOptionsMenu, gAIModeOptionsMenu);
 	addSubMenu(playerOptionsMenu, gConfigureLivesMenu);
 	
-#ifndef IOS_DEVICE
 	addSubMenu(gameOptionsMenu, configureKeysMenu);
-#endif
 	
 	addSubMenu(audioOptionsMenu, audioEffectsOptionsMenu);
 	addSubMenu(audioOptionsMenu, audioMusicOptionsMenu);
 	
-#ifndef IOS_DEVICE
 	// Configure keys submenus
 	for (int characterIndex = 0; characterIndex < 4; characterIndex++)
 	{
@@ -1267,10 +1451,8 @@ void initMenus(void)
 			addSubMenu(&characterConfigureKeys[characterIndex * 6], &characterConfigureKeys[characterIndex * 6 + submenuIndex]);
 		}
 	}
-#endif
 }
 
-#ifndef IOS_DEVICE
 static char *convertKeyCodeToString(uint32_t theKeyCode)
 {
 	static char gKeyCode[64];
@@ -1312,4 +1494,272 @@ void configureKey(uint32_t *id)
 	gMenuPendingKeyCode = id;
 	gMenuPendingOnKeyCode = true;
 }
-#endif
+
+static void writeMenuTextInput(const char *text, size_t maxSize)
+{
+	if (gNetworkAddressFieldIsActive || gNetworkUserNameFieldIsActive)
+	{
+		for (uint8_t textIndex = 0; textIndex < maxSize; textIndex++)
+		{
+			if (text[textIndex] == 0x0 || text[textIndex] == 0x1)
+			{
+				break;
+			}
+			else if (gNetworkAddressFieldIsActive)
+			{
+				writeNetworkAddressText((uint8_t)text[textIndex]);
+			}
+			else if (gNetworkUserNameFieldIsActive)
+			{
+				writeNetworkUserNameText((uint8_t)text[textIndex]);
+			}
+		}
+	}
+}
+
+void performKeyboardMenuAction(ZGKeyboardEvent *event, GameState *gameState, ZGWindow *window)
+{
+	uint16_t keyCode = event->keyCode;
+	uint64_t keyModifier = event->keyModifier;
+	
+	if (gMenuPendingOnKeyCode)
+	{
+		setPendingKeyCode(keyCode);
+	}
+	else if (keyCode == ZG_KEYCODE_V && ZGTestMetaModifier(keyModifier))
+	{
+		char *clipboardText = ZGGetClipboardText();
+		if (clipboardText != NULL)
+		{
+			writeMenuTextInput(clipboardText, 128);
+			ZGFreeClipboardText(clipboardText);
+		}
+	}
+	else if (ZGTestReturnKeyCode(keyCode))
+	{
+		if (gCurrentMenu == gConfigureLivesMenu)
+		{
+			gDrawArrowsForCharacterLivesFlag = !gDrawArrowsForCharacterLivesFlag;
+			if (gAudioEffectsFlag)
+			{
+				playMenuSound();
+			}
+		}
+
+		else if (gCurrentMenu == gAIModeOptionsMenu || gCurrentMenu == gAINetModeOptionsMenu)
+		{
+			gDrawArrowsForAIModeFlag = !gDrawArrowsForAIModeFlag;
+			if (gAudioEffectsFlag)
+			{
+				playMenuSound();
+			}
+		}
+		else
+		{
+			GameMenuContext menuContext;
+			menuContext.gameState = gameState;
+			menuContext.window = window;
+			
+			invokeMenu(&menuContext);
+		}
+	}
+	else if (keyCode == ZG_KEYCODE_DOWN)
+	{
+		if (gNetworkAddressFieldIsActive)
+			return;
+
+		if (gDrawArrowsForCharacterLivesFlag)
+		{
+			if (gCharacterLives == 1)
+			{
+				gCharacterLives = MAX_CHARACTER_LIVES;
+			}
+			else
+			{
+				gCharacterLives--;
+			}
+		}
+		else if (gDrawArrowsForNetPlayerLivesFlag)
+		{
+			if (gCharacterNetLives == 1)
+			{
+				gCharacterNetLives = MAX_CHARACTER_LIVES;
+			}
+			else
+			{
+				gCharacterNetLives--;
+			}
+		}
+		else if (gDrawArrowsForAIModeFlag)
+		{
+			if (isChildBeingDrawn(gAIModeOptionsMenu))
+			{
+				if (gAIMode == AI_EASY_MODE)
+					gAIMode = AI_HARD_MODE;
+				else if (gAIMode == AI_MEDIUM_MODE)
+					gAIMode = AI_EASY_MODE;
+				else /* if (gAIMode == AI_HARD_MODE) */
+					gAIMode = AI_MEDIUM_MODE;
+			}
+			else if (isChildBeingDrawn(gAINetModeOptionsMenu))
+			{
+				if (gAINetMode == AI_EASY_MODE)
+					gAINetMode = AI_HARD_MODE;
+				else if (gAINetMode == AI_MEDIUM_MODE)
+					gAINetMode = AI_EASY_MODE;
+				else /* if (gAINetMode == AI_HARD_MODE) */
+					gAINetMode = AI_MEDIUM_MODE;
+			}
+		}
+		else if (gDrawArrowsForNumberOfNetHumansFlag)
+		{
+			gNumberOfNetHumans--;
+			if (gNumberOfNetHumans <= 0)
+			{
+				gNumberOfNetHumans = 3;
+			}
+		}
+		else
+		{
+			changeMenu(DOWN);
+
+			if (gCurrentMenu == gRedRoverPlayerOptionsMenu && gPinkBubbleGum.state == CHARACTER_AI_STATE)
+			{
+				changeMenu(DOWN);
+			}
+
+			if (gCurrentMenu == gGreenTreePlayerOptionsMenu && gRedRover.state == CHARACTER_AI_STATE)
+			{
+				changeMenu(DOWN);
+			}
+
+			if (gCurrentMenu == gBlueLightningPlayerOptionsMenu && gGreenTree.state == CHARACTER_AI_STATE)
+			{
+				changeMenu(DOWN);
+			}
+		}
+	}
+	else if (keyCode == ZG_KEYCODE_UP)
+	{
+		if (gNetworkAddressFieldIsActive)
+			return;
+
+		if (gDrawArrowsForCharacterLivesFlag)
+		{
+			if (gCharacterLives == 10)
+			{
+				gCharacterLives = 1;
+			}
+			else
+			{
+				gCharacterLives++;
+			}
+		}
+		else if (gDrawArrowsForNetPlayerLivesFlag)
+		{
+			if (gCharacterNetLives == 10)
+			{
+				gCharacterNetLives = 1;
+			}
+			else
+			{
+				gCharacterNetLives++;
+			}
+		}
+		else if (gDrawArrowsForAIModeFlag)
+		{
+			if (isChildBeingDrawn(gAIModeOptionsMenu))
+			{
+				if (gAIMode == AI_EASY_MODE)
+					gAIMode = AI_MEDIUM_MODE;
+				else if (gAIMode == AI_MEDIUM_MODE)
+					gAIMode = AI_HARD_MODE;
+				else /* if (gAIMode == AI_HARD_MODE) */
+					gAIMode = AI_EASY_MODE;
+			}
+			else if (isChildBeingDrawn(gAINetModeOptionsMenu))
+			{
+				if (gAINetMode == AI_EASY_MODE)
+					gAINetMode = AI_MEDIUM_MODE;
+				else if (gAINetMode == AI_MEDIUM_MODE)
+					gAINetMode = AI_HARD_MODE;
+				else /* if (gAINetMode == AI_HARD_MODE) */
+					gAINetMode = AI_EASY_MODE;
+			}
+		}
+		else if (gDrawArrowsForNumberOfNetHumansFlag)
+		{
+			gNumberOfNetHumans++;
+			if (gNumberOfNetHumans >= 4)
+			{
+				gNumberOfNetHumans = 1;
+			}
+		}
+		else
+		{
+			changeMenu(UP);
+
+			if (gCurrentMenu == gBlueLightningPlayerOptionsMenu && gGreenTree.state == CHARACTER_AI_STATE)
+			{
+				changeMenu(UP);
+			}
+
+			if (gCurrentMenu == gGreenTreePlayerOptionsMenu && gRedRover.state == CHARACTER_AI_STATE)
+			{
+				changeMenu(UP);
+			}
+
+			if (gCurrentMenu == gRedRoverPlayerOptionsMenu && gPinkBubbleGum.state == CHARACTER_AI_STATE)
+			{
+				changeMenu(UP);
+			}
+		}
+	}
+	else if (keyCode == ZG_KEYCODE_ESCAPE)
+	{
+		if (gNetworkAddressFieldIsActive)
+		{
+			gNetworkAddressFieldIsActive = false;
+		}
+		else if (gNetworkUserNameFieldIsActive)
+		{
+			gNetworkUserNameFieldIsActive = false;
+		}
+		else if (gDrawArrowsForCharacterLivesFlag)
+		{
+			gDrawArrowsForCharacterLivesFlag = false;
+		}
+		else if (gDrawArrowsForNetPlayerLivesFlag)
+		{
+			gDrawArrowsForNetPlayerLivesFlag = false;
+		}
+		else if (gDrawArrowsForAIModeFlag)
+		{
+			gDrawArrowsForAIModeFlag = false;
+		}
+		else if (gDrawArrowsForNumberOfNetHumansFlag)
+		{
+			gDrawArrowsForNumberOfNetHumansFlag = false;
+		}
+		else
+		{
+			changeMenu(LEFT);
+		}
+	}
+	else if (keyCode == ZG_KEYCODE_BACKSPACE)
+	{
+		if (gNetworkAddressFieldIsActive)
+		{
+			performNetworkAddressBackspace();
+		}
+		else if (gNetworkUserNameFieldIsActive)
+		{
+			performNetworkUserNameBackspace();
+		}
+	}
+}
+
+void performKeyboardMenuTextInputAction(ZGKeyboardEvent *event)
+{
+	writeMenuTextInput(event->text, sizeof(event->text));
+}
