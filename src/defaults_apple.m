@@ -18,6 +18,7 @@
  */
 
 #import "defaults.h"
+#import "platforms.h"
 #import <Foundation/Foundation.h>
 
 FILE *getUserDataFile(const char *mode)
@@ -48,6 +49,7 @@ FILE *getUserDataFile(const char *mode)
 
 void getDefaultUserName(char *defaultUserName, int maxLength)
 {
+#if PLATFORM_OSX
 	@autoreleasepool
 	{
 		NSString *fullUsername = NSFullUserName();
@@ -64,4 +66,10 @@ void getDefaultUserName(char *defaultUserName, int maxLength)
 			}
 		}
 	}
+#else
+	if (maxLength > 0)
+ 	{
+ 		defaultUserName[0] = '\0';
+ 	}
+#endif
 }
