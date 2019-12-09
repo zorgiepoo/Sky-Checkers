@@ -39,12 +39,6 @@
     <ClInclude Include="..\src\font.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\menu.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\game_menus.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -123,6 +117,12 @@
     <ClInclude Include="..\src\sdl_include.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\menu_actions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\menus.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\ai.c">
@@ -137,16 +137,10 @@
     <ClCompile Include="..\src\console.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\game_menus.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\input.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\main.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\menu.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\network.c">
@@ -207,6 +201,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\window_sdl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\menus_desktop.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\menu_actions.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
