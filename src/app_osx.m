@@ -27,25 +27,18 @@
 
 @implementation ZGAppDelegate
 {
-	void (*_appLaunchedHandler)(void *);
-	void (*_appTerminatedHandler)(void *);
-	void (*_runLoopHandler)(void *);
-	void (*_pollEventHandler)(void *, void *);
-	
+	ZGAppHandlers *_appHandlers;
 	void *_appContext;
 	NSTimer *_timer;
 }
 
-- (instancetype)initWithAppContext:(void *)appContext launchedHandler:(void (*)(void *))appLaunchedHandler terminatedHandler:(void (*)(void *))appTerminatedHandler runLoopHandler:(void (*)(void *))runLoopHandler pollEventHandler:(void (*)(void *, void *))pollEventHandler
+- (instancetype)initWithAppHandlers:(ZGAppHandlers *)appHandlers context:(void *)appContext
 {
 	self = [super init];
 	if (self != nil)
 	{
 		_appContext = appContext;
-		_appLaunchedHandler = appLaunchedHandler;
-		_appTerminatedHandler = appTerminatedHandler;
-		_pollEventHandler = pollEventHandler;
-		_runLoopHandler = runLoopHandler;
+		_appHandlers = appHandlers;
 	}
 	return self;
 }
@@ -60,12 +53,12 @@
 		abort();
 	}
 	
-	if (_appLaunchedHandler != NULL)
+	if (_appHandlers->launchedHandler != NULL)
 	{
-		_appLaunchedHandler(_appContext);
+		_appHandlers->launchedHandler(_appContext);
 	}
 	
-	if (_runLoopHandler != NULL)
+	if (_appHandlers->runLoopHandler != NULL)
 	{
 		_timer = [NSTimer scheduledTimerWithTimeInterval:0.004 target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
 		
@@ -77,8 +70,8 @@
 
 - (void)runLoop:(NSTimer *)timer
 {
-	_pollEventHandler(_appContext, NULL);
-	_runLoopHandler(_appContext);
+	_appHandlers->pollEventHandler(_appContext, NULL);
+	_appHandlers->runLoopHandler(_appContext);
 }
 
 - (void)applicationWillTerminate:(NSNotification *)notification
@@ -86,20 +79,20 @@
 	[_timer invalidate];
 	_timer = nil;
 	
-	if (_appTerminatedHandler != NULL)
+	if (_appHandlers->terminatedHandler != NULL)
 	{
-		_appTerminatedHandler(_appContext);
+		_appHandlers->terminatedHandler(_appContext);
 	}
 }
 
 @end
 
-int ZGAppInit(int argc, char *argv[], void *appContext, void (*appLaunchedHandler)(void *), void (*appTerminatedHandler)(void *), void (*runLoopHandler)(void *), void (*pollEventHandler)(void *, void *))
+int ZGAppInit(int argc, char *argv[], ZGAppHandlers *appHandlers, void *appContext)
 {
 	@autoreleasepool
 	{
 		NSApplication *application = [NSApplication sharedApplication];
-		ZGAppDelegate *appDelegate = [[ZGAppDelegate alloc] initWithAppContext:appContext launchedHandler:appLaunchedHandler terminatedHandler:appTerminatedHandler runLoopHandler:runLoopHandler pollEventHandler:pollEventHandler];
+		ZGAppDelegate *appDelegate = [[ZGAppDelegate alloc] initWithAppHandlers:appHandlers context:appContext];
 		application.delegate = appDelegate;
 		
 		return NSApplicationMain(argc, (const char **)argv);

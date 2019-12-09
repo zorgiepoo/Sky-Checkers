@@ -21,6 +21,14 @@
 
 #include <stdbool.h>
 
-int ZGAppInit(int argc, char *argv[], void *appContext, void (*appLaunchedHandler)(void *), void (*appTerminatedHandler)(void *), void (*runLoopHandler)(void *), void (*pollEventHandler)(void *, void *));
+typedef struct
+{
+	void (*launchedHandler)(void *);
+	void (*terminatedHandler)(void *);
+	void (*runLoopHandler)(void *);
+	void (*pollEventHandler)(void *, void *);
+} ZGAppHandlers;
+
+int ZGAppInit(int argc, char *argv[], ZGAppHandlers *appHandlers, void *appContext);
 
 void ZGAppSetAllowsScreenSaver(bool allowsScreenSaver);

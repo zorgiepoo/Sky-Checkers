@@ -22,11 +22,8 @@
 
 typedef struct
 {
+	ZGAppHandlers *appHandlers;
 	void *context;
-	void (*launchedHandler)(void *);
-	void (*terminatedHandler)(void *);
-	void (*runLoopHandler)(void *);
-	void (*pollEventHandler)(void *, void *);
 } ZGAppCallbacks;
 
 static ZGAppCallbacks gAppCallbacks;
@@ -48,12 +45,12 @@ static ZGAppCallbacks gAppCallbacks;
 		fprintf(stderr, "Error: failed to change current working directory to: %s\n", resourcePath.fileSystemRepresentation);
 	}
 	
-	if (gAppCallbacks.launchedHandler != NULL)
+	if (gAppCallbacks.appHandlers->launchedHandler != NULL)
 	{
-		gAppCallbacks.launchedHandler(gAppCallbacks.context);
+		gAppCallbacks.appHandlers->launchedHandler(gAppCallbacks.context);
 	}
 	
-	if (gAppCallbacks.runLoopHandler != NULL)
+	if (gAppCallbacks.appHandlers->runLoopHandler != NULL)
 	{
 		_displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(runLoop:)];
 		[_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
@@ -67,29 +64,26 @@ static ZGAppCallbacks gAppCallbacks;
 	[_displayLink invalidate];
 	_displayLink = nil;
 	
-	if (gAppCallbacks.terminatedHandler != NULL)
+	if (gAppCallbacks.appHandlers->terminatedHandler != NULL)
 	{
-		gAppCallbacks.terminatedHandler(gAppCallbacks.context);
+		gAppCallbacks.appHandlers->terminatedHandler(gAppCallbacks.context);
 	}
 }
 
 - (void)runLoop:(CADisplayLink *)displayLink
 {
-	gAppCallbacks.pollEventHandler(gAppCallbacks.context, NULL);
-	gAppCallbacks.runLoopHandler(gAppCallbacks.context);
+	gAppCallbacks.appHandlers->pollEventHandler(gAppCallbacks.context, NULL);
+	gAppCallbacks.appHandlers->runLoopHandler(gAppCallbacks.context);
 }
 
 @end
 
-int ZGAppInit(int argc, char *argv[], void *appContext, void (*appLaunchedHandler)(void *), void (*appTerminatedHandler)(void *), void (*runLoopHandler)(void *), void (*pollEventHandler)(void *, void *))
+int ZGAppInit(int argc, char *argv[], ZGAppHandlers *appHandlers, void *appContext)
 {
 	@autoreleasepool
 	{
 		gAppCallbacks.context = appContext;
-		gAppCallbacks.launchedHandler = appLaunchedHandler;
-		gAppCallbacks.terminatedHandler = appTerminatedHandler;
-		gAppCallbacks.runLoopHandler = runLoopHandler;
-		gAppCallbacks.pollEventHandler = pollEventHandler;
+		gAppCallbacks.appHandlers = appHandlers;
 		
 		return UIApplicationMain(argc, argv, nil, NSStringFromClass([ZGAppDelegate class]));
 	}
