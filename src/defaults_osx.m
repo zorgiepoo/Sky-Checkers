@@ -18,38 +18,33 @@
  */
 
 #import "defaults.h"
-#import "platforms.h"
 #import <Foundation/Foundation.h>
 
 FILE *getUserDataFile(const char *mode)
 {
-	@autoreleasepool
+	FILE *file = NULL;
+	NSArray *userLibraryPaths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
+	if (userLibraryPaths.count > 0)
 	{
-		FILE *file = NULL;
-		NSArray *userLibraryPaths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
-		if (userLibraryPaths.count > 0)
+		NSString *userLibraryPath = [userLibraryPaths objectAtIndex:0];
+		NSString *appSupportPath = [userLibraryPath stringByAppendingPathComponent:@"Application Support"];
+		
+		if ([[NSFileManager defaultManager] fileExistsAtPath:appSupportPath])
 		{
-			NSString *userLibraryPath = [userLibraryPaths objectAtIndex:0];
-			NSString *appSupportPath = [userLibraryPath stringByAppendingPathComponent:@"Application Support"];
+			NSString *skyCheckersPath = [appSupportPath stringByAppendingPathComponent:@"SkyCheckers"];
 			
-			if ([[NSFileManager defaultManager] fileExistsAtPath:appSupportPath])
+			if ([[NSFileManager defaultManager] fileExistsAtPath:skyCheckersPath] || [[NSFileManager defaultManager] createDirectoryAtPath:skyCheckersPath withIntermediateDirectories:NO attributes:nil error:NULL])
 			{
-				NSString *skyCheckersPath = [appSupportPath stringByAppendingPathComponent:@"SkyCheckers"];
-				
-				if ([[NSFileManager defaultManager] fileExistsAtPath:skyCheckersPath] || [[NSFileManager defaultManager] createDirectoryAtPath:skyCheckersPath withIntermediateDirectories:NO attributes:nil error:NULL])
-				{
-					file = fopen([[skyCheckersPath stringByAppendingPathComponent:@"user_data.txt"] UTF8String], mode);
-				}
+				file = fopen([[skyCheckersPath stringByAppendingPathComponent:@"user_data.txt"] UTF8String], mode);
 			}
 		}
-		
-		return file;
 	}
+	
+	return file;
 }
 
 void getDefaultUserName(char *defaultUserName, int maxLength)
 {
-#if PLATFORM_OSX
 	@autoreleasepool
 	{
 		NSString *fullUsername = NSFullUserName();
@@ -66,10 +61,4 @@ void getDefaultUserName(char *defaultUserName, int maxLength)
 			}
 		}
 	}
-#else
-	if (maxLength > 0)
- 	{
- 		defaultUserName[0] = '\0';
- 	}
-#endif
 }

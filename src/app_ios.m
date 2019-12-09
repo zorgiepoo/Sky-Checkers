@@ -70,6 +70,14 @@ static ZGAppCallbacks gAppCallbacks;
 	}
 }
 
+- (void)applicationDidEnterBackground:(UIApplication *)application
+{
+	if (gAppCallbacks.appHandlers->suspendedHandler != NULL)
+	{
+		gAppCallbacks.appHandlers->suspendedHandler(gAppCallbacks.context);
+	}
+}
+
 - (void)runLoop:(CADisplayLink *)displayLink
 {
 	gAppCallbacks.appHandlers->pollEventHandler(gAppCallbacks.context, NULL);

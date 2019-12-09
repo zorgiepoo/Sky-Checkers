@@ -1514,6 +1514,14 @@ static void appTerminatedHandler(void *context)
 	}
 }
 
+static void appSuspendedHandler(void *context)
+{
+	AppContext *appContext = context;
+	Renderer *renderer = &appContext->renderer;
+	
+	writeDefaults(renderer);
+}
+
 static void runLoopHandler(void *context)
 {
 	AppContext *appContext = context;
@@ -1593,6 +1601,6 @@ static void pollEventHandler(void *context, void *systemEvent)
 int main(int argc, char *argv[])
 {
 	AppContext appContext;
-	ZGAppHandlers appHandlers = {.launchedHandler =  appLaunchedHandler, .terminatedHandler = appTerminatedHandler, .runLoopHandler = runLoopHandler, .pollEventHandler = pollEventHandler};
+	ZGAppHandlers appHandlers = {.launchedHandler =  appLaunchedHandler, .terminatedHandler = appTerminatedHandler, .runLoopHandler = runLoopHandler, .pollEventHandler = pollEventHandler, .suspendedHandler = appSuspendedHandler};
 	return ZGAppInit(argc, argv, &appHandlers, &appContext);
 }

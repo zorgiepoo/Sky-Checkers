@@ -26,7 +26,6 @@
 		72817C8A23934E7300DB7677 /* characters.c in Sources */ = {isa = PBXBuildFile; fileRef = 72817C8923934E7300DB7677 /* characters.c */; };
 		72817C8D23934F1900DB7677 /* time_apple.m in Sources */ = {isa = PBXBuildFile; fileRef = 727DAE27235C1F650030B29D /* time_apple.m */; };
 		72817C8E23934F2400DB7677 /* font_apple.m in Sources */ = {isa = PBXBuildFile; fileRef = 72011849232758ED004C2532 /* font_apple.m */; };
-		72817C9023934F5B00DB7677 /* defaults_apple.m in Sources */ = {isa = PBXBuildFile; fileRef = 770FFA0710B8F465009FD46A /* defaults_apple.m */; };
 		72817C922393675900DB7677 /* window_ios.m in Sources */ = {isa = PBXBuildFile; fileRef = 72817C912393675900DB7677 /* window_ios.m */; };
 		72817C93239369D100DB7677 /* renderer.c in Sources */ = {isa = PBXBuildFile; fileRef = 72A14F2F21A71C6700606E14 /* renderer.c */; };
 		72817C94239369D100DB7677 /* renderer_metal.m in Sources */ = {isa = PBXBuildFile; fileRef = 721A007021AA7B420099D093 /* renderer_metal.m */; };
@@ -79,7 +78,8 @@
 		72EBBBBD239A215500DD4470 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72EBBBBC239A215500DD4470 /* GameController.framework */; };
 		72FC1200239D870C00E97E45 /* menu_actions.c in Sources */ = {isa = PBXBuildFile; fileRef = 72FC11FF239D870C00E97E45 /* menu_actions.c */; };
 		72FC1201239D870C00E97E45 /* menu_actions.c in Sources */ = {isa = PBXBuildFile; fileRef = 72FC11FF239D870C00E97E45 /* menu_actions.c */; };
-		770FFA0810B8F465009FD46A /* defaults_apple.m in Sources */ = {isa = PBXBuildFile; fileRef = 770FFA0710B8F465009FD46A /* defaults_apple.m */; };
+		72FC1203239E0E5700E97E45 /* defaults_ios.m in Sources */ = {isa = PBXBuildFile; fileRef = 72FC1202239E0E5700E97E45 /* defaults_ios.m */; };
+		770FFA0810B8F465009FD46A /* defaults_osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 770FFA0710B8F465009FD46A /* defaults_osx.m */; };
 		771B6CA010BE60320014884B /* sc_icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 771B6C9F10BE60320014884B /* sc_icon.icns */; };
 		772B6A850D15CBA000A216BD /* network.c in Sources */ = {isa = PBXBuildFile; fileRef = 772B6A840D15CBA000A216BD /* network.c */; };
 		7744BFA40B33736900BD1D5D /* collision.c in Sources */ = {isa = PBXBuildFile; fileRef = 7744BFA00B33736900BD1D5D /* collision.c */; };
@@ -182,8 +182,9 @@
 		72EBBBBE239A29EB00DD4470 /* gamepad_gccontroller.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = gamepad_gccontroller.h; path = ../src/gamepad_gccontroller.h; sourceTree = "<group>"; };
 		72FC11FE239D870B00E97E45 /* menu_actions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = menu_actions.h; path = ../src/menu_actions.h; sourceTree = "<group>"; };
 		72FC11FF239D870C00E97E45 /* menu_actions.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = menu_actions.c; path = ../src/menu_actions.c; sourceTree = "<group>"; };
+		72FC1202239E0E5700E97E45 /* defaults_ios.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = defaults_ios.m; path = ../src/defaults_ios.m; sourceTree = "<group>"; };
 		770FFA0610B8F465009FD46A /* defaults.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = defaults.h; path = ../src/defaults.h; sourceTree = "<group>"; };
-		770FFA0710B8F465009FD46A /* defaults_apple.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = defaults_apple.m; path = ../src/defaults_apple.m; sourceTree = "<group>"; };
+		770FFA0710B8F465009FD46A /* defaults_osx.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = defaults_osx.m; path = ../src/defaults_osx.m; sourceTree = "<group>"; };
 		771B6C9F10BE60320014884B /* sc_icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = sc_icon.icns; sourceTree = "<group>"; };
 		772B6A830D15CBA000A216BD /* network.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = network.h; path = ../src/network.h; sourceTree = "<group>"; };
 		772B6A840D15CBA000A216BD /* network.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = network.c; path = ../src/network.c; sourceTree = "<group>"; };
@@ -279,7 +280,8 @@
 			children = (
 				72A14F1721A5E26200606E14 /* math_3d.h */,
 				770FFA0610B8F465009FD46A /* defaults.h */,
-				770FFA0710B8F465009FD46A /* defaults_apple.m */,
+				770FFA0710B8F465009FD46A /* defaults_osx.m */,
+				72FC1202239E0E5700E97E45 /* defaults_ios.m */,
 				72817B6E238E0EA700DB7677 /* platforms.h */,
 				72817B6C238E0DA500DB7677 /* globals.h */,
 				774A441E0B2BEA57000C04D9 /* main.c */,
@@ -538,6 +540,7 @@
 				72817CA8239385FC00DB7677 /* input.c in Sources */,
 				72817CA7239385F800DB7677 /* collision.c in Sources */,
 				72817CA6239385F300DB7677 /* weapon.c in Sources */,
+				72FC1203239E0E5700E97E45 /* defaults_ios.m in Sources */,
 				72817CA5239385ED00DB7677 /* characters.c in Sources */,
 				72817CA4239385E800DB7677 /* scenery.c in Sources */,
 				72817CA2239385DC00DB7677 /* main.c in Sources */,
@@ -550,7 +553,6 @@
 				72817C93239369D100DB7677 /* renderer.c in Sources */,
 				72817C94239369D100DB7677 /* renderer_metal.m in Sources */,
 				72817C95239369D100DB7677 /* renderer_projection.c in Sources */,
-				72817C9023934F5B00DB7677 /* defaults_apple.m in Sources */,
 				72817C8E23934F2400DB7677 /* font_apple.m in Sources */,
 				72817C922393675900DB7677 /* window_ios.m in Sources */,
 				72817CA12393827700DB7677 /* app_ios.m in Sources */,
@@ -594,7 +596,7 @@
 				727DAE23235BFFBB0030B29D /* mt_random.c in Sources */,
 				7282C625231CEC640063D3CB /* audio_apple.m in Sources */,
 				72817BCB2390C11D00DB7677 /* keyboard_osx.m in Sources */,
-				770FFA0810B8F465009FD46A /* defaults_apple.m in Sources */,
+				770FFA0810B8F465009FD46A /* defaults_osx.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
