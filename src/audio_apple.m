@@ -20,6 +20,8 @@
 #import "audio.h"
 #import <AVFoundation/AVFoundation.h>
 
+static dispatch_queue_t gAudioQueue;
+
 static AVAudioEngine *gAudioEngine;
 static AVAudioPlayerNode *gPlayerMusicNode;
 static AVAudioPlayerNode *gPlayerEffectNodes[MAX_CHANNELS];
@@ -58,128 +60,135 @@ static AVAudioPCMBuffer *createAudioBuffer(NSString *filePath)
 
 void initAudio(void)
 {
-	gAudioEngine = [[AVAudioEngine alloc] init];
+	dispatch_queue_attr_t qosAttribute = dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_USER_INTERACTIVE, 0);
+	assert(qosAttribute != NULL);
 	
-	AVAudioFormat *finalAudioFormat = [[AVAudioFormat alloc] initWithCommonFormat:AVAudioPCMFormatFloat32 sampleRate:(double)AUDIO_FORMAT_SAMPLE_RATE
-	   channels:AUDIO_FORMAT_NUM_CHANNELS interleaved:NO];
+	gAudioQueue = dispatch_queue_create("com.zgcoder.skycheckers-audio", qosAttribute);
 	
-	gPlayerMusicNode = [[AVAudioPlayerNode alloc] init];
-	gPlayerMusicNode.volume = (float)MUSIC_VOLUME / (float)MAX_VOLUME;
-	[gAudioEngine attachNode:gPlayerMusicNode];
-	
-	gPlayerEffectNodes[MENU_SOUND_CHANNEL] = [[AVAudioPlayerNode alloc] init];
-	gPlayerEffectNodes[MENU_SOUND_CHANNEL].volume = (float)MENU_SOUND_VOLUME / (float)MAX_VOLUME;
-	[gAudioEngine attachNode:gPlayerEffectNodes[MENU_SOUND_CHANNEL]];
-	
-	for (uint16_t shootingNodeIndex = SHOOTING_SOUND_MIN_CHANNEL; shootingNodeIndex <= SHOOTING_SOUND_MAX_CHANNEL; shootingNodeIndex++)
-	{
-		gPlayerEffectNodes[shootingNodeIndex] = [[AVAudioPlayerNode alloc] init];
-		gPlayerEffectNodes[shootingNodeIndex].volume = (float)SHOOTING_SOUND_VOLUME / (float)MAX_VOLUME;
+	dispatch_async(gAudioQueue, ^{
+		gAudioEngine = [[AVAudioEngine alloc] init];
 		
-		[gAudioEngine attachNode:gPlayerEffectNodes[shootingNodeIndex]];
-	}
-	
-	for (uint16_t tileFallingNodeIndex = TILE_FALLING_SOUND_MIN_CHANNEL; tileFallingNodeIndex <= TILE_FALLING_SOUND_MAX_CHANNEL; tileFallingNodeIndex++)
-	{
-		gPlayerEffectNodes[tileFallingNodeIndex] = [[AVAudioPlayerNode alloc] init];
-		gPlayerEffectNodes[tileFallingNodeIndex].volume = (float)TILE_FALLING_SOUND_VOLUME / (float)MAX_VOLUME;
+		AVAudioFormat *finalAudioFormat = [[AVAudioFormat alloc] initWithCommonFormat:AVAudioPCMFormatFloat32 sampleRate:(double)AUDIO_FORMAT_SAMPLE_RATE
+		   channels:AUDIO_FORMAT_NUM_CHANNELS interleaved:NO];
 		
-		[gAudioEngine attachNode:gPlayerEffectNodes[tileFallingNodeIndex]];
-	}
-	
-	for (uint16_t dieingStoneNodeIndex = DIEING_STONE_SOUND_MIN_CHANNEL; dieingStoneNodeIndex <= DIEING_STONE_SOUND_MAX_CHANNEL; dieingStoneNodeIndex++)
-	{
-		gPlayerEffectNodes[dieingStoneNodeIndex] = [[AVAudioPlayerNode alloc] init];
-		gPlayerEffectNodes[dieingStoneNodeIndex].volume = (float)TILE_DIEING_STONE_SOUND_VOLUME / (float)MAX_VOLUME;
+		gPlayerMusicNode = [[AVAudioPlayerNode alloc] init];
+		gPlayerMusicNode.volume = (float)MUSIC_VOLUME / (float)MAX_VOLUME;
+		[gAudioEngine attachNode:gPlayerMusicNode];
 		
-		[gAudioEngine attachNode:gPlayerEffectNodes[dieingStoneNodeIndex]];
-	}
-	
-	void (^cleanupFailure)(void) = ^{
-		gAudioEngine = nil;
-		gMainMusicBuffer = nil;
-		gGameMusicBuffer = nil;
-		gMenuSoundBuffer = nil;
-		gShootingSoundBuffer = nil;
-		gTileFallingSoundBuffer = nil;
-		gDieingStoneSoundBuffer = nil;
-		gPlayerMusicNode = nil;
-		for (uint16_t nodeIndex = 0; nodeIndex < MAX_CHANNELS; nodeIndex++)
+		gPlayerEffectNodes[MENU_SOUND_CHANNEL] = [[AVAudioPlayerNode alloc] init];
+		gPlayerEffectNodes[MENU_SOUND_CHANNEL].volume = (float)MENU_SOUND_VOLUME / (float)MAX_VOLUME;
+		[gAudioEngine attachNode:gPlayerEffectNodes[MENU_SOUND_CHANNEL]];
+		
+		for (uint16_t shootingNodeIndex = SHOOTING_SOUND_MIN_CHANNEL; shootingNodeIndex <= SHOOTING_SOUND_MAX_CHANNEL; shootingNodeIndex++)
 		{
-			gPlayerEffectNodes[nodeIndex] = nil;
+			gPlayerEffectNodes[shootingNodeIndex] = [[AVAudioPlayerNode alloc] init];
+			gPlayerEffectNodes[shootingNodeIndex].volume = (float)SHOOTING_SOUND_VOLUME / (float)MAX_VOLUME;
+			
+			[gAudioEngine attachNode:gPlayerEffectNodes[shootingNodeIndex]];
 		}
-	};
-	
-	gMainMusicBuffer = createAudioBuffer(@"Data/Audio/main_menu.wav");
-	if (gMainMusicBuffer == nil)
-	{
-		cleanupFailure();
-		return;
-	}
-	
-	gGameMusicBuffer = createAudioBuffer(@"Data/Audio/fast-track.wav");
-	if (gGameMusicBuffer == nil)
-	{
-		cleanupFailure();
-		return;
-	}
-	
-	gMenuSoundBuffer = createAudioBuffer(@"Data/Audio/sound6.wav");
-	if (gMenuSoundBuffer == nil)
-	{
-		cleanupFailure();
-		return;
-	}
-	
-	gShootingSoundBuffer = createAudioBuffer(@"Data/Audio/whoosh.wav");
-	if (gShootingSoundBuffer == nil)
-	{
-		cleanupFailure();
-		return;
-	}
-	
-	gTileFallingSoundBuffer = createAudioBuffer(@"Data/Audio/object_falls.wav");
-	if (gTileFallingSoundBuffer == nil)
-	{
-		cleanupFailure();
-		return;
-	}
-	
-	gDieingStoneSoundBuffer = createAudioBuffer(@"Data/Audio/dieing_stone.wav");
-	if (gDieingStoneSoundBuffer == nil)
-	{
-		cleanupFailure();
-		return;
-	}
-	
-	AVAudioMixerNode *mainMixerNode = [gAudioEngine mainMixerNode];
-	
-	[gAudioEngine connect:gPlayerMusicNode to:mainMixerNode format:gMainMusicBuffer.format];
-	[gAudioEngine connect:gPlayerEffectNodes[0] to:mainMixerNode format:gMenuSoundBuffer.format];
-	
-	for (uint16_t shootingNodeIndex = SHOOTING_SOUND_MIN_CHANNEL; shootingNodeIndex <= SHOOTING_SOUND_MAX_CHANNEL; shootingNodeIndex++)
-	{
-		[gAudioEngine connect:gPlayerEffectNodes[shootingNodeIndex] to:mainMixerNode format:gShootingSoundBuffer.format];
-	}
-	
-	for (uint16_t tileFallingNodeIndex = TILE_FALLING_SOUND_MIN_CHANNEL; tileFallingNodeIndex <= TILE_FALLING_SOUND_MAX_CHANNEL; tileFallingNodeIndex++)
-	{
-		[gAudioEngine connect:gPlayerEffectNodes[tileFallingNodeIndex] to:mainMixerNode format:gTileFallingSoundBuffer.format];
-	}
-	
-	for (uint16_t dieingStoneNodeIndex = DIEING_STONE_SOUND_MIN_CHANNEL; dieingStoneNodeIndex <= DIEING_STONE_SOUND_MAX_CHANNEL; dieingStoneNodeIndex++)
-	{
-		[gAudioEngine connect:gPlayerEffectNodes[dieingStoneNodeIndex] to:mainMixerNode format:gDieingStoneSoundBuffer.format];
-	}
-	
-	[gAudioEngine connect:mainMixerNode to:gAudioEngine.outputNode format:finalAudioFormat];
-	
-	NSError *engineError = nil;
-	if (![gAudioEngine startAndReturnError:&engineError])
-	{
-		NSLog(@"Failed to start audio engine with error: %@", engineError);
-		cleanupFailure();
-	}
+		
+		for (uint16_t tileFallingNodeIndex = TILE_FALLING_SOUND_MIN_CHANNEL; tileFallingNodeIndex <= TILE_FALLING_SOUND_MAX_CHANNEL; tileFallingNodeIndex++)
+		{
+			gPlayerEffectNodes[tileFallingNodeIndex] = [[AVAudioPlayerNode alloc] init];
+			gPlayerEffectNodes[tileFallingNodeIndex].volume = (float)TILE_FALLING_SOUND_VOLUME / (float)MAX_VOLUME;
+			
+			[gAudioEngine attachNode:gPlayerEffectNodes[tileFallingNodeIndex]];
+		}
+		
+		for (uint16_t dieingStoneNodeIndex = DIEING_STONE_SOUND_MIN_CHANNEL; dieingStoneNodeIndex <= DIEING_STONE_SOUND_MAX_CHANNEL; dieingStoneNodeIndex++)
+		{
+			gPlayerEffectNodes[dieingStoneNodeIndex] = [[AVAudioPlayerNode alloc] init];
+			gPlayerEffectNodes[dieingStoneNodeIndex].volume = (float)TILE_DIEING_STONE_SOUND_VOLUME / (float)MAX_VOLUME;
+			
+			[gAudioEngine attachNode:gPlayerEffectNodes[dieingStoneNodeIndex]];
+		}
+		
+		void (^cleanupFailure)(void) = ^{
+			gAudioEngine = nil;
+			gMainMusicBuffer = nil;
+			gGameMusicBuffer = nil;
+			gMenuSoundBuffer = nil;
+			gShootingSoundBuffer = nil;
+			gTileFallingSoundBuffer = nil;
+			gDieingStoneSoundBuffer = nil;
+			gPlayerMusicNode = nil;
+			for (uint16_t nodeIndex = 0; nodeIndex < MAX_CHANNELS; nodeIndex++)
+			{
+				gPlayerEffectNodes[nodeIndex] = nil;
+			}
+		};
+		
+		gMainMusicBuffer = createAudioBuffer(@"Data/Audio/main_menu.wav");
+		if (gMainMusicBuffer == nil)
+		{
+			cleanupFailure();
+			return;
+		}
+		
+		gGameMusicBuffer = createAudioBuffer(@"Data/Audio/fast-track.wav");
+		if (gGameMusicBuffer == nil)
+		{
+			cleanupFailure();
+			return;
+		}
+		
+		gMenuSoundBuffer = createAudioBuffer(@"Data/Audio/sound6.wav");
+		if (gMenuSoundBuffer == nil)
+		{
+			cleanupFailure();
+			return;
+		}
+		
+		gShootingSoundBuffer = createAudioBuffer(@"Data/Audio/whoosh.wav");
+		if (gShootingSoundBuffer == nil)
+		{
+			cleanupFailure();
+			return;
+		}
+		
+		gTileFallingSoundBuffer = createAudioBuffer(@"Data/Audio/object_falls.wav");
+		if (gTileFallingSoundBuffer == nil)
+		{
+			cleanupFailure();
+			return;
+		}
+		
+		gDieingStoneSoundBuffer = createAudioBuffer(@"Data/Audio/dieing_stone.wav");
+		if (gDieingStoneSoundBuffer == nil)
+		{
+			cleanupFailure();
+			return;
+		}
+		
+		AVAudioMixerNode *mainMixerNode = [gAudioEngine mainMixerNode];
+		
+		[gAudioEngine connect:gPlayerMusicNode to:mainMixerNode format:gMainMusicBuffer.format];
+		[gAudioEngine connect:gPlayerEffectNodes[0] to:mainMixerNode format:gMenuSoundBuffer.format];
+		
+		for (uint16_t shootingNodeIndex = SHOOTING_SOUND_MIN_CHANNEL; shootingNodeIndex <= SHOOTING_SOUND_MAX_CHANNEL; shootingNodeIndex++)
+		{
+			[gAudioEngine connect:gPlayerEffectNodes[shootingNodeIndex] to:mainMixerNode format:gShootingSoundBuffer.format];
+		}
+		
+		for (uint16_t tileFallingNodeIndex = TILE_FALLING_SOUND_MIN_CHANNEL; tileFallingNodeIndex <= TILE_FALLING_SOUND_MAX_CHANNEL; tileFallingNodeIndex++)
+		{
+			[gAudioEngine connect:gPlayerEffectNodes[tileFallingNodeIndex] to:mainMixerNode format:gTileFallingSoundBuffer.format];
+		}
+		
+		for (uint16_t dieingStoneNodeIndex = DIEING_STONE_SOUND_MIN_CHANNEL; dieingStoneNodeIndex <= DIEING_STONE_SOUND_MAX_CHANNEL; dieingStoneNodeIndex++)
+		{
+			[gAudioEngine connect:gPlayerEffectNodes[dieingStoneNodeIndex] to:mainMixerNode format:gDieingStoneSoundBuffer.format];
+		}
+		
+		[gAudioEngine connect:mainMixerNode to:gAudioEngine.outputNode format:finalAudioFormat];
+		
+		NSError *engineError = nil;
+		if (![gAudioEngine startAndReturnError:&engineError])
+		{
+			NSLog(@"Failed to start audio engine with error: %@", engineError);
+			cleanupFailure();
+		}
+	});
 }
 
 static void playMusicBuffer(bool paused, AVAudioPCMBuffer *buffer)
@@ -199,77 +208,95 @@ static void playMusicBuffer(bool paused, AVAudioPCMBuffer *buffer)
 
 void playMainMenuMusic(bool paused)
 {
-	if (gAudioEngine == nil) return;
+	dispatch_async(gAudioQueue, ^{
+		if (gAudioEngine == nil) return;
 
-	playMusicBuffer(paused, gMainMusicBuffer);
+		playMusicBuffer(paused, gMainMusicBuffer);
+	});
 }
 
 void playGameMusic(bool paused)
 {
-	if (gAudioEngine == nil) return;
+	dispatch_async(gAudioQueue, ^{
+		if (gAudioEngine == nil) return;
 
-	playMusicBuffer(paused, gGameMusicBuffer);
+		playMusicBuffer(paused, gGameMusicBuffer);
+	});
 }
 
 void stopMusic(void)
 {
-	[gPlayerMusicNode stop];
+	dispatch_async(gAudioQueue, ^{
+		[gPlayerMusicNode stop];
+	});
 }
 
 void pauseMusic(void)
 {
-	[gPlayerMusicNode pause];
+	dispatch_async(gAudioQueue, ^{
+		[gPlayerMusicNode pause];
+	});
 }
 
 void unPauseMusic(void)
 {
-	[gPlayerMusicNode play];
+	dispatch_async(gAudioQueue, ^{
+		[gPlayerMusicNode play];
+	});
 }
 
 void playMenuSound(void)
 {
-	[gPlayerEffectNodes[MENU_SOUND_CHANNEL] scheduleBuffer:gMenuSoundBuffer atTime:nil options:AVAudioPlayerNodeBufferInterrupts completionHandler:nil];
+	dispatch_async(gAudioQueue, ^{
+		[gPlayerEffectNodes[MENU_SOUND_CHANNEL] scheduleBuffer:gMenuSoundBuffer atTime:nil options:AVAudioPlayerNodeBufferInterrupts completionHandler:nil];
 	
-	[gPlayerEffectNodes[MENU_SOUND_CHANNEL] play];
+		[gPlayerEffectNodes[MENU_SOUND_CHANNEL] play];
+	});
 }
 
 void playShootingSound(int soundIndex)
 {
-	if (gAudioEngine == nil) return;
-	
-	int nodeIndex = soundIndex + SHOOTING_SOUND_MIN_CHANNEL;
-	
-	[gPlayerEffectNodes[nodeIndex] scheduleBuffer:gShootingSoundBuffer atTime:nil options:AVAudioPlayerNodeBufferInterrupts completionHandler:nil];
-	
-	[gPlayerEffectNodes[nodeIndex] play];
+	dispatch_async(gAudioQueue, ^{
+		if (gAudioEngine == nil) return;
+		
+		int nodeIndex = soundIndex + SHOOTING_SOUND_MIN_CHANNEL;
+		
+		[gPlayerEffectNodes[nodeIndex] scheduleBuffer:gShootingSoundBuffer atTime:nil options:AVAudioPlayerNodeBufferInterrupts completionHandler:nil];
+		
+		[gPlayerEffectNodes[nodeIndex] play];
+	});
 }
 
 void playTileFallingSound(void)
 {
-	if (gAudioEngine == nil) return;
-	
-	static int currentSoundIndex = 0;
-	
-	int currentNodeIndex = currentSoundIndex + TILE_FALLING_SOUND_MIN_CHANNEL;
-	
-	[gPlayerEffectNodes[currentNodeIndex] scheduleBuffer:gTileFallingSoundBuffer atTime:nil options:AVAudioPlayerNodeBufferInterrupts completionHandler:nil];
-	
-	[gPlayerEffectNodes[currentNodeIndex] play];
-	
-	currentSoundIndex = (currentSoundIndex + 1) % (TILE_FALLING_SOUND_MAX_CHANNEL - TILE_FALLING_SOUND_MIN_CHANNEL + 1);
+	dispatch_async(gAudioQueue, ^{
+		if (gAudioEngine == nil) return;
+		
+		static int currentSoundIndex = 0;
+		
+		int currentNodeIndex = currentSoundIndex + TILE_FALLING_SOUND_MIN_CHANNEL;
+		
+		[gPlayerEffectNodes[currentNodeIndex] scheduleBuffer:gTileFallingSoundBuffer atTime:nil options:AVAudioPlayerNodeBufferInterrupts completionHandler:nil];
+		
+		[gPlayerEffectNodes[currentNodeIndex] play];
+		
+		currentSoundIndex = (currentSoundIndex + 1) % (TILE_FALLING_SOUND_MAX_CHANNEL - TILE_FALLING_SOUND_MIN_CHANNEL + 1);
+	});
 }
 
 void playDieingStoneSound(void)
 {
-	if (gAudioEngine == nil) return;
-	
-	static int currentSoundIndex = 0;
-	
-	int currentNodeIndex = currentSoundIndex + DIEING_STONE_SOUND_MIN_CHANNEL;
-	
-	[gPlayerEffectNodes[currentNodeIndex] scheduleBuffer:gDieingStoneSoundBuffer atTime:nil options:AVAudioPlayerNodeBufferInterrupts completionHandler:nil];
-	
-	[gPlayerEffectNodes[currentNodeIndex] play];
-	
-	currentSoundIndex = (currentSoundIndex + 1) % (DIEING_STONE_SOUND_MAX_CHANNEL - DIEING_STONE_SOUND_MIN_CHANNEL + 1);
+	dispatch_async(gAudioQueue, ^{
+		if (gAudioEngine == nil) return;
+		
+		static int currentSoundIndex = 0;
+		
+		int currentNodeIndex = currentSoundIndex + DIEING_STONE_SOUND_MIN_CHANNEL;
+		
+		[gPlayerEffectNodes[currentNodeIndex] scheduleBuffer:gDieingStoneSoundBuffer atTime:nil options:AVAudioPlayerNodeBufferInterrupts completionHandler:nil];
+		
+		[gPlayerEffectNodes[currentNodeIndex] play];
+		
+		currentSoundIndex = (currentSoundIndex + 1) % (DIEING_STONE_SOUND_MAX_CHANNEL - DIEING_STONE_SOUND_MIN_CHANNEL + 1);
+	});
 }
