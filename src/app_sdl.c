@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-int ZGAppInit(int argc, char *argv[], void *appContext, void (*appLaunchedHandler)(void *), void (*appTerminatedHandler)(void *), void (*runLoopHandler)(void *), void (*pollEventHandler)(void *, void *))
+int ZGAppInit(int argc, char *argv[], ZGAppHandlers *appHandlers, void *appContext)
 {
 	SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
 
@@ -35,7 +35,10 @@ int ZGAppInit(int argc, char *argv[], void *appContext, void (*appLaunchedHandle
 		ZGQuit();
 	}
 	
-	appLaunchedHandler(appContext);
+	if (appHandlers->launchedHandler != NULL)
+	{
+		appHandlers->launchedHandler(appContext);
+	}
 	
 	bool done = false;
 	while (!done)
@@ -49,14 +52,23 @@ int ZGAppInit(int argc, char *argv[], void *appContext, void (*appLaunchedHandle
 					done = true;
 					break;
 				default:
-					pollEventHandler(appContext, &event);
+					if (appHandlers->pollEventHandler != NULL)
+					{
+						appHandlers->pollEventHandler(appContext, &event);
+					}
 			}
 		}
 		
-		runLoopHandler(appContext);
+		if (appHandlers->runLoopHandler != NULL)
+		{
+			appHandlers->runLoopHandler(appContext);
+		}
 	}
 	
-	appTerminatedHandler(appContext);
+	if (appHandlers->terminatedHandler != NULL)
+	{
+		appHandlers->terminatedHandler(appContext);
+	}
 	
 	ZGQuit();
 	return 0;
