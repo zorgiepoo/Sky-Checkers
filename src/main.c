@@ -70,8 +70,13 @@ static int32_t gWindowWidth = 800;
 static int32_t gWindowHeight = 500;
 
 // online fields
+#if PLATFORM_IOS
+char gServerAddressString[MAX_SERVER_ADDRESS_SIZE] =  {0};
+int gServerAddressStringIndex = 0;
+#else
 char gServerAddressString[MAX_SERVER_ADDRESS_SIZE] = "localhost";
 int gServerAddressStringIndex = 9;
+#endif
 
 char gUserNameString[MAX_USER_NAME_SIZE];
 int gUserNameStringIndex = 0;
@@ -193,7 +198,10 @@ static void initScene(Renderer *renderer)
 
 	gGameState = GAME_STATE_OFF;
 
-	initMenus();
+	initMenus(renderer->window, &gGameState);
+#if PLATFORM_IOS
+	showGameMenus(renderer->window);
+#endif
 }
 
 #define MAX_EXPECTED_SCAN_LENGTH 512
@@ -702,6 +710,9 @@ void initGame(ZGWindow *window, bool firstGame)
 	if (firstGame)
 	{
 		ZGAppSetAllowsScreenSaver(false);
+#if PLATFORM_IOS
+		ZGInstallTouchGestures(window);
+#endif
 	}
 }
 
@@ -742,6 +753,11 @@ void endGame(ZGWindow *window, bool lastGame)
 		}
 		
 		ZGAppSetAllowsScreenSaver(true);
+		
+#if PLATFORM_IOS
+		ZGUninstallTouchGestures(window);
+		showGameMenus(window);
+#endif
 	}
 }
 
@@ -1158,8 +1174,10 @@ static void drawScene(Renderer *renderer)
 		}
 		else /* if (gGameState == GAME_STATE_OFF) */
 		{
+#if !PLATFORM_IOS
 			// Menus render at z = -20.0f
 			drawMenus(renderer);
+#endif
 		}
 		
 		if (gDrawFPS)
@@ -1358,11 +1376,6 @@ static void handleTouchEvent(ZGTouchEvent event, void *context)
 	if (gGameState == GAME_STATE_ON)
 	{
 		performTouchAction(&gPinkBubbleGumInput, &event);
-	}
-	else if (gGameState == GAME_STATE_OFF)
-	{
-		Renderer *renderer = context;
-		performTouchMenuAction(&event, renderer->window);
 	}
 }
 #else

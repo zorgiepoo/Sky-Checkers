@@ -34,6 +34,8 @@
 @implementation ZGViewController
 {
 	CGRect _frame;
+	UIPanGestureRecognizer *_panGestureRecognizer;
+	UITapGestureRecognizer *_tapGestureRecognizer;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -51,11 +53,19 @@
 	UIView *view = [[UIView alloc] initWithFrame:_frame];
 	view.backgroundColor = UIColor.blackColor;
 	
+	self.view = view;
+}
+
+- (void)installTouchGestures
+{
+	UIView *view = self.view;
+	
 	UIPanGestureRecognizer *panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(viewGesturePanned:)];
 	
 	panGestureRecognizer.name = ZGPannedRecognizerName;
 	panGestureRecognizer.maximumNumberOfTouches = 1;
 	panGestureRecognizer.delegate = self;
+	_panGestureRecognizer = panGestureRecognizer;
 	
 	[view addGestureRecognizer:panGestureRecognizer];
 	
@@ -63,10 +73,26 @@
 	
 	tapGestureRecognizer.name = ZGTapRecognizerName;
 	tapGestureRecognizer.delegate = self;
+	_tapGestureRecognizer = tapGestureRecognizer;
 	
 	[view addGestureRecognizer:tapGestureRecognizer];
+}
+
+- (void)uninstallTouchGestures
+{
+	UIView *view = self.view;
 	
-	self.view = view;
+	if (_panGestureRecognizer != nil)
+	{
+		[view removeGestureRecognizer:_panGestureRecognizer];
+		_panGestureRecognizer = nil;
+	}
+	
+	if (_tapGestureRecognizer != nil)
+	{
+		[view removeGestureRecognizer:_tapGestureRecognizer];
+		_tapGestureRecognizer = nil;
+	}
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer;
@@ -168,6 +194,24 @@ void ZGSetTouchEventHandler(ZGWindow *windowRef, void *context, void (*touchEven
 	assert([viewController isKindOfClass:[ZGViewController class]]);
 	viewController.touchEventHandler = touchEventHandler;
 	viewController.touchEventContext = context;
+}
+
+void ZGInstallTouchGestures(ZGWindow *windowRef)
+{
+	UIWindow *window = (__bridge UIWindow *)(windowRef);
+	ZGViewController *viewController = (ZGViewController *)window.rootViewController;
+	assert([viewController isKindOfClass:[ZGViewController class]]);
+	
+	[viewController installTouchGestures];
+}
+
+void ZGUninstallTouchGestures(ZGWindow *windowRef)
+{
+	UIWindow *window = (__bridge UIWindow *)(windowRef);
+	ZGViewController *viewController = (ZGViewController *)window.rootViewController;
+	assert([viewController isKindOfClass:[ZGViewController class]]);
+	
+	[viewController uninstallTouchGestures];
 }
 
 void ZGPollWindowAndInputEvents(ZGWindow *window, const void *systemEvent)

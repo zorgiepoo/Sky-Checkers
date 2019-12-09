@@ -26,6 +26,7 @@
 #include "renderer.h"
 #include "quit.h"
 #include "platforms.h"
+#include "menu_actions.h"
 
 #include <stdbool.h>
 #include <ctype.h>
@@ -392,119 +393,8 @@ void drawNetworkServerPlayMenu(Renderer *renderer, color4_t preferredColor)
 
 void networkServerPlayMenuAction(void *context)
 {
-	if (gNetworkConnection != NULL && gNetworkConnection->thread != NULL)
-	{
-		fprintf(stderr, "game_menus: (server play) thread hasn't terminated yet.. Try again later.\n");
-		return;
-	}
-	
-	initializeNetwork();
-	
-	gNetworkConnection = malloc(sizeof(*gNetworkConnection));
-	memset(gNetworkConnection, 0, sizeof(*gNetworkConnection));
-	
-	struct addrinfo hints;
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_DGRAM;
-	hints.ai_flags = AI_PASSIVE;
-	
-	struct addrinfo *serverInfoList;
-	
-	int getaddrinfoError;
-	if ((getaddrinfoError = getaddrinfo(NULL, NETWORK_PORT, &hints, &serverInfoList)) != 0)
-	{
-		fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(getaddrinfoError));
-		
-		free(gNetworkConnection);
-		gNetworkConnection = NULL;
-		
-		deinitializeNetwork();
-		
-		return;
-	}
-	
-	struct addrinfo *serverInfo;
-	for (serverInfo = serverInfoList; serverInfo != NULL; serverInfo = serverInfo->ai_next)
-	{
-		if (serverInfo->ai_family != AF_INET && serverInfo->ai_family != AF_INET6)
-		{
-			continue;
-		}
-		
-		gNetworkConnection->socket = socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
-		if (gNetworkConnection->socket == -1)
-		{
-			perror("server: socket");
-			continue;
-		}
-		
-#if PLATFORM_WINDOWS
-		int addressLength = (int)serverInfo->ai_addrlen;
-#else
-		socklen_t addressLength = serverInfo->ai_addrlen;
-#endif
-		if (bind(gNetworkConnection->socket, serverInfo->ai_addr, addressLength) == -1)
-		{
-			perror("server: bind");
-			closeSocket(gNetworkConnection->socket);
-			continue;
-		}
-		
-		break;
-	}
-	
-	if (serverInfo == NULL)
-	{
-		fprintf(stderr, "Failed to create binding socket for server.\n");
-		
-		freeaddrinfo(serverInfoList);
-		
-		free(gNetworkConnection);
-		gNetworkConnection = NULL;
-		
-		deinitializeNetwork();
-		
-		return;
-	}
-	
-	freeaddrinfo(serverInfoList);
-	
-	gPinkBubbleGum.backup_state = gPinkBubbleGum.state;
-	gRedRover.backup_state = gRedRover.state;
-	gGreenTree.backup_state = gGreenTree.state;
-	gBlueLightning.backup_state = gBlueLightning.state;
-	
-	gPinkBubbleGum.state = CHARACTER_HUMAN_STATE;
-	gRedRover.state = CHARACTER_HUMAN_STATE;
-	gGreenTree.state = gNumberOfNetHumans > 1 ? CHARACTER_HUMAN_STATE : CHARACTER_AI_STATE;
-	gBlueLightning.state = gNumberOfNetHumans > 2 ? CHARACTER_HUMAN_STATE : CHARACTER_AI_STATE;
-	
-	gPinkBubbleGum.netState = NETWORK_PLAYING_STATE;
-	gRedRover.netState = gRedRover.state == CHARACTER_HUMAN_STATE ? NETWORK_PENDING_STATE : NETWORK_PLAYING_STATE;
-	gGreenTree.netState = gGreenTree.state == CHARACTER_HUMAN_STATE ? NETWORK_PENDING_STATE : NETWORK_PLAYING_STATE;
-	gBlueLightning.netState = gBlueLightning.state == CHARACTER_HUMAN_STATE ? NETWORK_PENDING_STATE : NETWORK_PLAYING_STATE;
-	
-	gNetworkConnection->type = NETWORK_SERVER_TYPE;
-	gNetworkConnection->character = &gPinkBubbleGum;
-	gPinkBubbleGum.netName = gUserNameString;
-	
-	gNetworkConnection->numberOfPlayersToWaitFor = 0;
-	gNetworkConnection->numberOfPlayersToWaitFor += (gRedRover.netState == NETWORK_PENDING_STATE);
-	gNetworkConnection->numberOfPlayersToWaitFor += (gGreenTree.netState == NETWORK_PENDING_STATE);
-	gNetworkConnection->numberOfPlayersToWaitFor += (gBlueLightning.netState == NETWORK_PENDING_STATE);
-	
-	gCurrentSlot = 0;
-	memset(gClientStates, 0, sizeof(gClientStates));
-	
 	GameMenuContext *menuContext = context;
-	initGame(menuContext->window, true);
-	
-	gRedRoverInput.character = gNetworkConnection->character;
-	gBlueLightningInput.character = gNetworkConnection->character;
-	gGreenTreeInput.character = gNetworkConnection->character;
-	
-	gNetworkConnection->thread = ZGCreateThread(serverNetworkThread, "server-thread", &gNetworkConnection->numberOfPlayersToWaitFor);
+	startNetworkGame(menuContext->window);
 }
 
 void drawNetworkServerNumberOfPlayersMenu(Renderer *renderer, color4_t preferredColor)
@@ -628,80 +518,8 @@ void drawConnectToNetworkGameMenu(Renderer *renderer, color4_t preferredColor)
 
 void connectToNetworkGameMenuAction(void *context)
 {
-	if (gNetworkConnection != NULL && gNetworkConnection->thread != NULL)
-	{
-		fprintf(stderr, "game_menus: (connect to server) thread hasn't terminated yet.. Try again later.\n");
-		return;
-	}
-	
-	initializeNetwork();
-	
-	gNetworkConnection = malloc(sizeof(*gNetworkConnection));
-	memset(gNetworkConnection, 0, sizeof(*gNetworkConnection));
-	gNetworkConnection->type = NETWORK_CLIENT_TYPE;
-	
-	struct addrinfo hints;
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_DGRAM;
-	hints.ai_flags = AI_PASSIVE;
-	
-	struct addrinfo *serverInfoList;
-	
-	int getaddrinfoError;
-	if ((getaddrinfoError = getaddrinfo(gServerAddressString, NETWORK_PORT, &hints, &serverInfoList)) != 0)
-	{
-		fprintf(stderr, "getaddrinfo client error: %s\n", gai_strerror(getaddrinfoError));
-		
-		free(gNetworkConnection);
-		gNetworkConnection = NULL;
-		
-		deinitializeNetwork();
-		
-		return;
-	}
-	
-	struct addrinfo *serverInfo;
-	for (serverInfo = serverInfoList; serverInfo != NULL; serverInfo = serverInfo->ai_next)
-	{
-		if (serverInfo->ai_family != AF_INET && serverInfo->ai_family != AF_INET6)
-		{
-			continue;
-		}
-		
-		gNetworkConnection->socket = socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
-		if (gNetworkConnection->socket == -1)
-		{
-			perror("client: socket");
-			continue;
-		}
-		
-		break;
-	}
-	
-	if (serverInfo == NULL)
-	{
-		fprintf(stderr, "Failed to create connecting socket for client.\n");
-		
-		freeaddrinfo(serverInfoList);
-		
-		free(gNetworkConnection);
-		gNetworkConnection = NULL;
-		
-		deinitializeNetwork();
-		
-		return;
-	}
-	
-	memcpy(&gNetworkConnection->hostAddress.storage, serverInfo->ai_addr, serverInfo->ai_addrlen);
-	
-	freeaddrinfo(serverInfoList);
-	
 	GameMenuContext *menuContext = context;
-	GameState *gameState = menuContext->gameState;
-	*gameState = GAME_STATE_CONNECTING;
-	
-	gNetworkConnection->thread = ZGCreateThread(clientNetworkThread, "client-thread", NULL);
+	connectToNetworkGame(menuContext->gameState);
 }
 
 void drawGameOptionsMenu(Renderer *renderer, color4_t preferredColor)
@@ -1202,17 +1020,9 @@ void drawAudioMusicOptionsMenu(Renderer *renderer, color4_t preferredColor)
 
 void audioMusicOptionsMenuAction(void *context)
 {
-	gAudioMusicFlag = !gAudioMusicFlag;
-	if (!gAudioMusicFlag)
-	{
-		stopMusic();
-	}
-	else
-	{
-		GameMenuContext *menuContext = context;
-		bool windowFocus = ZGWindowHasFocus(menuContext->window);
-		playMainMenuMusic(!windowFocus);
-	}
+	GameMenuContext *menuContext = context;
+	
+	updateAudioMusic(menuContext->window, !gAudioMusicFlag);
 }
 
 void drawQuitMenu(Renderer *renderer, color4_t preferredColor)
@@ -1226,7 +1036,7 @@ void quitMenuAction(void *context)
 	ZGSendQuitEvent();
 }
 
-void initMenus(void)
+void initMenus(ZGWindow *window, GameState *gameState)
 {
 	initMainMenu();
 	

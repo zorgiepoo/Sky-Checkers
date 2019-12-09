@@ -648,9 +648,18 @@ void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *))
 			renderer->metalCurrentRenderCommandEncoder = NULL;
 			
 			[renderCommandEncoder endEncoding];
-			[commandBuffer presentDrawable:drawable];
 			
-			[commandBuffer commit];
+			if (metalLayer.presentsWithTransaction)
+			{
+				[commandBuffer commit];
+				[commandBuffer waitUntilScheduled];
+				[drawable present];
+			}
+			else
+			{
+				[commandBuffer presentDrawable:drawable];
+				[commandBuffer commit];
+			}
 		}
 	}
 }

@@ -22,21 +22,21 @@
 #include "platforms.h"
 #include "globals.h"
 #include "window.h"
-#include "renderer.h"
 
 #if PLATFORM_IOS
 #include "touch.h"
 #else
 #include "keyboard.h"
+#include "renderer.h"
 #endif
 
-void initMenus(void);
-
-void drawMenus(Renderer *renderer);
+void initMenus(ZGWindow *window, GameState *gameState);
 
 #if PLATFORM_IOS
-void performTouchMenuAction(ZGTouchEvent *event, ZGWindow *window);
+void showGameMenus(ZGWindow *window);
 #else
+void drawMenus(Renderer *renderer);
+
 void performKeyboardMenuAction(ZGKeyboardEvent *event, GameState *gameState, ZGWindow *window);
 void performKeyboardMenuTextInputAction(ZGKeyboardEvent *event);
 #endif

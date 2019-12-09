@@ -77,6 +77,8 @@
 		72EBBBB9239A1DCB00DD4470 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72EBBBB8239A1DCB00DD4470 /* Metal.framework */; };
 		72EBBBBA239A213600DD4470 /* gamepad_gccontroller.m in Sources */ = {isa = PBXBuildFile; fileRef = 72817C9C2393808B00DB7677 /* gamepad_gccontroller.m */; };
 		72EBBBBD239A215500DD4470 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72EBBBBC239A215500DD4470 /* GameController.framework */; };
+		72FC1200239D870C00E97E45 /* menu_actions.c in Sources */ = {isa = PBXBuildFile; fileRef = 72FC11FF239D870C00E97E45 /* menu_actions.c */; };
+		72FC1201239D870C00E97E45 /* menu_actions.c in Sources */ = {isa = PBXBuildFile; fileRef = 72FC11FF239D870C00E97E45 /* menu_actions.c */; };
 		770FFA0810B8F465009FD46A /* defaults_apple.m in Sources */ = {isa = PBXBuildFile; fileRef = 770FFA0710B8F465009FD46A /* defaults_apple.m */; };
 		771B6CA010BE60320014884B /* sc_icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 771B6C9F10BE60320014884B /* sc_icon.icns */; };
 		772B6A850D15CBA000A216BD /* network.c in Sources */ = {isa = PBXBuildFile; fileRef = 772B6A840D15CBA000A216BD /* network.c */; };
@@ -178,6 +180,8 @@
 		72EBBBB8239A1DCB00DD4470 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS13.2.sdk/System/Library/Frameworks/Metal.framework; sourceTree = DEVELOPER_DIR; };
 		72EBBBBC239A215500DD4470 /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
 		72EBBBBE239A29EB00DD4470 /* gamepad_gccontroller.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = gamepad_gccontroller.h; path = ../src/gamepad_gccontroller.h; sourceTree = "<group>"; };
+		72FC11FE239D870B00E97E45 /* menu_actions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = menu_actions.h; path = ../src/menu_actions.h; sourceTree = "<group>"; };
+		72FC11FF239D870C00E97E45 /* menu_actions.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = menu_actions.c; path = ../src/menu_actions.c; sourceTree = "<group>"; };
 		770FFA0610B8F465009FD46A /* defaults.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = defaults.h; path = ../src/defaults.h; sourceTree = "<group>"; };
 		770FFA0710B8F465009FD46A /* defaults_apple.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = defaults_apple.m; path = ../src/defaults_apple.m; sourceTree = "<group>"; };
 		771B6C9F10BE60320014884B /* sc_icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = sc_icon.icns; sourceTree = "<group>"; };
@@ -282,6 +286,8 @@
 				77C7A4FA0CFD292600295420 /* menus.h */,
 				77C7A4FB0CFD292600295420 /* menus_desktop.c */,
 				72A5D134239C1725004C12D6 /* menus_ios.m */,
+				72FC11FE239D870B00E97E45 /* menu_actions.h */,
+				72FC11FF239D870C00E97E45 /* menu_actions.c */,
 				774A445E0B2BEB46000C04D9 /* scenery.h */,
 				774A445F0B2BEB46000C04D9 /* scenery.c */,
 				774A47430B2C8A7E000C04D9 /* characters.h */,
@@ -551,6 +557,7 @@
 				72817C8D23934F1900DB7677 /* time_apple.m in Sources */,
 				72817C7923934DB500DB7677 /* audio_apple.m in Sources */,
 				72817C9D2393808B00DB7677 /* gamepad_gccontroller.m in Sources */,
+				72FC1201239D870C00E97E45 /* menu_actions.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -578,6 +585,7 @@
 				778FA7910D0656FA002A3C26 /* ai.c in Sources */,
 				727DAE51235D5C570030B29D /* thread_posix.c in Sources */,
 				729BE4C1236667EE00DC70F7 /* gamepad_osx.m in Sources */,
+				72FC1200239D870C00E97E45 /* menu_actions.c in Sources */,
 				772B6A850D15CBA000A216BD /* network.c in Sources */,
 				72A14F3121A71C6900606E14 /* renderer.c in Sources */,
 				72817BD42392C33900DB7677 /* quit_apple.m in Sources */,
@@ -641,7 +649,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = iOS/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -676,7 +684,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = iOS/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -711,7 +719,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = iOS/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;

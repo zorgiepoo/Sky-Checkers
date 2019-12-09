@@ -63,6 +63,10 @@ void ZGSetWindowEventHandler(ZGWindow *window, void *context, void (*windowEvent
 
 #if PLATFORM_IOS
 void ZGSetTouchEventHandler(ZGWindow *window, void *context, void (*touchEventHandler)(ZGTouchEvent, void *));
+
+void ZGInstallTouchGestures(ZGWindow *window);
+void ZGUninstallTouchGestures(ZGWindow *window);
+
 #else
 void ZGSetKeyboardEventHandler(ZGWindow *window, void *context, void (*keyboardEventHandler)(ZGKeyboardEvent, void *));
 #endif
