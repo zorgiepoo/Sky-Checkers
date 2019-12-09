@@ -27,8 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int gAIMode;
-int gAINetMode = 5; // AI_EASY_MODE
+int gAIMode = AI_EASY_MODE;
 
 int gNumberOfNetHumans = 1;
 

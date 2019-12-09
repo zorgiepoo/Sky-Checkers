@@ -190,7 +190,7 @@ static void directCharacterBasedOnCollisions(Character *character, float current
 
 static void shootWeaponProjectile(Character *character, float currentTime)
 {
-	int AIMode = gNetworkConnection ? gAINetMode : gAIMode;
+	int AIMode = gAIMode;
 	
 	float timeAliveThreshold;
 	if (AIMode == AI_HARD_MODE)

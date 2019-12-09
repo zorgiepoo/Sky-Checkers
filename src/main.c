@@ -84,8 +84,7 @@ int gUserNameStringIndex = 0;
 bool gValidDefaults = false;
 
 // Lives
-int gCharacterLives =							5;
-int gCharacterNetLives =						5;
+int gCharacterLives = 5;
 
 #if !PLATFORM_IOS
 static bool gConsoleActivated;
@@ -401,16 +400,6 @@ static void readDefaults(void)
 	{
 		gCharacterLives = MAX_CHARACTER_LIVES / 2;
 	}
-	
-	if (fscanf(fp, "Number of net lives: %i\n", &gCharacterNetLives) < 1) goto cleanup;
-	if (gCharacterNetLives > MAX_CHARACTER_LIVES)
-	{
-		gCharacterNetLives = MAX_CHARACTER_LIVES;
-	}
-	else if (gCharacterNetLives < 0)
-	{
-		gCharacterNetLives = MAX_CHARACTER_LIVES / 2;
-	}
 
 	// character states
 	if (fscanf(fp, "Pink Bubblegum state: %i\n", &gPinkBubbleGum.state) < 1) goto cleanup;
@@ -441,12 +430,6 @@ static void readDefaults(void)
 	if (gAIMode != AI_EASY_MODE && gAIMode != AI_MEDIUM_MODE && gAIMode != AI_HARD_MODE)
 	{
 		gAIMode = AI_EASY_MODE;
-	}
-	
-	if (fscanf(fp, "AI Net Mode: %i\n", &gAINetMode) < 1) goto cleanup;
-	if (gAINetMode != AI_EASY_MODE && gAINetMode != AI_MEDIUM_MODE && gAINetMode != AI_HARD_MODE)
-	{
-		gAINetMode = AI_EASY_MODE;
 	}
 	
 	if (fscanf(fp, "Number of Net Humans: %i\n", &gNumberOfNetHumans) < 1) goto cleanup;
@@ -530,7 +513,6 @@ static void writeDefaults(Renderer *renderer)
 	fprintf(fp, "\n");
 
 	fprintf(fp, "Number of lives: %i\n", gCharacterLives);
-	fprintf(fp, "Number of net lives: %i\n", gCharacterNetLives);
 
 	fprintf(fp, "\n");
 
@@ -541,7 +523,6 @@ static void writeDefaults(Renderer *renderer)
 	fprintf(fp, "Blue Lightning state: %i\n", offlineCharacterState(&gBlueLightning));
 
 	fprintf(fp, "AI Mode: %i\n", gAIMode);
-	fprintf(fp, "AI Net Mode: %i\n", gAINetMode);
 	fprintf(fp, "Number of Net Humans: %i\n", gNumberOfNetHumans);
 
 	fprintf(fp, "\n");
@@ -590,11 +571,7 @@ void initGame(ZGWindow *window, bool firstGame)
 	startAnimation();
 	
 	int initialNumberOfLives;
-	if (gNetworkConnection != NULL && gNetworkConnection->type == NETWORK_SERVER_TYPE)
-	{
-		initialNumberOfLives = gCharacterNetLives;
-	}
-	else if (gNetworkConnection != NULL && gNetworkConnection->type == NETWORK_CLIENT_TYPE)
+	if (gNetworkConnection != NULL && gNetworkConnection->type == NETWORK_CLIENT_TYPE)
 	{
 		initialNumberOfLives = gNetworkConnection->characterLives;
 	}

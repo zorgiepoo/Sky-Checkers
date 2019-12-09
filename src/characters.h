@@ -62,7 +62,6 @@
 #define CHARACTER_IS_ALIVE(character) (fabsf((character)->z - CHARACTER_ALIVE_Z) < 0.001f)
 
 extern int gAIMode;
-extern int gAINetMode;
 
 extern int gNumberOfNetHumans;
 

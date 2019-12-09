@@ -60,15 +60,12 @@ static void initMainMenu(void);
 
 static void addSubMenu(Menu *parentMenu, Menu *childMenu);
 
-static bool isChildBeingDrawn(Menu *child);
-
 static void invokeMenu(void *context);
 static void changeMenu(int direction);
 
 static Menu *gConfigureLivesMenu;
 
 static Menu *gAIModeOptionsMenu;
-static Menu *gAINetModeOptionsMenu;
 
 static Menu *gRedRoverPlayerOptionsMenu;
 static Menu *gGreenTreePlayerOptionsMenu;
@@ -77,7 +74,6 @@ static Menu *gBlueLightningPlayerOptionsMenu;
 static bool gDrawArrowsForCharacterLivesFlag;
 static bool gDrawArrowsForAIModeFlag;
 static bool gDrawArrowsForNumberOfNetHumansFlag;
-static bool gDrawArrowsForNetPlayerLivesFlag;
 
 static bool gNetworkAddressFieldIsActive;
 static bool gNetworkUserNameFieldIsActive;
@@ -164,11 +160,6 @@ static void addSubMenu(Menu *parentMenu, Menu *childMenu)
 	}
 	
 	childMenu->parent = parentMenu;
-}
-
-static bool isChildBeingDrawn(Menu *child)
-{
-	return child->parent == gCurrentMenu->parent;
 }
 
 static void invokeMenu(void *context)
@@ -401,7 +392,7 @@ void drawNetworkServerNumberOfPlayersMenu(Renderer *renderer, color4_t preferred
 {
 	mat4_t numberPlayersModelViewMatrix = m4_translation((vec3_t){-1.43f, 0.0f, -20.00f});
 	drawStringf(renderer, numberPlayersModelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Net-Players: %d", gNumberOfNetHumans);
-	
+
 	if (gDrawArrowsForNumberOfNetHumansFlag)
 	{
 		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){0.35f / 1.25f, 0.1f / 1.25f, -25.0f / 1.25f}));
@@ -411,44 +402,6 @@ void drawNetworkServerNumberOfPlayersMenu(Renderer *renderer, color4_t preferred
 void networkServerNumberOfPlayersMenuAction(void *context)
 {
 	gDrawArrowsForNumberOfNetHumansFlag = !gDrawArrowsForNumberOfNetHumansFlag;
-}
-
-void drawNetworkServerAIModeMenu(Renderer *renderer, color4_t preferredColor)
-{
-	mat4_t botModeModelViewMatrix = m4_translation((vec3_t){-1.43f, -1.07f, -20.00f});
-	if (gAINetMode == AI_EASY_MODE)
-		drawString(renderer, botModeModelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Bot Mode: Easy");
-	
-	else if (gAINetMode == AI_MEDIUM_MODE)
-		drawString(renderer, botModeModelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Bot Mode: Medium");
-	
-	else if (gAINetMode == AI_HARD_MODE)
-		drawString(renderer, botModeModelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Bot Mode: Hard");
-	
-	if (gDrawArrowsForAIModeFlag)
-	{
-		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){0.35f / 1.25f, -1.3f / 1.25f, -25.0f / 1.25f}));
-	}
-}
-
-void networkServerAIModeMenuAction(void *context)
-{
-}
-
-void drawNetworkServerPlayerLivesMenu(Renderer *renderer, color4_t preferredColor)
-{
-	mat4_t playerLivesModelViewMatrix = m4_translation((vec3_t){-1.43f, -2.14f, -20.00f});
-	drawStringf(renderer, playerLivesModelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Player Lives: %i", gCharacterNetLives);
-	
-	if (gDrawArrowsForNetPlayerLivesFlag)
-	{
-		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){0.35f / 1.25f, -2.6f / 1.25f, -25.0f / 1.25f}));
-	}
-}
-
-void networkServerPlayerLivesMenuAction(void *context)
-{
-	gDrawArrowsForNetPlayerLivesFlag = !gDrawArrowsForNetPlayerLivesFlag;
 }
 
 void drawNetworkClientMenu(Renderer *renderer, color4_t preferredColor)
@@ -1045,8 +998,6 @@ void initMenus(ZGWindow *window, GameState *gameState)
 	Menu *networkServerMenu =					malloc(sizeof(Menu));
 	Menu *networkServerPlayMenu =				malloc(sizeof(Menu));
 	Menu *networkServerNumberOfPlayersMenu =	malloc(sizeof(Menu));
-	Menu *networkServerAIModeMenu =				malloc(sizeof(Menu));
-	Menu *networkServerPlayerLivesMenu =		malloc(sizeof(Menu));
 	Menu *networkClientMenu =					malloc(sizeof(Menu));
 	Menu *networkUserNameMenu =					malloc(sizeof(Menu));
 	Menu *networkAddressFieldMenu =				malloc(sizeof(Menu));
@@ -1082,13 +1033,6 @@ void initMenus(ZGWindow *window, GameState *gameState)
 	
 	networkServerNumberOfPlayersMenu->draw = drawNetworkServerNumberOfPlayersMenu;
 	networkServerNumberOfPlayersMenu->action = networkServerNumberOfPlayersMenuAction;
-	
-	networkServerAIModeMenu->draw = drawNetworkServerAIModeMenu;
-	networkServerAIModeMenu->action = networkServerAIModeMenuAction;
-	gAINetModeOptionsMenu = networkServerAIModeMenu;
-	
-	networkServerPlayerLivesMenu->draw = drawNetworkServerPlayerLivesMenu;
-	networkServerPlayerLivesMenu->action = networkServerPlayerLivesMenuAction;
 	
 	networkClientMenu->draw = drawNetworkClientMenu;
 	networkClientMenu->action = networkClientMenuAction;
@@ -1232,8 +1176,6 @@ void initMenus(ZGWindow *window, GameState *gameState)
 	
 	addSubMenu(networkServerMenu, networkServerPlayMenu);
 	addSubMenu(networkServerMenu, networkServerNumberOfPlayersMenu);
-	addSubMenu(networkServerMenu, networkServerAIModeMenu);
-	addSubMenu(networkServerMenu, networkServerPlayerLivesMenu);
 	
 	addSubMenu(networkClientMenu, networkAddressFieldMenu);
 	addSubMenu(networkClientMenu, connectToNetworkGameMenu);
@@ -1356,7 +1298,7 @@ void performKeyboardMenuAction(ZGKeyboardEvent *event, GameState *gameState, ZGW
 			}
 		}
 
-		else if (gCurrentMenu == gAIModeOptionsMenu || gCurrentMenu == gAINetModeOptionsMenu)
+		else if (gCurrentMenu == gAIModeOptionsMenu)
 		{
 			gDrawArrowsForAIModeFlag = !gDrawArrowsForAIModeFlag;
 			if (gAudioEffectsFlag)
@@ -1389,37 +1331,14 @@ void performKeyboardMenuAction(ZGKeyboardEvent *event, GameState *gameState, ZGW
 				gCharacterLives--;
 			}
 		}
-		else if (gDrawArrowsForNetPlayerLivesFlag)
-		{
-			if (gCharacterNetLives == 1)
-			{
-				gCharacterNetLives = MAX_CHARACTER_LIVES;
-			}
-			else
-			{
-				gCharacterNetLives--;
-			}
-		}
 		else if (gDrawArrowsForAIModeFlag)
 		{
-			if (isChildBeingDrawn(gAIModeOptionsMenu))
-			{
-				if (gAIMode == AI_EASY_MODE)
-					gAIMode = AI_HARD_MODE;
-				else if (gAIMode == AI_MEDIUM_MODE)
-					gAIMode = AI_EASY_MODE;
-				else /* if (gAIMode == AI_HARD_MODE) */
-					gAIMode = AI_MEDIUM_MODE;
-			}
-			else if (isChildBeingDrawn(gAINetModeOptionsMenu))
-			{
-				if (gAINetMode == AI_EASY_MODE)
-					gAINetMode = AI_HARD_MODE;
-				else if (gAINetMode == AI_MEDIUM_MODE)
-					gAINetMode = AI_EASY_MODE;
-				else /* if (gAINetMode == AI_HARD_MODE) */
-					gAINetMode = AI_MEDIUM_MODE;
-			}
+			if (gAIMode == AI_EASY_MODE)
+				gAIMode = AI_HARD_MODE;
+			else if (gAIMode == AI_MEDIUM_MODE)
+				gAIMode = AI_EASY_MODE;
+			else /* if (gAIMode == AI_HARD_MODE) */
+				gAIMode = AI_MEDIUM_MODE;
 		}
 		else if (gDrawArrowsForNumberOfNetHumansFlag)
 		{
@@ -1465,37 +1384,14 @@ void performKeyboardMenuAction(ZGKeyboardEvent *event, GameState *gameState, ZGW
 				gCharacterLives++;
 			}
 		}
-		else if (gDrawArrowsForNetPlayerLivesFlag)
-		{
-			if (gCharacterNetLives == 10)
-			{
-				gCharacterNetLives = 1;
-			}
-			else
-			{
-				gCharacterNetLives++;
-			}
-		}
 		else if (gDrawArrowsForAIModeFlag)
 		{
-			if (isChildBeingDrawn(gAIModeOptionsMenu))
-			{
-				if (gAIMode == AI_EASY_MODE)
-					gAIMode = AI_MEDIUM_MODE;
-				else if (gAIMode == AI_MEDIUM_MODE)
-					gAIMode = AI_HARD_MODE;
-				else /* if (gAIMode == AI_HARD_MODE) */
-					gAIMode = AI_EASY_MODE;
-			}
-			else if (isChildBeingDrawn(gAINetModeOptionsMenu))
-			{
-				if (gAINetMode == AI_EASY_MODE)
-					gAINetMode = AI_MEDIUM_MODE;
-				else if (gAINetMode == AI_MEDIUM_MODE)
-					gAINetMode = AI_HARD_MODE;
-				else /* if (gAINetMode == AI_HARD_MODE) */
-					gAINetMode = AI_EASY_MODE;
-			}
+			if (gAIMode == AI_EASY_MODE)
+				gAIMode = AI_MEDIUM_MODE;
+			else if (gAIMode == AI_MEDIUM_MODE)
+				gAIMode = AI_HARD_MODE;
+			else /* if (gAIMode == AI_HARD_MODE) */
+				gAIMode = AI_EASY_MODE;
 		}
 		else if (gDrawArrowsForNumberOfNetHumansFlag)
 		{
@@ -1538,10 +1434,6 @@ void performKeyboardMenuAction(ZGKeyboardEvent *event, GameState *gameState, ZGW
 		else if (gDrawArrowsForCharacterLivesFlag)
 		{
 			gDrawArrowsForCharacterLivesFlag = false;
-		}
-		else if (gDrawArrowsForNetPlayerLivesFlag)
-		{
-			gDrawArrowsForNetPlayerLivesFlag = false;
 		}
 		else if (gDrawArrowsForAIModeFlag)
 		{

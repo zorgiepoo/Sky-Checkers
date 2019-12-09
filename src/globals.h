@@ -49,7 +49,6 @@ extern bool gDrawFPS;
 extern bool gDrawPings;
 
 extern int gCharacterLives;
-extern int gCharacterNetLives;
 
 extern bool gAudioEffectsFlag;
 extern bool gAudioMusicFlag;

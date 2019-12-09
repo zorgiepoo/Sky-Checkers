@@ -365,14 +365,7 @@ static float getConsoleValue(void)
 	
 	else if (strcmp(gConsoleString, "scc~: get ai_mode") == 0)
 	{
-		if (gNetworkConnection != NULL)
-		{
-			value = (float)gAINetMode;
-		}
-		else
-		{
-			value = (float)gAIMode;
-		}
+		value = (float)gAIMode;
 	}
 	
 	// write text for precision up to 1 digit past the decimal point.
@@ -770,14 +763,7 @@ static float setConsoleValue(bool *errorFlag)
 		}
 		else if (strcmp(input, "scc~: ai_mode") == 0)
 		{
-			if (gNetworkConnection != NULL)
-			{
-				gAINetMode = (int)value;
-			}
-			else
-			{
-				gAIMode = (int)value;
-			}
+			gAIMode = (int)value;
 		}
 		else if (strcmp(input, "scc~: game_reset") == 0)
 		{

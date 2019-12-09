@@ -1179,7 +1179,7 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							responseMessage.type = FIRST_SERVER_RESPONSE_MESSAGE_TYPE;
 							responseMessage.packetNumber = 0;
 							responseMessage.firstServerResponse.slotID = clientCharacterID - 1;
-							responseMessage.firstServerResponse.characterLives = gCharacterNetLives;
+							responseMessage.firstServerResponse.characterLives = gCharacterLives;
 							
 							responseMessage.addressIndex = message.addressIndex;
 							pushNetworkMessage(&gGameMessagesToNet, responseMessage);
