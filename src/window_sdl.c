@@ -21,7 +21,6 @@
 #include "sdl_include.h"
 
 #if PLATFORM_LINUX
-bool _ZGWindowIsFullscreen(ZGWindow *window);
 bool _ZGSetWindowFullscreen(ZGWindow *window, bool enabled, const char **errorString);
 #endif
 
@@ -150,10 +149,10 @@ void ZGPollWindowAndInputEvents(ZGWindow *windowRef, const void *systemEvent)
 		case SDL_KEYDOWN:
 		{
 #if PLATFORM_LINUX
-			if (ZGTestReturnKeyCode(keyCode) && ZGTestMetaModifier(keyModifier))
+			if (ZGTestReturnKeyCode(sdlEvent->key.keysym.scancode) && ZGTestMetaModifier(sdlEvent->key.keysym.mod))
 			{
 				const char *fullscreenErrorString = NULL;
-				if (!_ZGWindowIsFullscreen(windowController))
+				if (!ZGWindowIsFullscreen(windowController))
 				{
 					if (!_ZGSetWindowFullscreen(windowController, true, &fullscreenErrorString))
 					{
@@ -220,7 +219,7 @@ void ZGPollWindowAndInputEvents(ZGWindow *windowRef, const void *systemEvent)
 }
 
 #if PLATFORM_LINUX
-bool _ZGWindowIsFullscreen(ZGWindow *windowRef)
+bool ZGWindowIsFullscreen(ZGWindow *windowRef)
 {
 	WindowController *windowController = (WindowController *)windowRef;
 	return (SDL_GetWindowFlags(windowController->window) & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)) != 0;

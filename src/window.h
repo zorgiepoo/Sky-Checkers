@@ -61,6 +61,10 @@ void ZGGetWindowSize(ZGWindow *window, int32_t *width, int32_t *height);
 
 void ZGSetWindowEventHandler(ZGWindow *window, void *context, void (*windowEventHandler)(ZGWindowEvent, void *));
 
+#if PLATFORM_LINUX
+bool ZGWindowIsFullscreen(ZGWindow *window);
+#endif
+
 #if PLATFORM_IOS
 void ZGSetTouchEventHandler(ZGWindow *window, void *context, void (*touchEventHandler)(ZGTouchEvent, void *));
 
@@ -74,4 +78,3 @@ void ZGSetKeyboardEventHandler(ZGWindow *window, void *context, void (*keyboardE
 void ZGPollWindowAndInputEvents(ZGWindow *window, const void *systemEvent);
 
 void *ZGWindowHandle(ZGWindow *window);
-
