@@ -91,8 +91,6 @@ static void performNetworkUserNameBackspace(void);
 
 void setPendingKeyCode(uint32_t keyCode);
 
-#pragma mark Menu
-
 // Everyone is a type of child of gMainMenu. gMainMenu has no parent.
 static Menu gMainMenu;
 // the current selected menu.
@@ -263,8 +261,6 @@ static void changeMenu(int direction)
 		playMenuSound();
 	}
 }
-
-#pragma mark Game menus
 
 static void drawUpAndDownArrowTriangles(Renderer *renderer, mat4_t modelViewMatrix)
 {
