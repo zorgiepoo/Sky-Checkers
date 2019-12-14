@@ -209,7 +209,7 @@ static void playMusicBuffer(bool paused, AVAudioPCMBuffer *buffer)
 void playMainMenuMusic(bool paused)
 {
 	dispatch_async(gAudioQueue, ^{
-		if (gAudioEngine == nil) return;
+		if (gAudioEngine == nil || !gAudioEngine.isRunning) return;
 
 		playMusicBuffer(paused, gMainMusicBuffer);
 	});
@@ -218,7 +218,7 @@ void playMainMenuMusic(bool paused)
 void playGameMusic(bool paused)
 {
 	dispatch_async(gAudioQueue, ^{
-		if (gAudioEngine == nil) return;
+		if (gAudioEngine == nil || !gAudioEngine.isRunning) return;
 
 		playMusicBuffer(paused, gGameMusicBuffer);
 	});
@@ -227,6 +227,8 @@ void playGameMusic(bool paused)
 void stopMusic(void)
 {
 	dispatch_async(gAudioQueue, ^{
+		if (gAudioEngine == nil || !gAudioEngine.isRunning) return;
+		
 		[gPlayerMusicNode stop];
 	});
 }
@@ -234,6 +236,8 @@ void stopMusic(void)
 void pauseMusic(void)
 {
 	dispatch_async(gAudioQueue, ^{
+		if (gAudioEngine == nil || !gAudioEngine.isRunning) return;
+		
 		[gPlayerMusicNode pause];
 	});
 }
@@ -241,6 +245,8 @@ void pauseMusic(void)
 void unPauseMusic(void)
 {
 	dispatch_async(gAudioQueue, ^{
+		if (gAudioEngine == nil || !gAudioEngine.isRunning) return;
+		
 		[gPlayerMusicNode play];
 	});
 }
@@ -248,6 +254,8 @@ void unPauseMusic(void)
 void playMenuSound(void)
 {
 	dispatch_async(gAudioQueue, ^{
+		if (gAudioEngine == nil || !gAudioEngine.isRunning) return;
+		
 		[gPlayerEffectNodes[MENU_SOUND_CHANNEL] scheduleBuffer:gMenuSoundBuffer atTime:nil options:AVAudioPlayerNodeBufferInterrupts completionHandler:nil];
 	
 		[gPlayerEffectNodes[MENU_SOUND_CHANNEL] play];
@@ -257,7 +265,7 @@ void playMenuSound(void)
 void playShootingSound(int soundIndex)
 {
 	dispatch_async(gAudioQueue, ^{
-		if (gAudioEngine == nil) return;
+		if (gAudioEngine == nil || !gAudioEngine.isRunning) return;
 		
 		int nodeIndex = soundIndex + SHOOTING_SOUND_MIN_CHANNEL;
 		
@@ -270,7 +278,7 @@ void playShootingSound(int soundIndex)
 void playTileFallingSound(void)
 {
 	dispatch_async(gAudioQueue, ^{
-		if (gAudioEngine == nil) return;
+		if (gAudioEngine == nil || !gAudioEngine.isRunning) return;
 		
 		static int currentSoundIndex = 0;
 		
@@ -287,7 +295,7 @@ void playTileFallingSound(void)
 void playDieingStoneSound(void)
 {
 	dispatch_async(gAudioQueue, ^{
-		if (gAudioEngine == nil) return;
+		if (gAudioEngine == nil || !gAudioEngine.isRunning) return;
 		
 		static int currentSoundIndex = 0;
 		
