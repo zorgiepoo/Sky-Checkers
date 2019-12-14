@@ -23,6 +23,6 @@
 
 void ZGQuit(void);
 
-#if !PLATFORM_IOS
+#if PLATFORM_OSX
 void ZGSendQuitEvent(void);
 #endif
