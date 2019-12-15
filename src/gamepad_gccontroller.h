@@ -23,10 +23,10 @@
 
 #if PLATFORM_IOS
 #define GC_NAME(x) x
-#define USE_GC_SPI 0
+#define GC_PRODUCT_CHECK 0
 #else
 #define GC_NAME(x) GC_##x
-#define USE_GC_SPI 1
+#define GC_PRODUCT_CHECK 1
 #endif
 
 typedef struct GC_NAME(_Gamepad)
@@ -55,6 +55,6 @@ const char *GC_NAME(gamepadName)(struct GC_NAME(_GamepadManager) *gamepadManager
 
 void GC_NAME(setPlayerIndex)(struct GC_NAME(_GamepadManager) *gamepadManager, GamepadIndex index, int64_t playerIndex);
 
-#if USE_GC_SPI
-bool GC_NAME(hasControllerMatching)(struct GC_NAME(_GamepadManager) *gamepadManager, int32_t vendorID, int32_t productID);
+#if GC_PRODUCT_CHECK
+bool GC_NAME(availableGamepadProfile)(int32_t vendorID, int32_t productID);
 #endif

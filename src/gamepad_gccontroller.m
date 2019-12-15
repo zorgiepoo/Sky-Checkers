@@ -23,7 +23,7 @@
 #import <Foundation/Foundation.h>
 #import <GameController/GameController.h>
 
-#if USE_GC_SPI
+#if GC_PRODUCT_CHECK
 
 #import <IOKit/hid/IOHIDKeys.h>
 
@@ -42,8 +42,30 @@ extern CFTypeRef IOHIDServiceClientCopyProperty(IOHIDServiceClientRef service, C
 
 @end
 
+bool GC_NAME(availableGamepadProfile)(int32_t vendorID, int32_t productID)
+{
+	BOOL gcXboxOneDualShockSupport;
+	if (@available(macOS 10.15, iOS 13, *))
+	{
+		gcXboxOneDualShockSupport = YES;
+	}
+	else
+	{
+		gcXboxOneDualShockSupport = NO;
+	}
+	
+	// These are some of the controllers we know GCController supports
+	return ((gcXboxOneDualShockSupport && vendorID == 0x45e && (productID == 0x2e0 || productID == 0x2fd)) || // Xbox One
+		(gcXboxOneDualShockSupport && vendorID == 0x54c && (productID == 0x9cc || productID == 0x5c4)) || // Dual Shock 4
+		(vendorID == 0x1038 && productID == 0x1420) || // SteelSeries Nimbus
+		(vendorID == 0x0111 && productID == 0x1420) || // SteelSeries Nimbus (wireless)
+		(vendorID == 0x1038 && productID == 0x5) || // SteelSeries Stratus (possibly)
+		(vendorID == 0x0F0D && productID == 0x0090) || // HoriPad Ultimate
+		(vendorID == 0x0738 && productID == 0x5262)); // Mad Catz Micro C.T.R.L.i, although I'm not too sure
+}
+
 // https://stackoverflow.com/questions/33509296/supporting-both-gccontroller-and-iohiddeviceref
-static bool _hasMatchingController(GCController *controller, int32_t vendorID, int32_t productID)
+static bool _isSupportedController(GCController *controller)
 {
 	if ([controller respondsToSelector:@selector(hidServices)])
 	{
@@ -58,7 +80,7 @@ static bool _hasMatchingController(GCController *controller, int32_t vendorID, i
 					NSNumber *vendorRef = CFBridgingRelease(IOHIDServiceClientCopyProperty(service, CFSTR(kIOHIDVendorIDKey)));
 					NSNumber *productRef = CFBridgingRelease(IOHIDServiceClientCopyProperty(service, CFSTR(kIOHIDProductIDKey)));
 					
-					if (vendorID == vendorRef.intValue && productID == productRef.intValue)
+					if (GC_NAME(availableGamepadProfile)(vendorRef.intValue, productRef.intValue))
 					{
 						return true;
 					}
@@ -92,6 +114,18 @@ static void _removeController(struct GC_NAME(_GamepadManager) *gamepadManager, G
 
 static void _addController(struct GC_NAME(_GamepadManager) *gamepadManager, GCController *controller)
 {
+	if (controller.extendedGamepad == nil && controller.microGamepad == nil)
+	{
+		return;
+	}
+	
+#if GC_PRODUCT_CHECK
+	if (!_isSupportedController(controller))
+	{
+		return;
+	}
+#endif
+	
 	uint16_t availableGamepadIndex = MAX_GAMEPADS;
 	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
 	{
@@ -275,20 +309,3 @@ void GC_NAME(setPlayerIndex)(struct GC_NAME(_GamepadManager) *gamepadManager, Ga
 		}
 	}
 }
-
-#if USE_GC_SPI
-bool GC_NAME(hasControllerMatching)(struct GC_NAME(_GamepadManager) *gamepadManager, int32_t vendorID, int32_t productID)
-{
-	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
-	{
-		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[index];
-		
-		GCController *controller = (__bridge GCController *)(gamepad->controller);
-		if (controller != nil && _hasMatchingController(controller, vendorID, productID))
-		{
-			return true;
-		}
-	}
-	return false;
-}
-#endif

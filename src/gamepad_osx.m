@@ -352,30 +352,9 @@ static void _hidDeviceMatchingCallback(void *context, IOReturn result, void *sen
 	int32_t productID = _gamepadIdentifierInfo(device, CFSTR(kIOHIDProductIDKey));
 	int32_t versionID = _gamepadIdentifierInfo(device, CFSTR(kIOHIDVersionNumberKey));
 	
-	BOOL gcXboxOneDualShockSupport;
-	if (@available(macOS 10.15, *))
-	{
-		gcXboxOneDualShockSupport = YES;
-	}
-	else
-	{
-		gcXboxOneDualShockSupport = NO;
-	}
-	
-	// Filter out some of the controllers we know GCController supports
-	if ((gcXboxOneDualShockSupport && vendorID == 0x45e && (productID == 0x2e0 || productID == 0x2fd)) || // Xbox One
-		(gcXboxOneDualShockSupport && vendorID == 0x54c && (productID == 0x9cc || productID == 0x5c4)) || // Dual Shock 4
-		(vendorID == 0x1038 && productID == 0x1420) || // SteelSeries Nimbus
-		(vendorID == 0x0111 && productID == 0x1420) || // SteelSeries Nimbus (wireless)
-		(vendorID == 0x1038 && productID == 0x5) || // SteelSeries Stratus (possibly)
-		(vendorID == 0x0F0D && productID == 0x0090) || // HoriPad Ultimate
-		(vendorID == 0x0738 && productID == 0x5262)) // Mad Catz Micro C.T.R.L.i, although I'm not too sure
-	{
-		return;
-	}
-	
-#if USE_GC_SPI
-	if (GC_NAME(hasControllerMatching)(gamepadManager->gcManager, vendorID, productID))
+#if GC_PRODUCT_CHECK
+	// Only handle gamepads that GCController may not support
+	if (GC_NAME(availableGamepadProfile)(vendorID, productID))
 	{
 		return;
 	}
@@ -582,17 +561,6 @@ static void _gcGamepadAdded(GamepadIndex gcIndex, void *context)
 {
 	GamepadManager *gamepadManager = context;
 	
-#if USE_GC_SPI
-	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
-	{
-		Gamepad *gamepad = &gamepadManager->gamepads[index];
-		if (!gamepad->gcController && gamepad->device != NULL && GC_NAME(hasControllerMatching)(gamepadManager->gcManager, gamepad->vendorID, gamepad->productID))
-		{
-			_removeGamepad(gamepadManager, index);
-		}
-	}
-#endif
-	
 	Gamepad *nextFreeGamepad = NULL;
 	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
 	{
@@ -686,9 +654,6 @@ GamepadManager *initGamepadManager(const char *databasePath, GamepadCallback add
 	IOHIDManagerRegisterDeviceRemovalCallback(gamepadManager->hidManager, _hidDeviceRemovalCallback, gamepadManager);
 	
 	IOHIDManagerScheduleWithRunLoop(gamepadManager->hidManager, CFRunLoopGetMain(), kCFRunLoopDefaultMode);
-	
-	// Run runloop once to detect any gamepads
-	CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, false);
 	
 	return gamepadManager;
 }
