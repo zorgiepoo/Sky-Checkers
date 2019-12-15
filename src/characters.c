@@ -537,7 +537,7 @@ void drawAllCharacterInfo(Renderer *renderer, const mat4_t *iconTranslations, bo
 	drawCharacterLives(renderer, greenTreeModelViewMatrix, greenTreeColor, &gGreenTree, livesWidth, livesHeight, "[P3]", playerLabelWidth, playerLabelHeight);
 	drawCharacterLives(renderer, blueLightningModelViewMatrix, blueLightningColor, &gBlueLightning, livesWidth, livesHeight, "[P4]", playerLabelWidth, playerLabelHeight);
 	
-	if (!gameStarted)
+	if (!gameStarted && gNetworkConnection == NULL)
 	{
 		drawCharacterControllerName(renderer, pinkBubbleGumModelViewMatrix, pinkBubbleGumColor, gPinkBubbleGum.controllerName);
 		drawCharacterControllerName(renderer, redRoverModelViewMatrix, redRoverColor, gRedRover.controllerName);
