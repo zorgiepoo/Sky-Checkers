@@ -514,7 +514,7 @@ static void drawCharacterControllerName(Renderer *renderer, mat4_t modelViewMatr
 }
 
 #define LIVES_DRAWING_OFFSET 0.8f
-void drawAllCharacterInfo(Renderer *renderer, const mat4_t *iconTranslations, bool gameStarted)
+void drawAllCharacterInfo(Renderer *renderer, const mat4_t *iconTranslations, bool displayControllerName)
 {
 	const mat4_t pinkBubbleGumModelViewMatrix = m4_mul(iconTranslations[0], m4_translation((vec3_t){LIVES_DRAWING_OFFSET, 0.0f, 0.0f}));
 	const mat4_t redRoverModelViewMatrix = m4_mul(iconTranslations[1], m4_translation((vec3_t){LIVES_DRAWING_OFFSET, 0.0f, 0.0f}));
@@ -537,7 +537,7 @@ void drawAllCharacterInfo(Renderer *renderer, const mat4_t *iconTranslations, bo
 	drawCharacterLives(renderer, greenTreeModelViewMatrix, greenTreeColor, &gGreenTree, livesWidth, livesHeight, "[P3]", playerLabelWidth, playerLabelHeight);
 	drawCharacterLives(renderer, blueLightningModelViewMatrix, blueLightningColor, &gBlueLightning, livesWidth, livesHeight, "[P4]", playerLabelWidth, playerLabelHeight);
 	
-	if (!gameStarted && gNetworkConnection == NULL)
+	if (displayControllerName)
 	{
 		drawCharacterControllerName(renderer, pinkBubbleGumModelViewMatrix, pinkBubbleGumColor, gPinkBubbleGum.controllerName);
 		drawCharacterControllerName(renderer, redRoverModelViewMatrix, redRoverColor, gRedRover.controllerName);

@@ -952,7 +952,8 @@ static void drawScene(Renderer *renderer)
 		drawCharacters(renderer, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
 		
 		// Character lives at z = -25.0f
-		drawAllCharacterInfo(renderer, characterIconTranslations, gGameHasStarted);
+		bool displayControllerNames = (!gGameHasStarted || gGameState == GAME_STATE_PAUSED) && gNetworkConnection == NULL;
+		drawAllCharacterInfo(renderer, characterIconTranslations, displayControllerNames);
 		
 		// Render game instruction at -25.0f
 		{
@@ -1373,7 +1374,54 @@ static void gamepadAdded(GamepadIndex gamepadIndex, void *context)
 		if (gGamepads[index] == INVALID_GAMEPAD_INDEX)
 		{
 			gGamepads[index] = gamepadIndex;
-			setPlayerIndex(gGamepadManager, gamepadIndex, UNSET_PLAYER_INDEX);
+			
+			if (gGameState != GAME_STATE_OFF)
+			{
+				Input *input = NULL;
+				int64_t playerIndex = 0;
+				if (gBlueLightningInput.gamepadIndex == INVALID_GAMEPAD_INDEX)
+				{
+					input = &gBlueLightningInput;
+					playerIndex = 3;
+				}
+				
+				if (gGreenTreeInput.gamepadIndex == INVALID_GAMEPAD_INDEX)
+				{
+					input = &gGreenTreeInput;
+					playerIndex = 2;
+				}
+				
+				if (gRedRoverInput.gamepadIndex == INVALID_GAMEPAD_INDEX)
+				{
+					input = &gRedRoverInput;
+					playerIndex = 1;
+				}
+				
+				if (gPinkBubbleGumInput.gamepadIndex == INVALID_GAMEPAD_INDEX)
+				{
+					input = &gPinkBubbleGumInput;
+					playerIndex = 0;
+				}
+				
+				if (input != NULL)
+				{
+					input->gamepadIndex = gamepadIndex;
+					setPlayerIndex(gGamepadManager, gamepadIndex, playerIndex);
+					
+					if (input->character != NULL)
+					{
+						const char *controllerName = gamepadName(gGamepadManager, gamepadIndex);
+						if (controllerName != NULL)
+						{
+							strncpy(input->character->controllerName, controllerName, MAX_CONTROLLER_NAME_SIZE - 1);
+						}
+					}
+				}
+			}
+			else
+			{
+				setPlayerIndex(gGamepadManager, gamepadIndex, UNSET_PLAYER_INDEX);
+			}
 			break;
 		}
 	}
@@ -1387,21 +1435,33 @@ static void gamepadRemoved(GamepadIndex gamepadIndex, void *context)
 		{
 			gGamepads[index] = INVALID_GAMEPAD_INDEX;
 			
+			Input *input = NULL;
+			
 			if (gPinkBubbleGumInput.gamepadIndex == gamepadIndex)
 			{
-				gPinkBubbleGumInput.gamepadIndex = INVALID_GAMEPAD_INDEX;
+				input = &gPinkBubbleGumInput;
 			}
 			else if (gRedRoverInput.gamepadIndex == gamepadIndex)
 			{
-				gRedRoverInput.gamepadIndex = INVALID_GAMEPAD_INDEX;
+				input = &gRedRoverInput;
 			}
 			else if (gGreenTreeInput.gamepadIndex == gamepadIndex)
 			{
-				gGreenTreeInput.gamepadIndex = INVALID_GAMEPAD_INDEX;
+				input = &gGreenTreeInput;
 			}
 			else if (gBlueLightningInput.gamepadIndex == gamepadIndex)
 			{
-				gBlueLightningInput.gamepadIndex = INVALID_GAMEPAD_INDEX;
+				input = &gBlueLightningInput;
+			}
+			
+			if (input != NULL)
+			{
+				input->gamepadIndex = INVALID_GAMEPAD_INDEX;
+				
+				if (input->character != NULL)
+				{
+					memset(input->character->controllerName, 0, MAX_CONTROLLER_NAME_SIZE);
+				}
 			}
 			
 			break;

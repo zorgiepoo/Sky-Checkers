@@ -164,7 +164,7 @@ void drawCharacterIcons(Renderer *renderer, const mat4_t *translations);
 
 void drawCharacters(Renderer *renderer, RendererOptions options);
 
-void drawAllCharacterInfo(Renderer *renderer, const mat4_t *iconTranslations, bool gameStarted);
+void drawAllCharacterInfo(Renderer *renderer, const mat4_t *iconTranslations, bool displayControllerName);
 
 void getOtherCharacters(Character *characterA, Character **characterB, Character **characterC, Character **characterD);
 
