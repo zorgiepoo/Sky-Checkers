@@ -996,7 +996,7 @@ static void drawScene(Renderer *renderer)
 							
 							char hostAddressDescription[256] = {0};
 							snprintf(hostAddressDescription, sizeof(hostAddressDescription) - 1, "Address: %s", gNetworkConnection->ipAddress);
-							drawStringScaled(renderer, scaledModelViewMatrix, (color4_t){gPinkBubbleGum.red, gPinkBubbleGum.green, gPinkBubbleGum.blue, 1.0f}, 0.0045538f, hostAddressDescription);
+							drawStringScaled(renderer, scaledModelViewMatrix, (color4_t){gPinkBubbleGum.red, gPinkBubbleGum.green, gPinkBubbleGum.blue, 1.0f}, 0.003f, hostAddressDescription);
 						}
 					}
 				}
