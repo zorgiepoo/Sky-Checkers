@@ -173,7 +173,7 @@ Character *getCharacter(int ID);
 
 void spawnCharacter(Character *character);
 
-void moveCharacter(Character *character, double timeDelta);
+void moveCharacter(Character *character, double timeDelta, bool pausedState);
 
 void turnCharacter(Character *character, int direction);
 

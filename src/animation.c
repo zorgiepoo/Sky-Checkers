@@ -83,7 +83,7 @@ static void sendPing(void);
 
 static void clearPredictedColors(float currentTime);
 
-void animate(ZGWindow *window, double timeDelta)
+void animate(ZGWindow *window, double timeDelta, bool pausedState)
 {
 	gSecondTimer += (float)timeDelta;
 	
@@ -156,10 +156,10 @@ void animate(ZGWindow *window, double timeDelta)
 	fireCharacterWeapon(&gPinkBubbleGum);
 	fireCharacterWeapon(&gBlueLightning);
 	
-	moveCharacter(&gRedRover, timeDelta);
-	moveCharacter(&gGreenTree, timeDelta);
-	moveCharacter(&gPinkBubbleGum, timeDelta);
-	moveCharacter(&gBlueLightning, timeDelta);
+	moveCharacter(&gRedRover, timeDelta, pausedState);
+	moveCharacter(&gGreenTree, timeDelta, pausedState);
+	moveCharacter(&gPinkBubbleGum, timeDelta, pausedState);
+	moveCharacter(&gBlueLightning, timeDelta, pausedState);
 	
 	moveWeapon(gRedRover.weap, timeDelta);
 	moveWeapon(gGreenTree.weap, timeDelta);

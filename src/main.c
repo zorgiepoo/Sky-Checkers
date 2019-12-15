@@ -1539,7 +1539,7 @@ static void runLoopHandler(void *context)
 		
 		if (gGameState == GAME_STATE_ON || (gGameState == GAME_STATE_PAUSED && gNetworkConnection != NULL))
 		{
-			animate(renderer->window, ANIMATION_TIMER_INTERVAL);
+			animate(renderer->window, ANIMATION_TIMER_INTERVAL, (gGameState == GAME_STATE_PAUSED));
 		}
 		
 		if (gGameShouldReset)
