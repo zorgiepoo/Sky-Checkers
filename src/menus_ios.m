@@ -59,6 +59,12 @@ static void setSectionHeaderFont(ZGWindow *window, UIView *view)
 	header.textLabel.font = [UIFont boldSystemFontOfSize:metalView.frame.size.height * 0.03];
 }
 
+static void playGame(ZGWindow *window)
+{
+	hideGameMenus(window);
+	initGame(window, true);
+}
+
 @interface MainMenuHandler : NSObject
 
 @property (nonatomic) ZGWindow *window;
@@ -69,8 +75,7 @@ static void setSectionHeaderFont(ZGWindow *window, UIView *view)
 
 - (void)playGame
 {
-	hideGameMenus(_window);
-	initGame(_window, true);
+	playGame(_window);
 }
 
 - (void)showOnlineMenu
@@ -999,4 +1004,37 @@ void hideGameMenus(ZGWindow *windowRef)
 
 void showPauseMenu(GameState *gameState)
 {
+}
+
+void performGamepadMenuAction(GamepadEvent *event, GameState *gameState, ZGWindow *window, void (*exitGame)(ZGWindow *))
+{
+	if (event->state != GAMEPAD_STATE_PRESSED)
+	{
+		return;
+	}
+	
+	switch (event->button)
+	{
+		case GAMEPAD_BUTTON_A:
+		case GAMEPAD_BUTTON_START:
+			if (gCurrentMenuView == gMainMenuView && *gameState == GAME_STATE_OFF)
+			{
+				playGame(window);
+			}
+			break;
+		case GAMEPAD_BUTTON_B:
+		case GAMEPAD_BUTTON_BACK:
+		case GAMEPAD_BUTTON_DPAD_UP:
+		case GAMEPAD_BUTTON_DPAD_DOWN:
+		case GAMEPAD_BUTTON_DPAD_LEFT:
+		case GAMEPAD_BUTTON_DPAD_RIGHT:
+		case GAMEPAD_BUTTON_X:
+		case GAMEPAD_BUTTON_Y:
+		case GAMEPAD_BUTTON_LEFTSHOULDER:
+		case GAMEPAD_BUTTON_RIGHTSHOULDER:
+		case GAMEPAD_BUTTON_LEFTTRIGGER:
+		case GAMEPAD_BUTTON_RIGHTTRIGGER:
+		case GAMEPAD_BUTTON_MAX:
+			break;
+	}
 }

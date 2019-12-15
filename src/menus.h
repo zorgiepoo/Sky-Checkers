@@ -22,12 +22,12 @@
 #include "platforms.h"
 #include "globals.h"
 #include "window.h"
+#include "gamepad.h"
 
 #if PLATFORM_IOS
 #include "touch.h"
 #else
 #include "keyboard.h"
-#include "gamepad.h"
 #include "renderer.h"
 #endif
 
@@ -42,6 +42,6 @@ void drawMenus(Renderer *renderer);
 
 void performKeyboardMenuAction(ZGKeyboardEvent *event, GameState *gameState, ZGWindow *window, void (*exitGame)(ZGWindow *));
 void performKeyboardMenuTextInputAction(ZGKeyboardEvent *event);
+#endif
 
 void performGamepadMenuAction(GamepadEvent *event, GameState *gameState, ZGWindow *window, void (*exitGame)(ZGWindow *));
-#endif
