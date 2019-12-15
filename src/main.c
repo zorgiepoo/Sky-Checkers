@@ -1364,7 +1364,14 @@ static void handleTouchEvent(ZGTouchEvent event, void *context)
 {
 	if (gGameState == GAME_STATE_ON)
 	{
-		performTouchAction(&gPinkBubbleGumInput, &event);
+		if (gGameWinner != NO_CHARACTER && event.type == ZGTouchEventTypeTap)
+		{
+			resetGame();
+		}
+		else
+		{
+			performTouchAction(&gPinkBubbleGumInput, &event);
+		}
 	}
 }
 #else
