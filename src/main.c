@@ -1300,7 +1300,11 @@ static void pollGamepads(GamepadManager *gamepadManager, ZGWindow *window, const
 		{
 			performGamepadMenuAction(gamepadEvent, &gGameState, window, exitGame);
 		}
-
+		else if (gGameState == GAME_STATE_ON && gamepadEvent->state == GAMEPAD_STATE_PRESSED && (gamepadEvent->button == GAMEPAD_BUTTON_START || gamepadEvent->button == GAMEPAD_BUTTON_BACK))
+		{
+			showPauseMenu(&gGameState);
+		}
+		
 		performGamepadAction(&gRedRoverInput, gamepadEvent, gGameState);
 		performGamepadAction(&gGreenTreeInput, gamepadEvent, gGameState);
 		performGamepadAction(&gPinkBubbleGumInput, gamepadEvent, gGameState);
