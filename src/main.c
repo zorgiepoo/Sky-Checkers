@@ -1537,7 +1537,7 @@ static void runLoopHandler(void *context)
 		
 		syncNetworkState(renderer->window, (float)ANIMATION_TIMER_INTERVAL);
 		
-		if (gGameState == GAME_STATE_ON)
+		if (gGameState == GAME_STATE_ON || (gGameState == GAME_STATE_PAUSED && gNetworkConnection != NULL))
 		{
 			animate(renderer->window, ANIMATION_TIMER_INTERVAL);
 		}
