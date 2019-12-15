@@ -939,10 +939,10 @@ static void drawScene(Renderer *renderer)
 		// Character icons at the bottom of the screen at z = -25.0f
 		const mat4_t characterIconTranslations[] =
 		{
-			m4_translation((vec3_t){CHARACTER_ICON_OFFSET, -9.5f, -25.0f}),
-			m4_translation((vec3_t){CHARACTER_ICON_OFFSET + CHARACTER_ICON_DISPLACEMENT, -9.5f, -25.0f}),
-			m4_translation((vec3_t){CHARACTER_ICON_OFFSET + CHARACTER_ICON_DISPLACEMENT * 2, -9.5f, -25.0f}),
-			m4_translation((vec3_t){CHARACTER_ICON_OFFSET + CHARACTER_ICON_DISPLACEMENT * 3, -9.5f, -25.0f})
+			m4_translation((vec3_t){CHARACTER_ICON_OFFSET, -9.2f, -25.0f}),
+			m4_translation((vec3_t){CHARACTER_ICON_OFFSET + CHARACTER_ICON_DISPLACEMENT, -9.2f, -25.0f}),
+			m4_translation((vec3_t){CHARACTER_ICON_OFFSET + CHARACTER_ICON_DISPLACEMENT * 2, -9.2f, -25.0f}),
+			m4_translation((vec3_t){CHARACTER_ICON_OFFSET + CHARACTER_ICON_DISPLACEMENT * 3, -9.2f, -25.0f})
 		};
 		drawCharacterIcons(renderer, characterIconTranslations);
 		
