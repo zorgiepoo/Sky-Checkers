@@ -1288,13 +1288,18 @@ static void resetGame(void)
 	gGameShouldReset = true;
 }
 
-static void pollGamepads(GamepadManager *gamepadManager, const void *systemEvent)
+static void pollGamepads(GamepadManager *gamepadManager, ZGWindow *window, const void *systemEvent)
 {
 	uint16_t gamepadEventsCount = 0;
 	GamepadEvent *gamepadEvents = pollGamepadEvents(gamepadManager, systemEvent, &gamepadEventsCount);
 	for (uint16_t gamepadEventIndex = 0; gamepadEventIndex < gamepadEventsCount; gamepadEventIndex++)
 	{
 		GamepadEvent *gamepadEvent = &gamepadEvents[gamepadEventIndex];
+		
+		if (gGameState == GAME_STATE_OFF || gGameState == GAME_STATE_PAUSED)
+		{
+			performGamepadMenuAction(gamepadEvent, &gGameState, window, exitGame);
+		}
 
 		performGamepadAction(&gRedRoverInput, gamepadEvent, gGameState);
 		performGamepadAction(&gGreenTreeInput, gamepadEvent, gGameState);
@@ -1642,7 +1647,7 @@ static void pollEventHandler(void *context, void *systemEvent)
 	AppContext *appContext = context;
 	Renderer *renderer = &appContext->renderer;
 	
-	pollGamepads(gGamepadManager, systemEvent);
+	pollGamepads(gGamepadManager, renderer->window, systemEvent);
 	ZGPollWindowAndInputEvents(renderer->window, systemEvent);
 }
 

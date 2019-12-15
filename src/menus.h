@@ -27,6 +27,7 @@
 #include "touch.h"
 #else
 #include "keyboard.h"
+#include "gamepad.h"
 #include "renderer.h"
 #endif
 
@@ -41,4 +42,6 @@ void drawMenus(Renderer *renderer);
 
 void performKeyboardMenuAction(ZGKeyboardEvent *event, GameState *gameState, ZGWindow *window, void (*exitGame)(ZGWindow *));
 void performKeyboardMenuTextInputAction(ZGKeyboardEvent *event);
+
+void performGamepadMenuAction(GamepadEvent *event, GameState *gameState, ZGWindow *window, void (*exitGame)(ZGWindow *));
 #endif

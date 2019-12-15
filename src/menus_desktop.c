@@ -1338,6 +1338,178 @@ static void writeMenuTextInput(const char *text, size_t maxSize)
 	}
 }
 
+static void performMenuEnterAction(GameState *gameState, ZGWindow *window, void (*exitGame)(ZGWindow *))
+{
+	if (gCurrentMenu == gConfigureLivesMenu)
+	{
+		gDrawArrowsForCharacterLivesFlag = !gDrawArrowsForCharacterLivesFlag;
+		if (gAudioEffectsFlag)
+		{
+			playMenuSound();
+		}
+	}
+
+	else if (gCurrentMenu == gAIModeOptionsMenu)
+	{
+		gDrawArrowsForAIModeFlag = !gDrawArrowsForAIModeFlag;
+		if (gAudioEffectsFlag)
+		{
+			playMenuSound();
+		}
+	}
+	else
+	{
+		GameMenuContext menuContext;
+		menuContext.gameState = gameState;
+		menuContext.window = window;
+		menuContext.exitGame = exitGame;
+		
+		invokeMenu(&menuContext);
+	}
+}
+
+static void performMenuDownAction(void)
+{
+	if (gNetworkAddressFieldIsActive)
+		return;
+
+	if (gDrawArrowsForCharacterLivesFlag)
+	{
+		if (gCharacterLives == 1)
+		{
+			gCharacterLives = MAX_CHARACTER_LIVES;
+		}
+		else
+		{
+			gCharacterLives--;
+		}
+	}
+	else if (gDrawArrowsForAIModeFlag)
+	{
+		if (gAIMode == AI_EASY_MODE)
+			gAIMode = AI_HARD_MODE;
+		else if (gAIMode == AI_MEDIUM_MODE)
+			gAIMode = AI_EASY_MODE;
+		else /* if (gAIMode == AI_HARD_MODE) */
+			gAIMode = AI_MEDIUM_MODE;
+	}
+	else if (gDrawArrowsForNumberOfNetHumansFlag)
+	{
+		gNumberOfNetHumans--;
+		if (gNumberOfNetHumans <= 0)
+		{
+			gNumberOfNetHumans = 3;
+		}
+	}
+	else
+	{
+		changeMenu(DOWN);
+
+		if (gCurrentMenu == gRedRoverPlayerOptionsMenu && gPinkBubbleGum.state == CHARACTER_AI_STATE)
+		{
+			changeMenu(DOWN);
+		}
+
+		if (gCurrentMenu == gGreenTreePlayerOptionsMenu && gRedRover.state == CHARACTER_AI_STATE)
+		{
+			changeMenu(DOWN);
+		}
+
+		if (gCurrentMenu == gBlueLightningPlayerOptionsMenu && gGreenTree.state == CHARACTER_AI_STATE)
+		{
+			changeMenu(DOWN);
+		}
+	}
+}
+
+static void performMenuUpAction(void)
+{
+	if (gNetworkAddressFieldIsActive)
+		return;
+
+	if (gDrawArrowsForCharacterLivesFlag)
+	{
+		if (gCharacterLives == 10)
+		{
+			gCharacterLives = 1;
+		}
+		else
+		{
+			gCharacterLives++;
+		}
+	}
+	else if (gDrawArrowsForAIModeFlag)
+	{
+		if (gAIMode == AI_EASY_MODE)
+			gAIMode = AI_MEDIUM_MODE;
+		else if (gAIMode == AI_MEDIUM_MODE)
+			gAIMode = AI_HARD_MODE;
+		else /* if (gAIMode == AI_HARD_MODE) */
+			gAIMode = AI_EASY_MODE;
+	}
+	else if (gDrawArrowsForNumberOfNetHumansFlag)
+	{
+		gNumberOfNetHumans++;
+		if (gNumberOfNetHumans >= 4)
+		{
+			gNumberOfNetHumans = 1;
+		}
+	}
+	else
+	{
+		changeMenu(UP);
+
+		if (gCurrentMenu == gBlueLightningPlayerOptionsMenu && gGreenTree.state == CHARACTER_AI_STATE)
+		{
+			changeMenu(UP);
+		}
+
+		if (gCurrentMenu == gGreenTreePlayerOptionsMenu && gRedRover.state == CHARACTER_AI_STATE)
+		{
+			changeMenu(UP);
+		}
+
+		if (gCurrentMenu == gRedRoverPlayerOptionsMenu && gPinkBubbleGum.state == CHARACTER_AI_STATE)
+		{
+			changeMenu(UP);
+		}
+	}
+}
+
+static void performMenuBackAction(GameState *gameState)
+{
+	if (*gameState == GAME_STATE_PAUSED)
+	{
+		changeMenu(LEFT);
+		unPauseMusic();
+		*gameState = GAME_STATE_ON;
+	}
+	else if (gNetworkAddressFieldIsActive)
+	{
+		gNetworkAddressFieldIsActive = false;
+	}
+	else if (gNetworkUserNameFieldIsActive)
+	{
+		gNetworkUserNameFieldIsActive = false;
+	}
+	else if (gDrawArrowsForCharacterLivesFlag)
+	{
+		gDrawArrowsForCharacterLivesFlag = false;
+	}
+	else if (gDrawArrowsForAIModeFlag)
+	{
+		gDrawArrowsForAIModeFlag = false;
+	}
+	else if (gDrawArrowsForNumberOfNetHumansFlag)
+	{
+		gDrawArrowsForNumberOfNetHumansFlag = false;
+	}
+	else
+	{
+		changeMenu(LEFT);
+	}
+}
+
 void performKeyboardMenuAction(ZGKeyboardEvent *event, GameState *gameState, ZGWindow *window, void (*exitGame)(ZGWindow *))
 {
 	uint16_t keyCode = event->keyCode;
@@ -1358,171 +1530,19 @@ void performKeyboardMenuAction(ZGKeyboardEvent *event, GameState *gameState, ZGW
 	}
 	else if (ZGTestReturnKeyCode(keyCode))
 	{
-		if (gCurrentMenu == gConfigureLivesMenu)
-		{
-			gDrawArrowsForCharacterLivesFlag = !gDrawArrowsForCharacterLivesFlag;
-			if (gAudioEffectsFlag)
-			{
-				playMenuSound();
-			}
-		}
-
-		else if (gCurrentMenu == gAIModeOptionsMenu)
-		{
-			gDrawArrowsForAIModeFlag = !gDrawArrowsForAIModeFlag;
-			if (gAudioEffectsFlag)
-			{
-				playMenuSound();
-			}
-		}
-		else
-		{
-			GameMenuContext menuContext;
-			menuContext.gameState = gameState;
-			menuContext.window = window;
-			menuContext.exitGame = exitGame;
-			
-			invokeMenu(&menuContext);
-		}
+		performMenuEnterAction(gameState, window, exitGame);
 	}
 	else if (keyCode == ZG_KEYCODE_DOWN)
 	{
-		if (gNetworkAddressFieldIsActive)
-			return;
-
-		if (gDrawArrowsForCharacterLivesFlag)
-		{
-			if (gCharacterLives == 1)
-			{
-				gCharacterLives = MAX_CHARACTER_LIVES;
-			}
-			else
-			{
-				gCharacterLives--;
-			}
-		}
-		else if (gDrawArrowsForAIModeFlag)
-		{
-			if (gAIMode == AI_EASY_MODE)
-				gAIMode = AI_HARD_MODE;
-			else if (gAIMode == AI_MEDIUM_MODE)
-				gAIMode = AI_EASY_MODE;
-			else /* if (gAIMode == AI_HARD_MODE) */
-				gAIMode = AI_MEDIUM_MODE;
-		}
-		else if (gDrawArrowsForNumberOfNetHumansFlag)
-		{
-			gNumberOfNetHumans--;
-			if (gNumberOfNetHumans <= 0)
-			{
-				gNumberOfNetHumans = 3;
-			}
-		}
-		else
-		{
-			changeMenu(DOWN);
-
-			if (gCurrentMenu == gRedRoverPlayerOptionsMenu && gPinkBubbleGum.state == CHARACTER_AI_STATE)
-			{
-				changeMenu(DOWN);
-			}
-
-			if (gCurrentMenu == gGreenTreePlayerOptionsMenu && gRedRover.state == CHARACTER_AI_STATE)
-			{
-				changeMenu(DOWN);
-			}
-
-			if (gCurrentMenu == gBlueLightningPlayerOptionsMenu && gGreenTree.state == CHARACTER_AI_STATE)
-			{
-				changeMenu(DOWN);
-			}
-		}
+		performMenuDownAction();
 	}
 	else if (keyCode == ZG_KEYCODE_UP)
 	{
-		if (gNetworkAddressFieldIsActive)
-			return;
-
-		if (gDrawArrowsForCharacterLivesFlag)
-		{
-			if (gCharacterLives == 10)
-			{
-				gCharacterLives = 1;
-			}
-			else
-			{
-				gCharacterLives++;
-			}
-		}
-		else if (gDrawArrowsForAIModeFlag)
-		{
-			if (gAIMode == AI_EASY_MODE)
-				gAIMode = AI_MEDIUM_MODE;
-			else if (gAIMode == AI_MEDIUM_MODE)
-				gAIMode = AI_HARD_MODE;
-			else /* if (gAIMode == AI_HARD_MODE) */
-				gAIMode = AI_EASY_MODE;
-		}
-		else if (gDrawArrowsForNumberOfNetHumansFlag)
-		{
-			gNumberOfNetHumans++;
-			if (gNumberOfNetHumans >= 4)
-			{
-				gNumberOfNetHumans = 1;
-			}
-		}
-		else
-		{
-			changeMenu(UP);
-
-			if (gCurrentMenu == gBlueLightningPlayerOptionsMenu && gGreenTree.state == CHARACTER_AI_STATE)
-			{
-				changeMenu(UP);
-			}
-
-			if (gCurrentMenu == gGreenTreePlayerOptionsMenu && gRedRover.state == CHARACTER_AI_STATE)
-			{
-				changeMenu(UP);
-			}
-
-			if (gCurrentMenu == gRedRoverPlayerOptionsMenu && gPinkBubbleGum.state == CHARACTER_AI_STATE)
-			{
-				changeMenu(UP);
-			}
-		}
+		performMenuUpAction();
 	}
 	else if (keyCode == ZG_KEYCODE_ESCAPE)
 	{
-		if (*gameState == GAME_STATE_PAUSED)
-		{
-			changeMenu(LEFT);
-			unPauseMusic();
-			*gameState = GAME_STATE_ON;
-		}
-		else if (gNetworkAddressFieldIsActive)
-		{
-			gNetworkAddressFieldIsActive = false;
-		}
-		else if (gNetworkUserNameFieldIsActive)
-		{
-			gNetworkUserNameFieldIsActive = false;
-		}
-		else if (gDrawArrowsForCharacterLivesFlag)
-		{
-			gDrawArrowsForCharacterLivesFlag = false;
-		}
-		else if (gDrawArrowsForAIModeFlag)
-		{
-			gDrawArrowsForAIModeFlag = false;
-		}
-		else if (gDrawArrowsForNumberOfNetHumansFlag)
-		{
-			gDrawArrowsForNumberOfNetHumansFlag = false;
-		}
-		else
-		{
-			changeMenu(LEFT);
-		}
+		performMenuBackAction(gameState);
 	}
 	else if (keyCode == ZG_KEYCODE_BACKSPACE)
 	{
@@ -1540,4 +1560,40 @@ void performKeyboardMenuAction(ZGKeyboardEvent *event, GameState *gameState, ZGW
 void performKeyboardMenuTextInputAction(ZGKeyboardEvent *event)
 {
 	writeMenuTextInput(event->text, sizeof(event->text));
+}
+
+void performGamepadMenuAction(GamepadEvent *event, GameState *gameState, ZGWindow *window, void (*exitGame)(ZGWindow *))
+{
+	if (event->state != GAMEPAD_STATE_PRESSED)
+	{
+		return;
+	}
+	
+	switch (event->button)
+	{
+		case GAMEPAD_BUTTON_A:
+		case GAMEPAD_BUTTON_START:
+			performMenuEnterAction(gameState, window, exitGame);
+			break;
+		case GAMEPAD_BUTTON_B:
+		case GAMEPAD_BUTTON_BACK:
+			performMenuBackAction(gameState);
+			break;
+		case GAMEPAD_BUTTON_DPAD_UP:
+			performMenuUpAction();
+			break;
+		case GAMEPAD_BUTTON_DPAD_DOWN:
+			performMenuDownAction();
+			break;
+		case GAMEPAD_BUTTON_DPAD_LEFT:
+		case GAMEPAD_BUTTON_DPAD_RIGHT:
+		case GAMEPAD_BUTTON_X:
+		case GAMEPAD_BUTTON_Y:
+		case GAMEPAD_BUTTON_LEFTSHOULDER:
+		case GAMEPAD_BUTTON_RIGHTSHOULDER:
+		case GAMEPAD_BUTTON_LEFTTRIGGER:
+		case GAMEPAD_BUTTON_RIGHTTRIGGER:
+		case GAMEPAD_BUTTON_MAX:
+			break;
+	}
 }
