@@ -72,7 +72,7 @@
  **/
 
 /*
- Note: This library has been altered for skycheckers to use half float datatype in ARM when available
+ Note: This library has been altered for skycheckers to use half float datatype in ARM when available, and to suppress a clang warning.
  */
 
 #ifndef MATH_3D_HEADER
@@ -341,7 +341,14 @@ static inline mat4_t m4_mul(mat4_t a, mat4_t b) {
 		}
 	}
 	
+#if __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wconditional-uninitialized"
+#endif
 	return result;
+#if __clang__
+#pragma clang diagnostic pop
+#endif
 }
 
 #endif // MATH_3D_HEADER
