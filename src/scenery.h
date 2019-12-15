@@ -36,11 +36,11 @@ typedef struct
 	
 	// ID of character that colored tile or DIEING_STONE_ID
 	int coloredID;
-	uint32_t colorTime;
+	float colorTime;
 	
 	// Same as above but used by client prediction for netcode
 	int predictedColorID;
-	uint32_t predictedColorTime;
+	float predictedColorTime;
 	
 	bool state;
 	bool isDead;
@@ -56,7 +56,7 @@ void restoreDefaultTileColor(int tileIndex);
 void setDieingTileColor(int tileIndex);
 
 void clearPredictedColor(int tileIndex);
-void clearPredictedColorWithTime(int tileIndex, uint32_t currentTime);
+void clearPredictedColorWithTime(int tileIndex, float currentTime);
 void clearPredictedColorsForCharacter(int characterID);
 
 // Returns -1 if no such tile is found

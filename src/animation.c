@@ -62,9 +62,9 @@ static double gTimeElapsedAccumulator = 0.0;
 
 /* Functions */
 
-static void colorTile(int tileIndex, Character *character);
+static void colorTile(int tileIndex, Character *character, float currentTime);
 
-static void animateTilesAndPlayerRecovery(double timeDelta, ZGWindow *window, Character *player);
+static void animateTilesAndPlayerRecovery(double timeDelta, ZGWindow *window, Character *player, float currentTime);
 static void moveWeapon(Weapon *weapon, double timeDelta);
 
 static void firstTileLayerAnimation(ZGWindow *window);
@@ -81,7 +81,7 @@ static void recoverCharacter(Character *player);
 
 static void sendPing(void);
 
-static void clearPredictedColors(void);
+static void clearPredictedColors(float currentTime);
 
 void animate(ZGWindow *window, double timeDelta)
 {
@@ -171,14 +171,14 @@ void animate(ZGWindow *window, double timeDelta)
 	killCharacter(&gPinkBubbleGumInput, timeDelta);
 	killCharacter(&gBlueLightningInput, timeDelta);
 	
-	clearPredictedColors();
+	clearPredictedColors(gSecondTimer);
 	
 	collapseTiles(timeDelta);
 	
-	animateTilesAndPlayerRecovery(timeDelta, window, &gRedRover);
-	animateTilesAndPlayerRecovery(timeDelta, window, &gGreenTree);
-	animateTilesAndPlayerRecovery(timeDelta, window, &gPinkBubbleGum);
-	animateTilesAndPlayerRecovery(timeDelta, window, &gBlueLightning);
+	animateTilesAndPlayerRecovery(timeDelta, window, &gRedRover, gSecondTimer);
+	animateTilesAndPlayerRecovery(timeDelta, window, &gGreenTree, gSecondTimer);
+	animateTilesAndPlayerRecovery(timeDelta, window, &gPinkBubbleGum, gSecondTimer);
+	animateTilesAndPlayerRecovery(timeDelta, window, &gBlueLightning, gSecondTimer);
 	
 	recoverDestroyedTiles(timeDelta);
 	
@@ -219,12 +219,10 @@ static void sendPing(void)
 	}
 }
 
-static void clearPredictedColors(void)
+static void clearPredictedColors(float currentTime)
 {
 	if (gNetworkConnection != NULL && gNetworkConnection->type == NETWORK_CLIENT_TYPE)
 	{
-		uint32_t currentTime = ZGGetTicks();
-		
 		for (int tileIndex = 0; tileIndex < NUMBER_OF_TILES; tileIndex++)
 		{
 			clearPredictedColorWithTime(tileIndex, currentTime);
@@ -235,7 +233,7 @@ static void clearPredictedColors(void)
 /*
  * Change the color of the tile to the weap's color only if the color of the tile is at its default color and if that the tile's state exists
  */
-static void colorTile(int tileIndex, Character *character)
+static void colorTile(int tileIndex, Character *character, float currentTime)
 {
 	if (gTiles[tileIndex].state && gTiles[tileIndex].coloredID == NO_CHARACTER)
 	{
@@ -244,8 +242,6 @@ static void colorTile(int tileIndex, Character *character)
 		gTiles[tileIndex].red = weap->red;
 		gTiles[tileIndex].blue = weap->blue;
 		gTiles[tileIndex].green = weap->green;
-		
-		uint32_t currentTime = ZGGetTicks();
 		
 		if (gNetworkConnection != NULL)
 		{
@@ -304,7 +300,7 @@ static void moveWeapon(Weapon *weapon, double timeDelta)
 #define END_CHARACTER_ANIMATION ((70 + 1) * ANIMATION_TIME_ELAPSED_INTERVAL)
 #define NUM_ALPHA_FLASH_ITERATIONS 3
 #define ALPHA_FLUCUATION 0.5f
-static void animateTilesAndPlayerRecovery(double timeDelta, ZGWindow *window, Character *player)
+static void animateTilesAndPlayerRecovery(double timeDelta, ZGWindow *window, Character *player, float currentTime)
 {
 	if (player->weap->animationState)
 	{
@@ -345,28 +341,28 @@ static void animateTilesAndPlayerRecovery(double timeDelta, ZGWindow *window, Ch
 				{
 					while ((currentTileIndex = rightTileIndex(currentTileIndex)) != -1)
 					{
-						colorTile(currentTileIndex, player);
+						colorTile(currentTileIndex, player, currentTime);
 					}
 				}
 				else if (player->weap->direction == LEFT)
 				{
 					while ((currentTileIndex = leftTileIndex(currentTileIndex)) != -1)
 					{
-						colorTile(currentTileIndex, player);
+						colorTile(currentTileIndex, player, currentTime);
 					}
 				}
 				else if (player->weap->direction == UP)
 				{
 					while ((currentTileIndex = upTileIndex(currentTileIndex)) != -1)
 					{
-						colorTile(currentTileIndex, player);
+						colorTile(currentTileIndex, player, currentTime);
 					}
 				}
 				else if (player->weap->direction == DOWN)
 				{
 					while ((currentTileIndex = downTileIndex(currentTileIndex)) != -1)
 					{
-						colorTile(currentTileIndex, player);
+						colorTile(currentTileIndex, player, currentTime);
 					}
 				}
 				

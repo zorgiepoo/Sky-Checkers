@@ -132,9 +132,9 @@ void clearPredictedColor(int tileIndex)
 	}
 }
 
-void clearPredictedColorWithTime(int tileIndex, uint32_t currentTime)
+void clearPredictedColorWithTime(int tileIndex, float currentTime)
 {
-	if ((currentTime - gTiles[tileIndex].predictedColorTime) >= 600)
+	if ((currentTime - gTiles[tileIndex].predictedColorTime) >= 0.6f)
 	{
 		clearPredictedColor(tileIndex);
 	}

@@ -240,7 +240,7 @@ static void shootWeaponProjectile(Character *character, float currentTime)
 	
 	// If the tile the AI is on has been colored for a while, don't let them react fast enough to fire back
 	uint32_t ticks = ZGGetTicks();
-	if (gTiles[tileIndex].colorTime > 0 && ticks >= gTiles[tileIndex].colorTime + 350)
+	if (gTiles[tileIndex].colorTime > 0 && ticks >= gTiles[tileIndex].colorTime + 0.35f)
 	{
 		return;
 	}
