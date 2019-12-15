@@ -205,6 +205,7 @@
 @implementation ZGGameWindowController
 {
 	bool *_fullscreenFlag;
+	bool _needsUnhideCursorInFullscreen;
 }
 
 - (instancetype)initWithWindow:(NSWindow *)window fullscreenFlag:(bool *)fullscreenFlag
@@ -214,12 +215,27 @@
 	{
 		window.delegate = self;
 		_fullscreenFlag = fullscreenFlag;
+		
+		if (fullscreenFlag != NULL && *fullscreenFlag)
+		{
+			_needsUnhideCursorInFullscreen = true;
+			[NSCursor hide];
+			[window toggleFullScreen:nil];
+		}
 	}
 	return self;
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification *)notification
 {
+	if (_needsUnhideCursorInFullscreen)
+	{
+		_needsUnhideCursorInFullscreen = false;
+		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+			[NSCursor unhide];
+		});
+	}
+	
 	if (_fullscreenFlag != NULL)
 	{
 		*_fullscreenFlag = true;
@@ -317,11 +333,6 @@ ZGWindow *ZGCreateWindow(const char *windowTitle, int32_t windowWidth, int32_t w
 	
 	ZGGameView *contentView = [[ZGGameView alloc] initWithFrame:window.frame];
 	window.contentView = contentView;
-	
-	if (fullscreenFlag != NULL && *fullscreenFlag)
-	{
-		[window toggleFullScreen:nil];
-	}
 	
 	ZGGameWindowController *windowController = [[ZGGameWindowController alloc] initWithWindow:window fullscreenFlag:fullscreenFlag];
 	[windowController showWindow:nil];
