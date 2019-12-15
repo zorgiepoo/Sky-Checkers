@@ -32,11 +32,13 @@
 
 void initMenus(ZGWindow *window, GameState *gameState);
 
+void showPauseMenu(GameState *gameState);
+
 #if PLATFORM_IOS
 void showGameMenus(ZGWindow *window);
 #else
 void drawMenus(Renderer *renderer);
 
-void performKeyboardMenuAction(ZGKeyboardEvent *event, GameState *gameState, ZGWindow *window);
+void performKeyboardMenuAction(ZGKeyboardEvent *event, GameState *gameState, ZGWindow *window, void (*exitGame)(ZGWindow *));
 void performKeyboardMenuTextInputAction(ZGKeyboardEvent *event);
 #endif

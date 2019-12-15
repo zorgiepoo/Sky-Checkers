@@ -996,3 +996,7 @@ void hideGameMenus(ZGWindow *windowRef)
 	
 	[gCurrentMenuView removeFromSuperview];
 }
+
+void showPauseMenu(GameState *gameState)
+{
+}

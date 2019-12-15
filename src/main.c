@@ -95,8 +95,6 @@ bool gDrawPings;
 
 static GameState gGameState;
 
-static uint32_t gEscapeHeldDownTimer;
-
 typedef struct
 {
 	Renderer renderer;
@@ -676,8 +674,6 @@ void initGame(ZGWindow *window, bool firstGame)
 	// wait until the game can be started.
 	gGameStartNumber = firstGame ? FIRST_NEW_GAME_COUNTDOWN : LATER_NEW_GAME_COUNTDOWN;
 	
-	gEscapeHeldDownTimer = 0;
-	
 	if (firstGame && gAudioMusicFlag)
 	{
 		bool windowFocus = ZGWindowHasFocus(window);
@@ -919,7 +915,7 @@ static void drawScoreboardForCharacters(Renderer *renderer, ScoreboardRenderType
 
 static void drawScene(Renderer *renderer)
 {
-	if (gGameState == GAME_STATE_ON)
+	if (gGameState == GAME_STATE_ON || gGameState == GAME_STATE_PAUSED)
 	{
 		// Render opaque objects first
 		
@@ -958,7 +954,7 @@ static void drawScene(Renderer *renderer)
 		// Character lives at z = -25.0f
 		drawAllCharacterInfo(renderer, characterIconTranslations, gGameHasStarted);
 		
-		// Render game instruction and holding escape text at -25.0f
+		// Render game instruction at -25.0f
 		{
 			mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f / 11.2f, 80.0f / 11.2f, -280.0f / 11.2f});
 			
@@ -1009,17 +1005,6 @@ static void drawScene(Renderer *renderer)
 					gGameHasStarted = true;
 				}
 			}
-			
-			// Render escape game text
-			if (gEscapeHeldDownTimer > 0 && gGameWinner == NO_CHARACTER)
-			{
-				color4_t textColor = (color4_t){1.0f, 0.0f, 0.0f, 1.0f};
-				
-				char buffer[] = "Hold down Escape to quit...";
-				
-				mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-4.3f, 1.7f, 0.0f}), modelViewMatrix);
-				drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, 0.0035f, buffer);
-			}
 		}
 		
 #if !PLATFORM_IOS
@@ -1030,8 +1015,22 @@ static void drawScene(Renderer *renderer)
 		}
 #endif
 		
+		if (gGameState == GAME_STATE_PAUSED)
+		{
+			// Renders at z = -22.0f
+			drawBlackBox(renderer);
+			
+			// Paused title renders at -20.0f
+			mat4_t gameTitleModelViewMatrix = m4_translation((vec3_t){-0.2f, 5.4f, -20.0f});
+			drawStringScaled(renderer, gameTitleModelViewMatrix, (color4_t){0.3f, 0.2f, 1.0f, 0.7f}, 0.00592f, "Paused");
+			
+#if !PLATFORM_IOS
+			// Menus render at z = -20.0f
+			drawMenus(renderer);
+#endif
+		}
 		// Winning/Losing text at z = -25.0f
-		if (gGameWinner != NO_CHARACTER)
+		else if (gGameWinner != NO_CHARACTER)
 		{
 #if !PLATFORM_IOS
 			if (gConsoleActivated)
@@ -1096,10 +1095,6 @@ static void drawScene(Renderer *renderer)
 					// Draw a "Press ENTER to play again" notice
 					drawStringScaled(renderer, modelViewMatrix, (color4_t){0.0f, 0.0f, 0.4f, 1.0f}, 0.004f, "Fire to play again or Escape to quit");
 				}
-				else if (gNetworkConnection != NULL && gNetworkConnection->type == NETWORK_CLIENT_TYPE && gEscapeHeldDownTimer > 0)
-				{
-					drawStringScaled(renderer, modelViewMatrix, (color4_t){0.0f, 0.0f, 0.4f, 1.0f}, 0.004f, "Hold Escape to quit...");
-				}
 			}
 		}
 		else
@@ -1125,7 +1120,7 @@ static void drawScene(Renderer *renderer)
 			drawPings(renderer);
 		}
 	}
-	else /* if (gGameState != GAME_STATE_ON) */
+	else /* if (gGameState != GAME_STATE_ON && gGameState != GAME_STATE_PAUSED) */
 	{
 		// The game title and menu's should be up front the most
 		// The black box should be behind the title and menu's
@@ -1173,9 +1168,9 @@ static void handleKeyDownEvent(ZGKeyboardEvent *event, Renderer *renderer)
 	uint16_t keyCode = event->keyCode;
 	uint64_t keyModifier = event->keyModifier;
 	
-	if (gGameState == GAME_STATE_OFF)
+	if (gGameState == GAME_STATE_OFF || gGameState == GAME_STATE_PAUSED)
 	{
-		performKeyboardMenuAction(event, &gGameState, renderer->window);
+		performKeyboardMenuAction(event, &gGameState, renderer->window, exitGame);
 	}
 	else if (!gConsoleActivated && gGameState == GAME_STATE_ON && gGameWinner != NO_CHARACTER &&
 		(keyCode == gPinkBubbleGumInput.weap_id || keyCode == gRedRoverInput.weap_id ||
@@ -1199,13 +1194,13 @@ static void handleKeyDownEvent(ZGKeyboardEvent *event, Renderer *renderer)
 			{
 				clearConsole();
 			}
-			else if (gGameWinner != NO_CHARACTER && (gNetworkConnection == NULL || gNetworkConnection->type == NETWORK_SERVER_TYPE))
+			else if (gGameWinner != NO_CHARACTER)
 			{
 				exitGame(window);
 			}
-			else if (gEscapeHeldDownTimer == 0)
+			else
 			{
-				gEscapeHeldDownTimer = ZGGetTicks();
+				showPauseMenu(&gGameState);
 			}
 		}
 	}
@@ -1223,7 +1218,7 @@ static void handleKeyDownEvent(ZGKeyboardEvent *event, Renderer *renderer)
 			}
 		}
 	}
-	else if (keyCode == ZG_KEYCODE_BACKSPACE)
+	else if (keyCode == ZG_KEYCODE_BACKSPACE && gGameState == GAME_STATE_ON)
 	{
 		if (gConsoleActivated)
 		{
@@ -1231,7 +1226,7 @@ static void handleKeyDownEvent(ZGKeyboardEvent *event, Renderer *renderer)
 		}
 	}
 	
-	if ((keyCode != ZG_KEYCODE_ESCAPE || !ZGTestMetaModifier(keyModifier)) && gGameState == GAME_STATE_ON)
+	if (!ZGTestMetaModifier(keyModifier) && (gGameState == GAME_STATE_ON || gGameState == GAME_STATE_PAUSED))
 	{
 		if (!gConsoleActivated)
 		{
@@ -1248,17 +1243,12 @@ static void handleKeyUpEvent(ZGKeyboardEvent *event)
 	uint16_t keyCode = event->keyCode;
 	uint64_t keyModifier = event->keyModifier;
 	
-	if (keyCode == ZG_KEYCODE_ESCAPE && gGameState == GAME_STATE_ON)
+	if ((keyCode != ZG_KEYCODE_ESCAPE || !ZGTestMetaModifier(keyModifier)) && (gGameState == GAME_STATE_ON || gGameState == GAME_STATE_PAUSED))
 	{
-		gEscapeHeldDownTimer = 0;
-	}
-	
-	if ((keyCode != ZG_KEYCODE_ESCAPE || !ZGTestMetaModifier(keyModifier)) && gGameState == GAME_STATE_ON)
-	{
-		performUpKeyAction(&gRedRoverInput, event);
-		performUpKeyAction(&gGreenTreeInput, event);
-		performUpKeyAction(&gPinkBubbleGumInput, event);
-		performUpKeyAction(&gBlueLightningInput, event);
+		performUpKeyAction(&gRedRoverInput, event, gGameState);
+		performUpKeyAction(&gGreenTreeInput, event, gGameState);
+		performUpKeyAction(&gPinkBubbleGumInput, event, gGameState);
+		performUpKeyAction(&gBlueLightningInput, event, gGameState);
 	}
 }
 
@@ -1305,10 +1295,10 @@ static void pollGamepads(GamepadManager *gamepadManager, const void *systemEvent
 	{
 		GamepadEvent *gamepadEvent = &gamepadEvents[gamepadEventIndex];
 
-		performGamepadAction(&gRedRoverInput, gamepadEvent);
-		performGamepadAction(&gGreenTreeInput, gamepadEvent);
-		performGamepadAction(&gPinkBubbleGumInput, gamepadEvent);
-		performGamepadAction(&gBlueLightningInput, gamepadEvent);
+		performGamepadAction(&gRedRoverInput, gamepadEvent, gGameState);
+		performGamepadAction(&gGreenTreeInput, gamepadEvent, gGameState);
+		performGamepadAction(&gPinkBubbleGumInput, gamepadEvent, gGameState);
+		performGamepadAction(&gBlueLightningInput, gamepadEvent, gGameState);
 	}
 	
 #if !PLATFORM_IOS
@@ -1331,7 +1321,10 @@ static void handleWindowEvent(ZGWindowEvent event, void *context)
 			updateViewport(&appContext->renderer, event.width, event.height);
 			break;
 		case ZGWindowEventTypeFocusGained:
-			unPauseMusic();
+			if (gGameState != GAME_STATE_PAUSED)
+			{
+				unPauseMusic();
+			}
 			break;
 		case ZGWindowEventTypeFocusLost:
 			pauseMusic();
@@ -1547,11 +1540,6 @@ static void runLoopHandler(void *context)
 		if (gGameState == GAME_STATE_ON)
 		{
 			animate(renderer->window, ANIMATION_TIMER_INTERVAL);
-		}
-		
-		if (gGameState == GAME_STATE_ON && gEscapeHeldDownTimer > 0 && ZGGetTicks() - gEscapeHeldDownTimer > 700)
-		{
-			exitGame(renderer->window);
 		}
 		
 		if (gGameShouldReset)

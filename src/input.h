@@ -22,6 +22,7 @@
 #include "characters.h"
 #include "gamepad.h"
 #include "platforms.h"
+#include "globals.h"
 
 #if PLATFORM_IOS
 #include "touch.h"
@@ -79,10 +80,10 @@ Character *characterFromInput(Input *characterInput);
 void performTouchAction(Input *input, ZGTouchEvent *event);
 #else
 void performDownKeyAction(Input *input, ZGKeyboardEvent *event);
-void performUpKeyAction(Input *input, ZGKeyboardEvent *event);
+void performUpKeyAction(Input *input, ZGKeyboardEvent *event, GameState gameState);
 #endif
 
-void performGamepadAction(Input *input, GamepadEvent *gamepadEvent);
+void performGamepadAction(Input *input, GamepadEvent *gamepadEvent, GameState gameState);
 
 void updateCharacterFromInput(Input *input);
 void updateCharacterFromAnyInput(void);

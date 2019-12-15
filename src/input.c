@@ -166,7 +166,7 @@ void performDownKeyAction(Input *input, ZGKeyboardEvent *event)
 	}
 }
 
-void performUpKeyAction(Input *input, ZGKeyboardEvent *event)
+void performUpKeyAction(Input *input, ZGKeyboardEvent *event, GameState gameState)
 {
 	if (input->right_ticks == 0 && input->left_ticks == 0 && input->down_ticks == 0 && input->up_ticks == 0 && !input->weap)
 		return;
@@ -191,7 +191,7 @@ void performUpKeyAction(Input *input, ZGKeyboardEvent *event)
 	}
 	else if (keyCode == input->weap_id)
 	{
-		if (gGameHasStarted)
+		if (gGameHasStarted && gameState != GAME_STATE_PAUSED)
 		{
 			prepareFiringFromInput(input);
 		}
@@ -200,7 +200,7 @@ void performUpKeyAction(Input *input, ZGKeyboardEvent *event)
 }
 #endif
 
-void performGamepadAction(Input *input, GamepadEvent *gamepadEvent)
+void performGamepadAction(Input *input, GamepadEvent *gamepadEvent, GameState gameState)
 {
 	if (input->gamepadIndex != gamepadEvent->index) return;
 	
@@ -273,7 +273,7 @@ void performGamepadAction(Input *input, GamepadEvent *gamepadEvent)
 				case GAMEPAD_BUTTON_Y:
 					if (input->weap && !input->character->weap->animationState)
 					{
-						if (gGameHasStarted)
+						if (gGameHasStarted && gameState != GAME_STATE_PAUSED)
 						{
 							prepareFiringFromInput(input);
 						}

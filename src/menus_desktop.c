@@ -63,6 +63,12 @@ static void addSubMenu(Menu *parentMenu, Menu *childMenu);
 static void invokeMenu(void *context);
 static void changeMenu(int direction);
 
+static Menu *gPlayMenu;
+static Menu *gNetworkServerPlayMenu;
+static Menu *gConnectToNetworkGameMenu;
+static Menu *gPauseResumeMenu;
+static Menu *gPauseExitMenu;
+
 static Menu *gConfigureLivesMenu;
 
 static Menu *gAIModeOptionsMenu;
@@ -110,6 +116,20 @@ static void initMainMenu(void)
 
 static void addSubMenu(Menu *parentMenu, Menu *childMenu)
 {
+	// If the child menu was attached to a previous parent, remove this attachment
+	if (childMenu->parent != NULL)
+	{
+		if (childMenu->parent->mainChild == childMenu)
+		{
+			childMenu->parent->mainChild = NULL;
+		}
+		
+		if (childMenu->parent->favoriteChild == childMenu)
+		{
+			childMenu->parent->favoriteChild = NULL;
+		}
+	}
+	
 	// Prepare the child.
 	childMenu->above = NULL;
 	childMenu->under = NULL;
@@ -299,9 +319,41 @@ void drawPlayMenu(Renderer *renderer, color4_t preferredColor)
 
 void playGameAction(void *context)
 {
-	GameMenuContext *menuContext = context;
+	addSubMenu(gPlayMenu, gPauseResumeMenu);
+	addSubMenu(gPlayMenu, gPauseExitMenu);
 	
+	GameMenuContext *menuContext = context;
 	initGame(menuContext->window, true);
+	
+}
+
+void drawPauseResumeMenu(Renderer *renderer, color4_t preferredColor)
+{
+	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f / 14.0f, 15.0f / 14.0f, -20.0f});
+	
+	drawString(renderer, modelViewMatrix, preferredColor, 12.0f / 14.0f, 5.0f / 14.0f, "Resume");
+}
+
+void pauseResumeMenuAction(void *context)
+{
+	changeMenu(LEFT);
+	
+	GameMenuContext *menuContext = context;
+	*menuContext->gameState = GAME_STATE_ON;
+	unPauseMusic();
+}
+
+void drawPauseExitMenu(Renderer *renderer, color4_t preferredColor)
+{
+	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.00f, -20.00f});
+	drawString(renderer, modelViewMatrix, preferredColor, 8.0f / 14.0f, 5.0f / 14.0f, "Exit");
+}
+
+void pauseExitMenuAction(void *context)
+{
+	changeMenu(LEFT);
+	GameMenuContext *menuContext = context;
+	menuContext->exitGame(menuContext->window);
 }
 
 void drawNetworkPlayMenu(Renderer *renderer, color4_t preferredColor)
@@ -380,6 +432,9 @@ void drawNetworkServerPlayMenu(Renderer *renderer, color4_t preferredColor)
 
 void networkServerPlayMenuAction(void *context)
 {
+	addSubMenu(gNetworkServerPlayMenu, gPauseResumeMenu);
+	addSubMenu(gNetworkServerPlayMenu, gPauseExitMenu);
+	
 	GameMenuContext *menuContext = context;
 	startNetworkGame(menuContext->window);
 }
@@ -467,6 +522,9 @@ void drawConnectToNetworkGameMenu(Renderer *renderer, color4_t preferredColor)
 
 void connectToNetworkGameMenuAction(void *context)
 {
+	addSubMenu(gConnectToNetworkGameMenu, gPauseResumeMenu);
+	addSubMenu(gConnectToNetworkGameMenu, gPauseExitMenu);
+	
 	GameMenuContext *menuContext = context;
 	connectToNetworkGame(menuContext->gameState);
 }
@@ -989,34 +1047,42 @@ void initMenus(ZGWindow *window, GameState *gameState)
 {
 	initMainMenu();
 	
-	Menu *playMenu =							malloc(sizeof(Menu));
-	Menu *networkPlayMenu =						malloc(sizeof(Menu));
-	Menu *networkServerMenu =					malloc(sizeof(Menu));
-	Menu *networkServerPlayMenu =				malloc(sizeof(Menu));
-	Menu *networkServerNumberOfPlayersMenu =	malloc(sizeof(Menu));
-	Menu *networkClientMenu =					malloc(sizeof(Menu));
-	Menu *networkUserNameMenu =					malloc(sizeof(Menu));
-	Menu *networkAddressFieldMenu =				malloc(sizeof(Menu));
-	Menu *connectToNetworkGameMenu =			malloc(sizeof(Menu));
-	Menu *gameOptionsMenu =						malloc(sizeof(Menu));
-	Menu *playerOptionsMenu =					malloc(sizeof(Menu));
-	Menu *pinkBubbleGumPlayerOptionsMenu =		malloc(sizeof(Menu));
-	gRedRoverPlayerOptionsMenu	=				malloc(sizeof(Menu));
-	gGreenTreePlayerOptionsMenu =				malloc(sizeof(Menu));
-	gBlueLightningPlayerOptionsMenu =			malloc(sizeof(Menu));
-	gAIModeOptionsMenu =						malloc(sizeof(Menu));
-	gConfigureLivesMenu =						malloc(sizeof(Menu));
-	Menu *configureKeysMenu =					malloc(sizeof(Menu));
+	gPlayMenu =									calloc(1, sizeof(Menu));
+	gPauseResumeMenu = 							calloc(1, sizeof(Menu));
+	gPauseExitMenu = 							calloc(1, sizeof(Menu));
+	Menu *networkPlayMenu =						calloc(1, sizeof(Menu));
+	Menu *networkServerMenu =					calloc(1, sizeof(Menu));
+	gNetworkServerPlayMenu =					calloc(1, sizeof(Menu));
+	Menu *networkServerNumberOfPlayersMenu =	calloc(1, sizeof(Menu));
+	Menu *networkClientMenu =					calloc(1, sizeof(Menu));
+	Menu *networkUserNameMenu =					calloc(1, sizeof(Menu));
+	Menu *networkAddressFieldMenu =				calloc(1, sizeof(Menu));
+	gConnectToNetworkGameMenu =					calloc(1, sizeof(Menu));
+	Menu *gameOptionsMenu =						calloc(1, sizeof(Menu));
+	Menu *playerOptionsMenu =					calloc(1, sizeof(Menu));
+	Menu *pinkBubbleGumPlayerOptionsMenu =		calloc(1, sizeof(Menu));
+	gRedRoverPlayerOptionsMenu	=				calloc(1, sizeof(Menu));
+	gGreenTreePlayerOptionsMenu =				calloc(1, sizeof(Menu));
+	gBlueLightningPlayerOptionsMenu =			calloc(1, sizeof(Menu));
+	gAIModeOptionsMenu =						calloc(1, sizeof(Menu));
+	gConfigureLivesMenu =						calloc(1, sizeof(Menu));
+	Menu *configureKeysMenu =					calloc(1, sizeof(Menu));
 	// Four characters that each have their own menu + five configured menu actions (right, up, left, down, fire)
-	Menu *characterConfigureKeys = 				malloc(sizeof(Menu) * 4 * 6);
-	Menu *audioOptionsMenu =					malloc(sizeof(Menu));
-	Menu *audioEffectsOptionsMenu =				malloc(sizeof(Menu));
-	Menu *audioMusicOptionsMenu =				malloc(sizeof(Menu));
-	Menu *quitMenu =							malloc(sizeof(Menu));
+	Menu *characterConfigureKeys = 				calloc(4 * 6, sizeof(Menu));
+	Menu *audioOptionsMenu =					calloc(1, sizeof(Menu));
+	Menu *audioEffectsOptionsMenu =				calloc(1, sizeof(Menu));
+	Menu *audioMusicOptionsMenu =				calloc(1, sizeof(Menu));
+	Menu *quitMenu =							calloc(1, sizeof(Menu));
 	
 	// set action and drawing functions
-	playMenu->draw = drawPlayMenu;
-	playMenu->action = playGameAction;
+	gPlayMenu->draw = drawPlayMenu;
+	gPlayMenu->action = playGameAction;
+	
+	gPauseResumeMenu->draw = drawPauseResumeMenu;
+	gPauseResumeMenu->action = pauseResumeMenuAction;
+	
+	gPauseExitMenu->draw = drawPauseExitMenu;
+	gPauseExitMenu->action = pauseExitMenuAction;
 	
 	networkPlayMenu->draw = drawNetworkPlayMenu;
 	networkPlayMenu->action = networkPlayMenuAction;
@@ -1024,8 +1090,8 @@ void initMenus(ZGWindow *window, GameState *gameState)
 	networkServerMenu->draw = drawNetworkServerMenu;
 	networkServerMenu->action = networkServerMenuAction;
 	
-	networkServerPlayMenu->draw = drawNetworkServerPlayMenu;
-	networkServerPlayMenu->action = networkServerPlayMenuAction;
+	gNetworkServerPlayMenu->draw = drawNetworkServerPlayMenu;
+	gNetworkServerPlayMenu->action = networkServerPlayMenuAction;
 	
 	networkServerNumberOfPlayersMenu->draw = drawNetworkServerNumberOfPlayersMenu;
 	networkServerNumberOfPlayersMenu->action = networkServerNumberOfPlayersMenuAction;
@@ -1039,8 +1105,8 @@ void initMenus(ZGWindow *window, GameState *gameState)
 	networkAddressFieldMenu->draw = drawNetworkAddressFieldMenu;
 	networkAddressFieldMenu->action = networkAddressFieldMenuAction;
 	
-	connectToNetworkGameMenu->draw = drawConnectToNetworkGameMenu;
-	connectToNetworkGameMenu->action = connectToNetworkGameMenuAction;
+	gConnectToNetworkGameMenu->draw = drawConnectToNetworkGameMenu;
+	gConnectToNetworkGameMenu->action = connectToNetworkGameMenuAction;
 	
 	gameOptionsMenu->draw = drawGameOptionsMenu;
 	gameOptionsMenu->action = gameOptionsMenuAction;
@@ -1160,7 +1226,7 @@ void initMenus(ZGWindow *window, GameState *gameState)
 	characterConfigureKeys[23].action = blueLightningFireKeyMenuAction;
 		
 	// Add Menus
-	addSubMenu(&gMainMenu, playMenu);
+	addSubMenu(&gMainMenu, gPlayMenu);
 	addSubMenu(&gMainMenu, networkPlayMenu);
 	addSubMenu(&gMainMenu, gameOptionsMenu);
 	addSubMenu(&gMainMenu, audioOptionsMenu);
@@ -1170,11 +1236,11 @@ void initMenus(ZGWindow *window, GameState *gameState)
 	addSubMenu(networkPlayMenu, networkClientMenu);
 	addSubMenu(networkPlayMenu, networkUserNameMenu);
 	
-	addSubMenu(networkServerMenu, networkServerPlayMenu);
+	addSubMenu(networkServerMenu, gNetworkServerPlayMenu);
 	addSubMenu(networkServerMenu, networkServerNumberOfPlayersMenu);
 	
 	addSubMenu(networkClientMenu, networkAddressFieldMenu);
-	addSubMenu(networkClientMenu, connectToNetworkGameMenu);
+	addSubMenu(networkClientMenu, gConnectToNetworkGameMenu);
 	
 	addSubMenu(gameOptionsMenu, playerOptionsMenu);
 	addSubMenu(playerOptionsMenu, pinkBubbleGumPlayerOptionsMenu);
@@ -1199,6 +1265,13 @@ void initMenus(ZGWindow *window, GameState *gameState)
 			addSubMenu(&characterConfigureKeys[characterIndex * 6], &characterConfigureKeys[characterIndex * 6 + submenuIndex]);
 		}
 	}
+}
+
+void showPauseMenu(GameState *gameState)
+{
+	changeMenu(RIGHT);
+	pauseMusic();
+	*gameState = GAME_STATE_PAUSED;
 }
 
 static char *convertKeyCodeToString(uint32_t theKeyCode)
@@ -1265,7 +1338,7 @@ static void writeMenuTextInput(const char *text, size_t maxSize)
 	}
 }
 
-void performKeyboardMenuAction(ZGKeyboardEvent *event, GameState *gameState, ZGWindow *window)
+void performKeyboardMenuAction(ZGKeyboardEvent *event, GameState *gameState, ZGWindow *window, void (*exitGame)(ZGWindow *))
 {
 	uint16_t keyCode = event->keyCode;
 	uint64_t keyModifier = event->keyModifier;
@@ -1307,6 +1380,7 @@ void performKeyboardMenuAction(ZGKeyboardEvent *event, GameState *gameState, ZGW
 			GameMenuContext menuContext;
 			menuContext.gameState = gameState;
 			menuContext.window = window;
+			menuContext.exitGame = exitGame;
 			
 			invokeMenu(&menuContext);
 		}
@@ -1419,7 +1493,13 @@ void performKeyboardMenuAction(ZGKeyboardEvent *event, GameState *gameState, ZGW
 	}
 	else if (keyCode == ZG_KEYCODE_ESCAPE)
 	{
-		if (gNetworkAddressFieldIsActive)
+		if (*gameState == GAME_STATE_PAUSED)
+		{
+			changeMenu(LEFT);
+			unPauseMusic();
+			*gameState = GAME_STATE_ON;
+		}
+		else if (gNetworkAddressFieldIsActive)
 		{
 			gNetworkAddressFieldIsActive = false;
 		}

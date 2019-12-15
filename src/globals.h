@@ -29,13 +29,15 @@ typedef enum
 {
 	GAME_STATE_OFF = 0,
 	GAME_STATE_ON = 1,
-	GAME_STATE_CONNECTING = 2
+	GAME_STATE_CONNECTING = 2,
+	GAME_STATE_PAUSED = 3
 } GameState;
 
 typedef struct
 {
 	GameState *gameState;
 	ZGWindow *window;
+	void (*exitGame)(ZGWindow *);
 } GameMenuContext;
 
 void initGame(ZGWindow *window, bool firstGame);
