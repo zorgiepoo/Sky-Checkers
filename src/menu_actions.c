@@ -122,6 +122,8 @@ bool startNetworkGame(ZGWindow *window)
 	
 	freeaddrinfo(serverInfoList);
 	
+	retrieveLocalIPAddress(gNetworkConnection->ipAddress, sizeof(gNetworkConnection->ipAddress) - 1);
+	
 	gPinkBubbleGum.backup_state = gPinkBubbleGum.state;
 	gRedRover.backup_state = gRedRover.state;
 	gGreenTree.backup_state = gGreenTree.state;

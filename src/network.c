@@ -22,7 +22,6 @@
 #include "animation.h"
 #include "audio.h"
 #include "time.h"
-#include "globals.h"
 
 #include <inttypes.h>
 #include <stdlib.h>
@@ -2561,3 +2560,54 @@ void closeSocket(socket_t sockfd)
 	close(sockfd);
 #endif
 }
+
+#if PLATFORM_WINDOWS
+void retrieveLocalIPAddress(char *ipAddressBuffer, size_t bufferSize)
+{
+	if (bufferSize > 0)
+	{
+		ipAddressBuffer[0] = '\0';
+	}
+}
+#else
+void retrieveLocalIPAddress(char *ipAddressBuffer, size_t bufferSize)
+{
+	struct ifaddrs *ifaddrs = NULL;
+	if (getifaddrs(&ifaddrs) != 0)
+	{
+		fprintf(stderr, "Error: failed to getifaddrs(): %d - %s\n", errno, strerror(errno));
+	}
+	else
+	{
+		bool retrievedIPv6Address = false;
+		struct ifaddrs *currentIfaddr = ifaddrs;
+		do
+		{
+			struct sockaddr *ifa_addr = currentIfaddr->ifa_addr;
+			if (ifa_addr != NULL)
+			{
+				sa_family_t family = ifa_addr->sa_family;
+				if ((family == AF_INET || (family == AF_INET6 && !retrievedIPv6Address)) && currentIfaddr->ifa_name != NULL && strcmp(currentIfaddr->ifa_name, "en0") == 0)
+				{
+					int nameInfoResult = getnameinfo(ifa_addr, ifa_addr->sa_len, ipAddressBuffer, (socklen_t)bufferSize, NULL, 0, NI_NUMERICHOST);
+					if (nameInfoResult != 0)
+					{
+						fprintf(stderr, "Error: failed to getnameinfo(): %d - %s\n", nameInfoResult, gai_strerror(nameInfoResult));
+					}
+					else if (family == AF_INET)
+					{
+						break;
+					}
+					else if (family == AF_INET6)
+					{
+						retrievedIPv6Address = true;
+					}
+				}
+			}
+		}
+		while ((currentIfaddr = currentIfaddr->ifa_next) != NULL);
+		
+		freeifaddrs(ifaddrs);
+	}
+}
+#endif

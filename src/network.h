@@ -23,6 +23,7 @@
 #include "characters.h"
 #include "thread.h"
 #include "window.h"
+#include "globals.h"
 
 #if PLATFORM_WINDOWS
 #include <winsock2.h>
@@ -35,6 +36,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <ifaddrs.h>
 #endif
 
 #define NETWORK_SERVER_TYPE 1
@@ -287,6 +289,9 @@ typedef struct
 			uint32_t clientHalfPings[3];
 			uint32_t recentClientHalfPings[3][10];
 			uint32_t recentClientHalfPingIndices[3];
+			// Local IP address
+			// Only readable/writable from main thread
+			char ipAddress[MAX_SERVER_ADDRESS_SIZE];
 		};
 	};
 } NetworkConnection;
@@ -318,3 +323,7 @@ void sendToClients(int exception, GameMessage *message);
 void sendToServer(GameMessage message);
 
 void closeSocket(socket_t sockfd);
+
+// Enumerates through host names and returns the first enumerated en0 one.
+// An IPv4 address will take priority over an IPv6 one due to being more user friendly
+void retrieveLocalIPAddress(char *ipAddressBuffer, size_t bufferSize);
