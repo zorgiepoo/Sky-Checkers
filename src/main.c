@@ -974,26 +974,27 @@ static void drawScene(Renderer *renderer)
 							char buffer[256] = {0};
 							snprintf(buffer, sizeof(buffer) - 1, "Waiting for %d players to connect...", gNetworkConnection->numberOfPlayersToWaitFor);
 							
-							mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-6.8f, 0.89f, 0.0f}), modelViewMatrix);
+							mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-6.8f, 1.2f, 0.0f}), modelViewMatrix);
 							
 							drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, 0.0045538f, buffer);
 						}
 						else if (gNetworkConnection->numberOfPlayersToWaitFor == 0)
 						{
-							mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-6.8f, 0.89f, 0.0f}), modelViewMatrix);
+							mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-6.8f, 1.2f, 0.0f}), modelViewMatrix);
 							
 							drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, 0.0045538f, "Waiting for players to connect...");
 						}
 						else
 						{
-							mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-6.8f, 0.89f, 0.0f}), modelViewMatrix);
+							mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-6.8f, 1.2f, 0.0f}), modelViewMatrix);
 							
 							drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, 0.0045538f, "Waiting for 1 player to connect...");
 						}
 						
 						if (gNetworkConnection->type == NETWORK_SERVER_TYPE && strlen(gNetworkConnection->ipAddress) > 0)
 						{
-							mat4_t scaledModelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, -0.89f, 0.0f}), modelViewMatrix);
+							float yLocation = gGameState == GAME_STATE_PAUSED ? -2.0f : -0.2f;
+							mat4_t scaledModelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, yLocation, 0.0f}), modelViewMatrix);
 							
 							char hostAddressDescription[256] = {0};
 							snprintf(hostAddressDescription, sizeof(hostAddressDescription) - 1, "Address: %s", gNetworkConnection->ipAddress);
@@ -1004,11 +1005,14 @@ static void drawScene(Renderer *renderer)
 				
 				else if (gGameStartNumber > 0)
 				{
-					char buffer[256] = {0};
-					snprintf(buffer, sizeof(buffer) - 1, "Game begins in %d", gGameStartNumber);
-					
-					mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-3.8f, 0.0f, 0.0f}), modelViewMatrix);
-					drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, 0.0045538f, buffer);
+					if (gGameState != GAME_STATE_PAUSED)
+					{
+						char buffer[256] = {0};
+						snprintf(buffer, sizeof(buffer) - 1, "Game begins in %d", gGameStartNumber);
+						
+						mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-3.8f, 0.0f, 0.0f}), modelViewMatrix);
+						drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, 0.0045538f, buffer);
+					}
 				}
 				
 				else if (gGameStartNumber == 0)
@@ -1032,7 +1036,7 @@ static void drawScene(Renderer *renderer)
 			drawBlackBox(renderer);
 			
 			// Paused title renders at -20.0f
-			mat4_t gameTitleModelViewMatrix = m4_translation((vec3_t){-0.2f, 5.4f, -20.0f});
+			mat4_t gameTitleModelViewMatrix = m4_translation((vec3_t){0.0f, 5.4f, -20.0f});
 			drawStringScaled(renderer, gameTitleModelViewMatrix, (color4_t){0.3f, 0.2f, 1.0f, 0.7f}, 0.00592f, "Paused");
 			
 #if !PLATFORM_IOS
@@ -1153,7 +1157,7 @@ static void drawScene(Renderer *renderer)
 		drawBlackBox(renderer);
 		
 		// Title renders at -20.0f
-		mat4_t gameTitleModelViewMatrix = m4_translation((vec3_t){-0.2f, 5.4f, -20.0f});
+		mat4_t gameTitleModelViewMatrix = m4_translation((vec3_t){0.0f, 5.4f, -20.0f});
 		drawStringScaled(renderer, gameTitleModelViewMatrix, (color4_t){0.3f, 0.2f, 1.0f, 0.7f}, 0.00592f, "Sky Checkers");
 		
 		if (gGameState == GAME_STATE_CONNECTING)

@@ -50,7 +50,7 @@ static UIColor *cellTextColor(void)
 
 static UIColor *cellBackgroundColor(void)
 {
-	return [UIColor colorWithRed:0.33 green:0.33 blue:0.33 alpha:0.7];
+	return [UIColor colorWithRed:0.33 green:0.33 blue:0.33 alpha:1.0];
 }
 
 static void setSectionHeaderFont(ZGWindow *window, UIView *view)
