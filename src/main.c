@@ -1063,7 +1063,7 @@ static void drawScene(Renderer *renderer)
 			}
 			
 			// Renders winning/losing text at z = -20.0f
-			mat4_t winLoseModelViewMatrix = m4_translation((vec3_t){70.0f / 14.0f, 100.0f / 14.0f, -280.0f / 14.0f});
+			mat4_t winLoseModelViewMatrix = m4_translation((vec3_t){0.0f / 1.25f, 100.0f / 14.0f, -25.0f / 1.25f});
 			
 			if (gGameWinner == RED_ROVER)
 			{
