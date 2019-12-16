@@ -140,7 +140,10 @@ void animate(ZGWindow *window, double timeDelta, bool pausedState)
 	updateCharacterFromInput(&gPinkBubbleGumInput);
 	updateCharacterFromInput(&gBlueLightningInput);
 	
-	updateCharacterFromAnyInput();
+	if (!pausedState)
+	{
+		updateCharacterFromAnyInput();
+	}
 	
 	// Animate objects based on time delta
 	
