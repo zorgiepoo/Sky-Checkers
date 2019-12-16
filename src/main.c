@@ -1108,7 +1108,7 @@ static void drawScene(Renderer *renderer)
 				if (gNetworkConnection == NULL || gNetworkConnection->type == NETWORK_SERVER_TYPE)
 				{
 					// Draw a "Press ENTER to play again" notice
-					drawStringScaled(renderer, modelViewMatrix, (color4_t){0.0f, 0.0f, 0.4f, 1.0f}, 0.004f, "Fire to play again");
+					drawStringScaled(renderer, modelViewMatrix, (color4_t){0.2f, 0.2f, 0.6f, 1.0f}, 0.004f, "Fire to play again");
 				}
 			}
 		}
