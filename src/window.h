@@ -56,8 +56,9 @@ bool ZGWindowHasFocus(ZGWindow *window);
 
 #if PLATFORM_WINDOWS
 void ZGSetWindowMinimumSize(ZGWindow *window, int32_t minWidth, int32_t minHeight);
-void ZGGetWindowSize(ZGWindow *window, int32_t *width, int32_t *height);
 #endif
+
+void ZGGetWindowSize(ZGWindow *window, int32_t *width, int32_t *height);
 
 void ZGSetWindowEventHandler(ZGWindow *window, void *context, void (*windowEventHandler)(ZGWindowEvent, void *));
 

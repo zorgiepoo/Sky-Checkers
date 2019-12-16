@@ -243,13 +243,13 @@ void ZGSetWindowMinimumSize(ZGWindow *windowRef, int32_t minWidth, int32_t minHe
 	WindowController *windowController = (WindowController *)windowRef;
 	SDL_SetWindowMinimumSize(windowController->window, minWidth, minHeight);
 }
+#endif
 
 void ZGGetWindowSize(ZGWindow *windowRef, int32_t *width, int32_t *height)
 {
 	WindowController *windowController = (WindowController *)windowRef;
 	SDL_GetWindowSize(windowController->window, width, height);
 }
-#endif
 
 void *ZGWindowHandle(ZGWindow *windowRef)
 {

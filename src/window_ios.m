@@ -143,8 +143,12 @@
 	{
 		if (_touchEventHandler != NULL)
 		{
+			CGPoint touchPoint = [tapGestureRecognizer locationInView:self.view];
+			
 			ZGTouchEvent event = {};
 			event.type = ZGTouchEventTypeTap;
+			event.x = (float)touchPoint.x;
+			event.y = (float)touchPoint.y;
 			_touchEventHandler(event, _touchEventContext);
 		}
 	}
@@ -216,6 +220,21 @@ void ZGUninstallTouchGestures(ZGWindow *windowRef)
 
 void ZGPollWindowAndInputEvents(ZGWindow *window, const void *systemEvent)
 {
+}
+
+void ZGGetWindowSize(ZGWindow *windowRef, int32_t *width, int32_t *height)
+{
+	UIWindow *window = (__bridge UIWindow *)(windowRef);
+	
+	if (width != NULL)
+	{
+		*width = (int32_t)window.frame.size.width;
+	}
+	
+	if (height != NULL)
+	{
+		*height = (int32_t)window.frame.size.height;
+	}
 }
 
 void *ZGWindowHandle(ZGWindow *window)

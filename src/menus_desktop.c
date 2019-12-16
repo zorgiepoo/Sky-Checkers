@@ -63,6 +63,8 @@ static void addSubMenu(Menu *parentMenu, Menu *childMenu);
 static void invokeMenu(void *context);
 static void changeMenu(int direction);
 
+static void (*gExitGame)(ZGWindow *);
+
 static Menu *gPlayMenu;
 static Menu *gNetworkServerPlayMenu;
 static Menu *gConnectToNetworkGameMenu;
@@ -1043,7 +1045,7 @@ void quitMenuAction(void *context)
 	ZGSendQuitEvent();
 }
 
-void initMenus(ZGWindow *window, GameState *gameState)
+void initMenus(ZGWindow *window, GameState *gameState, void (*exitGame)(ZGWindow *))
 {
 	initMainMenu();
 	
@@ -1073,6 +1075,8 @@ void initMenus(ZGWindow *window, GameState *gameState)
 	Menu *audioEffectsOptionsMenu =				calloc(1, sizeof(Menu));
 	Menu *audioMusicOptionsMenu =				calloc(1, sizeof(Menu));
 	Menu *quitMenu =							calloc(1, sizeof(Menu));
+	
+	gExitGame = exitGame;
 	
 	// set action and drawing functions
 	gPlayMenu->draw = drawPlayMenu;
@@ -1267,7 +1271,7 @@ void initMenus(ZGWindow *window, GameState *gameState)
 	}
 }
 
-void showPauseMenu(GameState *gameState)
+void showPauseMenu(ZGWindow *window, GameState *gameState)
 {
 	changeMenu(RIGHT);
 	pauseMusic();
@@ -1338,7 +1342,7 @@ static void writeMenuTextInput(const char *text, size_t maxSize)
 	}
 }
 
-static void performMenuEnterAction(GameState *gameState, ZGWindow *window, void (*exitGame)(ZGWindow *))
+static void performMenuEnterAction(GameState *gameState, ZGWindow *window)
 {
 	if (gCurrentMenu == gConfigureLivesMenu)
 	{
@@ -1362,7 +1366,7 @@ static void performMenuEnterAction(GameState *gameState, ZGWindow *window, void 
 		GameMenuContext menuContext;
 		menuContext.gameState = gameState;
 		menuContext.window = window;
-		menuContext.exitGame = exitGame;
+		menuContext.exitGame = gExitGame;
 		
 		invokeMenu(&menuContext);
 	}
@@ -1510,7 +1514,7 @@ static void performMenuBackAction(GameState *gameState)
 	}
 }
 
-void performKeyboardMenuAction(ZGKeyboardEvent *event, GameState *gameState, ZGWindow *window, void (*exitGame)(ZGWindow *))
+void performKeyboardMenuAction(ZGKeyboardEvent *event, GameState *gameState, ZGWindow *window)
 {
 	uint16_t keyCode = event->keyCode;
 	uint64_t keyModifier = event->keyModifier;
@@ -1530,7 +1534,7 @@ void performKeyboardMenuAction(ZGKeyboardEvent *event, GameState *gameState, ZGW
 	}
 	else if (ZGTestReturnKeyCode(keyCode))
 	{
-		performMenuEnterAction(gameState, window, exitGame);
+		performMenuEnterAction(gameState, window);
 	}
 	else if (keyCode == ZG_KEYCODE_DOWN)
 	{
@@ -1562,7 +1566,7 @@ void performKeyboardMenuTextInputAction(ZGKeyboardEvent *event)
 	writeMenuTextInput(event->text, sizeof(event->text));
 }
 
-void performGamepadMenuAction(GamepadEvent *event, GameState *gameState, ZGWindow *window, void (*exitGame)(ZGWindow *))
+void performGamepadMenuAction(GamepadEvent *event, GameState *gameState, ZGWindow *window)
 {
 	if (event->state != GAMEPAD_STATE_PRESSED)
 	{
@@ -1573,7 +1577,7 @@ void performGamepadMenuAction(GamepadEvent *event, GameState *gameState, ZGWindo
 	{
 		case GAMEPAD_BUTTON_A:
 		case GAMEPAD_BUTTON_START:
-			performMenuEnterAction(gameState, window, exitGame);
+			performMenuEnterAction(gameState, window);
 			break;
 		case GAMEPAD_BUTTON_B:
 		case GAMEPAD_BUTTON_BACK:

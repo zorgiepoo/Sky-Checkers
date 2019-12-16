@@ -119,6 +119,7 @@ static void initScene(Renderer *renderer);
 static void readDefaults(void);
 static void writeDefaults(Renderer *renderer);
 
+static void exitGame(ZGWindow *window);
 static void resetGame(void);
 
 static void drawBlackBox(Renderer *renderer)
@@ -195,7 +196,7 @@ static void initScene(Renderer *renderer)
 
 	gGameState = GAME_STATE_OFF;
 
-	initMenus(renderer->window, &gGameState);
+	initMenus(renderer->window, &gGameState, exitGame);
 #if PLATFORM_IOS
 	showGameMenus(renderer->window);
 #endif
@@ -1118,6 +1119,15 @@ static void drawScene(Renderer *renderer)
 #endif
 		}
 		
+#if PLATFORM_IOS
+		// Pause button renders at z = -20.0f
+		if (gGameState == GAME_STATE_ON)
+		{
+			mat4_t gameTitleModelViewMatrix = m4_translation((vec3_t){7.5f, 7.5f, -20.0f});
+			drawStringScaled(renderer, gameTitleModelViewMatrix, (color4_t){1.0f, 1.0f, 1.0f, 0.2f}, 0.003f, "⏸️");
+		}
+#endif
+		
 		if (gDrawFPS)
 		{
 			// FPS renders at z = -18.0f
@@ -1180,7 +1190,7 @@ static void handleKeyDownEvent(ZGKeyboardEvent *event, Renderer *renderer)
 	
 	if (gGameState == GAME_STATE_OFF || gGameState == GAME_STATE_PAUSED)
 	{
-		performKeyboardMenuAction(event, &gGameState, renderer->window, exitGame);
+		performKeyboardMenuAction(event, &gGameState, renderer->window);
 	}
 	else if (!gConsoleActivated && gGameState == GAME_STATE_ON && gGameWinner != NO_CHARACTER &&
 		(keyCode == gPinkBubbleGumInput.weap_id || keyCode == gRedRoverInput.weap_id ||
@@ -1210,7 +1220,7 @@ static void handleKeyDownEvent(ZGKeyboardEvent *event, Renderer *renderer)
 			}
 			else
 			{
-				showPauseMenu(&gGameState);
+				showPauseMenu(window, &gGameState);
 			}
 		}
 	}
@@ -1307,11 +1317,11 @@ static void pollGamepads(GamepadManager *gamepadManager, ZGWindow *window, const
 		
 		if (gGameState == GAME_STATE_OFF || gGameState == GAME_STATE_PAUSED)
 		{
-			performGamepadMenuAction(gamepadEvent, &gGameState, window, exitGame);
+			performGamepadMenuAction(gamepadEvent, &gGameState, window);
 		}
 		else if (gGameState == GAME_STATE_ON && gamepadEvent->state == GAMEPAD_STATE_PRESSED && (gamepadEvent->button == GAMEPAD_BUTTON_START || gamepadEvent->button == GAMEPAD_BUTTON_BACK))
 		{
-			showPauseMenu(&gGameState);
+			showPauseMenu(window, &gGameState);
 		}
 		
 		performGamepadAction(&gRedRoverInput, gamepadEvent, gGameState);
@@ -1360,11 +1370,18 @@ static void handleWindowEvent(ZGWindowEvent event, void *context)
 }
 
 #if PLATFORM_IOS
+#define PAUSE_BOUNDARY 125.0f
 static void handleTouchEvent(ZGTouchEvent event, void *context)
 {
 	if (gGameState == GAME_STATE_ON)
 	{
-		if (gGameWinner != NO_CHARACTER && event.type == ZGTouchEventTypeTap)
+		Renderer *renderer = context;
+		
+		if (event.type == ZGTouchEventTypeTap && event.x >= (float)renderer->windowWidth - PAUSE_BOUNDARY && event.y <= PAUSE_BOUNDARY)
+		{
+			showPauseMenu(renderer->window, &gGameState);
+		}
+		else if (event.type == ZGTouchEventTypeTap && gGameWinner != NO_CHARACTER)
 		{
 			resetGame();
 		}

@@ -31,17 +31,17 @@
 #include "renderer.h"
 #endif
 
-void initMenus(ZGWindow *window, GameState *gameState);
+void initMenus(ZGWindow *window, GameState *gameState, void (*exitGame)(ZGWindow *));
 
-void showPauseMenu(GameState *gameState);
+void showPauseMenu(ZGWindow *window, GameState *gameState);
 
 #if PLATFORM_IOS
 void showGameMenus(ZGWindow *window);
 #else
 void drawMenus(Renderer *renderer);
 
-void performKeyboardMenuAction(ZGKeyboardEvent *event, GameState *gameState, ZGWindow *window, void (*exitGame)(ZGWindow *));
+void performKeyboardMenuAction(ZGKeyboardEvent *event, GameState *gameState, ZGWindow *window);
 void performKeyboardMenuTextInputAction(ZGKeyboardEvent *event);
 #endif
 
-void performGamepadMenuAction(GamepadEvent *event, GameState *gameState, ZGWindow *window, void (*exitGame)(ZGWindow *));
+void performGamepadMenuAction(GamepadEvent *event, GameState *gameState, ZGWindow *window);

@@ -547,6 +547,8 @@ bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t w
 			return false;
 		}
 		
+		ZGGetWindowSize(renderer->window, &renderer->windowWidth, &renderer->windowHeight);
+		
 #if PLATFORM_IOS
 		UIWindow *window = (__bridge UIWindow *)(ZGWindowHandle(renderer->window));
 		UIView *contentView = window.rootViewController.view;

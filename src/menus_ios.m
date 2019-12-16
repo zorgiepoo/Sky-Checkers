@@ -26,6 +26,7 @@
 #import <UIKit/UIKit.h>
 
 static UIView *gMainMenuView;
+static UIView *gPauseMenuView;
 static UIView *gOptionsView;
 static UIView *gOnlineView;
 static UIView *gHostGameMenuView;
@@ -94,6 +95,45 @@ static void playGame(ZGWindow *window)
 	[gCurrentMenuView removeFromSuperview];
 	gCurrentMenuView = gOptionsView;
 	[metalView addSubview:gCurrentMenuView];
+}
+
+@end
+
+@interface PauseMenuHandler : NSObject
+
+@property (nonatomic) ZGWindow *window;
+@property (nonatomic) GameState *gameState;
+@property (nonatomic) void (*exitGameFunc)(ZGWindow *);
+
+@end
+
+@implementation PauseMenuHandler
+
+- (void)resumeGame
+{
+	unPauseMusic();
+	ZGInstallTouchGestures(_window);
+	[gPauseMenuView removeFromSuperview];
+	
+	UIView *metalView = metalViewForWindow(_window);
+	((CAMetalLayer *)metalView.layer).presentsWithTransaction = NO;
+	
+	*_gameState = GAME_STATE_ON;
+}
+
+- (void)exitGame
+{
+	UIView *metalView = metalViewForWindow(_window);
+	
+	[gPauseMenuView removeFromSuperview];
+	[metalView addSubview:gCurrentMenuView];
+	
+	unPauseMusic();
+	
+	if (_exitGameFunc != NULL)
+	{
+		_exitGameFunc(_window);
+	}
 }
 
 @end
@@ -759,6 +799,7 @@ static uint8_t currentAIModeIndex(void)
 @end
 
 static MainMenuHandler *gMainMenuHandler;
+static PauseMenuHandler *gPauseMenuHandler;
 static OnlineMenuHandler *gOnlineMenuHandler;
 static HostGameMenuHandler *gHostGameMenuHandler;
 static JoinGameMenuHandler *gJoinGameMenuHandler;
@@ -831,6 +872,62 @@ static UIView *makeMainMenu(UIView *metalView)
 		button.frame = CGRectMake(metalViewSize.width * 0.5f - buttonWidth / 2.0, metalViewSize.height * 0.7 - buttonHeight / 2.0, buttonWidth, buttonHeight);
 		
 		[button addTarget:gMainMenuHandler action:@selector(showOptions) forControlEvents:UIControlEventTouchUpInside];
+		
+		[menuView addSubview:button];
+	}
+	
+	return menuView;
+}
+
+static UIView *makePauseMenu(UIView *metalView)
+{
+	UIView *menuView = [[UIView alloc] initWithFrame:metalView.frame];
+	CGSize metalViewSize = metalView.bounds.size;
+	
+	CGFloat buttonWidth = 0.15 * metalViewSize.width;
+	CGFloat buttonHeight = 0.08 * metalViewSize.height;
+	
+	CGFloat fontSize = 0.03 * metalViewSize.width;
+	UIFont *font = [UIFont systemFontOfSize:fontSize];
+	UIColor *titleColor = cellTextColor();
+	CGColorRef buttonBackgroundColor = cellBackgroundColor().CGColor;
+	CGFloat borderWidth = 0.0;
+	CGFloat cornerRadius = 9.0;
+	
+	menuView.opaque = NO;
+	
+	{
+		UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+		[button setTitle:@"Resume" forState:UIControlStateNormal];
+		
+		button.titleLabel.font = font;
+		[button setTitleColor:titleColor forState:UIControlStateNormal];
+		
+		button.layer.backgroundColor = buttonBackgroundColor;
+		button.layer.borderWidth = borderWidth;
+		button.layer.cornerRadius = cornerRadius;
+		
+		button.frame = CGRectMake(metalViewSize.width * 0.5f - buttonWidth / 2.0, metalViewSize.height * 0.4 - buttonHeight / 2.0, buttonWidth, buttonHeight);
+		
+		[button addTarget:gPauseMenuHandler action:@selector(resumeGame) forControlEvents:UIControlEventTouchUpInside];
+		
+		[menuView addSubview:button];
+	}
+	
+	{
+		UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+		[button setTitle:@"Exit" forState:UIControlStateNormal];
+		
+		button.titleLabel.font = font;
+		[button setTitleColor:titleColor forState:UIControlStateNormal];
+		
+		button.layer.backgroundColor = buttonBackgroundColor;
+		button.layer.borderWidth = borderWidth;
+		button.layer.cornerRadius = cornerRadius;
+		
+		button.frame = CGRectMake(metalViewSize.width * 0.5f - buttonWidth / 2.0, metalViewSize.height * 0.55 - buttonHeight / 2.0, buttonWidth, buttonHeight);
+		
+		[button addTarget:gPauseMenuHandler action:@selector(exitGame) forControlEvents:UIControlEventTouchUpInside];
 		
 		[menuView addSubview:button];
 	}
@@ -957,10 +1054,15 @@ static UIView *makeJoinGameMenu(UIView *metalView)
 	return view;
 }
 
-void initMenus(ZGWindow *windowRef, GameState *gameState)
+void initMenus(ZGWindow *windowRef, GameState *gameState, void (*exitGame)(ZGWindow *))
 {
 	gMainMenuHandler = [[MainMenuHandler alloc] init];
 	gMainMenuHandler.window = windowRef;
+	
+	gPauseMenuHandler = [[PauseMenuHandler alloc] init];
+	gPauseMenuHandler.window = windowRef;
+	gPauseMenuHandler.gameState = gameState;
+	gPauseMenuHandler.exitGameFunc = exitGame;
 	
 	gOnlineMenuHandler = [[OnlineMenuHandler alloc] init];
 	gOnlineMenuHandler.window = windowRef;
@@ -978,6 +1080,7 @@ void initMenus(ZGWindow *windowRef, GameState *gameState)
 	UIView *metalView = metalViewForWindow(windowRef);
 	
 	gMainMenuView = makeMainMenu(metalView);
+	gPauseMenuView = makePauseMenu(metalView);
 	gOnlineView = makeOnlineMenu(metalView);
 	gHostGameMenuView = makeHostGameMenu(metalView);
 	gJoinGameMenuView = makeJoinGameMenu(metalView);
@@ -1002,11 +1105,19 @@ void hideGameMenus(ZGWindow *windowRef)
 	[gCurrentMenuView removeFromSuperview];
 }
 
-void showPauseMenu(GameState *gameState)
+void showPauseMenu(ZGWindow *window, GameState *gameState)
 {
+	pauseMusic();
+	ZGUninstallTouchGestures(window);
+	*gameState = GAME_STATE_PAUSED;
+	
+	UIView *metalView = metalViewForWindow(window);
+	((CAMetalLayer *)metalView.layer).presentsWithTransaction = YES;
+	
+	[metalView addSubview:gPauseMenuView];
 }
 
-void performGamepadMenuAction(GamepadEvent *event, GameState *gameState, ZGWindow *window, void (*exitGame)(ZGWindow *))
+void performGamepadMenuAction(GamepadEvent *event, GameState *gameState, ZGWindow *window)
 {
 	if (event->state != GAMEPAD_STATE_PRESSED)
 	{
@@ -1020,6 +1131,10 @@ void performGamepadMenuAction(GamepadEvent *event, GameState *gameState, ZGWindo
 			if (gCurrentMenuView == gMainMenuView && *gameState == GAME_STATE_OFF)
 			{
 				playGame(window);
+			}
+			else if (*gameState == GAME_STATE_PAUSED)
+			{
+				[gPauseMenuHandler resumeGame];
 			}
 			break;
 		case GAMEPAD_BUTTON_B:

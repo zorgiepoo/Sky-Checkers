@@ -371,6 +371,22 @@ void ZGPollWindowAndInputEvents(ZGWindow *window, const void *systemEvent)
 	// No need to do anything for macOS implementation
 }
 
+void ZGGetWindowSize(ZGWindow *windowRef, int32_t *width, int32_t *height)
+{
+	ZGGameWindowController *windowController = (__bridge ZGGameWindowController *)(windowRef);
+	NSWindow *window = windowController.window;
+	
+	if (width != NULL)
+	{
+		*width = (int32_t)window.frame.size.width;
+	}
+	
+	if (height != NULL)
+	{
+		*height = (int32_t)window.frame.size.width;
+	}
+}
+
 void *ZGWindowHandle(ZGWindow *window)
 {
 	ZGGameWindowController *windowController = (__bridge ZGGameWindowController *)(window);
