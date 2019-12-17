@@ -21,6 +21,7 @@
 #include "collision.h"
 #include "math_3d.h"
 #include "texture.h"
+#include "renderer_projection.h"
 
 #define TILE_TEXTURE1_RED 0.8f
 #define TILE_TEXTURE1_GREEN 0.8f
@@ -272,7 +273,7 @@ void drawSky(Renderer *renderer, RendererOptions options)
 		initializedBuffers = true;
 	}
 	
-	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 0.0f, -38.0f});
+	mat4_t modelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, 0.0f, -38.0f}), m4_scaling((vec3_t){computeProjectionAspectRatio(renderer), 1.0f, 1.0f}));
 	
 	drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, gSkyTex, RENDERER_TRIANGLE_MODE, vertexAndTextureArrayObject, indicesBufferObject, 6, (color4_t){1.0f, 1.0f, 1.0f, 0.75f}, options);
 }

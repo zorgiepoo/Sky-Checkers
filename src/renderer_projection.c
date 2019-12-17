@@ -23,10 +23,8 @@
 
 ZGFloat computeProjectionAspectRatio(Renderer *renderer)
 {
-	// Use a constant aspect ratio that stretches at any window size
-	// We want to avoid a letterbox effect and allow the window to be resized in any way
 	// Some history is this used to be width / height (where both width and height were integers), resulting in 1 most of the time.
-	return (ZGFloat)1.0f;
+	return ((ZGFloat)renderer->drawableWidth / (ZGFloat)renderer->drawableHeight) / (ZGFloat)(16.0f / 9.0f);
 }
 
 static mat4_t computeGLProjectionMatrix(Renderer *renderer)

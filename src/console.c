@@ -47,6 +47,7 @@
 #include "network.h"
 #include "text.h"
 #include "globals.h"
+#include "renderer_projection.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -97,7 +98,7 @@ void drawConsole(Renderer *renderer)
 		initializedBuffers = true;
 	}
 	
-	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 9.0f, -25.0f});
+	mat4_t modelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, 9.0f, -25.0f}), m4_scaling((vec3_t){computeProjectionAspectRatio(renderer), 1.0f, 1.0f}));
 	
 	drawVerticesFromIndices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertexArrayObject, indicesBufferObject, 6, (color4_t){0.0f, 0.0f, 0.0f, 0.6f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
 }
@@ -133,7 +134,7 @@ void drawConsoleText(Renderer *renderer)
 	size_t length = strlen(gConsoleString);
 	if (length > 0)
 	{
-		mat4_t modelViewMatrix = m4_translation((vec3_t){-8.94f, 8.778f, -23.0f});
+		mat4_t modelViewMatrix = m4_translation((vec3_t){-8.94f * computeProjectionAspectRatio(renderer), 8.778f, -23.0f});
 		
 		drawStringLeftAligned(renderer, modelViewMatrix, (color4_t){1.0f, 0.0f, 0.0f, 0.7f}, 0.00333f, gConsoleString);
 	}

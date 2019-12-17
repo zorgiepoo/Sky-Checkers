@@ -35,6 +35,7 @@
 #include "globals.h"
 #include "window.h"
 #include "defaults.h"
+#include "renderer_projection.h"
 
 #if !PLATFORM_IOS
 #include "console.h"
@@ -144,7 +145,7 @@ static void drawBlackBox(Renderer *renderer)
 		initializedBuffers = true;
 	}
 	
-	mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f, 0.0f, -22.0f});
+	mat4_t modelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, 0.0f, -22.0f}), m4_scaling((vec3_t){computeProjectionAspectRatio(renderer), 1.0f, 1.0f}));
 	
 	drawVerticesFromIndices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertexArrayObject, indicesBufferObject, 6, (color4_t){0.0f, 0.0f, 0.0f, 0.7f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
 }
@@ -1127,7 +1128,7 @@ static void drawScene(Renderer *renderer)
 		// Pause button renders at z = -20.0f
 		if (gGameState == GAME_STATE_ON)
 		{
-			mat4_t gameTitleModelViewMatrix = m4_translation((vec3_t){7.5f, 7.5f, -20.0f});
+			mat4_t gameTitleModelViewMatrix = m4_translation((vec3_t){7.5f * computeProjectionAspectRatio(renderer), 7.5f, -20.0f});
 			drawStringScaled(renderer, gameTitleModelViewMatrix, (color4_t){1.0f, 1.0f, 1.0f, 0.2f}, 0.003f, "⏸️");
 		}
 #endif
