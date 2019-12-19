@@ -195,6 +195,8 @@
 
 @end
 
+#define AUTOSAVE_FRAME_NAME @"GameWindow"
+
 @interface ZGGameWindowController : NSWindowController <NSWindowDelegate>
 
 @property (nonatomic) void (*windowEventHandler)(ZGWindowEvent, void *);
@@ -252,8 +254,15 @@
 	}
 }
 
+- (void)windowDidMove:(NSNotification *)notification
+{
+	[self.window saveFrameUsingName:AUTOSAVE_FRAME_NAME];
+}
+
 - (void)windowDidResize:(NSNotification *)notification
 {
+	[self.window saveFrameUsingName:AUTOSAVE_FRAME_NAME];
+	
 	if (_windowEventHandler != NULL)
 	{
 		ZGWindowEvent event;
@@ -311,7 +320,6 @@
 
 @end
 
-#define AUTOSAVE_FRAME_NAME @"GameWindow"
 ZGWindow *ZGCreateWindow(const char *windowTitle, int32_t windowWidth, int32_t windowHeight, bool *fullscreenFlag)
 {
 	NSWindowStyleMask styleMask = (NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable);
@@ -325,7 +333,6 @@ ZGWindow *ZGCreateWindow(const char *windowTitle, int32_t windowWidth, int32_t w
 	[window setTitle:@(windowTitle)];
 	
 	[window setFrameUsingName:AUTOSAVE_FRAME_NAME];
-	[window setFrameAutosaveName:AUTOSAVE_FRAME_NAME];
 	if ([window respondsToSelector:@selector(setTabbingMode:)])
 	{
 		[window setTabbingMode:NSWindowTabbingModeDisallowed];
