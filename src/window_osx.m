@@ -383,7 +383,7 @@ void ZGGetWindowSize(ZGWindow *windowRef, int32_t *width, int32_t *height)
 	
 	if (height != NULL)
 	{
-		*height = (int32_t)window.frame.size.width;
+		*height = (int32_t)window.frame.size.height;
 	}
 }
 
