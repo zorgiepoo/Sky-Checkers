@@ -28,10 +28,10 @@
 
 #include <stdlib.h>
 
-static void setNewDirection(Character *character);
+static void setNewDirection(Character *character, float currentTime);
 static void directCharacterBasedOnCollisions(Character *character, float currentTime);
 
-static void shootWeaponProjectile(Character *character, float currentTime);
+static void shootWeaponToNearingCharacter(Character *character, float currentTime);
 
 static void fireAIWeapon(Character *character);
 
@@ -40,10 +40,43 @@ static void attackCharacterOnColumn(Character *character, Character *characterB,
 
 static void avoidCharacter(Character *character, Character *characterB, float currentTime);
 
+static void updateMoveTimer(Character *character, float currentTime)
+{
+	character->move_timer = currentTime + (float)((mt_random() % 2) + 1);
+}
+
+static float timeAliveThresholdForAIMode(int AIMode)
+{
+	float timeAliveThreshold;
+	if (AIMode == AI_HARD_MODE)
+	{
+		timeAliveThreshold = 1.0f;
+	}
+	else if (AIMode == AI_MEDIUM_MODE)
+	{
+		timeAliveThreshold = 2.0f;
+	}
+	else
+	{
+		timeAliveThreshold = 3.0f;
+	}
+	return timeAliveThreshold;
+}
+
 static void updateDirectionAndMoveTimer(Character *character, float currentTime)
 {
-	setNewDirection(character);
-	character->move_timer = currentTime + (float)((mt_random() % 2) + 1);
+	setNewDirection(character, currentTime);
+	updateMoveTimer(character, currentTime);
+}
+
+static bool canFireWeapon(void)
+{
+	return !gNetworkConnection || (gRedRover.netState == NETWORK_PLAYING_STATE && gGreenTree.netState == NETWORK_PLAYING_STATE && gBlueLightning.netState == NETWORK_PLAYING_STATE);
+}
+
+static bool shouldFireWeapon(Character *character, float timeAliveThreshold)
+{
+	return character->time_alive >= timeAliveThreshold && character->fire_timer >= 0.25f && !character->weap->animationState && gGameHasStarted;
 }
 
 void updateAI(Character *character, float currentTime, double timeDelta)
@@ -51,21 +84,35 @@ void updateAI(Character *character, float currentTime, double timeDelta)
 	if (!CHARACTER_IS_ALIVE(character) || character->state != CHARACTER_AI_STATE || !character->active || !character->lives || (gNetworkConnection && gNetworkConnection->type == NETWORK_CLIENT_TYPE))
 		return;
 	
-	if (character->direction == NO_DIRECTION || currentTime > character->move_timer)
+	if (currentTime > character->move_timer)
 	{
 		updateDirectionAndMoveTimer(character, currentTime);
 	}
 	
 	directCharacterBasedOnCollisions(character, currentTime);
 	
-	if (!gNetworkConnection || (gRedRover.netState == NETWORK_PLAYING_STATE && gGreenTree.netState == NETWORK_PLAYING_STATE && gBlueLightning.netState == NETWORK_PLAYING_STATE))
+	if (canFireWeapon())
 	{
 		character->fire_timer += (float)timeDelta;
-		shootWeaponProjectile(character, currentTime);
+		shootWeaponToNearingCharacter(character, currentTime);
 	}
 }
 
-static void setNewDirection(Character *character)
+static void fireCharacterWeaponAfterTurn(Character *character, float currentTime)
+{
+	if (canFireWeapon() && shouldFireWeapon(character, timeAliveThresholdForAIMode(gAIMode)) && mt_random() % 4 == 0)
+	{
+		turnCharacter(character, character->direction);
+		character->direction = NO_DIRECTION;
+		
+		character->fire_timer = 0.0;
+		fireAIWeapon(character);
+		
+		updateMoveTimer(character, currentTime);
+	}
+}
+
+static void setNewDirection(Character *character, float currentTime)
 {
 	int column = columnOfCharacter(character);
 	int row = rowOfCharacter(character);
@@ -96,6 +143,8 @@ static void setNewDirection(Character *character)
 			{
 				character->direction = (mt_random() % 2) + 1;
 			}
+			
+			fireCharacterWeaponAfterTurn(character, currentTime);
 		}
 		else /* if (*direction == RIGHT || *direction == LEFT || *direction == NO_DIRECTION) */
 		{
@@ -112,6 +161,8 @@ static void setNewDirection(Character *character)
 			{
 				character->direction = (mt_random() % 2) + 3;
 			}
+			
+			fireCharacterWeaponAfterTurn(character, currentTime);
 		}
 	}
 }
@@ -188,26 +239,15 @@ static void directCharacterBasedOnCollisions(Character *character, float current
 	}
 }
 
-static void shootWeaponProjectile(Character *character, float currentTime)
+static void shootWeaponToNearingCharacter(Character *character, float currentTime)
 {
 	int AIMode = gAIMode;
+	float timeAliveThreshold = timeAliveThresholdForAIMode(AIMode);
 	
-	float timeAliveThreshold;
-	if (AIMode == AI_HARD_MODE)
+	if (!shouldFireWeapon(character, timeAliveThreshold))
 	{
-		timeAliveThreshold = 1.0f;
-	}
-	else if (AIMode == AI_MEDIUM_MODE)
-	{
-		timeAliveThreshold = 2.0f;
-	}
-	else
-	{
-		timeAliveThreshold = 3.0f;
-	}
-	
-	if (character->time_alive < timeAliveThreshold || character->fire_timer < 0.25f || character->weap->animationState || !gGameHasStarted)
 		return;
+	}
 	
 	character->fire_timer = 0.0f;
 	
