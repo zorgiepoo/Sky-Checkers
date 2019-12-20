@@ -71,18 +71,20 @@ static void updateDirectionAndMoveTimer(Character *character, float currentTime)
 
 static bool canFireWeapon(void)
 {
-	return !gNetworkConnection || (gRedRover.netState == NETWORK_PLAYING_STATE && gGreenTree.netState == NETWORK_PLAYING_STATE && gBlueLightning.netState == NETWORK_PLAYING_STATE);
-}
-
-static bool shouldFireWeapon(Character *character, float timeAliveThreshold)
-{
-	return character->time_alive >= timeAliveThreshold && character->fire_timer >= 0.25f && !character->weap->animationState && gGameHasStarted;
+	return gGameWinner == NO_CHARACTER && (!gNetworkConnection || (gRedRover.netState == NETWORK_PLAYING_STATE && gGreenTree.netState == NETWORK_PLAYING_STATE && gBlueLightning.netState == NETWORK_PLAYING_STATE));
 }
 
 void updateAI(Character *character, float currentTime, double timeDelta)
 {
 	if (!CHARACTER_IS_ALIVE(character) || character->state != CHARACTER_AI_STATE || !character->active || !character->lives || (gNetworkConnection && gNetworkConnection->type == NETWORK_CLIENT_TYPE))
 		return;
+	
+	bool canFire = canFireWeapon();
+	
+	if (canFire)
+	{
+		character->fire_timer += (float)timeDelta;
+	}
 	
 	if (currentTime > character->move_timer)
 	{
@@ -91,19 +93,43 @@ void updateAI(Character *character, float currentTime, double timeDelta)
 	
 	directCharacterBasedOnCollisions(character, currentTime);
 	
-	if (canFireWeapon())
+	if (canFire)
 	{
-		character->fire_timer += (float)timeDelta;
 		shootWeaponToNearingCharacter(character, currentTime);
 	}
 }
 
 static void fireCharacterWeaponAfterTurn(Character *character, float currentTime)
 {
-	if (canFireWeapon() && shouldFireWeapon(character, timeAliveThresholdForAIMode(gAIMode)) && mt_random() % 4 == 0)
+	if (mt_random() % 4 != 0)
+	{
+		return;
+	}
+	
+	unsigned int exitOutValue;
+	if (gAIMode == AI_HARD_MODE)
+	{
+		exitOutValue = 2;
+	}
+	else if (gAIMode == AI_MEDIUM_MODE)
+	{
+		exitOutValue = 5;
+	}
+	else
+	{
+		exitOutValue = 8;
+	}
+
+	// Exit out of function randomly depending on AI difficulty.
+	// An AIMode of AI_EASY_MODE will exit out more than AI_HARD_MODE
+	if ((mt_random() % 10) < exitOutValue)
+	{
+		return;
+	}
+	
+	if (character->time_alive >= 0.75f && !character->weap->animationState && gGameHasStarted)
 	{
 		turnCharacter(character, character->direction);
-		character->direction = NO_DIRECTION;
 		
 		character->fire_timer = 0.0;
 		fireAIWeapon(character);
@@ -144,7 +170,10 @@ static void setNewDirection(Character *character, float currentTime)
 				character->direction = (mt_random() % 2) + 1;
 			}
 			
-			fireCharacterWeaponAfterTurn(character, currentTime);
+			if (canFireWeapon())
+			{
+				fireCharacterWeaponAfterTurn(character, currentTime);
+			}
 		}
 		else /* if (*direction == RIGHT || *direction == LEFT || *direction == NO_DIRECTION) */
 		{
@@ -162,7 +191,10 @@ static void setNewDirection(Character *character, float currentTime)
 				character->direction = (mt_random() % 2) + 3;
 			}
 			
-			fireCharacterWeaponAfterTurn(character, currentTime);
+			if (canFireWeapon())
+			{
+				fireCharacterWeaponAfterTurn(character, currentTime);
+			}
 		}
 	}
 }
@@ -244,7 +276,7 @@ static void shootWeaponToNearingCharacter(Character *character, float currentTim
 	int AIMode = gAIMode;
 	float timeAliveThreshold = timeAliveThresholdForAIMode(AIMode);
 	
-	if (!shouldFireWeapon(character, timeAliveThreshold))
+	if (character->fire_timer < 0.25f || character->time_alive < 0.75f || character->weap->animationState || !gGameHasStarted)
 	{
 		return;
 	}
@@ -301,7 +333,7 @@ static void shootWeaponToNearingCharacter(Character *character, float currentTim
 	
 	// Exit out of function randomly depending on AI difficulty.
 	// An AIMode of AI_EASY_MODE will exit out more than AI_HARD_MODE
-	if ((mt_random() % 10) + 1 <= exitOutValue)
+	if ((mt_random() % 10) < exitOutValue)
 	{
 		return;
 	}
