@@ -43,6 +43,7 @@ static ZGAppCallbacks gAppCallbacks;
 	if (![fileManager changeCurrentDirectoryPath:resourcePath])
 	{
 		fprintf(stderr, "Error: failed to change current working directory to: %s\n", resourcePath.fileSystemRepresentation);
+		abort();
 	}
 	
 	if (gAppCallbacks.appHandlers->launchedHandler != NULL)
