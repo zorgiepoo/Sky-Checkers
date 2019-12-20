@@ -327,7 +327,7 @@ ZGWindow *ZGCreateWindow(const char *windowTitle, int32_t windowWidth, int32_t w
 	NSScreen *mainScreen = [NSScreen mainScreen];
 	NSRect screenFrame = mainScreen.visibleFrame;
 	
-	NSWindow *window = [[NSWindow alloc] initWithContentRect:NSMakeRect(screenFrame.origin.x + screenFrame.size.width / 2 - windowWidth / 2, screenFrame.origin.y + screenFrame.size.height / 2 - windowHeight / 2, windowWidth, windowHeight) styleMask:styleMask backing:NSBackingStoreBuffered defer:NO];
+	NSWindow *window = [[NSWindow alloc] initWithContentRect:NSMakeRect(screenFrame.origin.x + screenFrame.size.width / 2.0 - windowWidth / 2.0, screenFrame.origin.y + screenFrame.size.height / 2.0 - windowHeight / 2.0, (CGFloat)windowWidth, (CGFloat)windowHeight) styleMask:styleMask backing:NSBackingStoreBuffered defer:NO];
 	
 	[window setRestorable:NO];
 	[window setTitle:@(windowTitle)];
