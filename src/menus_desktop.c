@@ -1374,7 +1374,7 @@ static void performMenuEnterAction(GameState *gameState, ZGWindow *window)
 
 static void performMenuDownAction(void)
 {
-	if (gNetworkAddressFieldIsActive)
+	if (gNetworkAddressFieldIsActive || gNetworkUserNameFieldIsActive)
 		return;
 
 	if (gDrawArrowsForCharacterLivesFlag)
@@ -1428,7 +1428,7 @@ static void performMenuDownAction(void)
 
 static void performMenuUpAction(void)
 {
-	if (gNetworkAddressFieldIsActive)
+	if (gNetworkAddressFieldIsActive || gNetworkUserNameFieldIsActive)
 		return;
 
 	if (gDrawArrowsForCharacterLivesFlag)
