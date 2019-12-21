@@ -420,6 +420,23 @@ void networkServerMenuAction(void *context)
 	changeMenu(RIGHT);
 }
 
+void drawNetworkServerNumberOfPlayersMenu(Renderer *renderer, color4_t preferredColor)
+{
+	mat4_t numberPlayersModelViewMatrix = m4_translation((vec3_t){-0.07f, 1.07f, -20.00f});
+	drawStringf(renderer, numberPlayersModelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Friends Joining: %d", gNumberOfNetHumans);
+
+	if (gDrawArrowsForNumberOfNetHumansFlag)
+	{
+		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){2.1f / 1.25f, 1.3f / 1.25f, -25.0f / 1.25f}));
+	}
+}
+
+void networkServerNumberOfPlayersMenuAction(void *context)
+{
+	gDrawArrowsForNumberOfNetHumansFlag = !gDrawArrowsForNumberOfNetHumansFlag;
+}
+
+
 void drawNetworkServerPlayMenu(Renderer *renderer, color4_t preferredColor)
 {
 	{
@@ -428,7 +445,7 @@ void drawNetworkServerPlayMenu(Renderer *renderer, color4_t preferredColor)
 		drawString(renderer, translationMatrix, textColor, 30.0f / 14.0f, 5.0f / 14.0f, "(UDP port used is "NETWORK_PORT")");
 	}
 	
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.43f, 1.07f, -20.00f});
+	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.0f, -20.00f});
 	drawString(renderer, modelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Start Game");
 }
 
@@ -439,22 +456,6 @@ void networkServerPlayMenuAction(void *context)
 	
 	GameMenuContext *menuContext = context;
 	startNetworkGame(menuContext->window);
-}
-
-void drawNetworkServerNumberOfPlayersMenu(Renderer *renderer, color4_t preferredColor)
-{
-	mat4_t numberPlayersModelViewMatrix = m4_translation((vec3_t){-1.43f, 0.0f, -20.00f});
-	drawStringf(renderer, numberPlayersModelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Friends: %d", gNumberOfNetHumans);
-
-	if (gDrawArrowsForNumberOfNetHumansFlag)
-	{
-		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){0.35f / 1.25f, 0.1f / 1.25f, -25.0f / 1.25f}));
-	}
-}
-
-void networkServerNumberOfPlayersMenuAction(void *context)
-{
-	gDrawArrowsForNumberOfNetHumansFlag = !gDrawArrowsForNumberOfNetHumansFlag;
 }
 
 void drawNetworkClientMenu(Renderer *renderer, color4_t preferredColor)
@@ -1094,11 +1095,11 @@ void initMenus(ZGWindow *window, GameState *gameState, void (*exitGame)(ZGWindow
 	networkServerMenu->draw = drawNetworkServerMenu;
 	networkServerMenu->action = networkServerMenuAction;
 	
-	gNetworkServerPlayMenu->draw = drawNetworkServerPlayMenu;
-	gNetworkServerPlayMenu->action = networkServerPlayMenuAction;
-	
 	networkServerNumberOfPlayersMenu->draw = drawNetworkServerNumberOfPlayersMenu;
 	networkServerNumberOfPlayersMenu->action = networkServerNumberOfPlayersMenuAction;
+	
+	gNetworkServerPlayMenu->draw = drawNetworkServerPlayMenu;
+	gNetworkServerPlayMenu->action = networkServerPlayMenuAction;
 	
 	networkClientMenu->draw = drawNetworkClientMenu;
 	networkClientMenu->action = networkClientMenuAction;
@@ -1239,8 +1240,8 @@ void initMenus(ZGWindow *window, GameState *gameState, void (*exitGame)(ZGWindow
 	addSubMenu(networkPlayMenu, networkClientMenu);
 	addSubMenu(networkPlayMenu, networkUserNameMenu);
 	
-	addSubMenu(networkServerMenu, gNetworkServerPlayMenu);
 	addSubMenu(networkServerMenu, networkServerNumberOfPlayersMenu);
+	addSubMenu(networkServerMenu, gNetworkServerPlayMenu);
 	
 	addSubMenu(networkClientMenu, networkAddressFieldMenu);
 	addSubMenu(networkClientMenu, gConnectToNetworkGameMenu);
