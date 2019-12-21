@@ -101,28 +101,7 @@ void updateAI(Character *character, float currentTime, double timeDelta)
 
 static void fireCharacterWeaponAfterTurn(Character *character, float currentTime)
 {
-	if (mt_random() % 4 != 0)
-	{
-		return;
-	}
-	
-	unsigned int exitOutValue;
-	if (gAIMode == AI_HARD_MODE)
-	{
-		exitOutValue = 2;
-	}
-	else if (gAIMode == AI_MEDIUM_MODE)
-	{
-		exitOutValue = 5;
-	}
-	else
-	{
-		exitOutValue = 8;
-	}
-
-	// Exit out of function randomly depending on AI difficulty.
-	// An AIMode of AI_EASY_MODE will exit out more than AI_HARD_MODE
-	if ((mt_random() % 10) < exitOutValue)
+	if (mt_random() % 20 != 0)
 	{
 		return;
 	}
