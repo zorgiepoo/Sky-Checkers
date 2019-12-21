@@ -371,7 +371,7 @@ void networkPlayMenuAction(void *context)
 
 void drawNetworkUserNameFieldMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t nameLabelModelViewMatrix = m4_translation((vec3_t){-0.36f, -1.07f, -20.00f});	
+	mat4_t nameLabelModelViewMatrix = m4_translation((vec3_t){-0.65f, -1.07f, -20.00f});
 	drawString(renderer, nameLabelModelViewMatrix, preferredColor, 10.0f / 14.0f, 5.0f / 14.0f, "Name:");
 	
 	color4_t color  =  gNetworkUserNameFieldIsActive ? (color4_t){0.0f, 0.0f, 0.8f, 1.0f} : preferredColor;
@@ -412,7 +412,7 @@ void performNetworkUserNameBackspace(void)
 void drawNetworkServerMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 1.07f, -20.00f});	
-	drawString(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Server");
+	drawString(renderer, modelViewMatrix, preferredColor, 18.0f / 14.0f, 5.0f / 14.0f, "Make Game");
 }
 
 void networkServerMenuAction(void *context)
@@ -444,7 +444,7 @@ void networkServerPlayMenuAction(void *context)
 void drawNetworkServerNumberOfPlayersMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t numberPlayersModelViewMatrix = m4_translation((vec3_t){-1.43f, 0.0f, -20.00f});
-	drawStringf(renderer, numberPlayersModelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Net-Players: %d", gNumberOfNetHumans);
+	drawStringf(renderer, numberPlayersModelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Friends: %d", gNumberOfNetHumans);
 
 	if (gDrawArrowsForNumberOfNetHumansFlag)
 	{
@@ -460,7 +460,7 @@ void networkServerNumberOfPlayersMenuAction(void *context)
 void drawNetworkClientMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.00f, -20.00f});	
-	drawString(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Client");
+	drawString(renderer, modelViewMatrix, preferredColor, 18.0f / 14.0f, 5.0f / 14.0f, "Join Game");
 }
 
 void networkClientMenuAction(void *context)
