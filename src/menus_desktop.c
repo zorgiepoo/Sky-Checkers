@@ -316,7 +316,7 @@ void drawPlayMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f / 14.0f, 15.0f / 14.0f, -20.0f});
 	
-	drawString(renderer, modelViewMatrix, preferredColor, 12.0f / 14.0f, 5.0f / 14.0f, "Play");
+	drawString(renderer, modelViewMatrix, preferredColor, 10.0f / 14.0f, 5.0f / 14.0f, "Play");
 }
 
 void playGameAction(void *context)
@@ -361,7 +361,7 @@ void pauseExitMenuAction(void *context)
 void drawNetworkPlayMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.00f, -20.00f});	
-	drawString(renderer, modelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Online Play");
+	drawString(renderer, modelViewMatrix, preferredColor, 14.0f / 14.0f, 5.0f / 14.0f, "Online");
 }
 
 void networkPlayMenuAction(void *context)
@@ -534,7 +534,7 @@ void connectToNetworkGameMenuAction(void *context)
 void drawGameOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -1.07f, -20.00f});	
-	drawString(renderer, modelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Game Options");
+	drawString(renderer, modelViewMatrix, preferredColor, 14.0f / 14.0f, 5.0f / 14.0f, "Options");
 }
 
 void gameOptionsMenuAction(void *context)
@@ -545,7 +545,7 @@ void gameOptionsMenuAction(void *context)
 void drawPlayerOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 1.07f, -20.00f});	
-	drawString(renderer, modelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Configure Players");
+	drawString(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Players");
 }
 
 void playerOptionsMenuAction(void *context)
@@ -556,7 +556,7 @@ void playerOptionsMenuAction(void *context)
 void drawConfigureKeysMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.00f, -20.00f});	
-	drawString(renderer, modelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Configure Keys");
+	drawString(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Keyboard");
 }
 
 void configureKeysMenuAction(void *context)
@@ -987,8 +987,8 @@ void blueLightningFireKeyMenuAction(void *context)
 // Audio options
 void drawAudioOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -2.14f, -20.00f});	
-	drawString(renderer, modelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Audio Options");
+	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -1.07f, -20.00f});
+	drawString(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Sounds");
 }
 
 void audioOptionsMenuAction(void *context)
@@ -1036,8 +1036,8 @@ void audioMusicOptionsMenuAction(void *context)
 
 void drawQuitMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -3.21f, -20.00f});	
-	drawString(renderer, modelViewMatrix, preferredColor, 12.0f / 14.0f, 5.0f / 14.0f, "Quit");
+	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -2.14f, -20.00f});
+	drawString(renderer, modelViewMatrix, preferredColor, 10.0f / 14.0f, 5.0f / 14.0f, "Quit");
 }
 
 void quitMenuAction(void *context)
@@ -1233,7 +1233,6 @@ void initMenus(ZGWindow *window, GameState *gameState, void (*exitGame)(ZGWindow
 	addSubMenu(&gMainMenu, gPlayMenu);
 	addSubMenu(&gMainMenu, networkPlayMenu);
 	addSubMenu(&gMainMenu, gameOptionsMenu);
-	addSubMenu(&gMainMenu, audioOptionsMenu);
 	addSubMenu(&gMainMenu, quitMenu);
 	
 	addSubMenu(networkPlayMenu, networkServerMenu);
@@ -1255,6 +1254,7 @@ void initMenus(ZGWindow *window, GameState *gameState, void (*exitGame)(ZGWindow
 	addSubMenu(playerOptionsMenu, gConfigureLivesMenu);
 	
 	addSubMenu(gameOptionsMenu, configureKeysMenu);
+	addSubMenu(gameOptionsMenu, audioOptionsMenu);
 	
 	addSubMenu(audioOptionsMenu, audioEffectsOptionsMenu);
 	addSubMenu(audioOptionsMenu, audioMusicOptionsMenu);
