@@ -328,7 +328,7 @@ static void shootWeaponToNearingCharacter(Character *character, float currentTim
 	}
 	else
 	{
-		exitOutValue = 8;
+		exitOutValue = 9;
 	}
 	
 	// Exit out of function randomly depending on AI difficulty.
