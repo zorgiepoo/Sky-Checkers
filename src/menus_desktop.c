@@ -374,7 +374,7 @@ void drawNetworkUserNameFieldMenu(Renderer *renderer, color4_t preferredColor)
 	mat4_t nameLabelModelViewMatrix = m4_translation((vec3_t){-0.65f, -1.07f, -20.00f});
 	drawString(renderer, nameLabelModelViewMatrix, preferredColor, 10.0f / 14.0f, 5.0f / 14.0f, "Name:");
 	
-	color4_t color  =  gNetworkUserNameFieldIsActive ? (color4_t){0.0f, 0.0f, 0.8f, 1.0f} : preferredColor;
+	color4_t color  =  gNetworkUserNameFieldIsActive ? (color4_t){0.0f, 0.7f, 1.0f, 1.0f} : preferredColor;
 	
 	if (strlen(gUserNameString) > 0)
 	{
@@ -473,7 +473,7 @@ void drawNetworkAddressFieldMenu(Renderer *renderer, color4_t preferredColor)
 	mat4_t hostLabelModelViewMatrix = m4_translation((vec3_t){-3.86f, 0.00f, -20.00f});
 	drawString(renderer, hostLabelModelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Host Address:");
 	
-	color4_t color = gNetworkAddressFieldIsActive ? (color4_t){0.0f, 0.0f, 0.8f, 1.0f} : preferredColor;
+	color4_t color = gNetworkAddressFieldIsActive ? (color4_t){0.0f, 0.7f, 1.0f, 1.0f} : preferredColor;
 	
 	if (strlen(gServerAddressString) > 0)
 	{
