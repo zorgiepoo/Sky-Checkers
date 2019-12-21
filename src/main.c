@@ -1375,14 +1375,13 @@ static void handleWindowEvent(ZGWindowEvent event, void *context)
 }
 
 #if PLATFORM_IOS
-#define PAUSE_BOUNDARY 125.0f
 static void handleTouchEvent(ZGTouchEvent event, void *context)
 {
 	if (gGameState == GAME_STATE_ON)
 	{
 		Renderer *renderer = context;
 		
-		if (event.type == ZGTouchEventTypeTap && event.x >= (float)renderer->windowWidth - PAUSE_BOUNDARY && event.y <= PAUSE_BOUNDARY)
+		if (event.type == ZGTouchEventTypeTap && event.x >= (float)renderer->windowWidth - (renderer->windowWidth * 0.11f) && event.y <= (renderer->windowHeight * 0.11f))
 		{
 			showPauseMenu(renderer->window, &gGameState);
 		}
