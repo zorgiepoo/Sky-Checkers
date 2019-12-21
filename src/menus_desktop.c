@@ -568,9 +568,9 @@ void drawPinkBubbleGumPlayerOptionsMenu(Renderer *renderer, color4_t preferredCo
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 1.07f, -20.00f});	
 	if (gPinkBubbleGum.state == CHARACTER_HUMAN_STATE)
-		drawString(renderer, modelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Pink Bubblegum: Human");
+		drawString(renderer, modelViewMatrix, preferredColor, 24.0f / 14.0f, 5.0f / 14.0f, "Pink Bubblegum: Human");
 	else if (gPinkBubbleGum.state == CHARACTER_AI_STATE)
-		drawString(renderer, modelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Pink Bubblegum: Bot");
+		drawString(renderer, modelViewMatrix, preferredColor, 24.0f / 14.0f, 5.0f / 14.0f, "Pink Bubblegum: Bot");
 }
 
 void pinkBubbleGumPlayerOptionsMenuAction(void *context)
@@ -595,11 +595,11 @@ void drawRedRoverPlayerOptionsMenu(Renderer *renderer, color4_t preferredColor)
 	
 	if (gRedRover.state == CHARACTER_HUMAN_STATE)
 	{
-		drawString(renderer, modelViewMatrix, color, 20.0f / 14.0f, 5.0f / 14.0f, "Red Rover: Human");
+		drawString(renderer, modelViewMatrix, color, 24.0f / 14.0f, 5.0f / 14.0f, "Red Rover: Human");
 	}
 	else
 	{
-		drawString(renderer, modelViewMatrix, color, 20.0f / 14.0f, 5.0f / 14.0f, "Red Rover: Bot");
+		drawString(renderer, modelViewMatrix, color, 24.0f / 14.0f, 5.0f / 14.0f, "Red Rover: Bot");
 	}
 }
 
@@ -624,11 +624,11 @@ void drawGreenTreePlayerOptionsMenu(Renderer *renderer, color4_t preferredColor)
 	
 	if (gGreenTree.state == CHARACTER_HUMAN_STATE)
 	{
-		drawString(renderer, modelViewMatrix, color, 20.0f / 14.0f, 5.0f / 14.0f, "Green Tree: Human");
+		drawString(renderer, modelViewMatrix, color, 24.0f / 14.0f, 5.0f / 14.0f, "Green Tree: Human");
 	}
 	else if (gGreenTree.state == CHARACTER_AI_STATE)
 	{
-		drawString(renderer, modelViewMatrix, color, 20.0f / 14.0f, 5.0f / 14.0f, "Green Tree: Bot");
+		drawString(renderer, modelViewMatrix, color, 24.0f / 14.0f, 5.0f / 14.0f, "Green Tree: Bot");
 	}
 }
 
@@ -652,11 +652,11 @@ void drawBlueLightningPlayerOptionsMenu(Renderer *renderer, color4_t preferredCo
 	
 	if (gBlueLightning.state == CHARACTER_HUMAN_STATE)
 	{
-		drawString(renderer, modelViewMatrix, color, 20.0f / 14.0f, 5.0f / 14.0f, "Blue Lightning: Human");
+		drawString(renderer, modelViewMatrix, color, 24.0f / 14.0f, 5.0f / 14.0f, "Blue Lightning: Human");
 	}
 	else if (gBlueLightning.state == CHARACTER_AI_STATE)
 	{
-		drawString(renderer, modelViewMatrix, color, 20.0f / 14.0f, 5.0f / 14.0f, "Blue Lightning: Bot");
+		drawString(renderer, modelViewMatrix, color, 24.0f / 14.0f, 5.0f / 14.0f, "Blue Lightning: Bot");
 	}
 }
 
@@ -676,35 +676,35 @@ void drawAIModeOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modeModelViewMatrix = m4_translation((vec3_t){-0.07f, -3.21f, -20.00f});	
 	if (gAIMode == AI_EASY_MODE)
-		drawString(renderer, modeModelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Bot Mode: Easy");
+		drawString(renderer, modeModelViewMatrix, preferredColor, 24.0f / 14.0f, 5.0f / 14.0f, "Bot Mode: Easy");
 	
 	else if (gAIMode == AI_MEDIUM_MODE)
-		drawString(renderer, modeModelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Bot Mode: Medium");
+		drawString(renderer, modeModelViewMatrix, preferredColor, 24.0f / 14.0f, 5.0f / 14.0f, "Bot Mode: Medium");
 	
 	else if (gAIMode == AI_HARD_MODE)
-		drawString(renderer, modeModelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Bot Mode: Hard");
+		drawString(renderer, modeModelViewMatrix, preferredColor, 24.0f / 14.0f, 5.0f / 14.0f, "Bot Mode: Hard");
 	
 	if (gDrawArrowsForAIModeFlag)
 	{
-		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){2.0f / 1.25f, -4.1f / 1.25f, -25.0f / 1.25f}));
+		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){2.4f / 1.25f, -4.1f / 1.25f, -25.0f / 1.25f}));
 	}
 }
 
 void drawConfigureLivesMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t livesModelViewMatrix = m4_translation((vec3_t){-0.07f, -4.29f, -20.00f});	
-	drawStringf(renderer, livesModelViewMatrix, preferredColor, 20.0f / 14.0f, 5.0f / 14.0f, "Player Lives: %i", gCharacterLives);
+	drawStringf(renderer, livesModelViewMatrix, preferredColor, 24.0f / 14.0f, 5.0f / 14.0f, "Player Lives: %i", gCharacterLives);
 	
 	if (gDrawArrowsForCharacterLivesFlag)
 	{
-		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){2.0f / 1.25f, -5.4f / 1.25f, -25.0f / 1.25f}));
+		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){2.4f / 1.25f, -5.4f / 1.25f, -25.0f / 1.25f}));
 	}
 }
 
 void drawPinkBubbleGumConfigKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 1.07f, -20.00f});	
-	drawString(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Pink Bubblegum");
+	drawString(renderer, modelViewMatrix, preferredColor, 18.0f / 14.0f, 5.0f / 14.0f, "Pink Bubblegum");
 }
 
 void pinkBubbleGumKeyMenuAction(void *context)
@@ -715,7 +715,7 @@ void pinkBubbleGumKeyMenuAction(void *context)
 void drawRedRoverConfigKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.00f, -20.00f});	
-	drawString(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Red Rover");
+	drawString(renderer, modelViewMatrix, preferredColor, 18.0f / 14.0f, 5.0f / 14.0f, "Red Rover");
 }
 
 void redRoverKeyMenuAction(void *context)
@@ -726,7 +726,7 @@ void redRoverKeyMenuAction(void *context)
 void drawGreenTreeConfigKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -1.07f, -20.00f});	
-	drawString(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Green Tree");
+	drawString(renderer, modelViewMatrix, preferredColor, 18.0f / 14.0f, 5.0f / 14.0f, "Green Tree");
 }
 
 void greenTreeKeyMenuAction(void *context)
@@ -737,7 +737,7 @@ void greenTreeKeyMenuAction(void *context)
 void drawBlueLightningConfigKey(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -2.14f, -20.00f});	
-	drawString(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f, 5.0f / 14.0f, "Blue Lightning");
+	drawString(renderer, modelViewMatrix, preferredColor, 18.0f / 14.0f, 5.0f / 14.0f, "Blue Lightning");
 }
 
 void blueLightningKeyMenuAction(void *context)
