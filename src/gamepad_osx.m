@@ -81,12 +81,16 @@ typedef struct _Gamepad
 	GamepadElementMapping elementMappings[GAMEPAD_BUTTON_MAX];
 	char name[GAMEPAD_NAME_SIZE];
 	GamepadIndex index;
+#if GC_PRODUCT_CHECK
 	bool gcController;
+#endif
 } Gamepad;
 
 struct _GamepadManager
 {
+#if GC_PRODUCT_CHECK
 	struct GC_NAME(_GamepadManager) *gcManager;
+#endif
 	IOHIDManagerRef hidManager;
 	Gamepad gamepads[MAX_GAMEPADS];
 	GamepadEvent eventsBuffer[GAMEPAD_EVENT_BUFFER_CAPACITY];
@@ -326,10 +330,12 @@ static void _hidDeviceMatchingCallback(void *context, IOReturn result, void *sen
 	uint16_t newGamepadIndex = MAX_GAMEPADS;
 	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
 	{
+#if GC_PRODUCT_CHECK
 		if (gamepadManager->gamepads[index].gcController)
 		{
 			continue;
 		}
+#endif
 		
 		if (gamepadManager->gamepads[index].device == device)
 		{
@@ -414,7 +420,9 @@ static void _hidDeviceMatchingCallback(void *context, IOReturn result, void *sen
 	newGamepad->device = device;
 	newGamepad->vendorID = vendorID;
 	newGamepad->productID = productID;
+#if GC_PRODUCT_CHECK
 	newGamepad->gcController = false;
+#endif
 	newGamepad->index = gamepadManager->nextGamepadIndex;
 	gamepadManager->nextGamepadIndex++;
 	
@@ -544,7 +552,13 @@ static void _hidDeviceRemovalCallback(void *context, IOReturn result, void *send
 	GamepadManager *gamepadManager = context;
 	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
 	{
-		if (!gamepadManager->gamepads[index].gcController && gamepadManager->gamepads[index].device == device)
+#if GC_PRODUCT_CHECK
+		if (gamepadManager->gamepads[index].gcController)
+		{
+			continue;
+		}
+#endif
+		if (gamepadManager->gamepads[index].device == device)
 		{
 			_removeGamepad(gamepadManager, index);
 			break;
@@ -557,6 +571,7 @@ static NSDictionary<NSString *, NSNumber *> *_matchingCriteriaForUsage(NSInteger
 	return @{@kIOHIDDeviceUsagePageKey : @(kHIDPage_GenericDesktop), @kIOHIDDeviceUsageKey : @(usage)};
 }
 
+#if GC_PRODUCT_CHECK
 static void _gcGamepadAdded(GamepadIndex gcIndex, void *context)
 {
 	GamepadManager *gamepadManager = context;
@@ -612,6 +627,7 @@ static void _gcGamepadRemoved(GamepadIndex gcIndex, void *context)
 		}
 	}
 }
+#endif
 
 GamepadManager *initGamepadManager(const char *databasePath, GamepadCallback addedCallback, GamepadCallback removalCallback, void *context)
 {
@@ -621,7 +637,9 @@ GamepadManager *initGamepadManager(const char *databasePath, GamepadCallback add
 	GamepadManager *gamepadManager = calloc(sizeof(*gamepadManager), 1);
 	assert(gamepadManager != NULL);
 	
+#if GC_PRODUCT_CHECK
 	gamepadManager->gcManager = GC_NAME(initGamepadManager)(databasePath, _gcGamepadAdded, _gcGamepadRemoved, gamepadManager);
+#endif
 	
 	gamepadManager->addedCallback = addedCallback;
 	gamepadManager->removalCallback = removalCallback;
@@ -671,6 +689,7 @@ GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *syst
 	{
 		Gamepad *gamepad = &gamepadManager->gamepads[index];
 		
+#if GC_PRODUCT_CHECK
 		if (gamepad->gcController)
 		{
 			uint16_t gcEventCount = 0;
@@ -683,6 +702,7 @@ GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *syst
 			
 			continue;
 		}
+#endif
 		
 		if (gamepad->device == NULL) continue;
 		
@@ -814,7 +834,12 @@ const char *gamepadName(GamepadManager *gamepadManager, GamepadIndex gamepadInde
 	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
 	{
 		Gamepad *gamepad = &gamepadManager->gamepads[index];
+
+#if GC_PRODUCT_CHECK
 		if ((!gamepad->gcController && gamepad->device == NULL) || gamepad->index != gamepadIndex) continue;
+#else
+		if (gamepad->device == NULL || gamepad->index != gamepadIndex) continue;
+#endif
 		
 		return gamepad->name;
 	}
@@ -824,6 +849,7 @@ const char *gamepadName(GamepadManager *gamepadManager, GamepadIndex gamepadInde
 
 void setPlayerIndex(GamepadManager *gamepadManager, GamepadIndex gamepadIndex, int64_t playerIndex)
 {
+#if GC_PRODUCT_CHECK
 	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
 	{
 		Gamepad *gamepad = &gamepadManager->gamepads[index];
@@ -832,4 +858,5 @@ void setPlayerIndex(GamepadManager *gamepadManager, GamepadIndex gamepadIndex, i
 			GC_NAME(setPlayerIndex)(gamepadManager->gcManager, gamepadIndex, playerIndex);
 		}
 	}
+#endif
 }
