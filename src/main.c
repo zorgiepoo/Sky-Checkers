@@ -1351,13 +1351,20 @@ static void handleWindowEvent(ZGWindowEvent event, void *context)
 			updateViewport(&appContext->renderer, event.width, event.height);
 			break;
 		case ZGWindowEventTypeFocusGained:
-			if (gGameState != GAME_STATE_PAUSED)
+			if (gGameState == GAME_STATE_OFF || gGameState == GAME_STATE_CONNECTING)
 			{
 				unPauseMusic();
 			}
 			break;
 		case ZGWindowEventTypeFocusLost:
-			pauseMusic();
+			if (gGameState == GAME_STATE_OFF || gGameState == GAME_STATE_CONNECTING)
+			{
+				pauseMusic();
+			}
+			else
+			{
+				showPauseMenu(appContext->renderer.window, &gGameState);
+			}
 			break;
 		case ZGWindowEventTypeShown:
 			appContext->needsToDrawScene = true;
