@@ -57,6 +57,10 @@ void drawTextureWithVertices_gl(Renderer *renderer, float *modelViewProjectionMa
 
 void drawTextureWithVerticesFromIndices_gl(Renderer *renderer, float *modelViewProjectionMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
 
+void pushDebugGroup_gl(Renderer *renderer, const char *groupName);
+
+void popDebugGroup_gl(Renderer *renderer);
+
 static bool compileShader(GLuint *shader, uint16_t glslVersion, GLenum type, const char *filepath)
 {
 	GLint status;
@@ -403,6 +407,8 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	renderer->drawVerticesFromIndicesPtr = drawVerticesFromIndices_gl;
 	renderer->drawTextureWithVerticesPtr = drawTextureWithVertices_gl;
 	renderer->drawTextureWithVerticesFromIndicesPtr = drawTextureWithVerticesFromIndices_gl;
+	renderer->pushDebugGroupPtr = pushDebugGroup_gl;
+	renderer->popDebugGroupPtr = popDebugGroup_gl;
 }
 
 void renderFrame_gl(Renderer *renderer, void (*drawFunc)(Renderer *))
@@ -648,4 +654,12 @@ void drawTextureWithVerticesFromIndices_gl(Renderer *renderer, float *modelViewP
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	
 	endDrawingVerticesAndTextures(options);
+}
+
+void pushDebugGroup_gl(Renderer *renderer, const char *groupName)
+{
+}
+
+void popDebugGroup_gl(Renderer *renderer)
+{
 }

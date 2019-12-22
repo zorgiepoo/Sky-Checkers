@@ -64,6 +64,9 @@ void drawTextureWithVertices_metal(Renderer *renderer, ZGFloat *modelViewProject
 
 void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, ZGFloat *modelViewProjectionMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
 
+void pushDebugGroup_metal(Renderer *renderer, const char *debugGroupName);
+void popDebugGroup_metal(Renderer *renderer);
+
 #if PLATFORM_IOS
 
 @interface ZGMetalView : UIView
@@ -223,9 +226,11 @@ static PipelineOptionIndex rendererOptionsToPipelineOptionIndex(RendererOptions 
 	}
 }
 
-static void createAndStorePipelineState(void **pipelineStates, id<MTLDevice> device, MTLPixelFormat pixelFormat, NSArray<id<MTLFunction>> *shaderFunctions, ShaderFunctionPairIndex shaderPairIndex, PipelineOptionIndex pipelineOptionIndex, bool fsaa, uint32_t fsaaSampleCount)
+static void createAndStorePipelineState(void **pipelineStates, id<MTLDevice> device, MTLPixelFormat pixelFormat, NSArray<id<MTLFunction>> *shaderFunctions, ShaderFunctionPairIndex shaderPairIndex, PipelineOptionIndex pipelineOptionIndex, bool fsaa, uint32_t fsaaSampleCount, NSString *label)
 {
 	MTLRenderPipelineDescriptor *pipelineStateDescriptor = [MTLRenderPipelineDescriptor new];
+	pipelineStateDescriptor.label = label;
+	
 	pipelineStateDescriptor.vertexFunction = shaderFunctions[shaderPairIndex * 2];
 	pipelineStateDescriptor.fragmentFunction = shaderFunctions[shaderPairIndex * 2 + 1];
 	
@@ -445,17 +450,17 @@ static void createPipelines(Renderer *renderer)
 	
 	// Set up pipelines
 	
-	createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_PAIR_INDEX, PIPELINE_OPTION_NONE_INDEX, renderer->fsaa, renderer->sampleCount);
+	createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_PAIR_INDEX, PIPELINE_OPTION_NONE_INDEX, renderer->fsaa, renderer->sampleCount, @"Position");
 	
 	// renderer->metalPipelineStates[1] is unused
 	
-	createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_PAIR_INDEX, PIPELINE_OPTION_BLENDING_ONE_MINUS_SOURCE_ALPHA_INDEX, renderer->fsaa, renderer->sampleCount);
+	createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_PAIR_INDEX, PIPELINE_OPTION_BLENDING_ONE_MINUS_SOURCE_ALPHA_INDEX, renderer->fsaa, renderer->sampleCount, @"Position Blending 1-alpha");
 	
-	createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_TEXTURE_PAIR_INDEX, PIPELINE_OPTION_NONE_INDEX, renderer->fsaa, renderer->sampleCount);
+	createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_TEXTURE_PAIR_INDEX, PIPELINE_OPTION_NONE_INDEX, renderer->fsaa, renderer->sampleCount, @"Texture");
 	
-	createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_TEXTURE_PAIR_INDEX, PIPELINE_OPTION_BLENDING_SOURCE_ALPHA_INDEX, renderer->fsaa, renderer->sampleCount);
+	createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_TEXTURE_PAIR_INDEX, PIPELINE_OPTION_BLENDING_SOURCE_ALPHA_INDEX, renderer->fsaa, renderer->sampleCount, @"Texture Blending alpha");
 	
-	createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_TEXTURE_PAIR_INDEX, PIPELINE_OPTION_BLENDING_ONE_MINUS_SOURCE_ALPHA_INDEX, renderer->fsaa, renderer->sampleCount);
+	createAndStorePipelineState(renderer->metalPipelineStates, device, metalLayer.pixelFormat, shaderFunctions, SHADER_FUNCTION_POSITION_TEXTURE_PAIR_INDEX, PIPELINE_OPTION_BLENDING_ONE_MINUS_SOURCE_ALPHA_INDEX, renderer->fsaa, renderer->sampleCount, @"Texture Blending 1-alpha");
 	
 	renderer->metalCreatedInitialPipelines = true;
 }
@@ -609,6 +614,8 @@ bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t w
 		renderer->drawVerticesFromIndicesPtr = drawVerticesFromIndices_metal;
 		renderer->drawTextureWithVerticesPtr = drawTextureWithVertices_metal;
 		renderer->drawTextureWithVerticesFromIndicesPtr = drawTextureWithVerticesFromIndices_metal;
+		renderer->pushDebugGroupPtr = pushDebugGroup_metal;
+		renderer->popDebugGroupPtr = popDebugGroup_metal;
 	}
 	
 	return true;
@@ -726,18 +733,25 @@ static id<MTLBuffer> createBuffer(Renderer *renderer, const void *data, uint32_t
 BufferObject createIndexBufferObject_metal(Renderer *renderer, const void *data, uint32_t size)
 {
 	id<MTLBuffer> buffer = createBuffer(renderer, data, size);
+	[buffer addDebugMarker:@"Indices" range:NSMakeRange(0, size)];
+	
 	return (BufferObject){.metalObject = (void *)CFBridgingRetain(buffer)};
 }
 
 BufferArrayObject createVertexArrayObject_metal(Renderer *renderer, const void *vertices, uint32_t verticesSize)
 {
 	id<MTLBuffer> buffer = createBuffer(renderer, vertices, verticesSize);
+	[buffer addDebugMarker:@"Vertices" range:NSMakeRange(0, verticesSize)];
+	
 	return (BufferArrayObject){.metalObject = (void *)CFBridgingRetain(buffer), .metalVerticesSize = verticesSize};
 }
 
 BufferArrayObject createVertexAndTextureCoordinateArrayObject_metal(Renderer *renderer, const void *verticesAndTextureCoordinates, uint32_t verticesSize, uint32_t textureCoordinatesSize)
 {
 	id<MTLBuffer> buffer = createBuffer(renderer, verticesAndTextureCoordinates, verticesSize + textureCoordinatesSize);
+	[buffer addDebugMarker:@"Vertices" range:NSMakeRange(0, verticesSize)];
+	[buffer addDebugMarker:@"Tex Coords" range:NSMakeRange(verticesSize, textureCoordinatesSize)];
+	
 	return (BufferArrayObject){.metalObject = (void *)CFBridgingRetain(buffer), .metalVerticesSize = verticesSize};
 }
 
@@ -836,4 +850,18 @@ void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, ZGFloat *model
 	
 	id<MTLBuffer> indicesBuffer = (__bridge id<MTLBuffer>)(indicesBufferObject.metalObject);
 	[renderCommandEncoder drawIndexedPrimitives:metalTypeFromRendererMode(mode) indexCount:indicesCount indexType:MTLIndexTypeUInt16 indexBuffer:indicesBuffer indexBufferOffset:0];
+}
+
+void pushDebugGroup_metal(Renderer *renderer, const char *debugGroupName)
+{
+	id<MTLRenderCommandEncoder> renderCommandEncoder = (__bridge id<MTLRenderCommandEncoder>)(renderer->metalCurrentRenderCommandEncoder);
+	
+	[renderCommandEncoder pushDebugGroup:@(debugGroupName)];
+}
+
+void popDebugGroup_metal(Renderer *renderer)
+{
+	id<MTLRenderCommandEncoder> renderCommandEncoder = (__bridge id<MTLRenderCommandEncoder>)(renderer->metalCurrentRenderCommandEncoder);
+	
+	[renderCommandEncoder popDebugGroup];
 }

@@ -138,3 +138,13 @@ void drawTextureWithVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatr
 	mat4_t modelViewProjectionMatrix = computeModelViewProjectionMatrix(renderer->projectionMatrix, modelViewMatrix);
 	renderer->drawTextureWithVerticesFromIndicesPtr(renderer, &modelViewProjectionMatrix.m00, texture, mode, vertexAndTextureArrayObject, indicesBufferObject, indicesCount, color, options);
 }
+
+void pushDebugGroup(Renderer *renderer, const char *debugGroupName)
+{
+	return renderer->pushDebugGroupPtr(renderer, debugGroupName);
+}
+
+void popDebugGroup(Renderer *renderer)
+{
+	return renderer->popDebugGroupPtr(renderer);
+}

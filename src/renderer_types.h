@@ -209,6 +209,8 @@ typedef struct _Renderer
 	void(*drawVerticesFromIndicesPtr)(struct _Renderer *, ZGFloat *, RendererMode, BufferArrayObject, BufferObject, uint32_t, color4_t, RendererOptions);
 	void(*drawTextureWithVerticesPtr)(struct _Renderer *, ZGFloat *, TextureObject, RendererMode, BufferArrayObject, uint32_t, color4_t, RendererOptions);
 	void(*drawTextureWithVerticesFromIndicesPtr)(struct _Renderer *, ZGFloat *, TextureObject, RendererMode, BufferArrayObject, BufferObject, uint32_t, color4_t, RendererOptions);
+	void(*pushDebugGroupPtr)(struct _Renderer *, const char *);
+	void(*popDebugGroupPtr)(struct _Renderer *);
 } Renderer;
 
 #ifdef __cplusplus

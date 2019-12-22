@@ -923,18 +923,26 @@ static void drawScene(Renderer *renderer)
 	{
 		// Render opaque objects first
 		
+		pushDebugGroup(renderer, "Weapons");
+		
 		// Weapons renders at z = -24.0f to -25.0f after a world rotation
 		drawWeapon(renderer, gRedRover.weap);
 		drawWeapon(renderer, gGreenTree.weap);
 		drawWeapon(renderer, gPinkBubbleGum.weap);
 		drawWeapon(renderer, gBlueLightning.weap);
+		
+		popDebugGroup(renderer);
 
 		// Characters renders at z = -25.3 to -24.7 after a world rotation when not fallen
 		// When falling, will reach to around -195
+		pushDebugGroup(renderer, "Characters");
 		drawCharacters(renderer, RENDERER_OPTION_NONE);
+		popDebugGroup(renderer);
 
 		// Tiles renders at z = -25.0f to -26.0f after a world rotation when not fallen
+		pushDebugGroup(renderer, "Tiles");
 		drawTiles(renderer);
+		popDebugGroup(renderer);
 		
 		// Character icons at the bottom of the screen at z = -25.0f
 		const mat4_t characterIconTranslations[] =
@@ -944,22 +952,31 @@ static void drawScene(Renderer *renderer)
 			m4_translation((vec3_t){CHARACTER_ICON_OFFSET + CHARACTER_ICON_DISPLACEMENT * 2, -9.2f, -25.0f}),
 			m4_translation((vec3_t){CHARACTER_ICON_OFFSET + CHARACTER_ICON_DISPLACEMENT * 3, -9.2f, -25.0f})
 		};
+		pushDebugGroup(renderer, "Icons");
 		drawCharacterIcons(renderer, characterIconTranslations);
+		popDebugGroup(renderer);
 		
 		// Render transparent objects from zFar to zNear
 		
 		// Sky renders at z = -38.0f
+		pushDebugGroup(renderer, "Sky");
 		drawSky(renderer, RENDERER_OPTION_BLENDING_ALPHA);
+		popDebugGroup(renderer);
 		
 		// Characters renders at z = -25.3 to -24.7 after a world rotation when not fallen
 		// When falling, will reach to around -195
+		pushDebugGroup(renderer, "Characters");
 		drawCharacters(renderer, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
+		popDebugGroup(renderer);
 		
 		// Character lives at z = -25.0f
+		pushDebugGroup(renderer, "Character Info");
 		bool displayControllerNames = (!gGameHasStarted || gGameState == GAME_STATE_PAUSED) && gNetworkConnection == NULL;
 		drawAllCharacterInfo(renderer, characterIconTranslations, displayControllerNames);
+		popDebugGroup(renderer);
 		
 		// Render game instruction at -25.0f
+		pushDebugGroup(renderer, "Instructional Text");
 		{
 			mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f / 11.2f, 80.0f / 11.2f, -280.0f / 11.2f});
 			
@@ -1024,17 +1041,22 @@ static void drawScene(Renderer *renderer)
 				}
 			}
 		}
+		popDebugGroup(renderer);
 		
 #if !PLATFORM_IOS
 		if (gConsoleActivated)
 		{
 			// Console at z = -25.0f
+			pushDebugGroup(renderer, "Console");
 			drawConsole(renderer);
+			popDebugGroup(renderer);
 		}
 #endif
 		
 		if (gGameState == GAME_STATE_PAUSED)
 		{
+			pushDebugGroup(renderer, "Paused");
+			
 			// Renders at z = -22.0f
 			drawBlackBox(renderer);
 			
@@ -1044,8 +1066,11 @@ static void drawScene(Renderer *renderer)
 			
 #if !PLATFORM_IOS
 			// Menus render at z = -20.0f
+			pushDebugGroup(renderer, "Menus");
 			drawMenus(renderer);
+			popDebugGroup(renderer);
 #endif
+			popDebugGroup(renderer);
 		}
 		// Winning/Losing text at z = -25.0f
 		else if (gGameWinner != NO_CHARACTER)
@@ -1054,24 +1079,31 @@ static void drawScene(Renderer *renderer)
 			if (gConsoleActivated)
 			{
 				// Console text at z = -23.0f
+				pushDebugGroup(renderer, "Console Text");
 				drawConsoleText(renderer);
+				popDebugGroup(renderer);
 			}
 #endif
 			
 			// Renders at z = -22.0f
+			pushDebugGroup(renderer, "Black Box");
 			drawBlackBox(renderer);
+			popDebugGroup(renderer);
 			
 			if (gGameWinner != NO_CHARACTER)
 			{
 				// Character icons on scoreboard at z = -20.0f
 				// This is supposed to actually be opaque, but it doesn't render properly in the GL renderer
 				// if this is rendered beforehand, don't know why.
+				pushDebugGroup(renderer, "Scoreboard");
 				drawScoreboardForCharacters(renderer, SCOREBOARD_RENDER_ICONS);
+				popDebugGroup(renderer);
 			}
 			
 			// Renders winning/losing text at z = -20.0f
 			mat4_t winLoseModelViewMatrix = m4_translation((vec3_t){0.0f / 1.25f, 100.0f / 14.0f, -25.0f / 1.25f});
 			
+			pushDebugGroup(renderer, "Winner Text");
 			if (gGameWinner == RED_ROVER)
 			{
 				char winBuffer[128] = {0};
@@ -1100,9 +1132,12 @@ static void drawScene(Renderer *renderer)
 				
 				drawStringScaled(renderer, winLoseModelViewMatrix, (color4_t){gBlueLightning.red, gBlueLightning.green, gBlueLightning.blue, 1.0f}, 0.0027f, winBuffer);
 			}
+			popDebugGroup(renderer);
 			
 			// Character scores on scoreboard at z = -20.0f
+			pushDebugGroup(renderer, "Scoreboard");
 			drawScoreboardForCharacters(renderer, SCOREBOARD_RENDER_SCORES);
+			popDebugGroup(renderer);
 			
 			// Play again or exit text at z = -20.0f
 			{
@@ -1111,7 +1146,9 @@ static void drawScene(Renderer *renderer)
 				if (gNetworkConnection == NULL || gNetworkConnection->type == NETWORK_SERVER_TYPE)
 				{
 					// Draw a "Press ENTER to play again" notice
+					pushDebugGroup(renderer, "Play Again Text");
 					drawStringScaled(renderer, modelViewMatrix, (color4_t){0.2f, 0.2f, 0.6f, 1.0f}, 0.004f, "Fire to play again");
+					popDebugGroup(renderer);
 				}
 			}
 		}
@@ -1121,7 +1158,9 @@ static void drawScene(Renderer *renderer)
 			if (gConsoleActivated)
 			{
 				// Console text at z =  -24.0f
+				pushDebugGroup(renderer, "Console Text");
 				drawConsoleText(renderer);
+				popDebugGroup(renderer);
 			}
 #endif
 		}
@@ -1131,20 +1170,27 @@ static void drawScene(Renderer *renderer)
 		if (gGameState == GAME_STATE_ON)
 		{
 			mat4_t gameTitleModelViewMatrix = m4_translation((vec3_t){7.5f * computeProjectionAspectRatio(renderer), 7.5f, -20.0f});
+			
+			pushDebugGroup(renderer, "Pause Button");
 			drawStringScaled(renderer, gameTitleModelViewMatrix, (color4_t){1.0f, 1.0f, 1.0f, 0.4f}, 0.003f, "⏸️");
+			popDebugGroup(renderer);
 		}
 #endif
 		
 		if (gDrawFPS)
 		{
 			// FPS renders at z = -18.0f
+			pushDebugGroup(renderer, "FPS Text");
 			drawFramesPerSecond(renderer);
+			popDebugGroup(renderer);
 		}
 		
 		if (gDrawPings)
 		{
 			// Pings render at z = -18.0f
+			pushDebugGroup(renderer, "Pings");
 			drawPings(renderer);
+			popDebugGroup(renderer);
 		}
 	}
 	else /* if (gGameState != GAME_STATE_ON && gGameState != GAME_STATE_PAUSED) */
@@ -1154,14 +1200,20 @@ static void drawScene(Renderer *renderer)
 		// The sky should be behind the black box
 		
 		// Sky renders at -38.0f
+		pushDebugGroup(renderer, "Sky");
 		drawSky(renderer, RENDERER_OPTION_DISABLE_DEPTH_TEST);
+		popDebugGroup(renderer);
 		
 		// Black box renders at -22.0f
+		pushDebugGroup(renderer, "Black Box");
 		drawBlackBox(renderer);
+		popDebugGroup(renderer);
 		
 		// Title renders at -20.0f
+		pushDebugGroup(renderer, "Game Title");
 		mat4_t gameTitleModelViewMatrix = m4_translation((vec3_t){0.0f, 5.4f, -20.0f});
 		drawStringScaled(renderer, gameTitleModelViewMatrix, (color4_t){0.3f, 0.2f, 1.0f, 0.7f}, 0.00592f, "Sky Checkers");
+		popDebugGroup(renderer);
 		
 		if (gGameState == GAME_STATE_CONNECTING)
 		{
@@ -1169,20 +1221,26 @@ static void drawScene(Renderer *renderer)
 			mat4_t translationMatrix = m4_translation((vec3_t){-1.0f / 14.0f, 15.0f / 14.0f, -280.0f / 14.0f});
 			color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 1.0f};
 			
+			pushDebugGroup(renderer, "Connecting Text");
 			drawString(renderer, translationMatrix, textColor, 50.0f / 14.0f, 5.0f / 14.0f, "Connecting to server...");
+			popDebugGroup(renderer);
 		}
 		else /* if (gGameState == GAME_STATE_OFF) */
 		{
 #if !PLATFORM_IOS
 			// Menus render at z = -20.0f
+			pushDebugGroup(renderer, "Menus");
 			drawMenus(renderer);
+			popDebugGroup(renderer);
 #endif
 		}
 		
 		if (gDrawFPS)
 		{
 			// FPS renders at z = -18.0f
+			pushDebugGroup(renderer, "FPS Text");
 			drawFramesPerSecond(renderer);
+			popDebugGroup(renderer);
 		}
 	}
 }

@@ -54,6 +54,10 @@ extern "C" void drawTextureWithVertices_d3d11(Renderer *renderer, float *modelVi
 
 extern "C" void drawTextureWithVerticesFromIndices_d3d11(Renderer *renderer, float *modelViewProjectionMatrix, TextureObject texture, RendererMode mode, BufferArrayObject vertexAndTextureArrayObject, BufferObject indicesBufferObject, uint32_t indicesCount, color4_t color, RendererOptions options);
 
+extern "C" void pushDebugGroup_d3d11(Renderer *renderer, const char *debugGroupName);
+
+extern "C" void popDebugGroup_d3d11(Renderer *renderer);
+
 typedef struct
 {
 	ID3D11ShaderResourceView *resourceView;
@@ -786,6 +790,8 @@ extern "C" bool createRenderer_d3d11(Renderer *renderer, const char *windowTitle
 	renderer->drawVerticesFromIndicesPtr = drawVerticesFromIndices_d3d11;
 	renderer->drawTextureWithVerticesPtr = drawTextureWithVertices_d3d11;
 	renderer->drawTextureWithVerticesFromIndicesPtr = drawTextureWithVerticesFromIndices_d3d11;
+	renderer->pushDebugGroupPtr = pushDebugGroup_d3d11;
+	renderer->popDebugGroupPtr = popDebugGroup_d3d11;
 
 	return true;
 
@@ -1160,4 +1166,12 @@ extern "C" void drawTextureWithVerticesFromIndices_d3d11(Renderer *renderer, flo
 
 	ID3D11DeviceContext *context = (ID3D11DeviceContext *)renderer->d3d11Context;
 	context->DrawIndexed(indicesCount, 0, 0);
+}
+
+extern "C" void pushDebugGroup_d3d11(Renderer *renderer, const char *debugGroupName)
+{
+}
+
+extern "C" void popDebugGroup_d3d11(Renderer *renderer)
+{
 }
