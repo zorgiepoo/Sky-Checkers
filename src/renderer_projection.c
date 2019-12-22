@@ -24,7 +24,17 @@
 ZGFloat computeProjectionAspectRatio(Renderer *renderer)
 {
 	// Some history is this used to be width / height (where both width and height were integers), resulting in 1 most of the time.
-	return ((ZGFloat)renderer->drawableWidth / (ZGFloat)renderer->drawableHeight) / (ZGFloat)(16.0f / 9.0f);
+	ZGFloat sizeRatio = (ZGFloat)renderer->drawableWidth / (ZGFloat)renderer->drawableHeight;
+	
+	// If size is 4:3 just use 1.0
+	if (fabsf(sizeRatio - (4.0f / 3.0f)) <= 0.01f)
+	{
+		return (ZGFloat)1.0f;
+	}
+	else
+	{
+		return sizeRatio / (ZGFloat)(16.0f / 9.0f);
+	}
 }
 
 static mat4_t computeGLProjectionMatrix(Renderer *renderer)
