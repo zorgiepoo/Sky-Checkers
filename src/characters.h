@@ -51,7 +51,7 @@
 #define NETWORK_PENDING_STATE 5
 #define NETWORK_PLAYING_STATE 6
 
-#define MAX_CONTROLLER_NAME_SIZE 32
+#define MAX_CONTROLLER_NAME_SIZE 20
 
 // If you were to use a stop watch, the time it takes for a character to go from one end
 // of the checkerboard to the other end (vertically) is ~3.50-3.60 seconds

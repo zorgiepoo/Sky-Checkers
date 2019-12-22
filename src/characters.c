@@ -509,7 +509,7 @@ static void drawCharacterControllerName(Renderer *renderer, mat4_t modelViewMatr
 {
 	if (strlen(controllerName) > 0)
 	{
-		drawStringLeftAligned(renderer, m4_mul(modelViewMatrix, m4_translation((vec3_t){-1.2f, 1.0f, 0.0f})), color, 0.0015f, controllerName);
+		drawStringLeftAligned(renderer, m4_mul(modelViewMatrix, m4_translation((vec3_t){-1.2f, 1.0f, 0.0f})), color, 0.002f, controllerName);
 	}
 }
 
