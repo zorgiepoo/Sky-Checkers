@@ -1219,10 +1219,6 @@ static void handleKeyDownEvent(ZGKeyboardEvent *event, Renderer *renderer)
 			{
 				clearConsole();
 			}
-			else if (gGameWinner != NO_CHARACTER)
-			{
-				exitGame(window);
-			}
 			else
 			{
 				showPauseMenu(window, &gGameState);
