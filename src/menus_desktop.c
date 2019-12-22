@@ -61,7 +61,7 @@ static void initMainMenu(void);
 static void addSubMenu(Menu *parentMenu, Menu *childMenu);
 
 static void invokeMenu(void *context);
-static void changeMenu(int direction);
+static void changeMenu(int direction, ZGWindow *window);
 
 static void (*gExitGame)(ZGWindow *);
 
@@ -247,7 +247,7 @@ void drawMenus(Renderer *renderer)
 	}
 }
 
-static void changeMenu(int direction)
+static void changeMenu(int direction, ZGWindow *window)
 {
 	if (direction == RIGHT)
 	{
@@ -278,7 +278,7 @@ static void changeMenu(int direction)
 			gCurrentMenu = gCurrentMenu->above;
 	}
 	
-	if (gAudioEffectsFlag)
+	if ((window == NULL || ZGWindowHasFocus(window)) && gAudioEffectsFlag)
 	{
 		playMenuSound();
 	}
@@ -338,7 +338,7 @@ void drawPauseResumeMenu(Renderer *renderer, color4_t preferredColor)
 
 void pauseResumeMenuAction(void *context)
 {
-	changeMenu(LEFT);
+	changeMenu(LEFT, NULL);
 	
 	GameMenuContext *menuContext = context;
 	*menuContext->gameState = GAME_STATE_ON;
@@ -353,7 +353,7 @@ void drawPauseExitMenu(Renderer *renderer, color4_t preferredColor)
 
 void pauseExitMenuAction(void *context)
 {
-	changeMenu(LEFT);
+	changeMenu(LEFT, NULL);
 	GameMenuContext *menuContext = context;
 	menuContext->exitGame(menuContext->window);
 }
@@ -366,7 +366,7 @@ void drawNetworkPlayMenu(Renderer *renderer, color4_t preferredColor)
 
 void networkPlayMenuAction(void *context)
 {
-	changeMenu(RIGHT);
+	changeMenu(RIGHT, NULL);
 }
 
 void drawNetworkUserNameFieldMenu(Renderer *renderer, color4_t preferredColor)
@@ -417,7 +417,7 @@ void drawNetworkServerMenu(Renderer *renderer, color4_t preferredColor)
 
 void networkServerMenuAction(void *context)
 {
-	changeMenu(RIGHT);
+	changeMenu(RIGHT, NULL);
 }
 
 void drawNetworkServerNumberOfPlayersMenu(Renderer *renderer, color4_t preferredColor)
@@ -466,7 +466,7 @@ void drawNetworkClientMenu(Renderer *renderer, color4_t preferredColor)
 
 void networkClientMenuAction(void *context)
 {
-	changeMenu(RIGHT);
+	changeMenu(RIGHT, NULL);
 }
 
 void drawNetworkAddressFieldMenu(Renderer *renderer, color4_t preferredColor)
@@ -540,7 +540,7 @@ void drawGameOptionsMenu(Renderer *renderer, color4_t preferredColor)
 
 void gameOptionsMenuAction(void *context)
 {
-	changeMenu(RIGHT);
+	changeMenu(RIGHT, NULL);
 }
 
 void drawPlayerOptionsMenu(Renderer *renderer, color4_t preferredColor)
@@ -551,7 +551,7 @@ void drawPlayerOptionsMenu(Renderer *renderer, color4_t preferredColor)
 
 void playerOptionsMenuAction(void *context)
 {
-	changeMenu(RIGHT);
+	changeMenu(RIGHT, NULL);
 }
 
 void drawConfigureKeysMenu(Renderer *renderer, color4_t preferredColor)
@@ -562,7 +562,7 @@ void drawConfigureKeysMenu(Renderer *renderer, color4_t preferredColor)
 
 void configureKeysMenuAction(void *context)
 {
-	changeMenu(RIGHT);
+	changeMenu(RIGHT, NULL);
 }
 
 void drawPinkBubbleGumPlayerOptionsMenu(Renderer *renderer, color4_t preferredColor)
@@ -710,7 +710,7 @@ void drawPinkBubbleGumConfigKey(Renderer *renderer, color4_t preferredColor)
 
 void pinkBubbleGumKeyMenuAction(void *context)
 {
-	changeMenu(RIGHT);
+	changeMenu(RIGHT, NULL);
 }
 
 void drawRedRoverConfigKey(Renderer *renderer, color4_t preferredColor)
@@ -721,7 +721,7 @@ void drawRedRoverConfigKey(Renderer *renderer, color4_t preferredColor)
 
 void redRoverKeyMenuAction(void *context)
 {
-	changeMenu(RIGHT);
+	changeMenu(RIGHT, NULL);
 }
 
 void drawGreenTreeConfigKey(Renderer *renderer, color4_t preferredColor)
@@ -732,7 +732,7 @@ void drawGreenTreeConfigKey(Renderer *renderer, color4_t preferredColor)
 
 void greenTreeKeyMenuAction(void *context)
 {
-	changeMenu(RIGHT);
+	changeMenu(RIGHT, NULL);
 }
 
 void drawBlueLightningConfigKey(Renderer *renderer, color4_t preferredColor)
@@ -743,7 +743,7 @@ void drawBlueLightningConfigKey(Renderer *renderer, color4_t preferredColor)
 
 void blueLightningKeyMenuAction(void *context)
 {
-	changeMenu(RIGHT);
+	changeMenu(RIGHT, NULL);
 }
 
 // start configuration menus
@@ -994,7 +994,7 @@ void drawAudioOptionsMenu(Renderer *renderer, color4_t preferredColor)
 
 void audioOptionsMenuAction(void *context)
 {
-	changeMenu(RIGHT);
+	changeMenu(RIGHT, NULL);
 }
 
 void drawAudioEffectsOptionsMenu(Renderer *renderer, color4_t preferredColor)
@@ -1274,7 +1274,7 @@ void initMenus(ZGWindow *window, GameState *gameState, void (*exitGame)(ZGWindow
 
 void showPauseMenu(ZGWindow *window, GameState *gameState)
 {
-	changeMenu(RIGHT);
+	changeMenu(RIGHT, window);
 	pauseMusic();
 	*gameState = GAME_STATE_PAUSED;
 }
@@ -1408,21 +1408,21 @@ static void performMenuDownAction(void)
 	}
 	else
 	{
-		changeMenu(DOWN);
+		changeMenu(DOWN, NULL);
 
 		if (gCurrentMenu == gRedRoverPlayerOptionsMenu && gPinkBubbleGum.state == CHARACTER_AI_STATE)
 		{
-			changeMenu(DOWN);
+			changeMenu(DOWN, NULL);
 		}
 
 		if (gCurrentMenu == gGreenTreePlayerOptionsMenu && gRedRover.state == CHARACTER_AI_STATE)
 		{
-			changeMenu(DOWN);
+			changeMenu(DOWN, NULL);
 		}
 
 		if (gCurrentMenu == gBlueLightningPlayerOptionsMenu && gGreenTree.state == CHARACTER_AI_STATE)
 		{
-			changeMenu(DOWN);
+			changeMenu(DOWN, NULL);
 		}
 	}
 }
@@ -1462,21 +1462,21 @@ static void performMenuUpAction(void)
 	}
 	else
 	{
-		changeMenu(UP);
+		changeMenu(UP, NULL);
 
 		if (gCurrentMenu == gBlueLightningPlayerOptionsMenu && gGreenTree.state == CHARACTER_AI_STATE)
 		{
-			changeMenu(UP);
+			changeMenu(UP, NULL);
 		}
 
 		if (gCurrentMenu == gGreenTreePlayerOptionsMenu && gRedRover.state == CHARACTER_AI_STATE)
 		{
-			changeMenu(UP);
+			changeMenu(UP, NULL);
 		}
 
 		if (gCurrentMenu == gRedRoverPlayerOptionsMenu && gPinkBubbleGum.state == CHARACTER_AI_STATE)
 		{
-			changeMenu(UP);
+			changeMenu(UP, NULL);
 		}
 	}
 }
@@ -1485,7 +1485,7 @@ static void performMenuBackAction(GameState *gameState)
 {
 	if (*gameState == GAME_STATE_PAUSED)
 	{
-		changeMenu(LEFT);
+		changeMenu(LEFT, NULL);
 		unPauseMusic();
 		*gameState = GAME_STATE_ON;
 	}
@@ -1511,7 +1511,7 @@ static void performMenuBackAction(GameState *gameState)
 	}
 	else
 	{
-		changeMenu(LEFT);
+		changeMenu(LEFT, NULL);
 	}
 }
 
