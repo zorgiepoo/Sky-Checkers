@@ -1621,6 +1621,8 @@ static void appSuspendedHandler(void *context)
 	AppContext *appContext = context;
 	Renderer *renderer = &appContext->renderer;
 	
+	showPauseMenu(renderer->window, &gGameState);
+	
 	writeDefaults(renderer);
 }
 
