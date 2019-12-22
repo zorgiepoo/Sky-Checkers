@@ -1131,7 +1131,7 @@ static void drawScene(Renderer *renderer)
 		if (gGameState == GAME_STATE_ON)
 		{
 			mat4_t gameTitleModelViewMatrix = m4_translation((vec3_t){7.5f * computeProjectionAspectRatio(renderer), 7.5f, -20.0f});
-			drawStringScaled(renderer, gameTitleModelViewMatrix, (color4_t){1.0f, 1.0f, 1.0f, 0.2f}, 0.003f, "⏸️");
+			drawStringScaled(renderer, gameTitleModelViewMatrix, (color4_t){1.0f, 1.0f, 1.0f, 0.4f}, 0.003f, "⏸️");
 		}
 #endif
 		
