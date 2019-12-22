@@ -599,68 +599,70 @@ void initGame(ZGWindow *window, bool firstGame)
 		else
 		{
 			// Automatically assign gamepads to the last human character slots
-			// We don't assign gamepads to the first human character slots because we want the first slots to be reserved for keyboard usage
+			// We don't assign gamepads to the first human character slots because we want the first slots to be reserved for keyboard usage, if there aren't enough gamepads for everyone
 			// Pink bubblegum (first character) in particular has ideal default keyboard controls
 			Input *characterInputs[4] = {&gPinkBubbleGumInput, &gRedRoverInput, &gGreenTreeInput, &gBlueLightningInput};
-			int16_t numberCharacters = (int16_t)(sizeof(characterInputs) / sizeof(*characterInputs));
-			int16_t maxGamepads = (int16_t)(sizeof(gGamepads) / sizeof(*gGamepads));
-
-			for (int16_t characterIndex = 0; characterIndex < numberCharacters; characterIndex++)
+			
+			uint8_t numberOfHumanPlayers = 0;
+			for (uint8_t characterIndex = 0; characterIndex < sizeof(characterInputs) / sizeof(characterInputs[0]); characterIndex++)
 			{
-				if (characterInputs[characterIndex]->character->state == CHARACTER_AI_STATE)
+				if (characterInputs[characterIndex]->character->state == CHARACTER_HUMAN_STATE)
 				{
-					int16_t gamepadCount = 0;
-					for (int16_t gamepadIndex = 0; gamepadIndex < maxGamepads; gamepadIndex++)
-					{
-						if (gGamepads[gamepadIndex] != INVALID_GAMEPAD_INDEX)
-						{
-							gamepadCount++;
-						}
-					}
+					numberOfHumanPlayers++;
+				}
+			}
+			
+			uint16_t maxGamepads = (uint16_t)(sizeof(gGamepads) / sizeof(*gGamepads));
+			uint16_t gamepadCount = 0;
+			for (uint16_t gamepadIndex = 0; gamepadIndex < maxGamepads; gamepadIndex++)
+			{
+				if (gGamepads[gamepadIndex] != INVALID_GAMEPAD_INDEX)
+				{
+					gamepadCount++;
+				}
+			}
+			
+			if (gamepadCount > 0 && numberOfHumanPlayers > 0)
+			{
+				// 3 gamepads, 2 human players .. human players <= gamepads
+				// assign humans gamepads based on humanCharacterSlotIndex = 0
+				
+				// 3 human players, 2 gamepads .. human players > gamepads
+				// assign humans gamepads based on humanCharacterSlotIndex = 1 (or human players - gamepads available)
+				
+				uint8_t startingHumanCharacterSlot = numberOfHumanPlayers > gamepadCount ? numberOfHumanPlayers - gamepadCount : 0;
+				uint8_t currentHumanCharacterSlot = 0;
+				uint16_t currentGamepadIndex = 0;
+				for (uint8_t characterIndex = 0; characterIndex < sizeof(characterInputs) / sizeof(characterInputs[0]); characterIndex++)
+				{
+					Input *characterInput = characterInputs[characterIndex];
+					Character *character = characterInput->character;
 					
-					int16_t characterStartIndex = characterIndex >= gamepadCount ? characterIndex - gamepadCount : 0;
-					int16_t gamepadMappingIndex = 0;
-					
-					for (int16_t characterMappingIndex = characterStartIndex; characterMappingIndex < numberCharacters; characterMappingIndex++)
+					if (character->state == CHARACTER_HUMAN_STATE)
 					{
-						if (characterInputs[characterMappingIndex]->character->state == CHARACTER_AI_STATE)
+						if (currentHumanCharacterSlot >= startingHumanCharacterSlot)
 						{
-							break;
-						}
-						
-						bool availableGamepad = true;
-						while (gGamepads[gamepadMappingIndex] == INVALID_GAMEPAD_INDEX)
-						{
-							gamepadMappingIndex++;
-							if (gamepadMappingIndex >= maxGamepads)
+							uint16_t gamepadIndex;
+							for (gamepadIndex = currentGamepadIndex; gamepadIndex < maxGamepads; gamepadIndex++)
 							{
-								availableGamepad = false;
-								break;
+								if (gGamepads[gamepadIndex] != INVALID_GAMEPAD_INDEX)
+								{
+									characterInput->gamepadIndex = gGamepads[gamepadIndex];
+									setPlayerIndex(gGamepadManager, characterInput->gamepadIndex, characterIndex);
+									
+									const char *controllerName = gamepadName(gGamepadManager, characterInput->gamepadIndex);
+									if (controllerName != NULL)
+									{
+										strncpy(character->controllerName, controllerName, MAX_CONTROLLER_NAME_SIZE - 1);
+									}
+									
+									break;
+								}
 							}
+							currentGamepadIndex = gamepadIndex + 1;
 						}
-						
-						if (!availableGamepad)
-						{
-							break;
-						}
-						
-						characterInputs[characterMappingIndex]->gamepadIndex = gGamepads[gamepadMappingIndex];
-						setPlayerIndex(gGamepadManager, characterInputs[characterMappingIndex]->gamepadIndex, characterMappingIndex);
-						
-						const char *controllerName = gamepadName(gGamepadManager, gGamepads[gamepadMappingIndex]);
-						if (controllerName != NULL)
-						{
-							strncpy(characterInputs[characterMappingIndex]->character->controllerName, controllerName, MAX_CONTROLLER_NAME_SIZE - 1);
-						}
-						
-						gamepadMappingIndex++;
-						if (gamepadMappingIndex >= maxGamepads)
-						{
-							break;
-						}
+						currentHumanCharacterSlot++;
 					}
-					
-					break;
 				}
 			}
 		}

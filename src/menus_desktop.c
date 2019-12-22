@@ -579,9 +579,6 @@ void pinkBubbleGumPlayerOptionsMenuAction(void *context)
 	if (gPinkBubbleGum.state == CHARACTER_HUMAN_STATE)
 	{
 		gPinkBubbleGum.state = CHARACTER_AI_STATE;
-		gRedRover.state = CHARACTER_AI_STATE;
-		gGreenTree.state = CHARACTER_AI_STATE;
-		gBlueLightning.state = CHARACTER_AI_STATE;
 	}
 	else
 	{
@@ -592,15 +589,14 @@ void pinkBubbleGumPlayerOptionsMenuAction(void *context)
 void drawRedRoverPlayerOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.00f, -20.00f});
-	color4_t color = (gPinkBubbleGum.state == CHARACTER_AI_STATE) ? (color4_t){0.0f, 0.0f, 0.0f, 0.6f} : preferredColor;
 	
 	if (gRedRover.state == CHARACTER_HUMAN_STATE)
 	{
-		drawString(renderer, modelViewMatrix, color, 24.0f / 14.0f, 5.0f / 14.0f, "Red Rover: Human");
+		drawString(renderer, modelViewMatrix, preferredColor, 24.0f / 14.0f, 5.0f / 14.0f, "Red Rover: Human");
 	}
 	else
 	{
-		drawString(renderer, modelViewMatrix, color, 24.0f / 14.0f, 5.0f / 14.0f, "Red Rover: Bot");
+		drawString(renderer, modelViewMatrix, preferredColor, 24.0f / 14.0f, 5.0f / 14.0f, "Red Rover: Bot");
 	}
 }
 
@@ -609,8 +605,6 @@ void redRoverPlayerOptionsMenuAction(void *context)
 	if (gRedRover.state == CHARACTER_HUMAN_STATE)
 	{
 		gRedRover.state = CHARACTER_AI_STATE;
-		gGreenTree.state = CHARACTER_AI_STATE;
-		gBlueLightning.state = CHARACTER_AI_STATE;
 	}
 	else
 	{
@@ -621,15 +615,14 @@ void redRoverPlayerOptionsMenuAction(void *context)
 void drawGreenTreePlayerOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -1.07f, -20.00f});
-	color4_t color = (gRedRover.state == CHARACTER_AI_STATE) ? (color4_t){0.0f, 0.0f, 0.0f, 0.6f} : preferredColor;
 	
 	if (gGreenTree.state == CHARACTER_HUMAN_STATE)
 	{
-		drawString(renderer, modelViewMatrix, color, 24.0f / 14.0f, 5.0f / 14.0f, "Green Tree: Human");
+		drawString(renderer, modelViewMatrix, preferredColor, 24.0f / 14.0f, 5.0f / 14.0f, "Green Tree: Human");
 	}
 	else if (gGreenTree.state == CHARACTER_AI_STATE)
 	{
-		drawString(renderer, modelViewMatrix, color, 24.0f / 14.0f, 5.0f / 14.0f, "Green Tree: Bot");
+		drawString(renderer, modelViewMatrix, preferredColor, 24.0f / 14.0f, 5.0f / 14.0f, "Green Tree: Bot");
 	}
 }
 
@@ -638,7 +631,6 @@ void greenTreePlayerOptionsMenuAction(void *context)
 	if (gGreenTree.state == CHARACTER_HUMAN_STATE)
 	{
 		gGreenTree.state = CHARACTER_AI_STATE;
-		gBlueLightning.state = CHARACTER_AI_STATE;
 	}
 	else
 	{
@@ -649,15 +641,14 @@ void greenTreePlayerOptionsMenuAction(void *context)
 void drawBlueLightningPlayerOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -2.14f, -20.00f});
-	color4_t color = (gGreenTree.state == CHARACTER_AI_STATE) ? (color4_t){0.0f, 0.0f, 0.0f, 0.6f} : preferredColor;
 	
 	if (gBlueLightning.state == CHARACTER_HUMAN_STATE)
 	{
-		drawString(renderer, modelViewMatrix, color, 24.0f / 14.0f, 5.0f / 14.0f, "Blue Lightning: Human");
+		drawString(renderer, modelViewMatrix, preferredColor, 24.0f / 14.0f, 5.0f / 14.0f, "Blue Lightning: Human");
 	}
 	else if (gBlueLightning.state == CHARACTER_AI_STATE)
 	{
-		drawString(renderer, modelViewMatrix, color, 24.0f / 14.0f, 5.0f / 14.0f, "Blue Lightning: Bot");
+		drawString(renderer, modelViewMatrix, preferredColor, 24.0f / 14.0f, 5.0f / 14.0f, "Blue Lightning: Bot");
 	}
 }
 
@@ -675,7 +666,7 @@ void blueLightningPlayerOptionsMenuAction(void *context)
 
 void drawAIModeOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modeModelViewMatrix = m4_translation((vec3_t){-0.07f, -3.21f, -20.00f});	
+	mat4_t modeModelViewMatrix = m4_translation((vec3_t){-0.07f, -3.8f, -20.00f});
 	if (gAIMode == AI_EASY_MODE)
 		drawString(renderer, modeModelViewMatrix, preferredColor, 24.0f / 14.0f, 5.0f / 14.0f, "Bot Mode: Easy");
 	
@@ -687,18 +678,18 @@ void drawAIModeOptionsMenu(Renderer *renderer, color4_t preferredColor)
 	
 	if (gDrawArrowsForAIModeFlag)
 	{
-		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){2.4f / 1.25f, -4.1f / 1.25f, -25.0f / 1.25f}));
+		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){2.4f / 1.25f, -4.1f / 1.25f - 0.59f, -25.0f / 1.25f}));
 	}
 }
 
 void drawConfigureLivesMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t livesModelViewMatrix = m4_translation((vec3_t){-0.07f, -4.29f, -20.00f});	
+	mat4_t livesModelViewMatrix = m4_translation((vec3_t){-0.07f, -4.87f, -20.00f});
 	drawStringf(renderer, livesModelViewMatrix, preferredColor, 24.0f / 14.0f, 5.0f / 14.0f, "Player Lives: %i", gCharacterLives);
 	
 	if (gDrawArrowsForCharacterLivesFlag)
 	{
-		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){2.4f / 1.25f, -5.4f / 1.25f, -25.0f / 1.25f}));
+		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){2.4f / 1.25f, -5.4f / 1.25f - 0.59f, -25.0f / 1.25f}));
 	}
 }
 
@@ -1409,21 +1400,6 @@ static void performMenuDownAction(void)
 	else
 	{
 		changeMenu(DOWN, NULL);
-
-		if (gCurrentMenu == gRedRoverPlayerOptionsMenu && gPinkBubbleGum.state == CHARACTER_AI_STATE)
-		{
-			changeMenu(DOWN, NULL);
-		}
-
-		if (gCurrentMenu == gGreenTreePlayerOptionsMenu && gRedRover.state == CHARACTER_AI_STATE)
-		{
-			changeMenu(DOWN, NULL);
-		}
-
-		if (gCurrentMenu == gBlueLightningPlayerOptionsMenu && gGreenTree.state == CHARACTER_AI_STATE)
-		{
-			changeMenu(DOWN, NULL);
-		}
 	}
 }
 
@@ -1463,21 +1439,6 @@ static void performMenuUpAction(void)
 	else
 	{
 		changeMenu(UP, NULL);
-
-		if (gCurrentMenu == gBlueLightningPlayerOptionsMenu && gGreenTree.state == CHARACTER_AI_STATE)
-		{
-			changeMenu(UP, NULL);
-		}
-
-		if (gCurrentMenu == gGreenTreePlayerOptionsMenu && gRedRover.state == CHARACTER_AI_STATE)
-		{
-			changeMenu(UP, NULL);
-		}
-
-		if (gCurrentMenu == gRedRoverPlayerOptionsMenu && gPinkBubbleGum.state == CHARACTER_AI_STATE)
-		{
-			changeMenu(UP, NULL);
-		}
 	}
 }
 
