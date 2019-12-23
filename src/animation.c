@@ -123,7 +123,7 @@ void animate(ZGWindow *window, double timeDelta, GameState gameState)
 					maxHumanDistance = gBlueLightning.distance;
 				}
 				
-				if (maxHumanDistance >= 60.0f)
+				if (maxHumanDistance >= 70.0f)
 				{
 					gTutorialStage = 3;
 					// Allow firing now
