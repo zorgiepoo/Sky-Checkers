@@ -58,6 +58,8 @@ void loadCharacter(Character *character)
 		character->active = true;
 	}
 	
+	character->distance = 0.0f;
+	character->numberOfFires = 0;
 	character->alpha = 1.0f;
 	character->speed = INITIAL_CHARACTER_SPEED;
 	character->recovery_timer = 0;
@@ -696,28 +698,36 @@ void moveCharacter(Character *character, double timeDelta, bool pausedState)
 		{
 			if (characterCanMove(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
 			{
-				character->x += character->speed * (float)timeDelta;
+				float distance = character->speed * (float)timeDelta;
+				character->x += distance;
+				character->distance += distance;
 			}
 		}
 		else if (direction == LEFT)
 		{
 			if (characterCanMove(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
 			{
-				character->x -= character->speed * (float)timeDelta;
+				float distance = character->speed * (float)timeDelta;
+				character->x -= distance;
+				character->distance += distance;
 			}
 		}
 		else if (direction == DOWN)
 		{
 			if (characterCanMove(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
 			{
-				character->y -= character->speed * (float)timeDelta;
+				float distance = character->speed * (float)timeDelta;
+				character->y -= distance;
+				character->distance += distance;
 			}
 		}
 		else if (direction == UP)
 		{
 			if (characterCanMove(direction, character) && checkCharacterCollision(direction, character, characterB, characterC, characterD))
 			{
-				character->y += character->speed * (float)timeDelta;
+				float distance = character->speed * (float)timeDelta;
+				character->y += distance;
+				character->distance += distance;
 			}
 		}
 	}
@@ -775,6 +785,7 @@ void fireCharacterWeapon(Character *character)
 				character->weap->drawingState = true;
 				character->weap->animationState = true;
 				character->animation_timer = 0;
+				character->numberOfFires++;
 			}
 		}
 	}

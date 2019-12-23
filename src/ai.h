@@ -21,4 +21,4 @@
 
 #include "input.h"
 
-void updateAI(Character *chnaracter, float currentTime, double timeDelta);
+void updateAI(Character *chnaracter, float currentTime, bool allowFiring, double timeDelta);

@@ -60,10 +60,10 @@ static void setSectionHeaderFont(ZGWindow *window, UIView *view)
 	header.textLabel.font = [UIFont boldSystemFontOfSize:metalView.frame.size.height * 0.03];
 }
 
-static void playGame(ZGWindow *window)
+static void playGame(ZGWindow *window, bool tutorial)
 {
 	hideGameMenus(window);
-	initGame(window, true);
+	initGame(window, true, tutorial);
 }
 
 @interface MainMenuHandler : NSObject
@@ -76,7 +76,12 @@ static void playGame(ZGWindow *window)
 
 - (void)playGame
 {
-	playGame(_window);
+	playGame(_window, false);
+}
+
+- (void)playTutorial
+{
+	playGame(_window, true);
 }
 
 - (void)showOnlineMenu
@@ -103,6 +108,7 @@ static void playGame(ZGWindow *window)
 
 @property (nonatomic) ZGWindow *window;
 @property (nonatomic) GameState *gameState;
+@property (nonatomic) GameState resumedGameState;
 @property (nonatomic) void (*exitGameFunc)(ZGWindow *);
 
 @end
@@ -118,7 +124,7 @@ static void playGame(ZGWindow *window)
 	UIView *metalView = metalViewForWindow(_window);
 	((CAMetalLayer *)metalView.layer).presentsWithTransaction = NO;
 	
-	*_gameState = GAME_STATE_ON;
+	*_gameState = _resumedGameState;
 }
 
 - (void)exitGame
@@ -842,7 +848,7 @@ static UIView *makeMainMenu(UIView *metalView)
 	
 	{
 		UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-		[button setTitle:@"Online" forState:UIControlStateNormal];
+		[button setTitle:@"Tutorial" forState:UIControlStateNormal];
 		
 		button.titleLabel.font = font;
 		[button setTitleColor:titleColor forState:UIControlStateNormal];
@@ -852,6 +858,24 @@ static UIView *makeMainMenu(UIView *metalView)
 		button.layer.cornerRadius = cornerRadius;
 		
 		button.frame = CGRectMake(metalViewSize.width * 0.5f - buttonWidth / 2.0, metalViewSize.height * 0.55 - buttonHeight / 2.0, buttonWidth, buttonHeight);
+		
+		[button addTarget:gMainMenuHandler action:@selector(playTutorial) forControlEvents:UIControlEventTouchUpInside];
+		
+		[menuView addSubview:button];
+	}
+	
+	{
+		UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+		[button setTitle:@"Online" forState:UIControlStateNormal];
+		
+		button.titleLabel.font = font;
+		[button setTitleColor:titleColor forState:UIControlStateNormal];
+		
+		button.layer.backgroundColor = buttonBackgroundColor;
+		button.layer.borderWidth = borderWidth;
+		button.layer.cornerRadius = cornerRadius;
+		
+		button.frame = CGRectMake(metalViewSize.width * 0.5f - buttonWidth / 2.0, metalViewSize.height * 0.7 - buttonHeight / 2.0, buttonWidth, buttonHeight);
 		
 		[button addTarget:gMainMenuHandler action:@selector(showOnlineMenu) forControlEvents:UIControlEventTouchUpInside];
 		
@@ -869,7 +893,7 @@ static UIView *makeMainMenu(UIView *metalView)
 		button.layer.borderWidth = borderWidth;
 		button.layer.cornerRadius = cornerRadius;
 		
-		button.frame = CGRectMake(metalViewSize.width * 0.5f - buttonWidth / 2.0, metalViewSize.height * 0.7 - buttonHeight / 2.0, buttonWidth, buttonHeight);
+		button.frame = CGRectMake(metalViewSize.width * 0.5f - buttonWidth / 2.0, metalViewSize.height * 0.85 - buttonHeight / 2.0, buttonWidth, buttonHeight);
 		
 		[button addTarget:gMainMenuHandler action:@selector(showOptions) forControlEvents:UIControlEventTouchUpInside];
 		
@@ -1109,6 +1133,8 @@ void showPauseMenu(ZGWindow *window, GameState *gameState)
 {
 	pauseMusic();
 	ZGUninstallTouchGestures(window);
+	
+	gPauseMenuHandler.resumedGameState = *gameState;
 	*gameState = GAME_STATE_PAUSED;
 	
 	UIView *metalView = metalViewForWindow(window);
@@ -1130,7 +1156,7 @@ void performGamepadMenuAction(GamepadEvent *event, GameState *gameState, ZGWindo
 		case GAMEPAD_BUTTON_START:
 			if (gCurrentMenuView == gMainMenuView && *gameState == GAME_STATE_OFF)
 			{
-				playGame(window);
+				playGame(window, false);
 			}
 			else if (*gameState == GAME_STATE_PAUSED)
 			{

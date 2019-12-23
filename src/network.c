@@ -511,7 +511,7 @@ void syncNetworkState(ZGWindow *window, float timeDelta)
 					// server is pending
 					gPinkBubbleGum.netState = NETWORK_PENDING_STATE;
 					
-					initGame(window, true);
+					initGame(window, true, false);
 					
 					gPinkBubbleGum.lives = gNetworkConnection->characterLives;
 					gRedRover.lives = gNetworkConnection->characterLives;

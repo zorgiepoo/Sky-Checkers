@@ -50,6 +50,7 @@
 bool gGameHasStarted;
 bool gGameShouldReset;
 int32_t gGameStartNumber;
+uint8_t gTutorialStage;
 int gGameWinner;
 
 GamepadManager *gGamepadManager;
@@ -559,7 +560,7 @@ static void writeDefaults(Renderer *renderer)
 	fclose(fp);
 }
 
-void initGame(ZGWindow *window, bool firstGame)
+void initGame(ZGWindow *window, bool firstGame, bool tutorial)
 {
 	loadTiles();
 
@@ -571,7 +572,11 @@ void initGame(ZGWindow *window, bool firstGame)
 	startAnimation();
 	
 	int initialNumberOfLives;
-	if (gNetworkConnection != NULL && gNetworkConnection->type == NETWORK_CLIENT_TYPE)
+	if (tutorial)
+	{
+		initialNumberOfLives = 1;
+	}
+	else if (gNetworkConnection != NULL && gNetworkConnection->type == NETWORK_CLIENT_TYPE)
 	{
 		initialNumberOfLives = gNetworkConnection->characterLives;
 	}
@@ -673,10 +678,23 @@ void initGame(ZGWindow *window, bool firstGame)
 	gPinkBubbleGum.lives = initialNumberOfLives;
 	gBlueLightning.lives = initialNumberOfLives;
 
-	gGameState = GAME_STATE_ON;
+	gGameState = tutorial ? GAME_STATE_TUTORIAL : GAME_STATE_ON;
 
 	// wait until the game can be started.
-	gGameStartNumber = firstGame ? FIRST_NEW_GAME_COUNTDOWN : LATER_NEW_GAME_COUNTDOWN;
+	if (tutorial)
+	{
+		gGameStartNumber = 0;
+	}
+	else if (firstGame)
+	{
+		gGameStartNumber = FIRST_NEW_GAME_COUNTDOWN;
+	}
+	else
+	{
+		gGameStartNumber = LATER_NEW_GAME_COUNTDOWN;
+	}
+	
+	gTutorialStage = 0;
 	
 	if (firstGame && gAudioMusicFlag)
 	{
@@ -919,7 +937,7 @@ static void drawScoreboardForCharacters(Renderer *renderer, ScoreboardRenderType
 
 static void drawScene(Renderer *renderer)
 {
-	if (gGameState == GAME_STATE_ON || gGameState == GAME_STATE_PAUSED)
+	if (gGameState == GAME_STATE_ON || gGameState == GAME_STATE_TUTORIAL || gGameState == GAME_STATE_PAUSED)
 	{
 		// Render opaque objects first
 		
@@ -979,8 +997,61 @@ static void drawScene(Renderer *renderer)
 		pushDebugGroup(renderer, "Instructional Text");
 		{
 			mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f / 11.2f, 80.0f / 11.2f, -280.0f / 11.2f});
+#if PLATFORM_IOS
+			ZGFloat scale = 0.0040538f;
+#else
+			ZGFloat scale = 0.0045538f;
+#endif
 			
-			if (!gGameHasStarted)
+			if (gGameState == GAME_STATE_TUTORIAL)
+			{
+				color4_t textColor = (color4_t){gPinkBubbleGum.red, gPinkBubbleGum.green, gPinkBubbleGum.blue, 1.0f};
+				
+				mat4_t tutorialModelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, 0.0f, 0.0f}), modelViewMatrix);
+				
+				if (gTutorialStage == 0)
+				{
+					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, scale, "Welcome to the tutorial!");
+				}
+				else if (gTutorialStage == 1)
+				{
+#if PLATFORM_IOS
+					const char *text = "Touch, hold, move ⬆️⬇️⬅️➡️";
+#else
+					const char *text = "Move around ⬆️⬇️⬅️➡️.";
+#endif
+					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, scale, text);
+				}
+				else if (gTutorialStage == 2)
+				{
+					const char *text = "Turn without stopping!";
+					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, scale, text);
+				}
+				else if (gTutorialStage == 3)
+				{
+#if PLATFORM_IOS
+					const char *text = "Tap to destroy.";
+#else
+					const char *text = "Destroy with spacebar.";
+#endif
+					
+					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, scale, text);
+				}
+				else if (gTutorialStage == 4)
+				{
+					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, scale, "Knock off everyone!");
+				}
+				else if (gTutorialStage == 5)
+				{
+#if PLATFORM_IOS
+					const char *text = "That's all! Pause to exit.";
+#else
+					const char *text = "That's all! Escape to exit.";
+#endif
+					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, scale, text);
+				}
+			}
+			else if (!gGameHasStarted)
 			{
 				color4_t textColor = (color4_t){0.0f, 0.0f, 1.0f, 1.0f};
 				
@@ -996,19 +1067,19 @@ static void drawScene(Renderer *renderer)
 							
 							mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-6.8f, 1.2f, 0.0f}), modelViewMatrix);
 							
-							drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, 0.0045538f, buffer);
+							drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, scale, buffer);
 						}
 						else if (gNetworkConnection->numberOfPlayersToWaitFor == 0)
 						{
 							mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-6.8f, 1.2f, 0.0f}), modelViewMatrix);
 							
-							drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, 0.0045538f, "Waiting for players to connect...");
+							drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, scale, "Waiting for players to connect...");
 						}
 						else
 						{
 							mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-6.8f, 1.2f, 0.0f}), modelViewMatrix);
 							
-							drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, 0.0045538f, "Waiting for 1 player to connect...");
+							drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, scale, "Waiting for 1 player to connect...");
 						}
 						
 						if (gNetworkConnection->type == NETWORK_SERVER_TYPE && strlen(gNetworkConnection->ipAddress) > 0)
@@ -1031,7 +1102,7 @@ static void drawScene(Renderer *renderer)
 						snprintf(buffer, sizeof(buffer) - 1, "Game begins in %d", gGameStartNumber);
 						
 						mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-3.8f, 0.0f, 0.0f}), modelViewMatrix);
-						drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, 0.0045538f, buffer);
+						drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, scale, buffer);
 					}
 				}
 				
@@ -1167,7 +1238,7 @@ static void drawScene(Renderer *renderer)
 		
 #if PLATFORM_IOS
 		// Pause button renders at z = -20.0f
-		if (gGameState == GAME_STATE_ON)
+		if (gGameState == GAME_STATE_ON || gGameState == GAME_STATE_TUTORIAL)
 		{
 			mat4_t gameTitleModelViewMatrix = m4_translation((vec3_t){7.5f * computeProjectionAspectRatio(renderer), 7.5f, -20.0f});
 			
@@ -1193,7 +1264,7 @@ static void drawScene(Renderer *renderer)
 			popDebugGroup(renderer);
 		}
 	}
-	else /* if (gGameState != GAME_STATE_ON && gGameState != GAME_STATE_PAUSED) */
+	else /* if (gGameState != GAME_STATE_ON && gGameState != GAME_STATE_TUTORIAL && gGameState != GAME_STATE_PAUSED) */
 	{
 		// The game title and menu's should be up front the most
 		// The black box should be behind the title and menu's
@@ -1273,7 +1344,7 @@ static void handleKeyDownEvent(ZGKeyboardEvent *event, Renderer *renderer)
 	}
 	else if (keyCode == ZG_KEYCODE_ESCAPE)
 	{
-		if (gGameState == GAME_STATE_ON)
+		if (gGameState == GAME_STATE_ON || gGameState == GAME_STATE_TUTORIAL)
 		{
 			if (gConsoleActivated)
 			{
@@ -1307,7 +1378,7 @@ static void handleKeyDownEvent(ZGKeyboardEvent *event, Renderer *renderer)
 		}
 	}
 	
-	if (!ZGTestMetaModifier(keyModifier) && (gGameState == GAME_STATE_ON || gGameState == GAME_STATE_PAUSED))
+	if (!ZGTestMetaModifier(keyModifier) && (gGameState == GAME_STATE_ON || gGameState == GAME_STATE_TUTORIAL || gGameState == GAME_STATE_PAUSED))
 	{
 		if (!gConsoleActivated)
 		{
@@ -1324,7 +1395,7 @@ static void handleKeyUpEvent(ZGKeyboardEvent *event)
 	uint16_t keyCode = event->keyCode;
 	uint64_t keyModifier = event->keyModifier;
 	
-	if ((keyCode != ZG_KEYCODE_ESCAPE || !ZGTestMetaModifier(keyModifier)) && (gGameState == GAME_STATE_ON || gGameState == GAME_STATE_PAUSED))
+	if ((keyCode != ZG_KEYCODE_ESCAPE || !ZGTestMetaModifier(keyModifier)) && (gGameState == GAME_STATE_ON || gGameState == GAME_STATE_TUTORIAL || gGameState == GAME_STATE_PAUSED))
 	{
 		performUpKeyAction(&gRedRoverInput, event, gGameState);
 		performUpKeyAction(&gGreenTreeInput, event, gGameState);
@@ -1380,7 +1451,7 @@ static void pollGamepads(GamepadManager *gamepadManager, ZGWindow *window, const
 		{
 			performGamepadMenuAction(gamepadEvent, &gGameState, window);
 		}
-		else if (gGameState == GAME_STATE_ON && gamepadEvent->state == GAMEPAD_STATE_PRESSED && (gamepadEvent->button == GAMEPAD_BUTTON_START || gamepadEvent->button == GAMEPAD_BUTTON_BACK))
+		else if ((gGameState == GAME_STATE_ON || gGameState == GAME_STATE_TUTORIAL) && gamepadEvent->state == GAMEPAD_STATE_PRESSED && (gamepadEvent->button == GAMEPAD_BUTTON_START || gamepadEvent->button == GAMEPAD_BUTTON_BACK))
 		{
 			showPauseMenu(window, &gGameState);
 		}
@@ -1440,7 +1511,7 @@ static void handleWindowEvent(ZGWindowEvent event, void *context)
 #if PLATFORM_IOS
 static void handleTouchEvent(ZGTouchEvent event, void *context)
 {
-	if (gGameState == GAME_STATE_ON)
+	if (gGameState == GAME_STATE_ON || gGameState == GAME_STATE_TUTORIAL)
 	{
 		Renderer *renderer = context;
 		
@@ -1448,7 +1519,7 @@ static void handleTouchEvent(ZGTouchEvent event, void *context)
 		{
 			showPauseMenu(renderer->window, &gGameState);
 		}
-		else if (event.type == ZGTouchEventTypeTap && gGameWinner != NO_CHARACTER)
+		else if (event.type == ZGTouchEventTypeTap && gGameWinner != NO_CHARACTER && gGameState == GAME_STATE_ON)
 		{
 			resetGame();
 		}
@@ -1708,15 +1779,15 @@ static void runLoopHandler(void *context)
 		
 		syncNetworkState(renderer->window, (float)ANIMATION_TIMER_INTERVAL);
 		
-		if (gGameState == GAME_STATE_ON || (gGameState == GAME_STATE_PAUSED && gNetworkConnection != NULL))
+		if (gGameState == GAME_STATE_ON || gGameState == GAME_STATE_TUTORIAL || (gGameState == GAME_STATE_PAUSED && gNetworkConnection != NULL))
 		{
-			animate(renderer->window, ANIMATION_TIMER_INTERVAL, (gGameState == GAME_STATE_PAUSED));
+			animate(renderer->window, ANIMATION_TIMER_INTERVAL, gGameState);
 		}
 		
 		if (gGameShouldReset)
 		{
 			endGame(renderer->window, false);
-			initGame(renderer->window, false);
+			initGame(renderer->window, false, false);
 		}
 	}
 	

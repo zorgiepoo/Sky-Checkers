@@ -30,7 +30,8 @@ typedef enum
 	GAME_STATE_OFF = 0,
 	GAME_STATE_ON = 1,
 	GAME_STATE_CONNECTING = 2,
-	GAME_STATE_PAUSED = 3
+	GAME_STATE_PAUSED = 3,
+	GAME_STATE_TUTORIAL = 4
 } GameState;
 
 typedef struct
@@ -40,13 +41,14 @@ typedef struct
 	void (*exitGame)(ZGWindow *);
 } GameMenuContext;
 
-void initGame(ZGWindow *window, bool firstGame);
+void initGame(ZGWindow *window, bool firstGame, bool tutorial);
 void endGame(ZGWindow *window, bool lastGame);
 
 extern bool gGameHasStarted;
 extern bool gGameShouldReset;
 extern int gGameWinner;
 extern int32_t gGameStartNumber;
+extern uint8_t gTutorialStage;
 extern bool gDrawFPS;
 extern bool gDrawPings;
 

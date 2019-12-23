@@ -66,6 +66,7 @@ static void changeMenu(int direction, ZGWindow *window);
 static void (*gExitGame)(ZGWindow *);
 
 static Menu *gPlayMenu;
+static Menu *gTutorialMenu;
 static Menu *gNetworkServerPlayMenu;
 static Menu *gConnectToNetworkGameMenu;
 static Menu *gPauseResumeMenu;
@@ -88,6 +89,8 @@ static bool gNetworkUserNameFieldIsActive;
 
 static bool gMenuPendingOnKeyCode = false;
 static uint32_t *gMenuPendingKeyCode;
+
+static GameState gResumedGameState;
 
 static char *convertKeyCodeToString(uint32_t theKeyCode);
 static void configureKey(uint32_t *id);
@@ -325,8 +328,22 @@ void playGameAction(void *context)
 	addSubMenu(gPlayMenu, gPauseExitMenu);
 	
 	GameMenuContext *menuContext = context;
-	initGame(menuContext->window, true);
+	initGame(menuContext->window, true, false);
+}
+
+void drawTutorialMenu(Renderer *renderer, color4_t preferredColor)
+{
+	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.00f, -20.00f});
+	drawString(renderer, modelViewMatrix, preferredColor, 14.0f / 14.0f, 5.0f / 14.0f, "Tutorial");
+}
+
+void tutorialMenuAction(void *context)
+{
+	addSubMenu(gTutorialMenu, gPauseResumeMenu);
+	addSubMenu(gTutorialMenu, gPauseExitMenu);
 	
+	GameMenuContext *menuContext = context;
+	initGame(menuContext->window, true, true);
 }
 
 void drawPauseResumeMenu(Renderer *renderer, color4_t preferredColor)
@@ -341,7 +358,7 @@ void pauseResumeMenuAction(void *context)
 	changeMenu(LEFT, NULL);
 	
 	GameMenuContext *menuContext = context;
-	*menuContext->gameState = GAME_STATE_ON;
+	*menuContext->gameState = gResumedGameState;
 	unPauseMusic();
 }
 
@@ -360,7 +377,7 @@ void pauseExitMenuAction(void *context)
 
 void drawNetworkPlayMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.00f, -20.00f});	
+	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -1.07f, -20.00f});
 	drawString(renderer, modelViewMatrix, preferredColor, 14.0f / 14.0f, 5.0f / 14.0f, "Online");
 }
 
@@ -534,7 +551,7 @@ void connectToNetworkGameMenuAction(void *context)
 
 void drawGameOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -1.07f, -20.00f});	
+	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -2.14f, -20.00f});
 	drawString(renderer, modelViewMatrix, preferredColor, 14.0f / 14.0f, 5.0f / 14.0f, "Options");
 }
 
@@ -1028,7 +1045,7 @@ void audioMusicOptionsMenuAction(void *context)
 
 void drawQuitMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -2.14f, -20.00f});
+	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -3.21f, -20.00f});
 	drawString(renderer, modelViewMatrix, preferredColor, 10.0f / 14.0f, 5.0f / 14.0f, "Quit");
 }
 
@@ -1042,6 +1059,7 @@ void initMenus(ZGWindow *window, GameState *gameState, void (*exitGame)(ZGWindow
 	initMainMenu();
 	
 	gPlayMenu =									calloc(1, sizeof(Menu));
+	gTutorialMenu =								calloc(1, sizeof(Menu));
 	gPauseResumeMenu = 							calloc(1, sizeof(Menu));
 	gPauseExitMenu = 							calloc(1, sizeof(Menu));
 	Menu *networkPlayMenu =						calloc(1, sizeof(Menu));
@@ -1073,6 +1091,9 @@ void initMenus(ZGWindow *window, GameState *gameState, void (*exitGame)(ZGWindow
 	// set action and drawing functions
 	gPlayMenu->draw = drawPlayMenu;
 	gPlayMenu->action = playGameAction;
+	
+	gTutorialMenu->draw = drawTutorialMenu;
+	gTutorialMenu->action = tutorialMenuAction;
 	
 	gPauseResumeMenu->draw = drawPauseResumeMenu;
 	gPauseResumeMenu->action = pauseResumeMenuAction;
@@ -1223,6 +1244,7 @@ void initMenus(ZGWindow *window, GameState *gameState, void (*exitGame)(ZGWindow
 		
 	// Add Menus
 	addSubMenu(&gMainMenu, gPlayMenu);
+	addSubMenu(&gMainMenu, gTutorialMenu);
 	addSubMenu(&gMainMenu, networkPlayMenu);
 	addSubMenu(&gMainMenu, gameOptionsMenu);
 	addSubMenu(&gMainMenu, quitMenu);
@@ -1267,6 +1289,7 @@ void showPauseMenu(ZGWindow *window, GameState *gameState)
 {
 	changeMenu(RIGHT, window);
 	pauseMusic();
+	gResumedGameState = *gameState;
 	*gameState = GAME_STATE_PAUSED;
 }
 
@@ -1448,7 +1471,7 @@ static void performMenuBackAction(GameState *gameState)
 	{
 		changeMenu(LEFT, NULL);
 		unPauseMusic();
-		*gameState = GAME_STATE_ON;
+		*gameState = gResumedGameState;
 	}
 	else if (gNetworkAddressFieldIsActive)
 	{

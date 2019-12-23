@@ -151,7 +151,7 @@ bool startNetworkGame(ZGWindow *window)
 	gCurrentSlot = 0;
 	memset(gClientStates, 0, sizeof(gClientStates));
 	
-	initGame(window, true);
+	initGame(window, true, false);
 	
 	gRedRoverInput.character = gNetworkConnection->character;
 	gBlueLightningInput.character = gNetworkConnection->character;

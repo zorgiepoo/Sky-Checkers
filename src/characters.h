@@ -70,6 +70,12 @@ typedef struct _Character
 	/* x, y, z translate values for character */
 	float x, y, z;
 	
+	/* Distance traveled, used for tutorial */
+	float distance;
+	
+	/* Number of times weapon was fired, used for tutorial */
+	uint16_t numberOfFires;
+	
 	/* Colors of character faces */
 	float red, green, blue, alpha;
 	

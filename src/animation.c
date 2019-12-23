@@ -76,45 +76,109 @@ static void loadSecondTileAnimationLayer(void);
 static void collapseTiles(double timeDelta);
 static void recoverDestroyedTiles(double timeDelta);
 
-static void killCharacter(Input *characterInput, double timeDelta);
+static void killCharacter(Input *characterInput, bool tutorial, double timeDelta);
 static void recoverCharacter(Character *player);
 
 static void sendPing(void);
 
 static void clearPredictedColors(float currentTime);
 
-void animate(ZGWindow *window, double timeDelta, bool pausedState)
+void animate(ZGWindow *window, double timeDelta, GameState gameState)
 {
 	gSecondTimer += (float)timeDelta;
+	
+	bool tutorialState = (gameState == GAME_STATE_TUTORIAL);
 	
 	// Update gSecondTimer and change gLastSecond
 	if ((int)gLastSecond != (int)gSecondTimer)
 	{
 		gLastSecond = gSecondTimer;
 		
-		if (!gGameHasStarted && gPinkBubbleGum.netState != NETWORK_PENDING_STATE && gRedRover.netState != NETWORK_PENDING_STATE && gGreenTree.netState != NETWORK_PENDING_STATE && gBlueLightning.netState != NETWORK_PENDING_STATE)
+		if (tutorialState)
 		{
-			if (gNetworkConnection && gNetworkConnection->type == NETWORK_SERVER_TYPE)
+			if (gTutorialStage == 0 && gSecondTimer >= 3.0f)
 			{
-				GameMessage message;
-				message.type = GAME_START_NUMBER_UPDATE_MESSAGE_TYPE;
-				message.gameStartNumber = gGameStartNumber - 1;
-				sendToClients(0, &message);
+				gTutorialStage = 1;
 			}
-			
-			if (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE)
+			else if ((gTutorialStage == 1 || gTutorialStage == 2) && gSecondTimer >= 4.0f /* && gPinkBubbleGum.distance >= 40.0f */)
 			{
-				gGameStartNumber--;
+				float maxHumanDistance = 0.0f;
+				if (gPinkBubbleGum.state == CHARACTER_HUMAN_STATE && maxHumanDistance < gPinkBubbleGum.distance)
+				{
+					maxHumanDistance = gPinkBubbleGum.distance;
+				}
+				
+				if (gRedRover.state == CHARACTER_HUMAN_STATE && maxHumanDistance < gRedRover.distance)
+				{
+					maxHumanDistance = gRedRover.distance;
+				}
+				
+				if (gGreenTree.state == CHARACTER_HUMAN_STATE && maxHumanDistance < gGreenTree.distance)
+				{
+					maxHumanDistance = gGreenTree.distance;
+				}
+				
+				if (gBlueLightning.state == CHARACTER_HUMAN_STATE && maxHumanDistance < gBlueLightning.distance)
+				{
+					maxHumanDistance = gBlueLightning.distance;
+				}
+				
+				if (maxHumanDistance >= 60.0f)
+				{
+					gTutorialStage = 3;
+					// Allow firing now
+					gGameHasStarted = true;
+				}
+				else if (maxHumanDistance >= 30.0f)
+				{
+					gTutorialStage = 2;
+				}
+			}
+			else if (gTutorialStage == 3)
+			{
+				// AI can't fire in tutorial mode
+				uint16_t numberOfFires = gPinkBubbleGum.numberOfFires + gRedRover.numberOfFires + gBlueLightning.numberOfFires + gGreenTree.numberOfFires;
+				
+				if (numberOfFires >= 2)
+				{
+					gTutorialStage = 4;
+				}
+			}
+			else if (gTutorialStage == 4)
+			{
+				int totalLives = gPinkBubbleGum.lives + gRedRover.lives + gGreenTree.lives + gBlueLightning.lives;
+				if (totalLives <= 1)
+				{
+					gTutorialStage = 5;
+				}
 			}
 		}
-		
-		if (gStatsTimer != 0)
+		else
 		{
-			gStatsTimer++;
-			
-			if (gStatsTimer >= STATS_WILL_APPEAR)
+			if (!gGameHasStarted && gPinkBubbleGum.netState != NETWORK_PENDING_STATE && gRedRover.netState != NETWORK_PENDING_STATE && gGreenTree.netState != NETWORK_PENDING_STATE && gBlueLightning.netState != NETWORK_PENDING_STATE)
 			{
-				gGameWinner = gCurrentWinner;
+				if (gNetworkConnection && gNetworkConnection->type == NETWORK_SERVER_TYPE)
+				{
+					GameMessage message;
+					message.type = GAME_START_NUMBER_UPDATE_MESSAGE_TYPE;
+					message.gameStartNumber = gGameStartNumber - 1;
+					sendToClients(0, &message);
+				}
+				
+				if (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE)
+				{
+					gGameStartNumber--;
+				}
+			}
+			
+			if (gStatsTimer != 0)
+			{
+				gStatsTimer++;
+				
+				if (gStatsTimer >= STATS_WILL_APPEAR)
+				{
+					gGameWinner = gCurrentWinner;
+				}
 			}
 		}
 	}
@@ -140,17 +204,17 @@ void animate(ZGWindow *window, double timeDelta, bool pausedState)
 	updateCharacterFromInput(&gPinkBubbleGumInput);
 	updateCharacterFromInput(&gBlueLightningInput);
 	
+	bool pausedState = (gameState == GAME_STATE_PAUSED);
 	if (!pausedState)
 	{
 		updateCharacterFromAnyInput();
 	}
 	
 	// Animate objects based on time delta
-	
-	updateAI(&gRedRover, gSecondTimer, timeDelta);
-	updateAI(&gGreenTree, gSecondTimer, timeDelta);
-	updateAI(&gPinkBubbleGum, gSecondTimer, timeDelta);
-	updateAI(&gBlueLightning, gSecondTimer, timeDelta);
+	updateAI(&gRedRover, gSecondTimer, !tutorialState, timeDelta);
+	updateAI(&gGreenTree, gSecondTimer, !tutorialState, timeDelta);
+	updateAI(&gPinkBubbleGum, gSecondTimer, !tutorialState, timeDelta);
+	updateAI(&gBlueLightning, gSecondTimer, !tutorialState, timeDelta);
 	
 	// Weapons must have possibility of being updated before moving characters,
 	// which could change their look direction
@@ -169,10 +233,10 @@ void animate(ZGWindow *window, double timeDelta, bool pausedState)
 	moveWeapon(gPinkBubbleGum.weap, timeDelta);
 	moveWeapon(gBlueLightning.weap, timeDelta);
 	
-	killCharacter(&gRedRoverInput, timeDelta);
-	killCharacter(&gGreenTreeInput, timeDelta);
-	killCharacter(&gPinkBubbleGumInput, timeDelta);
-	killCharacter(&gBlueLightningInput, timeDelta);
+	killCharacter(&gRedRoverInput, tutorialState, timeDelta);
+	killCharacter(&gGreenTreeInput, tutorialState, timeDelta);
+	killCharacter(&gPinkBubbleGumInput, tutorialState, timeDelta);
+	killCharacter(&gBlueLightningInput, tutorialState, timeDelta);
 	
 	clearPredictedColors(gSecondTimer);
 	
@@ -721,7 +785,7 @@ void prepareCharactersDeath(Character *player)
 /*
  * The characterInput is passed because we have to turn off the character's inputs
  */
-static void killCharacter(Input *characterInput, double timeDelta)
+static void killCharacter(Input *characterInput, bool tutorial, double timeDelta)
 {
 	Character *player = characterFromInput(characterInput);
 	
@@ -747,7 +811,10 @@ static void killCharacter(Input *characterInput, double timeDelta)
 			sendToClients(0, &message);
 		}
 		
-		decideWhetherToMakeAPlayerAWinner(player);
+		if (!tutorial)
+		{
+			decideWhetherToMakeAPlayerAWinner(player);
+		}
 		
 		// who killed me?
 		Character *killer = NULL;

@@ -30,7 +30,7 @@
 void startAnimation(void);
 void endAnimation(void);
 
-void animate(ZGWindow *window, double timeDelta, bool pausedState);
+void animate(ZGWindow *window, double timeDelta, GameState gameState);
 
 void prepareCharactersDeath(Character *player);
 void decideWhetherToMakeAPlayerAWinner(Character *player);
