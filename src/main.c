@@ -998,9 +998,9 @@ static void drawScene(Renderer *renderer)
 		{
 			mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f / 11.2f, 80.0f / 11.2f, -280.0f / 11.2f});
 #if PLATFORM_IOS
-			ZGFloat scale = 0.0040538f;
+			ZGFloat scale = 0.0032f;
 #else
-			ZGFloat scale = 0.0045538f;
+			ZGFloat scale = 0.004f;
 #endif
 			
 			if (gGameState == GAME_STATE_TUTORIAL)
@@ -1016,7 +1016,7 @@ static void drawScene(Renderer *renderer)
 				else if (gTutorialStage == 1)
 				{
 #if PLATFORM_IOS
-					const char *text = "Touch, hold, move ⬆️⬇️⬅️➡️";
+					const char *text = "Touch anywhere, hold, move ⬆️⬇️⬅️➡️";
 #else
 					const char *text = "Move around ⬆️⬇️⬅️➡️.";
 #endif
@@ -1028,13 +1028,13 @@ static void drawScene(Renderer *renderer)
 				}
 				else if (gTutorialStage == 2)
 				{
-					const char *text = "Turn without stopping!";
+					const char *text = "Move and turn without stopping!";
 					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, scale, text);
 				}
 				else if (gTutorialStage == 3)
 				{
 #if PLATFORM_IOS
-					const char *text = "Tap to fire.";
+					const char *text = "Tap with another finger to fire.";
 #else
 					const char *text = "Fire with spacebar.";
 #endif
