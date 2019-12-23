@@ -1021,6 +1021,10 @@ static void drawScene(Renderer *renderer)
 					const char *text = "Move around ⬆️⬇️⬅️➡️.";
 #endif
 					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, scale, text);
+					
+					const char *subtext = "Release to stop moving";
+					mat4_t tutorialSubtextModelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, -2.0f, 0.0f}), tutorialModelViewMatrix);
+					drawStringScaled(renderer, tutorialSubtextModelViewMatrix, textColor, scale, subtext);
 				}
 				else if (gTutorialStage == 2)
 				{
@@ -1030,9 +1034,9 @@ static void drawScene(Renderer *renderer)
 				else if (gTutorialStage == 3)
 				{
 #if PLATFORM_IOS
-					const char *text = "Tap to destroy.";
+					const char *text = "Tap to fire.";
 #else
-					const char *text = "Destroy with spacebar.";
+					const char *text = "Fire with spacebar.";
 #endif
 					
 					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, scale, text);
