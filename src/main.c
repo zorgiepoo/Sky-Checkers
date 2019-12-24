@@ -1145,7 +1145,7 @@ static void drawScene(Renderer *renderer)
 #else
 					ZGFloat knockOffScale = scale;
 #endif
-					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, knockOffScale, "Knock off everyone!");
+					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, knockOffScale, "Knock everyone off!");
 				}
 				else if (gTutorialStage == 5)
 				{
