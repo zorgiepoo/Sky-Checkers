@@ -574,9 +574,27 @@ void initGame(ZGWindow *window, bool firstGame, bool tutorial)
 	
 	if (tutorial)
 	{
-		gPinkBubbleGum.x = 2.0f * 2;
-		gPinkBubbleGum.y = 2.0f * 2;
-		turnCharacter(&gPinkBubbleGum, UP);
+		Character *firstHumanCharacter;
+		if (gPinkBubbleGum.state == CHARACTER_HUMAN_STATE)
+		{
+			firstHumanCharacter = &gPinkBubbleGum;
+		}
+		else if (gRedRover.state == CHARACTER_HUMAN_STATE)
+		{
+			firstHumanCharacter = &gRedRover;
+		}
+		else if (gGreenTree.state == CHARACTER_HUMAN_STATE)
+		{
+			firstHumanCharacter = &gGreenTree;
+		}
+		else
+		{
+			firstHumanCharacter = &gBlueLightning;
+		}
+		
+		firstHumanCharacter->x = 2.0f * 2;
+		firstHumanCharacter->y = 2.0f * 2;
+		turnCharacter(firstHumanCharacter, UP);
 	}
 
 	startAnimation();
