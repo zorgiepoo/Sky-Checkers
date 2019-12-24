@@ -30,21 +30,13 @@ typedef enum
 
 typedef struct
 {
-	union
-	{
-		// Pan events
-		struct
-		{
-			float deltaX;
-			float deltaY;
-			uint32_t timestamp;
-		};
-		// Tap events
-		struct
-		{
-			float x;
-			float y;
-		};
-	};
+	// Pan events
+	float deltaX;
+	float deltaY;
+	uint32_t timestamp;
+	// Pan and tap events
+	float x;
+	float y;
+	
 	ZGTouchEventType type;
 } ZGTouchEvent;

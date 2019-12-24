@@ -105,15 +105,19 @@
 {
 	switch (gestureRecognizer.state)
 	{
+		case UIGestureRecognizerStateBegan:
 		case UIGestureRecognizerStateChanged:
 		{
 			if (_touchEventHandler != NULL)
 			{
+				CGPoint touchPoint = [gestureRecognizer locationInView:self.view];
 				CGPoint velocity = [gestureRecognizer velocityInView:self.view];
 				
 				ZGTouchEvent event = {};
 				event.deltaX = (float)velocity.x;
 				event.deltaY = (float)velocity.y;
+				event.x = (float)touchPoint.x;
+				event.y = (float)touchPoint.y;
 				event.timestamp = ZGGetTicks();
 				event.type = ZGTouchEventTypePanChanged;
 				
@@ -132,7 +136,6 @@
 			}
 			break;
 		case UIGestureRecognizerStatePossible:
-		case UIGestureRecognizerStateBegan:
 			break;
 	}
 }

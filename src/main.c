@@ -71,6 +71,9 @@ static bool gFsaaFlag = true;
 static int32_t gWindowWidth = 800;
 static int32_t gWindowHeight = 500;
 
+static ZGFloat gTouchInputX;
+static ZGFloat gTouchInputY;
+
 // online fields
 #if PLATFORM_IOS
 char gServerAddressString[MAX_SERVER_ADDRESS_SIZE] =  {0};
@@ -585,6 +588,13 @@ void initGame(ZGWindow *window, bool firstGame, bool tutorial)
 		initialNumberOfLives = gCharacterLives;
 	}
 	
+	if (tutorial)
+	{
+		// Just start offscreen initially
+		gTouchInputX = -1000.0f;
+		gTouchInputY = 0.0f;
+	}
+	
 	if (firstGame)
 	{
 		if (gNetworkConnection != NULL)
@@ -992,6 +1002,45 @@ static void drawScene(Renderer *renderer)
 		bool displayControllerNames = (!gGameHasStarted || gGameState == GAME_STATE_PAUSED) && gNetworkConnection == NULL;
 		drawAllCharacterInfo(renderer, characterIconTranslations, displayControllerNames);
 		popDebugGroup(renderer);
+		
+		// Render touch input visuals at z = -25.0f
+#if PLATFORM_IOS
+		if (gGameState == GAME_STATE_TUTORIAL && gTutorialStage >= 1)
+		{
+			pushDebugGroup(renderer, "Touch Input");
+			
+			const ZGFloat arrowOffset = 2.0f;
+			const ZGFloat arrowScale = 0.008f;
+			
+			color4_t arrowColor = (color4_t){0.0f, 0.0f, 1.0f, 1.0f};
+			
+			if (gPinkBubbleGum.direction != UP)
+			{
+				mat4_t upwardMatrix = m4_translation((vec3_t){gTouchInputX, gTouchInputY + arrowOffset, -25.0f});
+				drawStringScaled(renderer, upwardMatrix, arrowColor, arrowScale, "↑");
+			}
+			
+			if (gPinkBubbleGum.direction != DOWN)
+			{
+				mat4_t downwardMatrix = m4_translation((vec3_t){gTouchInputX, gTouchInputY - arrowOffset, -25.0f});
+				drawStringScaled(renderer, downwardMatrix, arrowColor, arrowScale, "↓");
+			}
+			
+			if (gPinkBubbleGum.direction != RIGHT)
+			{
+				mat4_t rightwardMatrix = m4_translation((vec3_t){gTouchInputX + arrowOffset, gTouchInputY, -25.0f});
+				drawStringScaled(renderer, rightwardMatrix, arrowColor, arrowScale, "→");
+			}
+			
+			if (gPinkBubbleGum.direction != LEFT)
+			{
+				mat4_t leftwardMatrix = m4_translation((vec3_t){gTouchInputX - arrowOffset, gTouchInputY, -25.0f});
+				drawStringScaled(renderer, leftwardMatrix, arrowColor, arrowScale, "←");
+			}
+
+			popDebugGroup(renderer);
+		}
+#endif
 		
 		// Render game instruction at -25.0f
 		pushDebugGroup(renderer, "Instructional Text");
@@ -1560,6 +1609,19 @@ static void handleTouchEvent(ZGTouchEvent event, void *context)
 		}
 		else
 		{
+			if (event.type == ZGTouchEventTypePanChanged && gGameState == GAME_STATE_TUTORIAL && gTutorialStage >= 1)
+			{
+				//-10.792 to 10.792 for z=-25.0f
+				const float scaleY = 10.792f;
+				const float scaleX = 10.792f * computeProjectionAspectRatio(renderer);
+				
+				float percentX = event.x / (float)renderer->windowWidth;
+				gTouchInputX = scaleX * 2 * percentX + -scaleX;
+				
+				float percentY = ((float)renderer->windowHeight - event.y) / (float)renderer->windowHeight;
+				gTouchInputY = scaleY * 2 * percentY + -scaleY;
+			}
+			
 			performTouchAction(&gPinkBubbleGumInput, &event);
 		}
 	}
