@@ -123,7 +123,28 @@ void animate(ZGWindow *window, double timeDelta, GameState gameState)
 					maxHumanDistance = gBlueLightning.distance;
 				}
 				
-				if (maxHumanDistance >= 70.0f)
+				float maxHumanNonstopDistance = 0.0f;
+				if (gPinkBubbleGum.state == CHARACTER_HUMAN_STATE && maxHumanNonstopDistance < gPinkBubbleGum.nonstopDistance)
+				{
+					maxHumanNonstopDistance = gPinkBubbleGum.nonstopDistance;
+				}
+				
+				if (gRedRover.state == CHARACTER_HUMAN_STATE && maxHumanNonstopDistance < gRedRover.nonstopDistance)
+				{
+					maxHumanNonstopDistance = gRedRover.nonstopDistance;
+				}
+				
+				if (gGreenTree.state == CHARACTER_HUMAN_STATE && maxHumanNonstopDistance < gGreenTree.nonstopDistance)
+				{
+					maxHumanNonstopDistance = gGreenTree.nonstopDistance;
+				}
+				
+				if (gBlueLightning.state == CHARACTER_HUMAN_STATE && maxHumanNonstopDistance < gBlueLightning.nonstopDistance)
+				{
+					maxHumanNonstopDistance = gBlueLightning.nonstopDistance;
+				}
+				
+				if (maxHumanDistance >= 50.0f && maxHumanNonstopDistance >= 30.0f)
 				{
 					gTutorialStage = 3;
 					// Allow firing now

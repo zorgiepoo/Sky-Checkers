@@ -73,6 +73,9 @@ typedef struct _Character
 	/* Distance traveled, used for tutorial */
 	float distance;
 	
+	/* Distance traveled without stopping, used for tutorial */
+	float nonstopDistance;
+	
 	/* Number of times weapon was fired, used for tutorial */
 	uint16_t numberOfFires;
 	

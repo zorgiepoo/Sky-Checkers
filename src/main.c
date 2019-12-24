@@ -1102,9 +1102,11 @@ static void drawScene(Renderer *renderer)
 #endif
 					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, scale, text);
 					
+#if PLATFORM_IOS
 					const char *subtext = "Release to stop movement";
 					mat4_t tutorialSubtextModelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, -1.3f, 0.0f}), tutorialModelViewMatrix);
 					drawStringScaled(renderer, tutorialSubtextModelViewMatrix, textColor, scale, subtext);
+#endif
 				}
 				else if (gTutorialStage == 2)
 				{

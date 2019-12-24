@@ -59,6 +59,7 @@ void loadCharacter(Character *character)
 	}
 	
 	character->distance = 0.0f;
+	character->nonstopDistance = 0.0f;
 	character->numberOfFires = 0;
 	character->alpha = 1.0f;
 	character->speed = INITIAL_CHARACTER_SPEED;
@@ -701,6 +702,7 @@ void moveCharacter(Character *character, double timeDelta, bool pausedState)
 				float distance = character->speed * (float)timeDelta;
 				character->x += distance;
 				character->distance += distance;
+				character->nonstopDistance += distance;
 			}
 		}
 		else if (direction == LEFT)
@@ -710,6 +712,7 @@ void moveCharacter(Character *character, double timeDelta, bool pausedState)
 				float distance = character->speed * (float)timeDelta;
 				character->x -= distance;
 				character->distance += distance;
+				character->nonstopDistance += distance;
 			}
 		}
 		else if (direction == DOWN)
@@ -719,6 +722,7 @@ void moveCharacter(Character *character, double timeDelta, bool pausedState)
 				float distance = character->speed * (float)timeDelta;
 				character->y -= distance;
 				character->distance += distance;
+				character->nonstopDistance += distance;
 			}
 		}
 		else if (direction == UP)
@@ -728,7 +732,12 @@ void moveCharacter(Character *character, double timeDelta, bool pausedState)
 				float distance = character->speed * (float)timeDelta;
 				character->y += distance;
 				character->distance += distance;
+				character->nonstopDistance += distance;
 			}
+		}
+		else /* if (direction == NO_DIRECTION) */
+		{
+			character->nonstopDistance = 0.0f;
 		}
 	}
 	
