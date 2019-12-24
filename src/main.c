@@ -1126,8 +1126,8 @@ static void drawScene(Renderer *renderer)
 				else if (gTutorialStage == 1)
 				{
 #if PLATFORM_IOS
-					const char *text = "Touch outside the board.";
-					ZGFloat moveScale = scale * 1.2f;
+					const char *text = "Touch outside the board. Move ↑→↓←.";
+					ZGFloat moveScale = scale;
 #else
 					const char *text = "Move around ⬆️➡️⬇️⬅️.";
 					ZGFloat moveScale = scale;
@@ -1135,7 +1135,7 @@ static void drawScene(Renderer *renderer)
 					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, moveScale, text);
 					
 #if PLATFORM_IOS
-					const char *subtext = "Move ↑→↓←. Keep Finger held down.";
+					const char *subtext = "Hold touch to move. Release to stop.";
 					mat4_t tutorialSubtextModelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, -1.3f, 0.0f}), tutorialModelViewMatrix);
 					drawStringScaled(renderer, tutorialSubtextModelViewMatrix, textColor, scale, subtext);
 #endif
@@ -1151,9 +1151,9 @@ static void drawScene(Renderer *renderer)
 					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, moveScale, text);
 
 #if PLATFORM_IOS
-					const char *subtext = "Minimize Touch movement";
+					const char *subtext = "Minimize Finger movement";
 					mat4_t tutorialSubtextModelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, -1.3f, 0.0f}), tutorialModelViewMatrix);
-					drawStringScaled(renderer, tutorialSubtextModelViewMatrix, textColor, moveScale, subtext);
+					drawStringScaled(renderer, tutorialSubtextModelViewMatrix, textColor, scale, subtext);
 #endif
 				}
 				if (gTutorialStage == 3)
