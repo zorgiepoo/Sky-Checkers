@@ -1722,16 +1722,6 @@ static void appLaunchedHandler(void *context)
 	
 	gGamepadManager = initGamepadManager("Data/gamecontrollerdb.txt", gamepadAdded, gamepadRemoved, NULL);
 	
-	/*
-	 * Load a few font strings before a game starts up.
-	 * We don't want the user to experience slow font loading times during a game
-	 */
-	cacheString(renderer, "Game begins in 1");
-	cacheString(renderer, "Game begins in 2");
-	cacheString(renderer, "Game begins in 3");
-	cacheString(renderer, "Game begins in 4");
-	cacheString(renderer, "Game begins in 5");
-	
 	// Create netcode buffers and mutex's in case we need them later
 	initializeNetworkBuffers();
 	

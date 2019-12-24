@@ -32,5 +32,3 @@ void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, ZGFl
 void drawStringScaled(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, ZGFloat scale, const char *string);
 
 void drawStringLeftAligned(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, ZGFloat scale, const char *string);
-
-int cacheString(Renderer *renderer, const char *string);
