@@ -571,6 +571,13 @@ void initGame(ZGWindow *window, bool firstGame, bool tutorial)
 	loadCharacter(&gGreenTree);
 	loadCharacter(&gPinkBubbleGum);
 	loadCharacter(&gBlueLightning);
+	
+	if (tutorial)
+	{
+		gPinkBubbleGum.x = 2.0f * 2;
+		gPinkBubbleGum.y = 2.0f * 2;
+		turnCharacter(&gPinkBubbleGum, UP);
+	}
 
 	startAnimation();
 	
@@ -1073,7 +1080,7 @@ static void drawScene(Renderer *renderer)
 #if PLATFORM_IOS
 					const char *text = "Touch anywhere, Hold, and Move ↑→↓←";
 #else
-					const char *text = "Move around ⬆️⬇️⬅️➡️.";
+					const char *text = "Move around ⬆️➡️⬇️⬅️.";
 #endif
 					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, scale, text);
 					
