@@ -1135,10 +1135,6 @@ static void drawScene(Renderer *renderer)
 #endif
 					
 					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, fireScale, text);
-					
-					const char *subtext = "Firing pauses movement.";
-					mat4_t tutorialSubtextModelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, -1.3f, 0.0f}), tutorialModelViewMatrix);
-					drawStringScaled(renderer, tutorialSubtextModelViewMatrix, textColor, fireScale, subtext);
 				}
 				else if (gTutorialStage == 4)
 				{
