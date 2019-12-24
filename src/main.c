@@ -1907,7 +1907,10 @@ static void appSuspendedHandler(void *context)
 	AppContext *appContext = context;
 	Renderer *renderer = &appContext->renderer;
 	
-	showPauseMenu(renderer->window, &gGameState);
+	if (gGameState == GAME_STATE_ON || gGameState == GAME_STATE_TUTORIAL)
+	{
+		showPauseMenu(renderer->window, &gGameState);
+	}
 	
 	writeDefaults(renderer);
 }
