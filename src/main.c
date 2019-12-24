@@ -1128,7 +1128,7 @@ static void drawScene(Renderer *renderer)
 				{
 #if PLATFORM_IOS
 					ZGFloat fireScale = scale * 1.4f;
-					const char *text = "Tap with second Finger to Fire.";
+					const char *text = "Tap with another Finger to Fire.";
 #else
 					ZGFloat fireScale = scale;
 					const char *text = "Fire with spacebar.";
