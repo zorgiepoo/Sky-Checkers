@@ -71,9 +71,6 @@ static bool gFsaaFlag = true;
 static int32_t gWindowWidth = 800;
 static int32_t gWindowHeight = 500;
 
-static ZGFloat gTouchInputX;
-static ZGFloat gTouchInputY;
-
 // online fields
 #if PLATFORM_IOS
 char gServerAddressString[MAX_SERVER_ADDRESS_SIZE] =  {0};
@@ -613,13 +610,6 @@ void initGame(ZGWindow *window, bool firstGame, bool tutorial)
 		initialNumberOfLives = gCharacterLives;
 	}
 	
-	if (tutorial)
-	{
-		// Just start offscreen initially
-		gTouchInputX = -1000.0f;
-		gTouchInputY = 0.0f;
-	}
-	
 	if (firstGame)
 	{
 		if (gNetworkConnection != NULL)
@@ -1034,34 +1024,46 @@ static void drawScene(Renderer *renderer)
 		{
 			pushDebugGroup(renderer, "Touch Input");
 			
-			const ZGFloat arrowOffset = 2.0f;
-			const ZGFloat arrowScale = 0.008f;
+			const ZGFloat arrowOffset = 1.0f;
+			const ZGFloat arrowScale = 0.004f;
 			
-			color4_t arrowColor = (color4_t){0.0f, 0.0f, 1.0f, 1.0f};
+			color4_t defaultArrowColor = (color4_t){0.0f, 0.0f, 1.0f, 1.0f};
+			color4_t activeArrowColor = (color4_t){gPinkBubbleGum.red, gPinkBubbleGum.green, gPinkBubbleGum.blue, 1.0f};
 			
-			if (gPinkBubbleGum.direction != UP)
+			Character *humanCharacter = NULL;
+			if (gPinkBubbleGum.state == CHARACTER_HUMAN_STATE)
 			{
-				mat4_t upwardMatrix = m4_translation((vec3_t){gTouchInputX, gTouchInputY + arrowOffset, -25.0f});
-				drawStringScaled(renderer, upwardMatrix, arrowColor, arrowScale, "↑");
+				humanCharacter = &gPinkBubbleGum;
+			}
+			else if (gRedRover.state == CHARACTER_HUMAN_STATE)
+			{
+				humanCharacter = &gPinkBubbleGum;
+			}
+			else if (gGreenTree.state == CHARACTER_HUMAN_STATE)
+			{
+				humanCharacter = &gGreenTree;
+			}
+			else
+			{
+				humanCharacter = &gBlueLightning;
 			}
 			
-			if (gPinkBubbleGum.direction != DOWN)
-			{
-				mat4_t downwardMatrix = m4_translation((vec3_t){gTouchInputX, gTouchInputY - arrowOffset, -25.0f});
-				drawStringScaled(renderer, downwardMatrix, arrowColor, arrowScale, "↓");
-			}
+			//-10.792 to 10.792 for z=-25.0f without aspect ratio taken in account in x direction
+			const float scaleX = 10.792f * computeProjectionAspectRatio(renderer);
+			ZGFloat touchInputX = (ZGFloat)(scaleX * 2 * 0.1f + -scaleX);
+			ZGFloat touchInputY = -1.0f;
 			
-			if (gPinkBubbleGum.direction != RIGHT)
-			{
-				mat4_t rightwardMatrix = m4_translation((vec3_t){gTouchInputX + arrowOffset, gTouchInputY, -25.0f});
-				drawStringScaled(renderer, rightwardMatrix, arrowColor, arrowScale, "→");
-			}
+			mat4_t upwardMatrix = m4_translation((vec3_t){touchInputX, touchInputY + arrowOffset, -25.0f});
+			drawStringScaled(renderer, upwardMatrix, (humanCharacter->direction == UP ? activeArrowColor : defaultArrowColor), arrowScale, "↑");
 			
-			if (gPinkBubbleGum.direction != LEFT)
-			{
-				mat4_t leftwardMatrix = m4_translation((vec3_t){gTouchInputX - arrowOffset, gTouchInputY, -25.0f});
-				drawStringScaled(renderer, leftwardMatrix, arrowColor, arrowScale, "←");
-			}
+			mat4_t downwardMatrix = m4_translation((vec3_t){touchInputX, touchInputY - arrowOffset, -25.0f});
+			drawStringScaled(renderer, downwardMatrix, (humanCharacter->direction == DOWN ? activeArrowColor : defaultArrowColor), arrowScale, "↓");
+			
+			mat4_t rightwardMatrix = m4_translation((vec3_t){touchInputX + arrowOffset, touchInputY, -25.0f});
+			drawStringScaled(renderer, rightwardMatrix, (humanCharacter->direction == RIGHT ? activeArrowColor : defaultArrowColor), arrowScale, "→");
+			
+			mat4_t leftwardMatrix = m4_translation((vec3_t){touchInputX - arrowOffset, touchInputY, -25.0f});
+			drawStringScaled(renderer, leftwardMatrix, (humanCharacter->direction == LEFT ? activeArrowColor : defaultArrowColor), arrowScale, "←");
 
 			popDebugGroup(renderer);
 		}
@@ -1075,9 +1077,9 @@ static void drawScene(Renderer *renderer)
 			if (gGameState == GAME_STATE_TUTORIAL)
 			{
 #if PLATFORM_IOS
-			ZGFloat scale = 0.0028f;
+				ZGFloat scale = 0.0028f;
 #else
-			ZGFloat scale = 0.004f;
+				ZGFloat scale = 0.004f;
 #endif
 				color4_t textColor = (color4_t){gPinkBubbleGum.red, gPinkBubbleGum.green, gPinkBubbleGum.blue, 1.0f};
 				
@@ -1090,20 +1092,21 @@ static void drawScene(Renderer *renderer)
 #else
 					ZGFloat welcomeScale = scale;
 #endif
-					
-					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, welcomeScale, "Welcome to the tutorial!");
+					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, welcomeScale, "Welcome to the Tutorial!");
 				}
 				else if (gTutorialStage == 1)
 				{
 #if PLATFORM_IOS
-					const char *text = "Touch anywhere, Hold, and Move ↑→↓←";
+					const char *text = "Touch outside the board.";
+					ZGFloat moveScale = scale * 1.2f;
 #else
 					const char *text = "Move around ⬆️➡️⬇️⬅️.";
+					ZGFloat moveScale = scale;
 #endif
-					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, scale, text);
+					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, moveScale, text);
 					
 #if PLATFORM_IOS
-					const char *subtext = "Release to stop movement";
+					const char *subtext = "Move ↑→↓←. Keep Finger held down.";
 					mat4_t tutorialSubtextModelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, -1.3f, 0.0f}), tutorialModelViewMatrix);
 					drawStringScaled(renderer, tutorialSubtextModelViewMatrix, textColor, scale, subtext);
 #endif
@@ -1115,7 +1118,7 @@ static void drawScene(Renderer *renderer)
 #else
 					ZGFloat moveScale = scale;
 #endif
-					const char *text = "Move and Turn without stopping!";
+					const char *text = "Move and Turn without stopping.";
 					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, moveScale, text);
 
 #if PLATFORM_IOS
@@ -1124,37 +1127,50 @@ static void drawScene(Renderer *renderer)
 					drawStringScaled(renderer, tutorialSubtextModelViewMatrix, textColor, moveScale, subtext);
 #endif
 				}
-				else if (gTutorialStage == 3)
+				else if (gTutorialStage >= 3)
 				{
 #if PLATFORM_IOS
-					ZGFloat fireScale = scale * 1.4f;
-					const char *text = "Tap with another Finger to Fire.";
-#else
-					ZGFloat fireScale = scale;
-					const char *text = "Fire with spacebar.";
+					//-10.792 to 10.792 for z=-25.0f without aspect ratio taken in account in x direction
+					const float scaleX = 10.792f * computeProjectionAspectRatio(renderer);
+					ZGFloat tapInputX = (ZGFloat)(scaleX * 2 * 0.9f + -scaleX);
+					ZGFloat tapInputY = -1.0f;
+					
+					mat4_t tapMatrix = m4_translation((vec3_t){tapInputX, tapInputY, -25.0f});
+					drawStringScaled(renderer, tapMatrix, (color4_t){0.0f, 0.0f, 1.0f, gPinkBubbleGum.weap->animationState ? 0.5f : 1.0f}, 0.006f, "🔘");
 #endif
 					
-					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, fireScale, text);
-				}
-				else if (gTutorialStage == 4)
-				{
+					if (gTutorialStage == 3)
+					{
 #if PLATFORM_IOS
-					ZGFloat knockOffScale = scale * 1.5f;
+						ZGFloat fireScale = scale * 1.4f;
+						const char *text = "Tap with another Finger to Fire.";
 #else
-					ZGFloat knockOffScale = scale;
+						ZGFloat fireScale = scale;
+						const char *text = "Fire with spacebar.";
 #endif
-					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, knockOffScale, "Knock everyone off!");
-				}
-				else if (gTutorialStage == 5)
-				{
+										
+						drawStringScaled(renderer, tutorialModelViewMatrix, textColor, fireScale, text);
+					}
+					else if (gTutorialStage == 4)
+					{
 #if PLATFORM_IOS
-					const char *text = "You're a pro! Pause to exit.";
-					ZGFloat endTextScale = scale * 1.5f;
+						ZGFloat knockOffScale = scale * 1.5f;
 #else
-					const char *text = "You're a pro! Escape to exit.";
-					ZGFloat endTextScale = scale;
+						ZGFloat knockOffScale = scale;
 #endif
-					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, endTextScale, text);
+						drawStringScaled(renderer, tutorialModelViewMatrix, textColor, knockOffScale, "Knock everyone off!");
+					}
+					else if (gTutorialStage == 5)
+					{
+#if PLATFORM_IOS
+						const char *text = "You're a pro! Pause to exit.";
+						ZGFloat endTextScale = scale * 1.5f;
+#else
+						const char *text = "You're a pro! Escape to exit.";
+						ZGFloat endTextScale = scale;
+#endif
+						drawStringScaled(renderer, tutorialModelViewMatrix, textColor, endTextScale, text);
+					}
 				}
 			}
 			else if (!gGameHasStarted)
@@ -1632,19 +1648,6 @@ static void handleTouchEvent(ZGTouchEvent event, void *context)
 		}
 		else
 		{
-			if (event.type == ZGTouchEventTypePanChanged && gGameState == GAME_STATE_TUTORIAL && gTutorialStage >= 1)
-			{
-				//-10.792 to 10.792 for z=-25.0f
-				const float scaleY = 10.792f;
-				const float scaleX = 10.792f * computeProjectionAspectRatio(renderer);
-				
-				float percentX = event.x / (float)renderer->windowWidth;
-				gTouchInputX = scaleX * 2 * percentX + -scaleX;
-				
-				float percentY = ((float)renderer->windowHeight - event.y) / (float)renderer->windowHeight;
-				gTouchInputY = scaleY * 2 * percentY + -scaleY;
-			}
-			
 			performTouchAction(&gPinkBubbleGumInput, &event);
 		}
 	}
