@@ -1150,10 +1150,10 @@ static void drawScene(Renderer *renderer)
 				else if (gTutorialStage == 5)
 				{
 #if PLATFORM_IOS
-					const char *text = "That's all! Pause to exit.";
+					const char *text = "You're a pro! Pause to exit.";
 					ZGFloat endTextScale = scale * 1.5f;
 #else
-					const char *text = "That's all! Escape to exit.";
+					const char *text = "You're a pro! Escape to exit.";
 					ZGFloat endTextScale = scale;
 #endif
 					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, endTextScale, text);
