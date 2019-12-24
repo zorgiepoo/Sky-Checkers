@@ -1020,7 +1020,7 @@ static void drawScene(Renderer *renderer)
 		
 		// Render touch input visuals at z = -25.0f
 #if PLATFORM_IOS
-		if (gGameState == GAME_STATE_TUTORIAL && gTutorialStage >= 1)
+		if (gGameState == GAME_STATE_TUTORIAL && gTutorialStage >= 1 && gTutorialStage < 5)
 		{
 			pushDebugGroup(renderer, "Touch Input");
 			
@@ -1066,6 +1066,35 @@ static void drawScene(Renderer *renderer)
 			drawStringScaled(renderer, leftwardMatrix, (humanCharacter->direction == LEFT ? activeArrowColor : defaultArrowColor), arrowScale, "←");
 
 			popDebugGroup(renderer);
+		}
+		
+		if (gGameState == GAME_STATE_TUTORIAL && gTutorialStage >= 3 && gTutorialStage < 5)
+		{
+			//-10.792 to 10.792 for z=-25.0f without aspect ratio taken in account in x direction
+			const float scaleX = 10.792f * computeProjectionAspectRatio(renderer);
+			ZGFloat tapInputX = (ZGFloat)(scaleX * 2 * 0.9f + -scaleX);
+			ZGFloat tapInputY = -1.0f;
+			
+			Character *humanCharacter = NULL;
+			if (gPinkBubbleGum.state == CHARACTER_HUMAN_STATE)
+			{
+				humanCharacter = &gPinkBubbleGum;
+			}
+			else if (gRedRover.state == CHARACTER_HUMAN_STATE)
+			{
+				humanCharacter = &gPinkBubbleGum;
+			}
+			else if (gGreenTree.state == CHARACTER_HUMAN_STATE)
+			{
+				humanCharacter = &gGreenTree;
+			}
+			else
+			{
+				humanCharacter = &gBlueLightning;
+			}
+			
+			mat4_t tapMatrix = m4_translation((vec3_t){tapInputX, tapInputY, -25.0f});
+			drawStringScaled(renderer, tapMatrix, (color4_t){0.0f, 0.0f, 1.0f, humanCharacter->weap->animationState ? 0.5f : 1.0f}, 0.006f, "🔘");
 		}
 #endif
 		
@@ -1127,50 +1156,42 @@ static void drawScene(Renderer *renderer)
 					drawStringScaled(renderer, tutorialSubtextModelViewMatrix, textColor, moveScale, subtext);
 #endif
 				}
-				else if (gTutorialStage >= 3)
+				if (gTutorialStage == 3)
 				{
 #if PLATFORM_IOS
-					//-10.792 to 10.792 for z=-25.0f without aspect ratio taken in account in x direction
-					const float scaleX = 10.792f * computeProjectionAspectRatio(renderer);
-					ZGFloat tapInputX = (ZGFloat)(scaleX * 2 * 0.9f + -scaleX);
-					ZGFloat tapInputY = -1.0f;
+					ZGFloat fireScale = scale * 1.4f;
+					const char *text = "Tap with another Finger to Fire.";
+#else
+					ZGFloat fireScale = scale;
+					const char *text = "Fire with spacebar.";
+#endif
+					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, fireScale, text);
+				}
+				else if (gTutorialStage == 4)
+				{
+#if PLATFORM_IOS
+					ZGFloat knockOffScale = scale * 1.5f;
+#else
+					ZGFloat knockOffScale = scale;
+#endif
+					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, knockOffScale, "Knock everyone off!");
+				}
+				else if (gTutorialStage == 5)
+				{
+#if PLATFORM_IOS
+					const char *text = "You're a pro! No more visuals.";
+					ZGFloat endTextScale = scale * 1.5f;
+#else
+					const char *text = "You're a pro! Escape to exit.";
+					ZGFloat endTextScale = scale;
+#endif
+					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, endTextScale, text);
 					
-					mat4_t tapMatrix = m4_translation((vec3_t){tapInputX, tapInputY, -25.0f});
-					drawStringScaled(renderer, tapMatrix, (color4_t){0.0f, 0.0f, 1.0f, gPinkBubbleGum.weap->animationState ? 0.5f : 1.0f}, 0.006f, "🔘");
-#endif
-					
-					if (gTutorialStage == 3)
-					{
 #if PLATFORM_IOS
-						ZGFloat fireScale = scale * 1.4f;
-						const char *text = "Tap with another Finger to Fire.";
-#else
-						ZGFloat fireScale = scale;
-						const char *text = "Fire with spacebar.";
+					const char *subtext = "Pause to exit.";
+					mat4_t tutorialSubtextModelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, -1.3f, 0.0f}), tutorialModelViewMatrix);
+					drawStringScaled(renderer, tutorialSubtextModelViewMatrix, textColor, endTextScale, subtext);
 #endif
-										
-						drawStringScaled(renderer, tutorialModelViewMatrix, textColor, fireScale, text);
-					}
-					else if (gTutorialStage == 4)
-					{
-#if PLATFORM_IOS
-						ZGFloat knockOffScale = scale * 1.5f;
-#else
-						ZGFloat knockOffScale = scale;
-#endif
-						drawStringScaled(renderer, tutorialModelViewMatrix, textColor, knockOffScale, "Knock everyone off!");
-					}
-					else if (gTutorialStage == 5)
-					{
-#if PLATFORM_IOS
-						const char *text = "You're a pro! Pause to exit.";
-						ZGFloat endTextScale = scale * 1.5f;
-#else
-						const char *text = "You're a pro! Escape to exit.";
-						ZGFloat endTextScale = scale;
-#endif
-						drawStringScaled(renderer, tutorialModelViewMatrix, textColor, endTextScale, text);
-					}
 				}
 			}
 			else if (!gGameHasStarted)
