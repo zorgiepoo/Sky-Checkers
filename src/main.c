@@ -1022,7 +1022,7 @@ static void drawScene(Renderer *renderer)
 				else if (gTutorialStage == 1)
 				{
 #if PLATFORM_IOS
-					const char *text = "Touch anywhere, Hold, and Move ⬆️⬇️⬅️➡️";
+					const char *text = "Touch anywhere, Hold, and Move ↑→↓←";
 #else
 					const char *text = "Move around ⬆️⬇️⬅️➡️.";
 #endif
@@ -1034,28 +1034,44 @@ static void drawScene(Renderer *renderer)
 				}
 				else if (gTutorialStage == 2)
 				{
+#if PLATFORM_IOS
+					ZGFloat moveScale = scale * 1.4f;
+#else
+					ZGFloat moveScale = scale;
+#endif
 					const char *text = "Move and Turn without stopping!";
-					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, scale, text);
+					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, moveScale, text);
 
 #if PLATFORM_IOS
-					const char *subtext = "Minimize Finger movement";
+					const char *subtext = "Minimize Touch movement";
 					mat4_t tutorialSubtextModelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, -1.3f, 0.0f}), tutorialModelViewMatrix);
-					drawStringScaled(renderer, tutorialSubtextModelViewMatrix, textColor, scale, subtext);
+					drawStringScaled(renderer, tutorialSubtextModelViewMatrix, textColor, moveScale, subtext);
 #endif
 				}
 				else if (gTutorialStage == 3)
 				{
 #if PLATFORM_IOS
+					ZGFloat fireScale = scale * 1.4f;
 					const char *text = "Tap with second Finger to Fire.";
 #else
+					ZGFloat fireScale = scale;
 					const char *text = "Fire with spacebar.";
 #endif
 					
-					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, scale, text);
+					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, fireScale, text);
+					
+					const char *subtext = "Firing pauses movement.";
+					mat4_t tutorialSubtextModelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, -1.3f, 0.0f}), tutorialModelViewMatrix);
+					drawStringScaled(renderer, tutorialSubtextModelViewMatrix, textColor, fireScale, subtext);
 				}
 				else if (gTutorialStage == 4)
 				{
-					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, scale, "Move, fire, and knock off everyone!");
+#if PLATFORM_IOS
+					ZGFloat knockOffScale = scale * 1.5f;
+#else
+					ZGFloat knockOffScale = scale;
+#endif
+					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, knockOffScale, "Knock off everyone!");
 				}
 				else if (gTutorialStage == 5)
 				{
