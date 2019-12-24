@@ -997,14 +997,14 @@ static void drawScene(Renderer *renderer)
 		pushDebugGroup(renderer, "Instructional Text");
 		{
 			mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f / 11.2f, 80.0f / 11.2f, -280.0f / 11.2f});
+			
+			if (gGameState == GAME_STATE_TUTORIAL)
+			{
 #if PLATFORM_IOS
 			ZGFloat scale = 0.0028f;
 #else
 			ZGFloat scale = 0.004f;
 #endif
-			
-			if (gGameState == GAME_STATE_TUTORIAL)
-			{
 				color4_t textColor = (color4_t){gPinkBubbleGum.red, gPinkBubbleGum.green, gPinkBubbleGum.blue, 1.0f};
 				
 				mat4_t tutorialModelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, 0.0f, 0.0f}), modelViewMatrix);
@@ -1087,6 +1087,7 @@ static void drawScene(Renderer *renderer)
 			}
 			else if (!gGameHasStarted)
 			{
+				ZGFloat scale = 0.004f;
 				color4_t textColor = (color4_t){0.0f, 0.0f, 1.0f, 1.0f};
 				
 				if (gPinkBubbleGum.netState == NETWORK_PENDING_STATE || gRedRover.netState == NETWORK_PENDING_STATE || gGreenTree.netState == NETWORK_PENDING_STATE || gBlueLightning.netState == NETWORK_PENDING_STATE)
