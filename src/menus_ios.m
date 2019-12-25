@@ -63,7 +63,15 @@ static void setSectionHeaderFont(ZGWindow *window, UIView *view)
 static void playGame(ZGWindow *window, bool tutorial)
 {
 	hideGameMenus(window);
-	initGame(window, true, tutorial);
+	
+	if (tutorial)
+	{
+		playTutorial(window);
+	}
+	else
+	{
+		initGame(window, true, false);
+	}
 }
 
 @interface MainMenuHandler : NSObject

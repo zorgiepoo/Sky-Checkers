@@ -766,6 +766,8 @@ void endGame(ZGWindow *window, bool lastGame)
 		memset(gGreenTree.controllerName, 0, MAX_CONTROLLER_NAME_SIZE);
 		memset(gBlueLightning.controllerName, 0, MAX_CONTROLLER_NAME_SIZE);
 		
+		restoreAllBackupStates();
+		
 		if (gAudioMusicFlag)
 		{
 			bool windowFocus = ZGWindowHasFocus(window);

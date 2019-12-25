@@ -28,3 +28,5 @@ void updateAudioMusic(ZGWindow *window, bool musicEnabled);
 bool startNetworkGame(ZGWindow *window);
 
 bool connectToNetworkGame(GameState *gameState);
+
+void playTutorial(ZGWindow *window);

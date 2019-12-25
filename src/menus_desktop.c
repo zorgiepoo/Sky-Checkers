@@ -343,7 +343,7 @@ void tutorialMenuAction(void *context)
 	addSubMenu(gTutorialMenu, gPauseExitMenu);
 	
 	GameMenuContext *menuContext = context;
-	initGame(menuContext->window, true, true);
+	playTutorial(menuContext->window);
 }
 
 void drawPauseResumeMenu(Renderer *renderer, color4_t preferredColor)

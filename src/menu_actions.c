@@ -239,3 +239,15 @@ bool connectToNetworkGame(GameState *gameState)
 	
 	return true;
 }
+
+void playTutorial(ZGWindow *window)
+{
+	// Don't allow tutorial to play without any human or AI players
+	if (gPinkBubbleGum.state == CHARACTER_AI_STATE && gRedRover.state == CHARACTER_AI_STATE && gGreenTree.state == CHARACTER_AI_STATE && gBlueLightning.state == CHARACTER_AI_STATE)
+	{
+		gPinkBubbleGum.backup_state = gPinkBubbleGum.state;
+		gPinkBubbleGum.state = CHARACTER_HUMAN_STATE;
+	}
+	
+	initGame(window, true, true);
+}

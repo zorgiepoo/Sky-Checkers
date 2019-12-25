@@ -2499,8 +2499,6 @@ static void cleanUpNetName(Character *character)
 // Not to be called on network threads
 static void cleanupStateFromNetwork(void)
 {
-	restoreAllBackupStates();
-	
 	gPinkBubbleGumInput.character = &gPinkBubbleGum;
 	gRedRoverInput.character = &gRedRover;
 	gBlueLightningInput.character = &gBlueLightning;
