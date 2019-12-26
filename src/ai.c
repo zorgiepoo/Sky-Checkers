@@ -42,7 +42,7 @@ static void avoidCharacter(Character *character, Character *characterB, bool all
 
 static void updateMoveTimer(Character *character, float currentTime)
 {
-	character->move_timer = currentTime + (float)((mt_random() % 2) + 1);
+	character->move_timer = currentTime + (float)(mt_random() % 5) * 0.5f + 1.0f;
 }
 
 static float timeAliveThresholdForAIMode(int AIMode)
