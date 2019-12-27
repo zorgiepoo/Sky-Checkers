@@ -1655,7 +1655,8 @@ static void handleWindowEvent(ZGWindowEvent event, void *context)
 }
 
 #if PLATFORM_IOS
-#define TUTORIAL_BOUNDARY_PERCENT 0.2f
+#define TUTORIAL_BOUNDARY_PERCENT_X 0.3f
+#define TUTORIAL_BOUNDARY_PERCENT_Y 0.2f
 static void handleTouchEvent(ZGTouchEvent event, void *context)
 {
 	if (gGameState == GAME_STATE_ON || gGameState == GAME_STATE_TUTORIAL)
@@ -1675,7 +1676,7 @@ static void handleTouchEvent(ZGTouchEvent event, void *context)
 			if (gGameState == GAME_STATE_TUTORIAL && gTutorialStage < 5 && event.type != ZGTouchEventTypeTap)
 			{
 				// Don't allow player to use the non-recommended boundary in tutorial mode
-				if ((event.x <= (float)renderer->windowWidth * TUTORIAL_BOUNDARY_PERCENT || event.x >= (float)renderer->windowWidth - (float)renderer->windowWidth * TUTORIAL_BOUNDARY_PERCENT) && (event.y <= (float)renderer->windowHeight * (1.0f - TUTORIAL_BOUNDARY_PERCENT) && event.y >= (float)renderer->windowHeight * TUTORIAL_BOUNDARY_PERCENT))
+				if ((event.x <= (float)renderer->windowWidth * TUTORIAL_BOUNDARY_PERCENT_X || event.x >= (float)renderer->windowWidth - (float)renderer->windowWidth * TUTORIAL_BOUNDARY_PERCENT_X) && (event.y <= (float)renderer->windowHeight - (float)renderer->windowHeight * TUTORIAL_BOUNDARY_PERCENT_Y && event.y >= (float)renderer->windowHeight * TUTORIAL_BOUNDARY_PERCENT_Y))
 				{
 					performTouchAction(&gPinkBubbleGumInput, &event);
 				}
