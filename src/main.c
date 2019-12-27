@@ -589,9 +589,19 @@ void initGame(ZGWindow *window, bool firstGame, bool tutorial)
 			firstHumanCharacter = &gBlueLightning;
 		}
 		
-		firstHumanCharacter->x = 2.0f * 2;
+		firstHumanCharacter->x = 2.0f * 3;
 		firstHumanCharacter->y = 2.0f * 2;
 		turnCharacter(firstHumanCharacter, UP);
+		
+		// We need to spawn the other characters so they fill up available spaces
+		Character *characterB = NULL;
+		Character *characterC = NULL;
+		Character *characterD = NULL;
+		getOtherCharacters(firstHumanCharacter, &characterB, &characterC, &characterD);
+		
+		spawnCharacter(characterB);
+		spawnCharacter(characterC);
+		spawnCharacter(characterD);
 	}
 
 	startAnimation();
