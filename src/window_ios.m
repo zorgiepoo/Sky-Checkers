@@ -63,7 +63,9 @@
 	UIPanGestureRecognizer *panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(viewGesturePanned:)];
 	
 	panGestureRecognizer.name = ZGPannedRecognizerName;
+#if !PLATFORM_TVOS
 	panGestureRecognizer.maximumNumberOfTouches = 1;
+#endif
 	panGestureRecognizer.delegate = self;
 	_panGestureRecognizer = panGestureRecognizer;
 	
@@ -157,10 +159,12 @@
 	}
 }
 
+#if !PLATFORM_TVOS
 - (BOOL)prefersStatusBarHidden
 {
 	return YES;
 }
+#endif
 
 - (BOOL)prefersHomeIndicatorAutoHidden
 {

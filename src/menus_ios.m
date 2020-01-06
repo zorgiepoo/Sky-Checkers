@@ -220,27 +220,28 @@ static uint8_t currentAIModeIndex(void)
 	return 0;
 }
 
+#if !PLATFORM_TVOS
 - (void)changeNumberOfHumans:(UIStepper *)stepper
 {
 	uint8_t humanPlayers = (uint8_t)stepper.value;
-	
+
 	gPinkBubbleGum.state = CHARACTER_AI_STATE;
 	gRedRover.state = CHARACTER_AI_STATE;
 	gGreenTree.state = CHARACTER_AI_STATE;
 	gBlueLightning.state = CHARACTER_AI_STATE;
-	
+
 	if (humanPlayers > 0)
 	{
 		gPinkBubbleGum.state = CHARACTER_HUMAN_STATE;
-		
+
 		if (humanPlayers > 1)
 		{
 			gRedRover.state = CHARACTER_HUMAN_STATE;
-			
+
 			if (humanPlayers > 2)
 			{
 				gGreenTree.state = CHARACTER_HUMAN_STATE;
-				
+
 				if (humanPlayers > 3)
 				{
 					gBlueLightning.state = CHARACTER_HUMAN_STATE;
@@ -248,9 +249,10 @@ static uint8_t currentAIModeIndex(void)
 			}
 		}
 	}
-	
+
 	[_optionsTableView reloadData];
 }
+#endif
 
 - (void)changeAIMode:(UISegmentedControl *)segmentedControl
 {
@@ -275,26 +277,28 @@ static uint8_t currentAIModeIndex(void)
 	[_optionsTableView reloadData];
 }
 
+#if !PLATFORM_TVOS
 - (void)changeNumberOfLives:(UIStepper *)stepper
 {
 	gCharacterLives = (int)stepper.value;
-	
+
 	[_optionsTableView reloadData];
 }
 
 - (void)changeAudioEffectsFlag:(UISwitch *)switchControl
 {
 	gAudioEffectsFlag = switchControl.on;
-	
+
 	[_optionsTableView reloadData];
 }
 
 - (void)changeAudioMusicFlag:(UISwitch *)switchControl
 {
 	updateAudioMusic(_window, switchControl.on);
-	
+
 	[_optionsTableView reloadData];
 }
+#endif
 
 - (nonnull UITableViewCell *)tableView:(nonnull UITableView *)tableView cellForRowAtIndexPath:(nonnull NSIndexPath *)indexPath
 {
@@ -309,17 +313,18 @@ static uint8_t currentAIModeIndex(void)
 	
 	if (indexPath.section == 0 && (indexPath.row == 0 || indexPath.row == 2))
 	{
+#if !PLATFORM_TVOS
 		UIStepper *stepper = [[UIStepper alloc] init];
 		// Hack to get tint color respected
 		[stepper setDecrementImage:[stepper decrementImageForState:UIControlStateNormal] forState:UIControlStateNormal];
 		[stepper setIncrementImage:[stepper incrementImageForState:UIControlStateNormal] forState:UIControlStateNormal];
-		
+
 		stepper.tintColor = cellTextColor();
 		stepper.layer.borderColor = UIColor.blackColor.CGColor;
 		stepper.wraps = YES;
 		stepper.stepValue = 1.0;
 		viewCell.accessoryView = stepper;
-		
+
 		if (indexPath.row == 0)
 		{
 			uint8_t humanPlayers = numberOfHumanPlayers();
@@ -327,7 +332,7 @@ static uint8_t currentAIModeIndex(void)
 			stepper.minimumValue = 0.0;
 			stepper.maximumValue = 4.0;
 			stepper.value = (double)humanPlayers;
-			
+
 			[stepper addTarget:self action:@selector(changeNumberOfHumans:) forControlEvents:UIControlEventTouchUpInside];
 		}
 		else if (indexPath.row == 2)
@@ -337,9 +342,10 @@ static uint8_t currentAIModeIndex(void)
 			stepper.minimumValue = 1.0;
 			stepper.maximumValue = 10.0;
 			stepper.value = (double)numberOfLives;
-			
+
 			[stepper addTarget:self action:@selector(changeNumberOfLives:) forControlEvents:UIControlEventTouchUpInside];
 		}
+#endif
 	}
 	else if (indexPath.section == 0 && indexPath.row == 1)
 	{
@@ -358,23 +364,25 @@ static uint8_t currentAIModeIndex(void)
 	}
 	else if (indexPath.section == 1)
 	{
+#if !PLATFORM_TVOS
 		UISwitch *switchControl = [[UISwitch alloc] initWithFrame:CGRectZero];
 		viewCell.accessoryView = switchControl;
-		
+
 		if (indexPath.row == 0)
 		{
 			viewCell.textLabel.text = @"Effects";
 			switchControl.on = (gAudioEffectsFlag != 0);
-			
+
 			[switchControl addTarget:self action:@selector(changeAudioEffectsFlag:) forControlEvents:UIControlEventValueChanged];
 		}
 		else if (indexPath.row == 1)
 		{
 			viewCell.textLabel.text = @"Music";
 			switchControl.on = (gAudioMusicFlag != 0);
-			
+
 			[switchControl addTarget:self action:@selector(changeAudioMusicFlag:) forControlEvents:UIControlEventValueChanged];
 		}
+#endif
 	}
 	
 	return viewCell;
@@ -451,11 +459,13 @@ static uint8_t currentAIModeIndex(void)
 	}
 }
 
+#if !PLATFORM_TVOS
 - (void)changeNumberOfNetHumans:(UIStepper *)stepper
 {
 	gNumberOfNetHumans = (int)stepper.value;
 	[_tableView reloadData];
 }
+#endif
 
 - (nonnull UITableViewCell *)tableView:(nonnull UITableView *)tableView cellForRowAtIndexPath:(nonnull NSIndexPath *)indexPath
 {
@@ -473,25 +483,27 @@ static uint8_t currentAIModeIndex(void)
 
 	if (indexPath.section == 0)
 	{
+#if !PLATFORM_TVOS
 		UIStepper *stepper = [[UIStepper alloc] init];
 		// Hack to get tint color respected
 		[stepper setDecrementImage:[stepper decrementImageForState:UIControlStateNormal] forState:UIControlStateNormal];
 		[stepper setIncrementImage:[stepper incrementImageForState:UIControlStateNormal] forState:UIControlStateNormal];
-		
+
 		stepper.tintColor = cellTextColor();
 		stepper.layer.borderColor = UIColor.blackColor.CGColor;
 		stepper.wraps = YES;
 		stepper.stepValue = 1.0;
-		
+
 		stepper.minimumValue = 1.0;
 		stepper.maximumValue = 3.0;
 		stepper.value = (double)gNumberOfNetHumans;
-		
+
 		[stepper addTarget:self action:@selector(changeNumberOfNetHumans:) forControlEvents:UIControlEventTouchUpInside];
-		
+
 		viewCell.textLabel.text = gNumberOfNetHumans == 1 ? @"1 Friend Joining" : [NSString stringWithFormat:@"%d Friends Joining", gNumberOfNetHumans];
-		
+
 		viewCell.accessoryView = stepper;
+#endif
 	}
 	else if (indexPath.section == 1)
 	{
@@ -536,13 +548,14 @@ static uint8_t currentAIModeIndex(void)
 	UITextField *_hostAddresstextField;
 }
 
+#if !PLATFORM_TVOS
 - (instancetype)init
 {
 	self = [super init];
 	if (self != nil)
 	{
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
-		
+
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillDismiss:) name:UIKeyboardWillHideNotification object:nil];
 	}
 	return self;
@@ -557,6 +570,7 @@ static uint8_t currentAIModeIndex(void)
 {
 	_cancelButton.hidden = NO;
 }
+#endif
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {
@@ -673,13 +687,14 @@ static uint8_t currentAIModeIndex(void)
 	UITextField *_onlineNameTextField;
 }
 
+#if !PLATFORM_TVOS
 - (instancetype)init
 {
 	self = [super init];
 	if (self != nil)
 	{
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
-		
+
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillDismiss:) name:UIKeyboardWillHideNotification object:nil];
 	}
 	return self;
@@ -694,6 +709,7 @@ static uint8_t currentAIModeIndex(void)
 {
 	_cancelButton.hidden = NO;
 }
+#endif
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {
@@ -1031,7 +1047,9 @@ static UIView *makeOnlineMenu(UIView *metalView)
 	UITableView *tableView = makeTableView(metalViewSize, 0.4);
 	tableView.dataSource = gOnlineMenuHandler;
 	tableView.delegate = gOnlineMenuHandler;
+#if !PLATFORM_TVOS
 	tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+#endif
 	gOnlineMenuHandler.tableView = tableView;
 	[onlineMenu addSubview:tableView];
 	
@@ -1051,7 +1069,9 @@ static UIView *makeHostGameMenu(UIView *metalView)
 	CGSize metalViewSize = metalView.bounds.size;
 	
 	UITableView *tableView = makeTableView(metalViewSize, 0.45);
+#if !PLATFORM_TVOS
 	tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+#endif
 	tableView.dataSource = gHostGameMenuHandler;
 	tableView.delegate = gHostGameMenuHandler;
 	gHostGameMenuHandler.tableView = tableView;
@@ -1072,7 +1092,9 @@ static UIView *makeJoinGameMenu(UIView *metalView)
 	CGSize metalViewSize = metalView.bounds.size;
 	
 	UITableView *tableView = makeTableView(metalViewSize, 0.45);
+#if !PLATFORM_TVOS
 	tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+#endif
 	tableView.dataSource = gJoinGameMenuHandler;
 	tableView.delegate = gJoinGameMenuHandler;
 	gJoinGameMenuHandler.tableView = tableView;
