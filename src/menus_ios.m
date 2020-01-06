@@ -333,7 +333,7 @@ static uint8_t currentAIModeIndex(void)
 			stepper.maximumValue = 4.0;
 			stepper.value = (double)humanPlayers;
 
-			[stepper addTarget:self action:@selector(changeNumberOfHumans:) forControlEvents:UIControlEventTouchUpInside];
+			[stepper addTarget:self action:@selector(changeNumberOfHumans:) forControlEvents:UIControlEventPrimaryActionTriggered];
 		}
 		else if (indexPath.row == 2)
 		{
@@ -343,7 +343,7 @@ static uint8_t currentAIModeIndex(void)
 			stepper.maximumValue = 10.0;
 			stepper.value = (double)numberOfLives;
 
-			[stepper addTarget:self action:@selector(changeNumberOfLives:) forControlEvents:UIControlEventTouchUpInside];
+			[stepper addTarget:self action:@selector(changeNumberOfLives:) forControlEvents:UIControlEventPrimaryActionTriggered];
 		}
 #endif
 	}
@@ -498,7 +498,7 @@ static uint8_t currentAIModeIndex(void)
 		stepper.maximumValue = 3.0;
 		stepper.value = (double)gNumberOfNetHumans;
 
-		[stepper addTarget:self action:@selector(changeNumberOfNetHumans:) forControlEvents:UIControlEventTouchUpInside];
+		[stepper addTarget:self action:@selector(changeNumberOfNetHumans:) forControlEvents:UIControlEventPrimaryActionTriggered];
 
 		viewCell.textLabel.text = gNumberOfNetHumans == 1 ? @"1 Friend Joining" : [NSString stringWithFormat:@"%d Friends Joining", gNumberOfNetHumans];
 
@@ -865,7 +865,7 @@ static UIView *makeMainMenu(UIView *metalView)
 		
 		button.frame = CGRectMake(metalViewSize.width * 0.5f - buttonWidth / 2.0, metalViewSize.height * 0.4 - buttonHeight / 2.0, buttonWidth, buttonHeight);
 		
-		[button addTarget:gMainMenuHandler action:@selector(playGame) forControlEvents:UIControlEventTouchUpInside];
+		[button addTarget:gMainMenuHandler action:@selector(playGame) forControlEvents:UIControlEventPrimaryActionTriggered];
 		
 		[menuView addSubview:button];
 	}
@@ -883,7 +883,7 @@ static UIView *makeMainMenu(UIView *metalView)
 		
 		button.frame = CGRectMake(metalViewSize.width * 0.5f - buttonWidth / 2.0, metalViewSize.height * 0.55 - buttonHeight / 2.0, buttonWidth, buttonHeight);
 		
-		[button addTarget:gMainMenuHandler action:@selector(playTutorial) forControlEvents:UIControlEventTouchUpInside];
+		[button addTarget:gMainMenuHandler action:@selector(playTutorial) forControlEvents:UIControlEventPrimaryActionTriggered];
 		
 		[menuView addSubview:button];
 	}
@@ -901,7 +901,7 @@ static UIView *makeMainMenu(UIView *metalView)
 		
 		button.frame = CGRectMake(metalViewSize.width * 0.5f - buttonWidth / 2.0, metalViewSize.height * 0.7 - buttonHeight / 2.0, buttonWidth, buttonHeight);
 		
-		[button addTarget:gMainMenuHandler action:@selector(showOnlineMenu) forControlEvents:UIControlEventTouchUpInside];
+		[button addTarget:gMainMenuHandler action:@selector(showOnlineMenu) forControlEvents:UIControlEventPrimaryActionTriggered];
 		
 		[menuView addSubview:button];
 	}
@@ -919,7 +919,7 @@ static UIView *makeMainMenu(UIView *metalView)
 		
 		button.frame = CGRectMake(metalViewSize.width * 0.5f - buttonWidth / 2.0, metalViewSize.height * 0.85 - buttonHeight / 2.0, buttonWidth, buttonHeight);
 		
-		[button addTarget:gMainMenuHandler action:@selector(showOptions) forControlEvents:UIControlEventTouchUpInside];
+		[button addTarget:gMainMenuHandler action:@selector(showOptions) forControlEvents:UIControlEventPrimaryActionTriggered];
 		
 		[menuView addSubview:button];
 	}
@@ -957,7 +957,7 @@ static UIView *makePauseMenu(UIView *metalView)
 		
 		button.frame = CGRectMake(metalViewSize.width * 0.5f - buttonWidth / 2.0, metalViewSize.height * 0.4 - buttonHeight / 2.0, buttonWidth, buttonHeight);
 		
-		[button addTarget:gPauseMenuHandler action:@selector(resumeGame) forControlEvents:UIControlEventTouchUpInside];
+		[button addTarget:gPauseMenuHandler action:@selector(resumeGame) forControlEvents:UIControlEventPrimaryActionTriggered];
 		
 		[menuView addSubview:button];
 	}
@@ -975,7 +975,7 @@ static UIView *makePauseMenu(UIView *metalView)
 		
 		button.frame = CGRectMake(metalViewSize.width * 0.5f - buttonWidth / 2.0, metalViewSize.height * 0.55 - buttonHeight / 2.0, buttonWidth, buttonHeight);
 		
-		[button addTarget:gPauseMenuHandler action:@selector(exitGame) forControlEvents:UIControlEventTouchUpInside];
+		[button addTarget:gPauseMenuHandler action:@selector(exitGame) forControlEvents:UIControlEventPrimaryActionTriggered];
 		
 		[menuView addSubview:button];
 	}
@@ -1031,7 +1031,7 @@ static UIView *makeOptionsMenu(UIView *metalView)
 	[optionsMenu addSubview:tableView];
 	
 	UIButton *cancelButton = makeCancelButton(metalViewSize);
-	[cancelButton addTarget:gOptionsMenuHandler action:@selector(navigateBack) forControlEvents:UIControlEventTouchUpInside];
+	[cancelButton addTarget:gOptionsMenuHandler action:@selector(navigateBack) forControlEvents:UIControlEventPrimaryActionTriggered];
 	[optionsMenu addSubview:cancelButton];
 	
 	return optionsMenu;
@@ -1054,7 +1054,7 @@ static UIView *makeOnlineMenu(UIView *metalView)
 	[onlineMenu addSubview:tableView];
 	
 	UIButton *cancelButton = makeCancelButton(metalViewSize);
-	[cancelButton addTarget:gOnlineMenuHandler action:@selector(navigateBack) forControlEvents:UIControlEventTouchUpInside];
+	[cancelButton addTarget:gOnlineMenuHandler action:@selector(navigateBack) forControlEvents:UIControlEventPrimaryActionTriggered];
 	gOnlineMenuHandler.cancelButton = cancelButton;
 	[onlineMenu addSubview:cancelButton];
 	
@@ -1078,7 +1078,7 @@ static UIView *makeHostGameMenu(UIView *metalView)
 	[view addSubview:tableView];
 	
 	UIButton *cancelButton = makeCancelButton(metalViewSize);
-	[cancelButton addTarget:gHostGameMenuHandler action:@selector(navigateBack) forControlEvents:UIControlEventTouchUpInside];
+	[cancelButton addTarget:gHostGameMenuHandler action:@selector(navigateBack) forControlEvents:UIControlEventPrimaryActionTriggered];
 	[view addSubview:cancelButton];
 	
 	return view;
@@ -1101,7 +1101,7 @@ static UIView *makeJoinGameMenu(UIView *metalView)
 	[view addSubview:tableView];
 	
 	UIButton *cancelButton = makeCancelButton(metalViewSize);
-	[cancelButton addTarget:gJoinGameMenuHandler action:@selector(navigateBack) forControlEvents:UIControlEventTouchUpInside];
+	[cancelButton addTarget:gJoinGameMenuHandler action:@selector(navigateBack) forControlEvents:UIControlEventPrimaryActionTriggered];
 	gJoinGameMenuHandler.cancelButton = cancelButton;
 	[view addSubview:cancelButton];
 	
