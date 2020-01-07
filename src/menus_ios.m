@@ -161,6 +161,7 @@ static void playGame(ZGWindow *window, bool tutorial)
 
 @implementation OptionsMenuHandler
 
+#if !PLATFORM_TVOS
 static uint8_t numberOfHumanPlayers(void)
 {
 	uint8_t numberOfHumans = 0;
@@ -198,6 +199,7 @@ static uint8_t numberOfHumanPlayers(void)
 	
 	return numberOfHumans;
 }
+#endif
 
 static uint8_t currentAIModeIndex(void)
 {
