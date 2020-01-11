@@ -1194,16 +1194,18 @@ static void drawScene(Renderer *renderer)
 					const char *text = "You're a pro! No more visuals.";
 					ZGFloat endTextScale = scale * 1.5f;
 #else
-					const char *text = "You're a pro! Escape to exit.";
+					const char *text = "You're a pro!";
 					ZGFloat endTextScale = scale;
 #endif
 					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, endTextScale, text);
 					
 #if PLATFORM_IOS
-					const char *subtext = "Pause to exit.";
+					const char *subtext = "Pause and Exit to end the Tutorial.";
+#else
+					const char *subtext = "Hit Escape to Exit the Tutorial.";
+#endif
 					mat4_t tutorialSubtextModelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, -1.3f, 0.0f}), tutorialModelViewMatrix);
 					drawStringScaled(renderer, tutorialSubtextModelViewMatrix, textColor, endTextScale, subtext);
-#endif
 				}
 			}
 			else if (!gGameHasStarted)
