@@ -33,7 +33,7 @@ typedef struct
 	// Pan events
 	float deltaX;
 	float deltaY;
-	uint32_t timestamp;
+	uint64_t timestamp;
 	// Pan and tap events
 	float x;
 	float y;

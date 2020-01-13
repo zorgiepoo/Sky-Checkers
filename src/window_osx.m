@@ -71,7 +71,7 @@
 		event.type = ZGKeyboardEventTypeKeyDown;
 		event.keyCode = theEvent.keyCode;
 		event.keyModifier = theEvent.modifierFlags;
-		event.timestamp = ZGGetTicks();
+		event.timestamp = ZGGetNanoTicks();
 		
 		_keyboardEventHandler(event, _keyboardEventHandlerContext);
 		
@@ -87,7 +87,7 @@
 		event.type = ZGKeyboardEventTypeKeyUp;
 		event.keyCode = theEvent.keyCode;
 		event.keyModifier = theEvent.modifierFlags;
-		event.timestamp = ZGGetTicks();
+		event.timestamp = ZGGetNanoTicks();
 		
 		_keyboardEventHandler(event, _keyboardEventHandlerContext);
 	}

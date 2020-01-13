@@ -142,6 +142,12 @@ static void _addController(struct GC_NAME(_GamepadManager) *gamepadManager, GCCo
 	
 	if (availableGamepadIndex < MAX_GAMEPADS)
 	{
+		GCMicroGamepad *microGamepad = controller.microGamepad;
+		if (microGamepad != nil)
+		{
+			microGamepad.allowsRotation = YES;
+		}
+		
 		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[availableGamepadIndex];
 		gamepad->controller = (void *)CFBridgingRetain(controller);
 		NSString *vendorName = controller.vendorName;
@@ -206,20 +212,26 @@ struct GC_NAME(_GamepadManager) *GC_NAME(initGamepadManager)(const char *databas
 	return gamepadManager;
 }
 
-static void _addButtonEventIfNeeded(GC_NAME(Gamepad) *gamepad, GamepadButton button, GCControllerButtonInput *buttonInput, GamepadEvent *eventsBuffer, uint16_t *eventIndex)
+static void _addButtonEventIfNeeded(GC_NAME(Gamepad) *gamepad, GamepadButton button, BOOL buttonPressed, GamepadEvent *eventsBuffer, uint16_t *eventIndex)
 {
-	BOOL pressed = buttonInput.pressed;
-	if ((GamepadState)pressed != gamepad->lastStates[button])
+	if ((GamepadState)buttonPressed != gamepad->lastStates[button])
 	{
-		gamepad->lastStates[button] = pressed;
+		gamepad->lastStates[button] = (GamepadState)buttonPressed;
 		
-		GamepadState state = pressed ? GAMEPAD_STATE_PRESSED : GAMEPAD_STATE_RELEASED;
-		
-		GamepadEvent event = {.button = button, .index = gamepad->index, .state = state, .mappingType = GAMEPAD_ELEMENT_MAPPING_TYPE_BUTTON, .ticks = ZGGetTicks()};
+		GamepadState state = buttonPressed ? GAMEPAD_STATE_PRESSED : GAMEPAD_STATE_RELEASED;
+		GamepadEvent event = {.button = button, .index = gamepad->index, .state = state, .mappingType = GAMEPAD_ELEMENT_MAPPING_TYPE_BUTTON, .ticks = ZGGetNanoTicks()};
 		
 		eventsBuffer[*eventIndex] = event;
 		(*eventIndex)++;
 	}
+}
+
+static void _addAxisEventIfNeeded(GC_NAME(Gamepad) *gamepad, GamepadButton positiveButton, GamepadButton negativeButton, GCControllerAxisInput *axisInput, GamepadEvent *eventsBuffer, uint16_t *eventIndex)
+{
+	float axisValue = axisInput.value;
+	
+	_addButtonEventIfNeeded(gamepad, positiveButton, axisValue >= 0.6f, eventsBuffer, eventIndex);
+	_addButtonEventIfNeeded(gamepad, negativeButton, axisValue <= -0.6f, eventsBuffer, eventIndex);
 }
 
 GamepadEvent *GC_NAME(pollGamepadEvents)(struct GC_NAME(_GamepadManager) *gamepadManager, const void *systemEvent, uint16_t *eventCount)
@@ -240,39 +252,38 @@ GamepadEvent *GC_NAME(pollGamepadEvents)(struct GC_NAME(_GamepadManager) *gamepa
 			GCExtendedGamepad *extendedGamepad = controller.extendedGamepad;
 			if (extendedGamepad != nil)
 			{
-				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_A, extendedGamepad.buttonA, gamepadManager->eventsBuffer, &eventIndex);
-				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_B, extendedGamepad.buttonB, gamepadManager->eventsBuffer, &eventIndex);
-				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_X, extendedGamepad.buttonX, gamepadManager->eventsBuffer, &eventIndex);
-				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_Y, extendedGamepad.buttonY, gamepadManager->eventsBuffer, &eventIndex);
-				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_LEFTSHOULDER, extendedGamepad.leftShoulder, gamepadManager->eventsBuffer, &eventIndex);
-				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_RIGHTSHOULDER, extendedGamepad.rightShoulder, gamepadManager->eventsBuffer, &eventIndex);
-				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_LEFTTRIGGER, extendedGamepad.leftTrigger, gamepadManager->eventsBuffer, &eventIndex);
-				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_RIGHTTRIGGER, extendedGamepad.rightTrigger, gamepadManager->eventsBuffer, &eventIndex);
+				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_A, extendedGamepad.buttonA.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_B, extendedGamepad.buttonB.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_X, extendedGamepad.buttonX.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_Y, extendedGamepad.buttonY.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_LEFTSHOULDER, extendedGamepad.leftShoulder.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_RIGHTSHOULDER, extendedGamepad.rightShoulder.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_LEFTTRIGGER, extendedGamepad.leftTrigger.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_RIGHTTRIGGER, extendedGamepad.rightTrigger.pressed, gamepadManager->eventsBuffer, &eventIndex);
 				if (@available(iOS 13.0, macOS 10.15, *))
 				{
-					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_START, extendedGamepad.buttonMenu, gamepadManager->eventsBuffer, &eventIndex);
-					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_BACK, extendedGamepad.buttonOptions, gamepadManager->eventsBuffer, &eventIndex);
+					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_START, extendedGamepad.buttonMenu.pressed, gamepadManager->eventsBuffer, &eventIndex);
+					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_BACK, extendedGamepad.buttonOptions.pressed, gamepadManager->eventsBuffer, &eventIndex);
 				}
-				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_UP, extendedGamepad.dpad.up, gamepadManager->eventsBuffer, &eventIndex);
-				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_DOWN, extendedGamepad.dpad.down, gamepadManager->eventsBuffer, &eventIndex);
-				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_LEFT, extendedGamepad.dpad.left, gamepadManager->eventsBuffer, &eventIndex);
-				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_RIGHT, extendedGamepad.dpad.right, gamepadManager->eventsBuffer, &eventIndex);
+				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_UP, extendedGamepad.dpad.up.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_DOWN, extendedGamepad.dpad.down.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_LEFT, extendedGamepad.dpad.left.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_RIGHT, extendedGamepad.dpad.right.pressed, gamepadManager->eventsBuffer, &eventIndex);
 			}
 			else
 			{
 				GCMicroGamepad *microGamepad = controller.microGamepad;
 				if (microGamepad != nil)
 				{
-					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_A, microGamepad.buttonA, gamepadManager->eventsBuffer, &eventIndex);
-					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_B, microGamepad.buttonX, gamepadManager->eventsBuffer, &eventIndex);
+					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_A, microGamepad.buttonA.pressed, gamepadManager->eventsBuffer, &eventIndex);
+					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_B, microGamepad.buttonX.pressed, gamepadManager->eventsBuffer, &eventIndex);
 					if (@available(iOS 13.0, macOS 10.15, *))
 					{
 						_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_START, microGamepad.buttonMenu, gamepadManager->eventsBuffer, &eventIndex);
 					}
-					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_UP, microGamepad.dpad.up, gamepadManager->eventsBuffer, &eventIndex);
-					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_DOWN, microGamepad.dpad.down, gamepadManager->eventsBuffer, &eventIndex);
-					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_LEFT, microGamepad.dpad.left, gamepadManager->eventsBuffer, &eventIndex);
-					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_RIGHT, microGamepad.dpad.right, gamepadManager->eventsBuffer, &eventIndex);
+					
+					_addAxisEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_RIGHT, GAMEPAD_BUTTON_DPAD_LEFT, microGamepad.dpad.xAxis, gamepadManager->eventsBuffer, &eventIndex);
+					_addAxisEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_UP, GAMEPAD_BUTTON_DPAD_DOWN, microGamepad.dpad.yAxis, gamepadManager->eventsBuffer, &eventIndex);
 				}
 			}
 		}

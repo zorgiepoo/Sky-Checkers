@@ -324,21 +324,21 @@ void performGamepadAction(Input *input, GamepadEvent *gamepadEvent, GameState ga
 	}
 }
 
-static uint32_t maxValue(uint32_t value, uint32_t value2)
+static uint64_t maxValue(uint64_t value, uint64_t value2)
 {
 	return (value > value2) ? value : value2;
 }
 
-static int bestDirectionFromInputTicks(bool preferMaxValue, uint32_t right_ticks, uint32_t left_ticks, uint32_t up_ticks, uint32_t down_ticks)
+static int bestDirectionFromInputTicks(bool preferMaxValue, uint64_t right_ticks, uint64_t left_ticks, uint64_t up_ticks, uint64_t down_ticks)
 {
 	if (right_ticks == 0 && left_ticks == 0 && up_ticks == 0 && down_ticks == 0)
 	{
 		return NO_DIRECTION;
 	}
 	
-	uint32_t scores[] = {right_ticks, left_ticks, up_ticks, down_ticks};
+	uint64_t scores[] = {right_ticks, left_ticks, up_ticks, down_ticks};
 	
-	uint32_t bestScore = preferMaxValue ? 0 : UINT32_MAX;
+	uint64_t bestScore = preferMaxValue ? 0 : UINT64_MAX;
 	uint8_t bestScoreIndex = 0;
 	
 	for (uint8_t scoreIndex = 0; scoreIndex < sizeof(scores) / sizeof(scores[0]); scoreIndex++)
@@ -369,13 +369,13 @@ void updateCharacterFromAnyInput(void)
 	
 	// Any input will move the character if it's a network game
 	
-	uint32_t rightTicks = maxValue(maxValue(maxValue(gRedRoverInput.right_ticks, gPinkBubbleGumInput.right_ticks), gGreenTreeInput.right_ticks), gBlueLightningInput.right_ticks);
+	uint64_t rightTicks = maxValue(maxValue(maxValue(gRedRoverInput.right_ticks, gPinkBubbleGumInput.right_ticks), gGreenTreeInput.right_ticks), gBlueLightningInput.right_ticks);
 	
-	uint32_t leftTicks = maxValue(maxValue(maxValue(gRedRoverInput.left_ticks, gPinkBubbleGumInput.left_ticks), gGreenTreeInput.left_ticks), gBlueLightningInput.left_ticks);
+	uint64_t leftTicks = maxValue(maxValue(maxValue(gRedRoverInput.left_ticks, gPinkBubbleGumInput.left_ticks), gGreenTreeInput.left_ticks), gBlueLightningInput.left_ticks);
 	
-	uint32_t upTicks = maxValue(maxValue(maxValue(gRedRoverInput.up_ticks, gPinkBubbleGumInput.up_ticks), gGreenTreeInput.up_ticks), gBlueLightningInput.up_ticks);
+	uint64_t upTicks = maxValue(maxValue(maxValue(gRedRoverInput.up_ticks, gPinkBubbleGumInput.up_ticks), gGreenTreeInput.up_ticks), gBlueLightningInput.up_ticks);
 	
-	uint32_t downTicks = maxValue(maxValue(maxValue(gRedRoverInput.down_ticks, gPinkBubbleGumInput.down_ticks), gGreenTreeInput.down_ticks), gBlueLightningInput.down_ticks);
+	uint64_t downTicks = maxValue(maxValue(maxValue(gRedRoverInput.down_ticks, gPinkBubbleGumInput.down_ticks), gGreenTreeInput.down_ticks), gBlueLightningInput.down_ticks);
 	
 	uint8_t priority = gRedRoverInput.priority | gPinkBubbleGumInput.priority | gGreenTreeInput.priority | gBlueLightningInput.priority;
 	

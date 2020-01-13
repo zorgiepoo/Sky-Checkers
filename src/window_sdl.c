@@ -183,7 +183,7 @@ void ZGPollWindowAndInputEvents(ZGWindow *windowRef, const void *systemEvent)
 				event.type = ZGKeyboardEventTypeKeyDown;
 				event.keyCode = sdlEvent->key.keysym.scancode;
 				event.keyModifier = sdlEvent->key.keysym.mod;
-				event.timestamp = sdlEvent->key.timestamp;
+				event.timestamp = CONVERT_MS_TO_NS(sdlEvent->key.timestamp);
 				
 				windowController->keyboardEventHandler(event, windowController->keyboardEventHandlerContext);
 			}
@@ -196,7 +196,7 @@ void ZGPollWindowAndInputEvents(ZGWindow *windowRef, const void *systemEvent)
 				event.type = ZGKeyboardEventTypeKeyUp;
 				event.keyCode = sdlEvent->key.keysym.scancode;
 				event.keyModifier = sdlEvent->key.keysym.mod;
-				event.timestamp = sdlEvent->key.timestamp;
+				event.timestamp = CONVERT_MS_TO_NS(sdlEvent->key.timestamp);
 				
 				windowController->keyboardEventHandler(event, windowController->keyboardEventHandlerContext);
 			}

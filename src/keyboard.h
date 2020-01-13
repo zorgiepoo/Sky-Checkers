@@ -94,7 +94,7 @@ typedef struct
 		struct
 		{
 			uint64_t keyModifier;
-			uint32_t timestamp;
+			uint64_t timestamp;
 			uint16_t keyCode;
 		};
 		char text[32];

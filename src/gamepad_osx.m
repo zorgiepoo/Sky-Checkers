@@ -728,7 +728,7 @@ GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *syst
 							{
 								gamepad->lastStates[gamepadButton] = state;
 								
-								GamepadEvent event = {.button = gamepadButton, .index = gamepad->index, .state = state, .mappingType = GAMEPAD_ELEMENT_MAPPING_TYPE_BUTTON, .ticks = ZGGetTicks()};
+								GamepadEvent event = {.button = gamepadButton, .index = gamepad->index, .state = state, .mappingType = GAMEPAD_ELEMENT_MAPPING_TYPE_BUTTON, .ticks = ZGGetNanoTicks()};
 								
 								gamepadManager->eventsBuffer[eventIndex] = event;
 								eventIndex++;
@@ -770,7 +770,7 @@ GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *syst
 							{
 								gamepad->lastStates[gamepadButton] = state;
 								
-								GamepadEvent event = {.button = gamepadButton, .index = gamepad->index, .state = state, .mappingType = GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS, .ticks = ZGGetTicks()};
+								GamepadEvent event = {.button = gamepadButton, .index = gamepad->index, .state = state, .mappingType = GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS, .ticks = ZGGetNanoTicks()};
 								
 								gamepadManager->eventsBuffer[eventIndex] = event;
 								eventIndex++;
@@ -810,7 +810,7 @@ GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *syst
 							{
 								gamepad->lastStates[gamepadButton] = state;
 								
-								GamepadEvent event = {.button = gamepadButton, .index = gamepad->index, .state = state, .mappingType = GAMEPAD_ELEMENT_MAPPING_TYPE_HAT, .ticks = ZGGetTicks()};
+								GamepadEvent event = {.button = gamepadButton, .index = gamepad->index, .state = state, .mappingType = GAMEPAD_ELEMENT_MAPPING_TYPE_HAT, .ticks = ZGGetNanoTicks()};
 								
 								gamepadManager->eventsBuffer[eventIndex] = event;
 								eventIndex++;

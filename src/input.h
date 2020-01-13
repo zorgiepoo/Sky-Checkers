@@ -46,10 +46,10 @@ typedef struct
 	
 	// The time a particular direction started to be held down
 	// Zero if they're not held down
-	uint32_t right_ticks;
-	uint32_t left_ticks;
-	uint32_t up_ticks;
-	uint32_t down_ticks;
+	uint64_t right_ticks;
+	uint64_t left_ticks;
+	uint64_t up_ticks;
+	uint64_t down_ticks;
 	
 #if !PLATFORM_IOS
 	// right, left, up, down, weapon ids - their assigned keyboard keys.

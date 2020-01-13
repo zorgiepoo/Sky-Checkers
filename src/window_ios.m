@@ -120,7 +120,7 @@
 				event.deltaY = (float)velocity.y;
 				event.x = (float)touchPoint.x;
 				event.y = (float)touchPoint.y;
-				event.timestamp = ZGGetTicks();
+				event.timestamp = ZGGetNanoTicks();
 				event.type = ZGTouchEventTypePanChanged;
 				
 				_touchEventHandler(event, _touchEventContext);

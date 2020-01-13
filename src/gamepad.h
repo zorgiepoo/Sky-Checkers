@@ -70,7 +70,7 @@ typedef uint32_t GamepadIndex;
 
 typedef struct
 {
-	uint32_t ticks;
+	uint64_t ticks;
 	GamepadState state;
 	GamepadButton button;
 	GamepadElementMappingType mappingType;

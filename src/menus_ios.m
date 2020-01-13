@@ -126,7 +126,9 @@ static void playGame(ZGWindow *window, bool tutorial)
 - (void)resumeGame
 {
 	unPauseMusic();
+#if !PLATFORM_TVOS
 	ZGInstallTouchGestures(_window);
+#endif
 	[gPauseMenuView removeFromSuperview];
 	
 	UIView *metalView = metalViewForWindow(_window);
@@ -1164,7 +1166,9 @@ void hideGameMenus(ZGWindow *windowRef)
 void showPauseMenu(ZGWindow *window, GameState *gameState)
 {
 	pauseMusic();
+#if !PLATFORM_TVOS
 	ZGUninstallTouchGestures(window);
+#endif
 	
 	gPauseMenuHandler.resumedGameState = *gameState;
 	*gameState = GAME_STATE_PAUSED;
@@ -1186,11 +1190,14 @@ void performGamepadMenuAction(GamepadEvent *event, GameState *gameState, ZGWindo
 	{
 		case GAMEPAD_BUTTON_A:
 		case GAMEPAD_BUTTON_START:
+#if !PLATFORM_TVOS
 			if (gCurrentMenuView == gMainMenuView && *gameState == GAME_STATE_OFF)
 			{
 				playGame(window, false);
 			}
-			else if (*gameState == GAME_STATE_PAUSED)
+			else
+#endif
+			if (*gameState == GAME_STATE_PAUSED)
 			{
 				[gPauseMenuHandler resumeGame];
 			}

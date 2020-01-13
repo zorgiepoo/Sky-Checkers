@@ -222,7 +222,7 @@ GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *syst
 			event->button = button;
 			event->state = (sdlEvent->type == SDL_CONTROLLERBUTTONDOWN ? GAMEPAD_STATE_PRESSED : GAMEPAD_STATE_RELEASED);
 			event->mappingType = axisType ? GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS : GAMEPAD_ELEMENT_MAPPING_TYPE_BUTTON;
-			event->ticks = sdlEvent->common.timestamp;
+			event->ticks = CONVERT_MS_TO_NS(sdlEvent->common.timestamp);
 			event->index = (GamepadIndex)joystickInstanceID;
 
 			*eventCount = 1;

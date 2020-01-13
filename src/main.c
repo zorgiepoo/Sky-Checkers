@@ -740,7 +740,7 @@ void initGame(ZGWindow *window, bool firstGame, bool tutorial)
 	if (firstGame)
 	{
 		ZGAppSetAllowsScreenSaver(false);
-#if PLATFORM_IOS
+#if PLATFORM_IOS && !PLATFORM_TVOS
 		ZGInstallTouchGestures(window);
 #endif
 	}
@@ -786,7 +786,7 @@ void endGame(ZGWindow *window, bool lastGame)
 		
 		ZGAppSetAllowsScreenSaver(true);
 		
-#if PLATFORM_IOS
+#if PLATFORM_IOS && !PLATFORM_TVOS
 		ZGUninstallTouchGestures(window);
 		showGameMenus(window);
 #endif
@@ -1394,7 +1394,7 @@ static void drawScene(Renderer *renderer)
 #endif
 		}
 		
-#if PLATFORM_IOS
+#if PLATFORM_IOS && !PLATFORM_TVOS
 		// Pause button renders at z = -20.0f
 		if (gGameState == GAME_STATE_ON || gGameState == GAME_STATE_TUTORIAL)
 		{

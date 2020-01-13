@@ -24,3 +24,8 @@ uint32_t ZGGetTicks(void)
 {
 	return SDL_GetTicks();
 }
+
+uint64_t ZGGetNanoTicks(void)
+{
+	return (uint64_t)(ZGGetTicks() * 1000000.0);
+}
