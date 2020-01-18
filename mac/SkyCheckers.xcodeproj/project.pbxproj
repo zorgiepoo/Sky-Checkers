@@ -10,6 +10,7 @@
 		7201184A232758ED004C2532 /* font_apple.m in Sources */ = {isa = PBXBuildFile; fileRef = 72011849232758ED004C2532 /* font_apple.m */; };
 		720D528923D397DC002C9972 /* texture.c in Sources */ = {isa = PBXBuildFile; fileRef = 720D528823D397DC002C9972 /* texture.c */; };
 		720D528A23D397DC002C9972 /* texture.c in Sources */ = {isa = PBXBuildFile; fileRef = 720D528823D397DC002C9972 /* texture.c */; };
+		720D528B23D3BA65002C9972 /* texture.c in Sources */ = {isa = PBXBuildFile; fileRef = 720D528823D397DC002C9972 /* texture.c */; };
 		721A007121AA7B420099D093 /* renderer_metal.m in Sources */ = {isa = PBXBuildFile; fileRef = 721A007021AA7B420099D093 /* renderer_metal.m */; };
 		721A007721AB11CD0099D093 /* shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 721A007621AB11CC0099D093 /* shaders.metal */; };
 		7243ACB323C2EB5900A83ADD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7243ACB223C2EB5900A83ADD /* Assets.xcassets */; };
@@ -668,6 +669,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				720D528B23D3BA65002C9972 /* texture.c in Sources */,
 				7243ACED23C302F000A83ADD /* shaders.metal in Sources */,
 				7243ACBE23C2ED7300A83ADD /* defaults_ios.m in Sources */,
 				7243ACBF23C2ED7300A83ADD /* main.c in Sources */,
