@@ -43,7 +43,7 @@ static void *create8BitPixelDataWithAlpha(SDL_Surface *surface)
 	return pixelData;
 }
 
-TextureObject loadTexture(Renderer *renderer, const char *filePath)
+TextureData loadTextureData(const char *filePath)
 {
 	SDL_Surface *surface = SDL_LoadBMP(filePath);
 	if (surface == NULL)
@@ -62,16 +62,28 @@ TextureObject loadTexture(Renderer *renderer, const char *filePath)
 	{
 		pixelData = surface->pixels;
 	}
-	
-	// Create texture from texture image data
-	TextureObject texture = textureFromPixelData(renderer, pixelData, surface->w, surface->h, PIXEL_FORMAT_BGRA32);
-	
+
+	TextureData textureData = {.pixelData = pixelData, .width = surface->w, .height = surface->h, .pixelFormat = PIXEL_FORMAT_BGRA32};
 	if (sourceMissingAlpha)
 	{
-		free(pixelData);
+		SDL_FreeSurface(surface);
+	}
+	else
+	{
+		textureData.surface = surface;
 	}
 
-	SDL_FreeSurface(surface);
+	return textureData;
+}
 
-	return texture;
+void freeTextureData(TextureData textureData)
+{
+	if (textureData.surface != NULL)
+	{
+		SDL_FreeSurface(textureData.surface);
+	}
+	else
+	{
+		free(textureData.pixelData);
+	}
 }

@@ -37,6 +37,7 @@ Character gPinkBubbleGum;
 Character gBlueLightning;
 
 static TextureObject gCharacterTex;
+static TextureObject gCharacterIconTex;
 
 static BufferArrayObject gCharacterVertexAndTextureCoordinateArrayObject;
 static BufferObject gCharacterIndicesBufferObject;
@@ -200,29 +201,42 @@ int offlineCharacterState(Character *character)
 void loadCharacterTextures(Renderer *renderer)
 {
 	gCharacterTex = loadTexture(renderer, "Data/Textures/face.bmp");
+	
+	// For icon data, remove all background pixels that are close to being black
+	TextureData iconTextureData = loadTextureData("Data/Textures/face.bmp");
+	for (uint32_t pixelIndex = 0; pixelIndex < (uint32_t)(iconTextureData.width * iconTextureData.height); pixelIndex++)
+	{
+		uint8_t *colorData = &iconTextureData.pixelData[pixelIndex * 4];
+		if (colorData[0] <= 10 && colorData[1] <= 10 && colorData[2] <= 10)
+		{
+			colorData[3] = 0;
+		}
+	}
+	gCharacterIconTex = loadTextureFromData(renderer, iconTextureData);
+	freeTextureData(iconTextureData);
 }
 
 // http://www.songho.ca/opengl/gl_sphere.html
-static void buildSphere(ZGFloat *vertices, ZGFloat *textureCoordinates, unsigned short *indices, int stackCount, int sectorCount, ZGFloat radius)
+static void buildSphere(ZGFloat *vertices, ZGFloat *textureCoordinates, unsigned short *indices, int stackCount, int sectorCount, float radius)
 {
-	float stackStep = (ZGFloat)M_PI / stackCount;
-	float sectorStep = 2 * (ZGFloat)M_PI / sectorCount;
+	float stackStep = (float)M_PI / stackCount;
+	float sectorStep = 2 * (float)M_PI / sectorCount;
 	
 	int vertexIndex = 0;
 	int textureCoordinateIndex = 0;
 	
 	for (int stackIndex = 0; stackIndex <= stackCount; stackIndex++)
 	{
-		ZGFloat stackAngle = ((ZGFloat)M_PI / 2.0f) - stackIndex * stackStep;
-		ZGFloat xy = radius * cosf(stackAngle);
-		ZGFloat z = radius * sinf(stackAngle);
+		float stackAngle = ((float)M_PI / 2.0f) - stackIndex * stackStep;
+		float xy = radius * cosf(stackAngle);
+		float z = radius * sinf(stackAngle);
 		
 		for (int sectorIndex = 0; sectorIndex <= sectorCount; sectorIndex++)
 		{
-			ZGFloat sectorAngle = sectorIndex * sectorStep;
+			float sectorAngle = sectorIndex * sectorStep;
 			
-			ZGFloat x = xy * cosf(sectorAngle);
-			ZGFloat y = xy * sinf(sectorAngle);
+			float x = xy * cosf(sectorAngle);
+			float y = xy * sinf(sectorAngle);
 			
 			vertices[vertexIndex] = x;
 			vertexIndex++;
@@ -233,12 +247,12 @@ static void buildSphere(ZGFloat *vertices, ZGFloat *textureCoordinates, unsigned
 			vertices[vertexIndex] = 1.0f;
 			vertexIndex++;
 			
-			ZGFloat s = (ZGFloat)sectorIndex / sectorCount;
-			ZGFloat t = (ZGFloat)stackIndex / stackCount;
+			float s = (float)sectorIndex / sectorCount;
+			float t = (float)stackIndex / stackCount;
 			
-			textureCoordinates[textureCoordinateIndex] = s;
+			textureCoordinates[textureCoordinateIndex] = (ZGFloat)s;
 			textureCoordinateIndex++;
-			textureCoordinates[textureCoordinateIndex] = t;
+			textureCoordinates[textureCoordinateIndex] = (ZGFloat)t;
 			textureCoordinateIndex++;
 		}
 	}
@@ -279,11 +293,11 @@ static void buildSphere(ZGFloat *vertices, ZGFloat *textureCoordinates, unsigned
 }
 
 // https://stackoverflow.com/questions/27238793/texture-mapping-a-circle
-static void buildCircle(ZGFloat *vertices, ZGFloat *textureCoordinates, ZGFloat radius, int numberOfPoints)
+static void buildCircle(ZGFloat *vertices, ZGFloat *textureCoordinates, float radius, int numberOfPoints)
 {
-	ZGFloat theta = 2 * (ZGFloat)M_PI / (ZGFloat)numberOfPoints;
-	ZGFloat cosTheta = cosf(theta);
-	ZGFloat sinTheta = sinf(theta);
+	float theta = 2 * (float)M_PI / (float)numberOfPoints;
+	float cosTheta = cosf(theta);
+	float sinTheta = sinf(theta);
 	
 	int vertexIndex = 0;
 	int textureCoordinateIndex = 0;
@@ -302,8 +316,8 @@ static void buildCircle(ZGFloat *vertices, ZGFloat *textureCoordinates, ZGFloat 
 	textureCoordinates[textureCoordinateIndex] = 0.5f;
 	textureCoordinateIndex++;
 	
-	ZGFloat x = radius;
-	ZGFloat y = 0.0f;
+	float x = radius;
+	float y = 0.0f;
 	
 	for (int pointIndex = 0; pointIndex <= numberOfPoints; pointIndex++)
 	{
@@ -316,12 +330,12 @@ static void buildCircle(ZGFloat *vertices, ZGFloat *textureCoordinates, ZGFloat 
 		vertices[vertexIndex] = 1.0f;
 		vertexIndex++;
 		
-		ZGFloat textureX = (x / radius + 1.0f) * 0.5f;
-		ZGFloat textureY = (y / radius + 1.0f) * 0.5f;
+		float textureX = (x / radius + 1.0f) * 0.5f;
+		float textureY = (y / radius + 1.0f) * 0.5f;
 		
-		textureCoordinates[textureCoordinateIndex] = textureX;
+		textureCoordinates[textureCoordinateIndex] = (ZGFloat)textureX;
 		textureCoordinateIndex++;
-		textureCoordinates[textureCoordinateIndex] = textureY;
+		textureCoordinates[textureCoordinateIndex] = (ZGFloat)textureY;
 		textureCoordinateIndex++;
 		
 		if ((pointIndex + 1) % 2 == 0)
@@ -341,7 +355,7 @@ static void buildCircle(ZGFloat *vertices, ZGFloat *textureCoordinates, ZGFloat 
 			textureCoordinateIndex++;
 		}
 		
-		ZGFloat lastX = x;
+		float lastX = x;
 		x = cosTheta * x - sinTheta * y;
 		y = sinTheta * lastX + cosTheta * y;
 	}
@@ -450,7 +464,7 @@ static mat4_t characterIconModelViewMatrix(mat4_t modelViewMatrix)
 
 static void drawCharacterIcon(Renderer *renderer, mat4_t modelViewMatrix, Character *character)
 {
-	drawTextureWithVertices(renderer, characterIconModelViewMatrix(modelViewMatrix), gCharacterTex, RENDERER_TRIANGLE_STRIP_MODE, gIconVertexAndTextureCoordinateArrayObject, 1204 / 2, (color4_t){character->red, character->green, character->blue, 1.0f}, RENDERER_OPTION_NONE);
+	drawTextureWithVertices(renderer, characterIconModelViewMatrix(modelViewMatrix), gCharacterIconTex, RENDERER_TRIANGLE_STRIP_MODE, gIconVertexAndTextureCoordinateArrayObject, 1204 / 2, (color4_t){character->red, character->green, character->blue, 1.0f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
 }
 
 void drawCharacterIcons(Renderer *renderer, const mat4_t *translations)
