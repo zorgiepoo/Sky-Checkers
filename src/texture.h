@@ -25,9 +25,7 @@
 typedef struct
 {
 	uint8_t *pixelData;
-#if !PLATFORM_APPLE
-	void *surface;
-#endif
+	void *context;
 	int32_t width;
 	int32_t height;
 	// Pixel format is guaranteed to have 4 8-bit components including alpha component at the end

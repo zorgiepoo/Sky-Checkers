@@ -77,5 +77,12 @@ TextureData loadTextureData(const char *filePath)
 
 void freeTextureData(TextureData textureData)
 {
-	free(textureData.pixelData);
+	if (textureData.context != NULL)
+	{
+		CGContextRelease(textureData.context);
+	}
+	else
+	{
+		free(textureData.pixelData);
+	}
 }

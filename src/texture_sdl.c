@@ -70,7 +70,7 @@ TextureData loadTextureData(const char *filePath)
 	}
 	else
 	{
-		textureData.surface = surface;
+		textureData.context = surface;
 	}
 
 	return textureData;
@@ -78,9 +78,9 @@ TextureData loadTextureData(const char *filePath)
 
 void freeTextureData(TextureData textureData)
 {
-	if (textureData.surface != NULL)
+	if (textureData.context != NULL)
 	{
-		SDL_FreeSurface(textureData.surface);
+		SDL_FreeSurface(textureData.context);
 	}
 	else
 	{

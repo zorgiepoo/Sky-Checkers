@@ -20,21 +20,13 @@
 #pragma once
 
 #include "renderer_types.h"
+#include "texture.h"
 
 #define FONT_POINT_SIZE 144
 // This font is "goodfish.ttf" and is intentionally obfuscated in source by author's request
 // A license to embed the font was acquired (for me, Mayur, only) from http://typodermicfonts.com/goodfish/
 #define FONT_PATH "Data/Fonts/typelib.dat"
 
-typedef void* TextData;
-
 void initFont(void);
 
-TextData createTextData(const char *string);
-void releaseTextData(TextData textData);
-
-void *getTextDataPixels(TextData textData);
-
-int32_t getTextDataWidth(TextData textData);
-int32_t getTextDataHeight(TextData textData);
-PixelFormat getPixelFormat(TextData textData);
+TextureData createTextData(const char *string);
