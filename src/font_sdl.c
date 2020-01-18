@@ -46,7 +46,7 @@ void initFont(void)
 }
 
 // Info on how to grab raw pixel data from drawn text using CoreText - https://stackoverflow.com/a/41798782/871119
-TextData createTextData(const char *string)
+TextureData createTextData(const char *string)
 {
 	SDL_Color color = {255, 255, 255, 0};
 
@@ -59,30 +59,5 @@ TextData createTextData(const char *string)
 		SDL_Quit();
 	}
 	
-	return fontSurface;
-}
-
-void releaseTextData(TextData textData)
-{
-	SDL_FreeSurface(textData);
-}
-
-void *getTextDataPixels(TextData textData)
-{
-	return ((SDL_Surface *)textData)->pixels;
-}
-
-int32_t getTextDataWidth(TextData textData)
-{
-	return ((SDL_Surface *)textData)->w;
-}
-
-int32_t getTextDataHeight(TextData textData)
-{
-	return ((SDL_Surface *)textData)->h;
-}
-
-PixelFormat getPixelFormat(TextData textData)
-{
-	return PIXEL_FORMAT_BGRA32;
+	return (TextureData){.pixelData = fontSurface->pixels, .context = fontSurface, .width = fontSurface->w, .height = fontSurface->h, .pixelFormat = PIXEL_FORMAT_BGRA32};
 }

@@ -38,7 +38,7 @@ void initFont(void)
 }
 
 // Info on how to grab raw pixel data from drawn text using CoreText - https://stackoverflow.com/a/41798782/871119
-TextData createTextData(const char *string)
+TextureData createTextData(const char *string)
 {
 	NSMutableAttributedString *text = [[NSMutableAttributedString alloc] initWithString:@(string)];
 	NSRange textRange = NSMakeRange(0, text.length);
@@ -69,30 +69,5 @@ TextData createTextData(const char *string)
 	
 	CFRelease(frame);
 
-	return (TextData)context;
-}
-
-void releaseTextData(TextData textData)
-{
-	CGContextRelease((CGContextRef)textData);
-}
-
-void *getTextDataPixels(TextData textData)
-{
-	return CGBitmapContextGetData((CGContextRef)textData);
-}
-
-int32_t getTextDataWidth(TextData textData)
-{
-	return (int32_t)CGBitmapContextGetWidth((CGContextRef)textData);
-}
-
-int32_t getTextDataHeight(TextData textData)
-{
-	return (int32_t)CGBitmapContextGetHeight((CGContextRef)textData);
-}
-
-PixelFormat getPixelFormat(TextData textData)
-{
-	return PIXEL_FORMAT_RGBA32;
+	return (TextureData){.pixelData = CGBitmapContextGetData(context), .context = context, .width = (int32_t)CGBitmapContextGetWidth(context), .height = (int32_t)CGBitmapContextGetHeight(context), .pixelFormat = PIXEL_FORMAT_RGBA32};
 }

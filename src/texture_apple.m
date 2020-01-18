@@ -21,10 +21,10 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
 
+#import "texture.h"
 #import "quit.h"
-#import "renderer.h"
 
-TextureObject loadTexture(Renderer *renderer, const char *filePath)
+TextureData loadTextureData(const char *filePath)
 {
 	NSURL *fileURL = [NSURL fileURLWithPath:@(filePath)];
 	NSDictionary *options = @{};
@@ -70,9 +70,19 @@ TextureObject loadTexture(Renderer *renderer, const char *filePath)
 	CGContextRelease(context);
 	CFRelease(image);
 	
-	TextureObject texture = textureFromPixelData(renderer, pixelData, (int32_t)width, (int32_t)height, PIXEL_FORMAT_RGBA32);
+	TextureData textureData = {.pixelData = pixelData, .width = (int32_t)width, .height = (int32_t)height, .pixelFormat = PIXEL_FORMAT_RGBA32};
 	
-	free(pixelData);
-	
-	return texture;
+	return textureData;
+}
+
+void freeTextureData(TextureData textureData)
+{
+	if (textureData.context != NULL)
+	{
+		CGContextRelease(textureData.context);
+	}
+	else
+	{
+		free(textureData.pixelData);
+	}
 }

@@ -181,12 +181,12 @@ int cacheString(Renderer *renderer, const char *string)
 			gTextRenderings[insertionIndex].text = newText;
 			strncpy(gTextRenderings[insertionIndex].text, string, MAX_TEXT_LENGTH - 1);
 			
-			TextData textData = createTextData(newText);
-			gTextRenderings[insertionIndex].width = getTextDataWidth(textData);
-			gTextRenderings[insertionIndex].height = getTextDataHeight(textData);
-			gTextRenderings[insertionIndex].texture = textureFromPixelData(renderer, getTextDataPixels(textData), gTextRenderings[insertionIndex].width, gTextRenderings[insertionIndex].height, getPixelFormat(textData));
+			TextureData textData = createTextData(newText);
+			gTextRenderings[insertionIndex].width = textData.width;
+			gTextRenderings[insertionIndex].height = textData.height;
+			gTextRenderings[insertionIndex].texture = textureFromPixelData(renderer, textData.pixelData, gTextRenderings[insertionIndex].width, gTextRenderings[insertionIndex].height, textData.pixelFormat);
 			
-			releaseTextData(textData);
+			freeTextureData(textData);
 			
 			cachedIndex = insertionIndex;
 			gTextRenderingCount++;

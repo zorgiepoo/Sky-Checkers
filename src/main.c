@@ -942,14 +942,7 @@ static void drawScoreboardTextForCharacter(Renderer *renderer, Character *charac
 	drawStringScaled(renderer, killsModelViewMatrix, characterColor, 0.0024f, buffer);
 }
 
-// We separate drawing icons vs scores on scoreboard
-typedef enum
-{
-	SCOREBOARD_RENDER_ICONS,
-	SCOREBOARD_RENDER_SCORES
-} ScoreboardRenderType;
-
-static void drawScoreboardForCharacters(Renderer *renderer, ScoreboardRenderType renderType)
+static void drawScoreboardForCharacters(Renderer *renderer)
 {
 	mat4_t iconModelViewMatrices[] =
 	{
@@ -959,17 +952,12 @@ static void drawScoreboardForCharacters(Renderer *renderer, ScoreboardRenderType
 		m4_translation((vec3_t){6.0f / 1.25f, 7.0f / 1.25f, -25.0f / 1.25f})
 	};
 	
-	if (renderType == SCOREBOARD_RENDER_ICONS)
-	{
-		drawCharacterIcons(renderer, iconModelViewMatrices);
-	}
-	else
-	{
-		drawScoreboardTextForCharacter(renderer, &gPinkBubbleGum, iconModelViewMatrices[0]);
-		drawScoreboardTextForCharacter(renderer, &gRedRover, iconModelViewMatrices[1]);
-		drawScoreboardTextForCharacter(renderer, &gGreenTree, iconModelViewMatrices[2]);
-		drawScoreboardTextForCharacter(renderer, &gBlueLightning, iconModelViewMatrices[3]);
-	}
+	drawCharacterIcons(renderer, iconModelViewMatrices);
+	
+	drawScoreboardTextForCharacter(renderer, &gPinkBubbleGum, iconModelViewMatrices[0]);
+	drawScoreboardTextForCharacter(renderer, &gRedRover, iconModelViewMatrices[1]);
+	drawScoreboardTextForCharacter(renderer, &gGreenTree, iconModelViewMatrices[2]);
+	drawScoreboardTextForCharacter(renderer, &gBlueLightning, iconModelViewMatrices[3]);
 }
 
 static void drawScene(Renderer *renderer)
@@ -999,18 +987,6 @@ static void drawScene(Renderer *renderer)
 		drawTiles(renderer);
 		popDebugGroup(renderer);
 		
-		// Character icons at the bottom of the screen at z = -25.0f
-		const mat4_t characterIconTranslations[] =
-		{
-			m4_translation((vec3_t){CHARACTER_ICON_OFFSET, -9.2f, -25.0f}),
-			m4_translation((vec3_t){CHARACTER_ICON_OFFSET + CHARACTER_ICON_DISPLACEMENT, -9.2f, -25.0f}),
-			m4_translation((vec3_t){CHARACTER_ICON_OFFSET + CHARACTER_ICON_DISPLACEMENT * 2, -9.2f, -25.0f}),
-			m4_translation((vec3_t){CHARACTER_ICON_OFFSET + CHARACTER_ICON_DISPLACEMENT * 3, -9.2f, -25.0f})
-		};
-		pushDebugGroup(renderer, "Icons");
-		drawCharacterIcons(renderer, characterIconTranslations);
-		popDebugGroup(renderer);
-		
 		// Render transparent objects from zFar to zNear
 		
 		// Sky renders at z = -38.0f
@@ -1022,6 +998,18 @@ static void drawScene(Renderer *renderer)
 		// When falling, will reach to around -195
 		pushDebugGroup(renderer, "Characters");
 		drawCharacters(renderer, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
+		popDebugGroup(renderer);
+		
+		// Character icons at the bottom of the screen at z = -25.0f
+		const mat4_t characterIconTranslations[] =
+		{
+			m4_translation((vec3_t){CHARACTER_ICON_OFFSET, -9.2f, -25.0f}),
+			m4_translation((vec3_t){CHARACTER_ICON_OFFSET + CHARACTER_ICON_DISPLACEMENT, -9.2f, -25.0f}),
+			m4_translation((vec3_t){CHARACTER_ICON_OFFSET + CHARACTER_ICON_DISPLACEMENT * 2, -9.2f, -25.0f}),
+			m4_translation((vec3_t){CHARACTER_ICON_OFFSET + CHARACTER_ICON_DISPLACEMENT * 3, -9.2f, -25.0f})
+		};
+		pushDebugGroup(renderer, "Icons");
+		drawCharacterIcons(renderer, characterIconTranslations);
 		popDebugGroup(renderer);
 		
 		// Character lives at z = -25.0f
@@ -1319,16 +1307,6 @@ static void drawScene(Renderer *renderer)
 			drawBlackBox(renderer);
 			popDebugGroup(renderer);
 			
-			if (gGameWinner != NO_CHARACTER)
-			{
-				// Character icons on scoreboard at z = -20.0f
-				// This is supposed to actually be opaque, but it doesn't render properly in the GL renderer
-				// if this is rendered beforehand, don't know why.
-				pushDebugGroup(renderer, "Scoreboard");
-				drawScoreboardForCharacters(renderer, SCOREBOARD_RENDER_ICONS);
-				popDebugGroup(renderer);
-			}
-			
 			// Renders winning/losing text at z = -20.0f
 			mat4_t winLoseModelViewMatrix = m4_translation((vec3_t){0.0f / 1.25f, 100.0f / 14.0f, -25.0f / 1.25f});
 			
@@ -1363,9 +1341,9 @@ static void drawScene(Renderer *renderer)
 			}
 			popDebugGroup(renderer);
 			
-			// Character scores on scoreboard at z = -20.0f
+			// Character scores and icons on scoreboard at z = -20.0f
 			pushDebugGroup(renderer, "Scoreboard");
-			drawScoreboardForCharacters(renderer, SCOREBOARD_RENDER_SCORES);
+			drawScoreboardForCharacters(renderer);
 			popDebugGroup(renderer);
 			
 			// Play again or exit text at z = -20.0f

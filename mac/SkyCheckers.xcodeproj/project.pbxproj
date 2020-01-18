@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		7201184A232758ED004C2532 /* font_apple.m in Sources */ = {isa = PBXBuildFile; fileRef = 72011849232758ED004C2532 /* font_apple.m */; };
+		720D528923D397DC002C9972 /* texture.c in Sources */ = {isa = PBXBuildFile; fileRef = 720D528823D397DC002C9972 /* texture.c */; };
+		720D528A23D397DC002C9972 /* texture.c in Sources */ = {isa = PBXBuildFile; fileRef = 720D528823D397DC002C9972 /* texture.c */; };
 		721A007121AA7B420099D093 /* renderer_metal.m in Sources */ = {isa = PBXBuildFile; fileRef = 721A007021AA7B420099D093 /* renderer_metal.m */; };
 		721A007721AB11CD0099D093 /* shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 721A007621AB11CC0099D093 /* shaders.metal */; };
 		7243ACB323C2EB5900A83ADD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7243ACB223C2EB5900A83ADD /* Assets.xcassets */; };
@@ -152,6 +154,7 @@
 /* Begin PBXFileReference section */
 		72011848232758ED004C2532 /* font.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = font.h; path = ../src/font.h; sourceTree = "<group>"; };
 		72011849232758ED004C2532 /* font_apple.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = font_apple.m; path = ../src/font_apple.m; sourceTree = "<group>"; };
+		720D528823D397DC002C9972 /* texture.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = texture.c; path = ../src/texture.c; sourceTree = "<group>"; };
 		721A006B21AA74E90099D093 /* renderer_types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = renderer_types.h; path = ../src/renderer_types.h; sourceTree = "<group>"; };
 		721A006F21AA7B420099D093 /* renderer_metal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = renderer_metal.h; path = ../src/renderer_metal.h; sourceTree = "<group>"; };
 		721A007021AA7B420099D093 /* renderer_metal.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = renderer_metal.m; path = ../src/renderer_metal.m; sourceTree = "<group>"; };
@@ -393,6 +396,7 @@
 				7272B29D21E5CBEB00C305D3 /* renderer_projection.c */,
 				721A007621AB11CC0099D093 /* shaders.metal */,
 				774A450C0B2BF1FC000C04D9 /* texture.h */,
+				720D528823D397DC002C9972 /* texture.c */,
 				727DAE4D235D284F0030B29D /* texture_apple.m */,
 				72817BD02392B6C500DB7677 /* app.h */,
 				72817BD12392B6FA00DB7677 /* app_osx.m */,
@@ -709,6 +713,7 @@
 				72817CA5239385ED00DB7677 /* characters.c in Sources */,
 				72817CA4239385E800DB7677 /* scenery.c in Sources */,
 				72817CA2239385DC00DB7677 /* main.c in Sources */,
+				720D528A23D397DC002C9972 /* texture.c in Sources */,
 				72817C9B2393805B00DB7677 /* text.c in Sources */,
 				72817C9A2393803900DB7677 /* texture_apple.m in Sources */,
 				72A5D135239C1725004C12D6 /* menus_ios.m in Sources */,
@@ -734,6 +739,7 @@
 			files = (
 				72EBBBBA239A213600DD4470 /* gamepad_gccontroller.m in Sources */,
 				72817B70238ED9D200DB7677 /* window_osx.m in Sources */,
+				720D528923D397DC002C9972 /* texture.c in Sources */,
 				774A44200B2BEA58000C04D9 /* main.c in Sources */,
 				774A44610B2BEB46000C04D9 /* scenery.c in Sources */,
 				727DAE2A235C1F660030B29D /* time_apple.m in Sources */,

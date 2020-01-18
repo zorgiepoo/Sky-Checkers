@@ -17,16 +17,20 @@
 * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#include "renderer_types.h"
 #include "texture.h"
 
-#define FONT_POINT_SIZE 144
-// This font is "goodfish.ttf" and is intentionally obfuscated in source by author's request
-// A license to embed the font was acquired (for me, Mayur, only) from http://typodermicfonts.com/goodfish/
-#define FONT_PATH "Data/Fonts/typelib.dat"
+TextureObject loadTextureFromData(Renderer *renderer, TextureData textureData)
+{
+	return textureFromPixelData(renderer, textureData.pixelData, textureData.width, textureData.height, textureData.pixelFormat);
+}
 
-void initFont(void);
-
-TextureData createTextData(const char *string);
+TextureObject loadTexture(Renderer *renderer, const char *filePath)
+{
+	TextureData textureData = loadTextureData(filePath);
+	
+	TextureObject texture = loadTextureFromData(renderer, textureData);
+	
+	freeTextureData(textureData);
+	
+	return texture;
+}
