@@ -1628,7 +1628,7 @@ static void handleWindowEvent(ZGWindowEvent event, void *context)
 			{
 				pauseMusic();
 			}
-			else
+			else if (gGameState == GAME_STATE_ON || gGameState == GAME_STATE_TUTORIAL)
 			{
 				showPauseMenu(appContext->renderer.window, &gGameState);
 			}
