@@ -52,13 +52,13 @@ void drawWeapon(Renderer *renderer, Weapon *weap)
 		{
 			// top face
 			1.0f, 0.0f, 0.5f, 1.0f, // right mid point
-			0.0f, 0.8f, 0.5f, 1.0f, // left back
-			0.0f, -0.8f, 0.5f, 1.0f, // left front
+			0.0f, 1.0f, 0.5f, 1.0f, // left back
+			0.0f, -1.0f, 0.5f, 1.0f, // left front
 			
 			// bottom face
 			1.0f, 0.0f, 0.0f, 1.0f, // right mid point
-			0.0f, 0.8f, 0.0f, 1.0f, // left back
-			0.0f, -0.8f, 0.0f, 1.0f // left front
+			0.0f, 1.0f, 0.0f, 1.0f, // left back
+			0.0f, -1.0f, 0.0f, 1.0f // left front
 		};
 		
 		const uint16_t indices[] =
