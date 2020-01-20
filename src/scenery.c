@@ -44,7 +44,9 @@ Tile gTiles[NUMBER_OF_TILES];
 static TextureObject gSkyTex;
 
 static TextureObject gTileTexture1;
+static TextureObject gTileCrackedTexture1;
 static TextureObject gTileTexture2;
+static TextureObject gTileCrackedTexture2;
 
 void loadTiles(void)
 {
@@ -241,7 +243,9 @@ void loadSceneryTextures(Renderer *renderer)
 	gSkyTex = loadTexture(renderer, "Data/Textures/sky.bmp");
 	
 	gTileTexture1 = loadTexture(renderer, "Data/Textures/tiletex.bmp");
+	gTileCrackedTexture1 = loadTexture(renderer, "Data/Textures/tiletex_cracked.bmp");
 	gTileTexture2 = loadTexture(renderer, "Data/Textures/tiletex2.bmp");
+	gTileCrackedTexture2 = loadTexture(renderer, "Data/Textures/tiletex2_cracked.bmp");
 }
 
 void drawSky(Renderer *renderer, RendererOptions options)
@@ -375,7 +379,9 @@ void drawTiles(Renderer *renderer)
 			mat4_t modelTranslationMatrix = m4_translation((vec3_t){gTiles[i].x , gTiles[i].y, gTiles[i].z});
 			mat4_t modelViewMatrix = m4_mul(worldRotationMatrix, modelTranslationMatrix);
 			
-			TextureObject texture = (((i / 8) % 2) ^ (i % 2)) != 0 ? gTileTexture1 : gTileTexture2;
+			bool cracked = gTiles[i].coloredID != NO_CHARACTER;
+			
+			TextureObject texture = (((i / 8) % 2) ^ (i % 2)) != 0 ? (!cracked ? gTileTexture1 : gTileCrackedTexture1) : (!cracked ? gTileTexture2 : gTileCrackedTexture2);
 			
 			drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, texture, RENDERER_TRIANGLE_MODE, vertexAndTextureCoordinateArrayObject, indicesBufferObject, 24, (color4_t){gTiles[i].red, gTiles[i].green, gTiles[i].blue, 1.0f}, RENDERER_OPTION_NONE);
 		}
