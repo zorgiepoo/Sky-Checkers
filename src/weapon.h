@@ -21,7 +21,7 @@
 
 #include "renderer.h"
 
-#define INITIAL_WEAPON_Z 1.0f
+#define INITIAL_WEAPON_Z 0.0f
 
 typedef struct
 {

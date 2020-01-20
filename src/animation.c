@@ -380,7 +380,7 @@ static void moveWeapon(Weapon *weapon, double timeDelta)
 			weapon->y -= WEAPON_PROJECTILE_SPEED * (float)timeDelta;
 		}
 		
-		weapon->z = INITIAL_WEAPON_Z + fabsf(sinf(weapon->timeFiring * 16.0f)) * 1.5f;
+		weapon->z = INITIAL_WEAPON_Z + fabsf(cosf(weapon->timeFiring * 16.0f)) * 1.5f;
 		weapon->timeFiring += timeDelta;
 	}
 }
