@@ -62,7 +62,9 @@ static double gTimeElapsedAccumulator = 0.0;
 
 /* Functions */
 
-static void colorTile(int tileIndex, Character *character, float currentTime);
+static void colorTile(int tileIndex, int tileColoredCounter, Character *character, float currentTime);
+
+static void crackTiles(float currentTime);
 
 static void animateTilesAndPlayerRecovery(double timeDelta, ZGWindow *window, Character *player, float currentTime);
 static void moveWeapon(Weapon *weapon, double timeDelta);
@@ -268,6 +270,8 @@ void animate(ZGWindow *window, double timeDelta, GameState gameState)
 	animateTilesAndPlayerRecovery(timeDelta, window, &gPinkBubbleGum, gSecondTimer);
 	animateTilesAndPlayerRecovery(timeDelta, window, &gBlueLightning, gSecondTimer);
 	
+	crackTiles(gSecondTimer);
+	
 	recoverDestroyedTiles(timeDelta);
 	
 	sendPing();
@@ -318,10 +322,21 @@ static void clearPredictedColors(float currentTime)
 	}
 }
 
+static void crackTiles(float currentTime)
+{
+	for (int tileIndex = 0; tileIndex < NUMBER_OF_TILES; tileIndex++)
+	{
+		if (!gTiles[tileIndex].cracked && gTiles[tileIndex].crackedTime > 0.0f && currentTime >= gTiles[tileIndex].crackedTime)
+		{
+			gTiles[tileIndex].cracked = true;
+		}
+	}
+}
+
 /*
  * Change the color of the tile to the weap's color only if the color of the tile is at its default color and if that the tile's state exists
  */
-static void colorTile(int tileIndex, Character *character, float currentTime)
+static void colorTile(int tileIndex, int tileColoredCounter, Character *character, float currentTime)
 {
 	if (gTiles[tileIndex].state && gTiles[tileIndex].coloredID == NO_CHARACTER)
 	{
@@ -330,6 +345,8 @@ static void colorTile(int tileIndex, Character *character, float currentTime)
 		gTiles[tileIndex].red = weap->red;
 		gTiles[tileIndex].blue = weap->blue;
 		gTiles[tileIndex].green = weap->green;
+		
+		gTiles[tileIndex].crackedTime = currentTime + 0.05f * (tileColoredCounter + 1);
 		
 		if (gNetworkConnection != NULL)
 		{
@@ -430,30 +447,38 @@ static void animateTilesAndPlayerRecovery(double timeDelta, ZGWindow *window, Ch
 				
 				if (player->weap->direction == RIGHT)
 				{
+					int tileColoredCounter = 0;
 					while ((currentTileIndex = rightTileIndex(currentTileIndex)) != -1)
 					{
-						colorTile(currentTileIndex, player, currentTime);
+						colorTile(currentTileIndex, tileColoredCounter, player, currentTime);
+						tileColoredCounter++;
 					}
 				}
 				else if (player->weap->direction == LEFT)
 				{
+					int tileColoredCounter = 0;
 					while ((currentTileIndex = leftTileIndex(currentTileIndex)) != -1)
 					{
-						colorTile(currentTileIndex, player, currentTime);
+						colorTile(currentTileIndex, tileColoredCounter, player, currentTime);
+						tileColoredCounter++;
 					}
 				}
 				else if (player->weap->direction == UP)
 				{
+					int tileColoredCounter = 0;
 					while ((currentTileIndex = upTileIndex(currentTileIndex)) != -1)
 					{
-						colorTile(currentTileIndex, player, currentTime);
+						colorTile(currentTileIndex, tileColoredCounter, player, currentTime);
+						tileColoredCounter++;
 					}
 				}
 				else if (player->weap->direction == DOWN)
 				{
+					int tileColoredCounter = 0;
 					while ((currentTileIndex = downTileIndex(currentTileIndex)) != -1)
 					{
-						colorTile(currentTileIndex, player, currentTime);
+						colorTile(currentTileIndex, tileColoredCounter, player, currentTime);
+						tileColoredCounter++;
 					}
 				}
 				
@@ -686,6 +711,8 @@ void recoverDestroyedTile(int tileIndex)
 	restoreDefaultTileColor(tileIndex);
 	gTiles[tileIndex].coloredID = NO_CHARACTER;
 	gTiles[tileIndex].colorTime = 0;
+	gTiles[tileIndex].cracked = false;
+	gTiles[tileIndex].crackedTime = 0.0f;
 	gTiles[tileIndex].z = TILE_ALIVE_Z;
 	gTiles[tileIndex].state = true;
 	gTiles[tileIndex].recovery_timer = 0.0;

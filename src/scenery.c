@@ -55,6 +55,8 @@ void loadTiles(void)
 		gTiles[tileIndex].state = true;
 		gTiles[tileIndex].recovery_timer = 0;
 		gTiles[tileIndex].isDead = false;
+		gTiles[tileIndex].cracked = false;
+		gTiles[tileIndex].crackedTime = 0.0f;
 		gTiles[tileIndex].coloredID = NO_CHARACTER;
 		gTiles[tileIndex].colorTime = 0;
 		gTiles[tileIndex].predictedColorID = NO_CHARACTER;
@@ -124,6 +126,9 @@ void _clearPredictedColor(int tileIndex)
 	if (gTiles[tileIndex].coloredID == NO_CHARACTER)
 	{
 		restoreDefaultTileColor(tileIndex);
+		
+		gTiles[tileIndex].crackedTime = 0.0f;
+		gTiles[tileIndex].cracked = false;
 	}
 }
 
@@ -379,7 +384,7 @@ void drawTiles(Renderer *renderer)
 			mat4_t modelTranslationMatrix = m4_translation((vec3_t){gTiles[i].x , gTiles[i].y, gTiles[i].z});
 			mat4_t modelViewMatrix = m4_mul(worldRotationMatrix, modelTranslationMatrix);
 			
-			bool cracked = gTiles[i].coloredID != NO_CHARACTER;
+			bool cracked = gTiles[i].cracked;
 			
 			TextureObject texture = (((i / 8) % 2) ^ (i % 2)) != 0 ? (!cracked ? gTileTexture1 : gTileCrackedTexture1) : (!cracked ? gTileTexture2 : gTileCrackedTexture2);
 			
