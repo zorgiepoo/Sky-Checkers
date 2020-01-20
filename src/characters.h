@@ -82,6 +82,9 @@ typedef struct _Character
 	/* Colors of character faces */
 	float red, green, blue, alpha;
 	
+	TextureObject texture;
+	TextureObject iconTexture;
+	
 	/* Direction character is currently going in */
 	int direction;
 	

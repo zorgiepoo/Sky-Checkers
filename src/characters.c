@@ -36,9 +36,6 @@ Character gGreenTree;
 Character gPinkBubbleGum;
 Character gBlueLightning;
 
-static TextureObject gCharacterTex;
-static TextureObject gCharacterIconTex;
-
 static BufferArrayObject gCharacterVertexAndTextureCoordinateArrayObject;
 static BufferObject gCharacterIndicesBufferObject;
 
@@ -124,7 +121,7 @@ void initCharacters(void)
 	initCharacter(&gRedRover, 0.9f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
 	initCharacter(&gGreenTree, 0.3f, 1.0f, 0.3f, 0.2196f, 0.851f, 0.2623f);
 	initCharacter(&gPinkBubbleGum, 1.0f, 0.7f, 0.7f, 0.988f, 0.486f, 0.796f);
-	initCharacter(&gBlueLightning, 0.4f, 0.6f, 0.7f, 30.0f / 255.0f, 144.0f / 255.0f, 255.0f / 255.0f);
+	initCharacter(&gBlueLightning, 0.6f, 0.6f, 0.9f, 30.0f / 255.0f, 144.0f / 255.0f, 255.0f / 255.0f);
 	
 	resetCharacterWins();
 }
@@ -157,10 +154,29 @@ int offlineCharacterState(Character *character)
 	return (character->backup_state ? character->backup_state : character->state);
 }
 
-void loadCharacterTextures(Renderer *renderer)
+static void _loadCharacterTextures(Renderer *renderer, Character *character, TextureData textureData, float facePercentage, uint8_t mouthRed, uint8_t mouthGreen, uint8_t mouthBlue)
 {
-	TextureData textureData = loadTextureData("Data/Textures/face.bmp");
-	gCharacterTex = loadTextureFromData(renderer, textureData);
+	// Adjust color of face, eyes, and mouth
+	for (uint32_t pixelIndex = 0; pixelIndex < (uint32_t)(textureData.width * textureData.height); pixelIndex++)
+	{
+		uint8_t *colorData = &textureData.pixelData[pixelIndex * 4];
+		// Face or Eyes
+		if ((colorData[0] == 126 && colorData[1] == 77 && colorData[2] == 108) || (colorData[0] == 126 && colorData[1] == 10 && colorData[2] == 32))
+		{
+			colorData[0] = (uint8_t)(character->red * 255.0f * facePercentage);
+			colorData[1] = (uint8_t)(character->green * 255.0f * facePercentage);
+			colorData[2] = (uint8_t)(character->blue * 255.0f * facePercentage);
+		}
+		// Mouth
+		else if (colorData[0] == 32 && colorData[1] == 16 && colorData[2] == 126)
+		{
+			colorData[0] = mouthRed;
+			colorData[1] = mouthGreen;
+			colorData[2] = mouthBlue;
+		}
+	}
+	
+	character->texture = loadTextureFromData(renderer, textureData);
 	
 	// For icon data, remove all background pixels that are close to being black
 	for (uint32_t pixelIndex = 0; pixelIndex < (uint32_t)(textureData.width * textureData.height); pixelIndex++)
@@ -171,8 +187,20 @@ void loadCharacterTextures(Renderer *renderer)
 			colorData[3] = 0;
 		}
 	}
-	gCharacterIconTex = loadTextureFromData(renderer, textureData);
+	
+	character->iconTexture = loadTextureFromData(renderer, textureData);
+	
 	freeTextureData(textureData);
+}
+
+void loadCharacterTextures(Renderer *renderer)
+{
+	TextureData textureData = loadTextureData("Data/Textures/face.bmp");
+	
+	_loadCharacterTextures(renderer, &gPinkBubbleGum, copyTextureData(textureData), 0.6f, 41, 21, 164);
+	_loadCharacterTextures(renderer, &gRedRover, copyTextureData(textureData), 0.65f, 18, 9, 73);
+	_loadCharacterTextures(renderer, &gGreenTree, copyTextureData(textureData), 0.6f, 20, 20, 20);
+	_loadCharacterTextures(renderer, &gBlueLightning, textureData, 0.65f, 32, 16, 126);
 }
 
 // http://www.songho.ca/opengl/gl_sphere.html
@@ -392,7 +420,7 @@ static void drawCharacter(Renderer *renderer, Character *character, mat4_t world
 	{
 		mat4_t modelViewMatrix = modelViewMatrixForCharacter(character, worldMatrix);
 		
-		drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, gCharacterTex, RENDERER_TRIANGLE_MODE, gCharacterVertexAndTextureCoordinateArrayObject, gCharacterIndicesBufferObject, 5220, (color4_t){character->red, character->green, character->blue, character->alpha}, options);
+		drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, character->texture, RENDERER_TRIANGLE_MODE, gCharacterVertexAndTextureCoordinateArrayObject, gCharacterIndicesBufferObject, 5220, (color4_t){1.0f, 1.0f, 1.0f, character->alpha}, options);
 	}
 }
 
@@ -423,7 +451,7 @@ static mat4_t characterIconModelViewMatrix(mat4_t modelViewMatrix)
 
 static void drawCharacterIcon(Renderer *renderer, mat4_t modelViewMatrix, Character *character)
 {
-	drawTextureWithVertices(renderer, characterIconModelViewMatrix(modelViewMatrix), gCharacterIconTex, RENDERER_TRIANGLE_STRIP_MODE, gIconVertexAndTextureCoordinateArrayObject, 1204 / 2, (color4_t){character->red, character->green, character->blue, 1.0f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
+	drawTextureWithVertices(renderer, characterIconModelViewMatrix(modelViewMatrix), character->iconTexture, RENDERER_TRIANGLE_STRIP_MODE, gIconVertexAndTextureCoordinateArrayObject, 1204 / 2, (color4_t){1.0f, 1.0f, 1.0f, 1.0f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
 }
 
 void drawCharacterIcons(Renderer *renderer, const mat4_t *translations)
