@@ -159,20 +159,20 @@ int offlineCharacterState(Character *character)
 
 void loadCharacterTextures(Renderer *renderer)
 {
-	gCharacterTex = loadTexture(renderer, "Data/Textures/face.bmp");
+	TextureData textureData = loadTextureData("Data/Textures/face.bmp");
+	gCharacterTex = loadTextureFromData(renderer, textureData);
 	
 	// For icon data, remove all background pixels that are close to being black
-	TextureData iconTextureData = loadTextureData("Data/Textures/face.bmp");
-	for (uint32_t pixelIndex = 0; pixelIndex < (uint32_t)(iconTextureData.width * iconTextureData.height); pixelIndex++)
+	for (uint32_t pixelIndex = 0; pixelIndex < (uint32_t)(textureData.width * textureData.height); pixelIndex++)
 	{
-		uint8_t *colorData = &iconTextureData.pixelData[pixelIndex * 4];
+		uint8_t *colorData = &textureData.pixelData[pixelIndex * 4];
 		if (colorData[0] <= 10 && colorData[1] <= 10 && colorData[2] <= 10)
 		{
 			colorData[3] = 0;
 		}
 	}
-	gCharacterIconTex = loadTextureFromData(renderer, iconTextureData);
-	freeTextureData(iconTextureData);
+	gCharacterIconTex = loadTextureFromData(renderer, textureData);
+	freeTextureData(textureData);
 }
 
 // http://www.songho.ca/opengl/gl_sphere.html
