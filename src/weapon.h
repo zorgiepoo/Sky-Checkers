@@ -21,12 +21,15 @@
 
 #include "renderer.h"
 
+#define INITIAL_WEAPON_Z 1.0f
+
 typedef struct
 {
 	float x, y, z;
 	ZGFloat red, green, blue;
 	float initialX, initialY;
 	float compensation;
+	float timeFiring;
 	
 	bool drawingState;
 	bool animationState;

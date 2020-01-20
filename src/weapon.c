@@ -25,12 +25,13 @@ void initWeapon(Weapon *weap)
 {	
 	weap->x = 0.0f;
 	weap->y = 0.0f;
-	weap->z = 1.0f;
+	weap->z = INITIAL_WEAPON_Z;
 	
 	weap->initialX = 0.0f;
 	weap->initialX = 0.0f;
 	
 	weap->compensation = 0.0f;
+	weap->timeFiring = 0.0f;
 	
 	weap->drawingState = false;
 	weap->animationState = false;

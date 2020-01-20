@@ -379,6 +379,9 @@ static void moveWeapon(Weapon *weapon, double timeDelta)
 		{
 			weapon->y -= WEAPON_PROJECTILE_SPEED * (float)timeDelta;
 		}
+		
+		weapon->z = INITIAL_WEAPON_Z + fabsf(sinf(weapon->timeFiring * 16.0f)) * 1.5f;
+		weapon->timeFiring += timeDelta;
 	}
 }
 
@@ -522,6 +525,7 @@ static void animateTilesAndPlayerRecovery(double timeDelta, ZGWindow *window, Ch
 		if (player->animation_timer >= (END_CHARACTER_ANIMATION - player->weap->compensation))
 		{
 			player->weap->animationState = false;
+			player->weap->timeFiring = 0.0f;
 			player->animation_timer = 0;
 			
 			player->alpha = 1.0f;
@@ -993,15 +997,19 @@ void endAnimation(void)
 	// stop weapon animation and drawing
 	gRedRover.weap->drawingState = false;
 	gRedRover.weap->animationState = false;
+	gRedRover.weap->timeFiring = 0.0f;
 	
 	gGreenTree.weap->drawingState = false;
 	gGreenTree.weap->animationState = false;
+	gGreenTree.weap->timeFiring = 0.0f;
 	
 	gPinkBubbleGum.weap->drawingState = false;
 	gPinkBubbleGum.weap->animationState = false;
+	gPinkBubbleGum.weap->timeFiring = 0.0f;
 	
 	gBlueLightning.weap->drawingState = false;
 	gBlueLightning.weap->animationState = false;
+	gBlueLightning.weap->timeFiring = 0.0f;
 	
 	gStatsTimer = 0;
 	gCurrentWinner = 0;
