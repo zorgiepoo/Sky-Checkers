@@ -279,7 +279,7 @@ GamepadEvent *GC_NAME(pollGamepadEvents)(struct GC_NAME(_GamepadManager) *gamepa
 					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_B, microGamepad.buttonX.pressed, gamepadManager->eventsBuffer, &eventIndex);
 					if (@available(iOS 13.0, macOS 10.15, *))
 					{
-						_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_START, microGamepad.buttonMenu, gamepadManager->eventsBuffer, &eventIndex);
+						_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_START, microGamepad.buttonMenu.pressed, gamepadManager->eventsBuffer, &eventIndex);
 					}
 					
 					_addAxisEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_RIGHT, GAMEPAD_BUTTON_DPAD_LEFT, microGamepad.dpad.xAxis, gamepadManager->eventsBuffer, &eventIndex);
