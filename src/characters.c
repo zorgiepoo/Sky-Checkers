@@ -93,79 +93,38 @@ void resetCharacterWins(void)
 	gBlueLightning.wins = 0;
 }
 
+static void initCharacter(Character *character, float red, float green, float blue, float weapRed, float weapGreen, float weapBlue)
+{
+	character->x = 0.0f;
+	character->y = 0.0f;
+	character->z = 0.0f;
+	
+	character->red = red;
+	character->green = green;
+	character->blue = blue;
+	
+	loadCharacter(character);
+	
+	character->weap = malloc(sizeof(Weapon));
+	initWeapon(character->weap);
+	
+	character->weap->red = weapRed;
+	character->weap->green = weapGreen;
+	character->weap->blue = weapBlue;
+	
+	character->netState = NETWORK_NO_STATE;
+	character->netName = NULL;
+	character->backup_state = 0;
+	
+	memset(character->controllerName, 0, sizeof(character->controllerName));
+}
+
 void initCharacters(void)
 {
-	// redRover
-	gRedRover.x = 0.0f;
-	gRedRover.y = 0.0f;
-	gRedRover.z = 0.0f;
-	loadCharacter(&gRedRover);
-	gRedRover.weap = malloc(sizeof(Weapon));
-	initWeapon(gRedRover.weap);
-	gRedRover.weap->red = 1.0f;
-	gRedRover.weap->green = 0.0f;
-	gRedRover.weap->blue = 0.0f;
-	gRedRover.netState = NETWORK_NO_STATE;
-	gRedRover.netName = NULL;
-	gRedRover.backup_state = 0;
-	gRedRover.red = 0.9f;
-	gRedRover.green = 0.0f;
-	gRedRover.blue = 0.0f;
-	memset(&gRedRover.controllerName, 0, sizeof(gRedRover.controllerName));
-	
-	// greenTree
-	gGreenTree.x = 0.0f;
-	gGreenTree.y = 0.0f;
-	gGreenTree.z = 0.0f;
-	loadCharacter(&gGreenTree);
-	gGreenTree.weap = malloc(sizeof(Weapon));
-	initWeapon(gGreenTree.weap);
-	gGreenTree.weap->red = 0.2196f;
-	gGreenTree.weap->green = 0.851f;
-	gGreenTree.weap->blue = 0.2623f;
-	gGreenTree.netState = NETWORK_NO_STATE;
-	gGreenTree.netName = NULL;
-	gGreenTree.backup_state = 0;
-	gGreenTree.red = 0.3f;
-	gGreenTree.green = 1.0f;
-	gGreenTree.blue = 0.3f;
-	memset(&gGreenTree.controllerName, 0, sizeof(gGreenTree.controllerName));
-	
-	// pinkBubbleGum
-	gPinkBubbleGum.x = 0.0f;
-	gPinkBubbleGum.y = 0.0f;
-	gPinkBubbleGum.z = 0.0f;
-	loadCharacter(&gPinkBubbleGum);
-	gPinkBubbleGum.weap = malloc(sizeof(Weapon));
-	initWeapon(gPinkBubbleGum.weap);
-	gPinkBubbleGum.weap->red = 0.988f;
-	gPinkBubbleGum.weap->green = 0.486f;
-	gPinkBubbleGum.weap->blue = 0.796f;
-	gPinkBubbleGum.netState = NETWORK_NO_STATE;
-	gPinkBubbleGum.netName = NULL;
-	gPinkBubbleGum.backup_state = 0;
-	gPinkBubbleGum.red = 1.0f;
-	gPinkBubbleGum.green = 0.7f;
-	gPinkBubbleGum.blue = 0.7f;
-	memset(&gPinkBubbleGum.controllerName, 0, sizeof(gPinkBubbleGum.controllerName));
-	
-	// blueLightning
-	gBlueLightning.x = 0.0f;
-	gBlueLightning.y = 0.0f;
-	gBlueLightning.z = 0.0f;
-	loadCharacter(&gBlueLightning);
-	gBlueLightning.weap = malloc(sizeof(Weapon));
-	initWeapon(gBlueLightning.weap);
-	gBlueLightning.weap->red = 30.0f / 255.0f;
-	gBlueLightning.weap->green = 144.0f / 255.0f;
-	gBlueLightning.weap->blue = 255.0f / 255.0f;
-	gBlueLightning.netState = NETWORK_NO_STATE;
-	gBlueLightning.netName = NULL;
-	gBlueLightning.backup_state = 0;
-	gBlueLightning.red = 0.4f;
-	gBlueLightning.green = 0.6f;
-	gBlueLightning.blue = 0.7f;
-	memset(&gBlueLightning.controllerName, 0, sizeof(gBlueLightning.controllerName));
+	initCharacter(&gRedRover, 0.9f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+	initCharacter(&gGreenTree, 0.3f, 1.0f, 0.3f, 0.2196f, 0.851f, 0.2623f);
+	initCharacter(&gPinkBubbleGum, 1.0f, 0.7f, 0.7f, 0.988f, 0.486f, 0.796f);
+	initCharacter(&gBlueLightning, 0.4f, 0.6f, 0.7f, 30.0f / 255.0f, 144.0f / 255.0f, 255.0f / 255.0f);
 	
 	resetCharacterWins();
 }
