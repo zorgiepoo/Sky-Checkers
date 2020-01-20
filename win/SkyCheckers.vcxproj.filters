@@ -209,6 +209,9 @@
     <ClCompile Include="..\src\menu_actions.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\texture.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SkyCheckers.rc">

@@ -966,16 +966,6 @@ static void drawScene(Renderer *renderer)
 	{
 		// Render opaque objects first
 		
-		pushDebugGroup(renderer, "Weapons");
-		
-		// Weapons renders at z = -24.0f to -25.0f after a world rotation
-		drawWeapon(renderer, gRedRover.weap);
-		drawWeapon(renderer, gGreenTree.weap);
-		drawWeapon(renderer, gPinkBubbleGum.weap);
-		drawWeapon(renderer, gBlueLightning.weap);
-		
-		popDebugGroup(renderer);
-
 		// Characters renders at z = -25.3 to -24.7 after a world rotation when not fallen
 		// When falling, will reach to around -195
 		pushDebugGroup(renderer, "Characters");
@@ -992,6 +982,16 @@ static void drawScene(Renderer *renderer)
 		// Sky renders at z = -38.0f
 		pushDebugGroup(renderer, "Sky");
 		drawSky(renderer, RENDERER_OPTION_BLENDING_ALPHA);
+		popDebugGroup(renderer);
+		
+		// Weapons renders at z = -24.0f to -25.0f after a world rotation
+		pushDebugGroup(renderer, "Weapons");
+		
+		drawWeapon(renderer, gRedRover.weap);
+		drawWeapon(renderer, gGreenTree.weap);
+		drawWeapon(renderer, gPinkBubbleGum.weap);
+		drawWeapon(renderer, gBlueLightning.weap);
+		
 		popDebugGroup(renderer);
 		
 		// Characters renders at z = -25.3 to -24.7 after a world rotation when not fallen
@@ -1628,7 +1628,7 @@ static void handleWindowEvent(ZGWindowEvent event, void *context)
 			{
 				pauseMusic();
 			}
-			else
+			else if (gGameState == GAME_STATE_ON || gGameState == GAME_STATE_TUTORIAL)
 			{
 				showPauseMenu(appContext->renderer.window, &gGameState);
 			}

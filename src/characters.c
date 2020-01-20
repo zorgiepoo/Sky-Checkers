@@ -36,9 +36,6 @@ Character gGreenTree;
 Character gPinkBubbleGum;
 Character gBlueLightning;
 
-static TextureObject gCharacterTex;
-static TextureObject gCharacterIconTex;
-
 static BufferArrayObject gCharacterVertexAndTextureCoordinateArrayObject;
 static BufferObject gCharacterIndicesBufferObject;
 
@@ -93,79 +90,38 @@ void resetCharacterWins(void)
 	gBlueLightning.wins = 0;
 }
 
+static void initCharacter(Character *character, float red, float green, float blue, float weapRed, float weapGreen, float weapBlue)
+{
+	character->x = 0.0f;
+	character->y = 0.0f;
+	character->z = 0.0f;
+	
+	character->red = red;
+	character->green = green;
+	character->blue = blue;
+	
+	loadCharacter(character);
+	
+	character->weap = malloc(sizeof(Weapon));
+	initWeapon(character->weap);
+	
+	character->weap->red = weapRed;
+	character->weap->green = weapGreen;
+	character->weap->blue = weapBlue;
+	
+	character->netState = NETWORK_NO_STATE;
+	character->netName = NULL;
+	character->backup_state = 0;
+	
+	memset(character->controllerName, 0, sizeof(character->controllerName));
+}
+
 void initCharacters(void)
 {
-	// redRover
-	gRedRover.x = 0.0f;
-	gRedRover.y = 0.0f;
-	gRedRover.z = 0.0f;
-	loadCharacter(&gRedRover);
-	gRedRover.weap = malloc(sizeof(Weapon));
-	initWeapon(gRedRover.weap);
-	gRedRover.weap->red = 1.0f;
-	gRedRover.weap->green = 0.0f;
-	gRedRover.weap->blue = 0.0f;
-	gRedRover.netState = NETWORK_NO_STATE;
-	gRedRover.netName = NULL;
-	gRedRover.backup_state = 0;
-	gRedRover.red = 0.9f;
-	gRedRover.green = 0.0f;
-	gRedRover.blue = 0.0f;
-	memset(&gRedRover.controllerName, 0, sizeof(gRedRover.controllerName));
-	
-	// greenTree
-	gGreenTree.x = 0.0f;
-	gGreenTree.y = 0.0f;
-	gGreenTree.z = 0.0f;
-	loadCharacter(&gGreenTree);
-	gGreenTree.weap = malloc(sizeof(Weapon));
-	initWeapon(gGreenTree.weap);
-	gGreenTree.weap->red = 0.2196f;
-	gGreenTree.weap->green = 0.851f;
-	gGreenTree.weap->blue = 0.2623f;
-	gGreenTree.netState = NETWORK_NO_STATE;
-	gGreenTree.netName = NULL;
-	gGreenTree.backup_state = 0;
-	gGreenTree.red = 0.3f;
-	gGreenTree.green = 1.0f;
-	gGreenTree.blue = 0.3f;
-	memset(&gGreenTree.controllerName, 0, sizeof(gGreenTree.controllerName));
-	
-	// pinkBubbleGum
-	gPinkBubbleGum.x = 0.0f;
-	gPinkBubbleGum.y = 0.0f;
-	gPinkBubbleGum.z = 0.0f;
-	loadCharacter(&gPinkBubbleGum);
-	gPinkBubbleGum.weap = malloc(sizeof(Weapon));
-	initWeapon(gPinkBubbleGum.weap);
-	gPinkBubbleGum.weap->red = 0.988f;
-	gPinkBubbleGum.weap->green = 0.486f;
-	gPinkBubbleGum.weap->blue = 0.796f;
-	gPinkBubbleGum.netState = NETWORK_NO_STATE;
-	gPinkBubbleGum.netName = NULL;
-	gPinkBubbleGum.backup_state = 0;
-	gPinkBubbleGum.red = 1.0f;
-	gPinkBubbleGum.green = 0.7f;
-	gPinkBubbleGum.blue = 0.7f;
-	memset(&gPinkBubbleGum.controllerName, 0, sizeof(gPinkBubbleGum.controllerName));
-	
-	// blueLightning
-	gBlueLightning.x = 0.0f;
-	gBlueLightning.y = 0.0f;
-	gBlueLightning.z = 0.0f;
-	loadCharacter(&gBlueLightning);
-	gBlueLightning.weap = malloc(sizeof(Weapon));
-	initWeapon(gBlueLightning.weap);
-	gBlueLightning.weap->red = 30.0f / 255.0f;
-	gBlueLightning.weap->green = 144.0f / 255.0f;
-	gBlueLightning.weap->blue = 255.0f / 255.0f;
-	gBlueLightning.netState = NETWORK_NO_STATE;
-	gBlueLightning.netName = NULL;
-	gBlueLightning.backup_state = 0;
-	gBlueLightning.red = 0.4f;
-	gBlueLightning.green = 0.6f;
-	gBlueLightning.blue = 0.7f;
-	memset(&gBlueLightning.controllerName, 0, sizeof(gBlueLightning.controllerName));
+	initCharacter(&gRedRover, 0.9f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+	initCharacter(&gGreenTree, 0.3f, 1.0f, 0.3f, 0.2196f, 0.851f, 0.2623f);
+	initCharacter(&gPinkBubbleGum, 1.0f, 0.7f, 0.7f, 0.988f, 0.486f, 0.796f);
+	initCharacter(&gBlueLightning, 0.6f, 0.6f, 0.9f, 30.0f / 255.0f, 144.0f / 255.0f, 255.0f / 255.0f);
 	
 	resetCharacterWins();
 }
@@ -198,22 +154,53 @@ int offlineCharacterState(Character *character)
 	return (character->backup_state ? character->backup_state : character->state);
 }
 
-void loadCharacterTextures(Renderer *renderer)
+static void _loadCharacterTextures(Renderer *renderer, Character *character, TextureData textureData, float facePercentage, uint8_t mouthRed, uint8_t mouthGreen, uint8_t mouthBlue)
 {
-	gCharacterTex = loadTexture(renderer, "Data/Textures/face.bmp");
+	// Adjust color of face, eyes, and mouth
+	for (uint32_t pixelIndex = 0; pixelIndex < (uint32_t)(textureData.width * textureData.height); pixelIndex++)
+	{
+		uint8_t *colorData = &textureData.pixelData[pixelIndex * 4];
+		// Face or Eyes
+		if ((colorData[0] == 126 && colorData[1] == 77 && colorData[2] == 108) || (colorData[0] == 126 && colorData[1] == 10 && colorData[2] == 32))
+		{
+			colorData[0] = (uint8_t)(character->red * 255.0f * facePercentage);
+			colorData[1] = (uint8_t)(character->green * 255.0f * facePercentage);
+			colorData[2] = (uint8_t)(character->blue * 255.0f * facePercentage);
+		}
+		// Mouth
+		else if (colorData[0] == 32 && colorData[1] == 16 && colorData[2] == 126)
+		{
+			colorData[0] = mouthRed;
+			colorData[1] = mouthGreen;
+			colorData[2] = mouthBlue;
+		}
+	}
+	
+	character->texture = loadTextureFromData(renderer, textureData);
 	
 	// For icon data, remove all background pixels that are close to being black
-	TextureData iconTextureData = loadTextureData("Data/Textures/face.bmp");
-	for (uint32_t pixelIndex = 0; pixelIndex < (uint32_t)(iconTextureData.width * iconTextureData.height); pixelIndex++)
+	for (uint32_t pixelIndex = 0; pixelIndex < (uint32_t)(textureData.width * textureData.height); pixelIndex++)
 	{
-		uint8_t *colorData = &iconTextureData.pixelData[pixelIndex * 4];
+		uint8_t *colorData = &textureData.pixelData[pixelIndex * 4];
 		if (colorData[0] <= 10 && colorData[1] <= 10 && colorData[2] <= 10)
 		{
 			colorData[3] = 0;
 		}
 	}
-	gCharacterIconTex = loadTextureFromData(renderer, iconTextureData);
-	freeTextureData(iconTextureData);
+	
+	character->iconTexture = loadTextureFromData(renderer, textureData);
+	
+	freeTextureData(textureData);
+}
+
+void loadCharacterTextures(Renderer *renderer)
+{
+	TextureData textureData = loadTextureData("Data/Textures/face.bmp");
+	
+	_loadCharacterTextures(renderer, &gPinkBubbleGum, copyTextureData(textureData), 0.6f, 41, 21, 164);
+	_loadCharacterTextures(renderer, &gRedRover, copyTextureData(textureData), 0.65f, 18, 9, 73);
+	_loadCharacterTextures(renderer, &gGreenTree, copyTextureData(textureData), 0.6f, 20, 20, 20);
+	_loadCharacterTextures(renderer, &gBlueLightning, textureData, 0.65f, 32, 16, 126);
 }
 
 // http://www.songho.ca/opengl/gl_sphere.html
@@ -433,7 +420,7 @@ static void drawCharacter(Renderer *renderer, Character *character, mat4_t world
 	{
 		mat4_t modelViewMatrix = modelViewMatrixForCharacter(character, worldMatrix);
 		
-		drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, gCharacterTex, RENDERER_TRIANGLE_MODE, gCharacterVertexAndTextureCoordinateArrayObject, gCharacterIndicesBufferObject, 5220, (color4_t){character->red, character->green, character->blue, character->alpha}, options);
+		drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, character->texture, RENDERER_TRIANGLE_MODE, gCharacterVertexAndTextureCoordinateArrayObject, gCharacterIndicesBufferObject, 5220, (color4_t){1.0f, 1.0f, 1.0f, character->alpha}, options);
 	}
 }
 
@@ -464,7 +451,7 @@ static mat4_t characterIconModelViewMatrix(mat4_t modelViewMatrix)
 
 static void drawCharacterIcon(Renderer *renderer, mat4_t modelViewMatrix, Character *character)
 {
-	drawTextureWithVertices(renderer, characterIconModelViewMatrix(modelViewMatrix), gCharacterIconTex, RENDERER_TRIANGLE_STRIP_MODE, gIconVertexAndTextureCoordinateArrayObject, 1204 / 2, (color4_t){character->red, character->green, character->blue, 1.0f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
+	drawTextureWithVertices(renderer, characterIconModelViewMatrix(modelViewMatrix), character->iconTexture, RENDERER_TRIANGLE_STRIP_MODE, gIconVertexAndTextureCoordinateArrayObject, 1204 / 2, (color4_t){1.0f, 1.0f, 1.0f, 1.0f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
 }
 
 void drawCharacterIcons(Renderer *renderer, const mat4_t *translations)

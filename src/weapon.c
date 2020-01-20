@@ -25,12 +25,13 @@ void initWeapon(Weapon *weap)
 {	
 	weap->x = 0.0f;
 	weap->y = 0.0f;
-	weap->z = -1.0f;
+	weap->z = INITIAL_WEAPON_Z;
 	
 	weap->initialX = 0.0f;
 	weap->initialX = 0.0f;
 	
 	weap->compensation = 0.0f;
+	weap->timeFiring = 0.0f;
 	
 	weap->drawingState = false;
 	weap->animationState = false;
@@ -50,108 +51,29 @@ void drawWeapon(Renderer *renderer, Weapon *weap)
 	{
 		const ZGFloat vertices[] =
 		{
-			// Cube part
-			
-			// right face
-			-1.0f, -1.0f, 1.0f, 1.0f,
-			-1.0f, 1.0f, 1.0f, 1.0f,
-			1.0f, 1.0f, 1.0f, 1.0f,
-			1.0f, -1.0f, 1.0f, 1.0f,
-			
-			// left face
-			-1.0f, -1.0f, -1.0f, 1.0f,
-			-1.0f, 1.0f, -1.0f, 1.0f,
-			1.0f, 1.0f, -1.0f, 1.0f,
-			1.0f, -1.0f, -1.0f, 1.0f,
-			
-			// front face
-			1.0f, 1.0f, 1.0f, 1.0f,
-			1.0f, -1.0f, 1.0f, 1.0f,
-			1.0f, -1.0f, -1.0f, 1.0f,
-			1.0f, 1.0f, -1.0f, 1.0f,
-			
-			// back face
-			-1.0f, -1.0f, 1.0f, 1.0f,
-			-1.0f, 1.0f, 1.0f, 1.0f,
-			-1.0f, 1.0f, -1.0f, 1.0f,
-			-1.0f, -1.0f, -1.0f, 1.0f,
-			
 			// top face
-			-1.0f, 1.0f, 1.0f, 1.0f,
-			-1.0f, 1.0f, -1.0f, 1.0f,
-			1.0f, 1.0f, -1.0f, 1.0f,
-			1.0f, 1.0f, 1.0f, 1.0f,
+			1.0f, 0.0f, 0.5f, 1.0f, // right mid point
+			0.0f, 1.0f, 0.5f, 1.0f, // left back
+			0.0f, -1.0f, 0.5f, 1.0f, // left front
 			
 			// bottom face
-			-1.0f, -1.0f, 1.0f, 1.0f,
-			-1.0f, -1.0f, -1.0f, 1.0f,
-			1.0f, -1.0f, -1.0f, 1.0f,
-			1.0f, -1.0f, 1.0f, 1.0f,
-			
-			// Prism part
-			
-			// right side
-			1.0f, 1.0f, 1.0f, 1.0f,
-			1.0f, -1.0f, 1.0f, 1.0f,
-			3.0f, 0.0f, 0.0f, 1.0f,
-			
-			// left side
-			1.0f, 1.0f, -1.0f, 1.0f,
-			1.0f, -1.0f, -1.0f, 1.0f,
-			3.0f, 0.0f, 0.0f, 1.0f,
-			
-			// top side
-			1.0f, 1.0f, 1.0f, 1.0f,
-			1.0f, 1.0f, -1.0f, 1.0f,
-			3.0f, 0.0f, 0.0f, 1.0f,
-			
-			// bottom side
-			1.0f, -1.0f, 1.0f, 1.0f,
-			1.0f, -1.0f, -1.0f, 1.0f,
-			3.0f, 0.0f, 0.0f, 1.0f
+			1.0f, 0.0f, 0.0f, 1.0f, // right mid point
+			0.0f, 1.0f, 0.0f, 1.0f, // left back
+			0.0f, -1.0f, 0.0f, 1.0f // left front
 		};
 		
 		const uint16_t indices[] =
 		{
-			// Cube part
-			
-			// right face
+			// top
 			0, 1, 2,
-			2, 3, 0,
-			
-			// left face
-			4, 5, 6,
-			6, 7, 4,
-			
-			// front face
-			8, 9, 10,
-			10, 11, 8,
-			
-			// back face
-			12, 13, 14,
-			14, 15, 12,
-			
-			// top face
-			16, 17, 18,
-			18, 19, 16,
-			
-			// bottom face
-			20, 21, 22,
-			22, 23, 20,
-			
-			// Prism part
-			
-			// right side
-			24, 25, 26,
-			
-			// left side
-			27, 28, 29,
-			
-			// top side
-			30, 31, 32,
-			
-			// bottom side
-			33, 34, 35
+			// bottom
+			3, 4, 5,
+			// front side
+			2, 5, 3,
+			2, 0, 3,
+			// back side
+			1, 4, 3,
+			1, 0, 3
 		};
 		
 		vertexArrayObject = createVertexArrayObject(renderer, vertices, sizeof(vertices));
@@ -185,5 +107,6 @@ void drawWeapon(Renderer *renderer, Weapon *weap)
 	mat4_t modelViewMatrix = m4_mul(weaponMatrix, weaponRotationMatrix);
 	
 	ZGFloat colorFactor = 0.2f;
-	drawVerticesFromIndices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertexArrayObject, indicesBufferObject, 48, (color4_t){weap->red * colorFactor, weap->green * colorFactor, weap->blue * colorFactor, 1.0f}, RENDERER_OPTION_NONE);
+	drawVerticesFromIndices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertexArrayObject, indicesBufferObject, 18
+							, (color4_t){weap->red * colorFactor, weap->green * colorFactor, weap->blue * colorFactor, 0.8f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
 }

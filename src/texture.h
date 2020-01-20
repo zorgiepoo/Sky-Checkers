@@ -33,6 +33,7 @@ typedef struct
 } TextureData;
 
 TextureData loadTextureData(const char *filePath);
+TextureData copyTextureData(TextureData textureData);
 void freeTextureData(TextureData textureData);
 
 TextureObject loadTextureFromData(Renderer *renderer, TextureData textureData);

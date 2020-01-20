@@ -42,8 +42,11 @@ typedef struct
 	int predictedColorID;
 	float predictedColorTime;
 	
+	float crackedTime;
+	
 	bool state;
 	bool isDead;
+	bool cracked;
 	
 	double recovery_timer;
 } Tile;

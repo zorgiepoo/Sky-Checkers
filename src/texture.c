@@ -18,6 +18,9 @@
 */
 
 #include "texture.h"
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
 
 TextureObject loadTextureFromData(Renderer *renderer, TextureData textureData)
 {
@@ -33,4 +36,17 @@ TextureObject loadTexture(Renderer *renderer, const char *filePath)
 	freeTextureData(textureData);
 	
 	return texture;
+}
+
+TextureData copyTextureData(TextureData textureData)
+{
+	TextureData copyData = textureData;
+	copyData.context = NULL;
+	
+	size_t numBytes = textureData.width * textureData.height * 4;
+	copyData.pixelData = calloc(1, numBytes);
+	assert(copyData.pixelData != NULL);
+	memcpy(copyData.pixelData, textureData.pixelData, numBytes);
+	
+	return copyData;
 }

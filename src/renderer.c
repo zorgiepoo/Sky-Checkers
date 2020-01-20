@@ -141,10 +141,10 @@ void drawTextureWithVerticesFromIndices(Renderer *renderer, mat4_t modelViewMatr
 
 void pushDebugGroup(Renderer *renderer, const char *debugGroupName)
 {
-	return renderer->pushDebugGroupPtr(renderer, debugGroupName);
+	renderer->pushDebugGroupPtr(renderer, debugGroupName);
 }
 
 void popDebugGroup(Renderer *renderer)
 {
-	return renderer->popDebugGroupPtr(renderer);
+	renderer->popDebugGroupPtr(renderer);
 }
