@@ -1,5 +1,6 @@
 # Game Controller DB for SDL in 2.0.10 format
 # Source: https://github.com/gabomdq/SDL_GameControllerDB
+# Altered to include a couple of lesser known gamepad controllers I have on macOS
 
 # Windows
 03000000fa2d00000100000000000000,3DRUDDER,leftx:a0,lefty:a1,rightx:a5,righty:a2,platform:Windows,
