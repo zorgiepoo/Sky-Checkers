@@ -987,6 +987,7 @@ static UIView *makePauseMenu(UIView *metalView)
 	return menuView;
 }
 
+#if !PLATFORM_TVOS
 static UIButton *makeCancelButton(CGSize metalViewSize)
 {
 	UIButton *cancelButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
@@ -1002,6 +1003,7 @@ static UIButton *makeCancelButton(CGSize metalViewSize)
 	
 	return cancelButton;
 }
+#endif
 
 static UITableView *makeTableView(CGSize metalViewSize, CGFloat widthFactor)
 {
@@ -1034,9 +1036,11 @@ static UIView *makeOptionsMenu(UIView *metalView)
 	tableView.allowsSelection = NO;
 	[optionsMenu addSubview:tableView];
 	
+#if !PLATFORM_TVOS
 	UIButton *cancelButton = makeCancelButton(metalViewSize);
 	[cancelButton addTarget:gOptionsMenuHandler action:@selector(navigateBack) forControlEvents:UIControlEventPrimaryActionTriggered];
 	[optionsMenu addSubview:cancelButton];
+#endif
 	
 	return optionsMenu;
 }
@@ -1057,10 +1061,12 @@ static UIView *makeOnlineMenu(UIView *metalView)
 	gOnlineMenuHandler.tableView = tableView;
 	[onlineMenu addSubview:tableView];
 	
+#if !PLATFORM_TVOS
 	UIButton *cancelButton = makeCancelButton(metalViewSize);
 	[cancelButton addTarget:gOnlineMenuHandler action:@selector(navigateBack) forControlEvents:UIControlEventPrimaryActionTriggered];
 	gOnlineMenuHandler.cancelButton = cancelButton;
 	[onlineMenu addSubview:cancelButton];
+#endif
 	
 	return onlineMenu;
 }
@@ -1081,9 +1087,11 @@ static UIView *makeHostGameMenu(UIView *metalView)
 	gHostGameMenuHandler.tableView = tableView;
 	[view addSubview:tableView];
 	
+#if !PLATFORM_TVOS
 	UIButton *cancelButton = makeCancelButton(metalViewSize);
 	[cancelButton addTarget:gHostGameMenuHandler action:@selector(navigateBack) forControlEvents:UIControlEventPrimaryActionTriggered];
 	[view addSubview:cancelButton];
+#endif
 	
 	return view;
 }
@@ -1104,10 +1112,12 @@ static UIView *makeJoinGameMenu(UIView *metalView)
 	gJoinGameMenuHandler.tableView = tableView;
 	[view addSubview:tableView];
 	
+#if !PLATFORM_TVOS
 	UIButton *cancelButton = makeCancelButton(metalViewSize);
 	[cancelButton addTarget:gJoinGameMenuHandler action:@selector(navigateBack) forControlEvents:UIControlEventPrimaryActionTriggered];
 	gJoinGameMenuHandler.cancelButton = cancelButton;
 	[view addSubview:cancelButton];
+#endif
 	
 	return view;
 }
