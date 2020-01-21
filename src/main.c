@@ -1068,6 +1068,7 @@ static void drawScene(Renderer *renderer)
 			popDebugGroup(renderer);
 		}
 		
+#if !PLATFORM_TVOS
 		if (gGameState == GAME_STATE_TUTORIAL && gTutorialStage >= 3 && gTutorialStage < 5)
 		{
 			//-10.792 to 10.792 for z=-25.0f without aspect ratio taken in account in x direction
@@ -1097,6 +1098,7 @@ static void drawScene(Renderer *renderer)
 			drawStringScaled(renderer, tapMatrix, (color4_t){0.0f, 0.0f, 1.0f, humanCharacter->weap->animationState ? 0.5f : 1.0f}, 0.006f, "🔘");
 		}
 #endif
+#endif
 		
 		// Render game instruction at -25.0f
 		pushDebugGroup(renderer, "Instructional Text");
@@ -1125,7 +1127,10 @@ static void drawScene(Renderer *renderer)
 				}
 				else if (gTutorialStage == 1)
 				{
-#if PLATFORM_IOS
+#if PLATFORM_TVOS
+					const char *text = "Swipe ↑→↓← to move.";
+					ZGFloat moveScale = scale;
+#elif PLATFORM_IOS
 					const char *text = "Touch outside the board. Swipe ↑→↓←.";
 					ZGFloat moveScale = scale;
 #else
@@ -1158,7 +1163,10 @@ static void drawScene(Renderer *renderer)
 				}
 				if (gTutorialStage == 3)
 				{
-#if PLATFORM_IOS
+#if PLATFORM_TVOS
+					ZGFloat fireScale = scale;
+					const char *text = "Click to Fire.";
+#elif PLATFORM_IOS
 					ZGFloat fireScale = scale * 1.4f;
 					const char *text = "Tap with secondary Finger to Fire.";
 #else
@@ -1178,7 +1186,7 @@ static void drawScene(Renderer *renderer)
 				}
 				else if (gTutorialStage == 5)
 				{
-#if PLATFORM_IOS
+#if PLATFORM_IOS && !PLATFORM_TVOS
 					const char *text = "You're a pro! No more visuals.";
 					ZGFloat endTextScale = scale * 1.5f;
 #else
