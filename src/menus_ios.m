@@ -48,6 +48,11 @@ static UIColor *cellTextColor(void)
 	return [UIColor colorWithRed:0.7 green:0.7 blue:0.7 alpha:1.0];
 }
 
+static UIColor *focusCellTextColor(void)
+{
+	return [UIColor colorWithRed:0.3 green:0.3 blue:0.3 alpha:1.0];
+}
+
 static UIColor *cellBackgroundColor(void)
 {
 	return [UIColor colorWithRed:0.33 green:0.33 blue:0.33 alpha:1.0];
@@ -281,6 +286,19 @@ static uint8_t currentAIModeIndex(void)
 	[_optionsTableView reloadData];
 }
 
+- (void)_changeAudioEffectsFlag:(bool)value
+{
+	gAudioEffectsFlag = value;
+	[_optionsTableView reloadData];
+}
+
+- (void)_changeAudioMusicFlag:(bool)value
+{
+	updateAudioMusic(_window, value);
+
+	[_optionsTableView reloadData];
+}
+
 #if !PLATFORM_TVOS
 - (void)changeNumberOfLives:(UIStepper *)stepper
 {
@@ -291,16 +309,12 @@ static uint8_t currentAIModeIndex(void)
 
 - (void)changeAudioEffectsFlag:(UISwitch *)switchControl
 {
-	gAudioEffectsFlag = switchControl.on;
-
-	[_optionsTableView reloadData];
+	[self _changeAudioEffectsFlag:switchControl.on];
 }
 
 - (void)changeAudioMusicFlag:(UISwitch *)switchControl
 {
-	updateAudioMusic(_window, switchControl.on);
-
-	[_optionsTableView reloadData];
+	[self _changeAudioMusicFlag:switchControl.on];
 }
 #endif
 
@@ -309,7 +323,12 @@ static uint8_t currentAIModeIndex(void)
 	UIView *metalView = metalViewForWindow(_window);
 	CGSize metalViewSize = metalView.bounds.size;
 	
-	UITableViewCell *viewCell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
+#if PLATFORM_TVOS
+	UITableViewCellStyle style = (indexPath.section == 1) ? UITableViewCellStyleValue1 : UITableViewCellStyleDefault;
+#else
+	UITableViewCellStyle style = UITableViewCellStyleDefault;
+#endif
+	UITableViewCell *viewCell = [[UITableViewCell alloc] initWithStyle:style reuseIdentifier:nil];
 	UIFont *textFont = [UIFont systemFontOfSize:0.0288 * metalViewSize.height];
 	viewCell.textLabel.font = textFont;
 	viewCell.textLabel.textColor = cellTextColor();
@@ -361,14 +380,30 @@ static uint8_t currentAIModeIndex(void)
 		
 		segmentedControl.selectedSegmentIndex = currentAIModeIndex();
 		
+#if !PLATFORM_TVOS
 		[segmentedControl addTarget:self action:@selector(changeAIMode:) forControlEvents:UIControlEventValueChanged];
-		viewCell.accessoryView = segmentedControl;
+#endif
 		
+		viewCell.accessoryView = segmentedControl;
 		viewCell.textLabel.text = @"Bot Difficulty";
 	}
 	else if (indexPath.section == 1)
 	{
-#if !PLATFORM_TVOS
+#if PLATFORM_TVOS
+		viewCell.detailTextLabel.textColor = cellTextColor();
+		viewCell.detailTextLabel.font = textFont;
+		
+		if (indexPath.row == 0)
+		{
+			viewCell.textLabel.text = @"Effects";
+			viewCell.detailTextLabel.text = gAudioEffectsFlag ? @"On" : @"Off";
+		}
+		else if (indexPath.row == 1)
+		{
+			viewCell.textLabel.text = @"Music";
+			viewCell.detailTextLabel.text = gAudioMusicFlag ? @"On" : @"Off";
+		}
+#else
 		UISwitch *switchControl = [[UISwitch alloc] initWithFrame:CGRectZero];
 		viewCell.accessoryView = switchControl;
 
@@ -391,6 +426,25 @@ static uint8_t currentAIModeIndex(void)
 	
 	return viewCell;
 }
+
+#if PLATFORM_TVOS
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+	if (indexPath.section == 1)
+	{
+		if (indexPath.row == 0)
+		{
+			[self _changeAudioEffectsFlag:!gAudioEffectsFlag];
+		}
+		else if (indexPath.row == 1)
+		{
+			[self _changeAudioMusicFlag:!gAudioMusicFlag];
+		}
+	}
+	
+	[tableView deselectRowAtIndexPath:indexPath animated:NO];
+}
+#endif
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
 {
@@ -789,7 +843,7 @@ static uint8_t currentAIModeIndex(void)
 		textField.font = textFont;
 		[textField setReturnKeyType:UIReturnKeyDone];
 		textField.delegate = self;
-		textField.placeholder = @"Blob";
+		
 		_onlineNameTextField = textField;
 		
 		viewCell.accessoryView = textField;
@@ -850,6 +904,7 @@ static UIView *makeMainMenu(UIView *metalView)
 	CGFloat fontSize = 0.03 * metalViewSize.width;
 	UIFont *font = [UIFont systemFontOfSize:fontSize];
 	UIColor *titleColor = cellTextColor();
+	UIColor *focusTitleColor = focusCellTextColor();
 	CGColorRef buttonBackgroundColor = cellBackgroundColor().CGColor;
 	CGFloat borderWidth = 0.0;
 	CGFloat cornerRadius = 9.0;
@@ -862,6 +917,7 @@ static UIView *makeMainMenu(UIView *metalView)
 		
 		button.titleLabel.font = font;
 		[button setTitleColor:titleColor forState:UIControlStateNormal];
+		[button setTitleColor:focusTitleColor forState:UIControlStateFocused];
 		
 		button.layer.backgroundColor = buttonBackgroundColor;
 		button.layer.borderWidth = borderWidth;
@@ -880,6 +936,7 @@ static UIView *makeMainMenu(UIView *metalView)
 		
 		button.titleLabel.font = font;
 		[button setTitleColor:titleColor forState:UIControlStateNormal];
+		[button setTitleColor:focusTitleColor forState:UIControlStateFocused];
 		
 		button.layer.backgroundColor = buttonBackgroundColor;
 		button.layer.borderWidth = borderWidth;
@@ -898,6 +955,7 @@ static UIView *makeMainMenu(UIView *metalView)
 		
 		button.titleLabel.font = font;
 		[button setTitleColor:titleColor forState:UIControlStateNormal];
+		[button setTitleColor:focusTitleColor forState:UIControlStateFocused];
 		
 		button.layer.backgroundColor = buttonBackgroundColor;
 		button.layer.borderWidth = borderWidth;
@@ -916,6 +974,7 @@ static UIView *makeMainMenu(UIView *metalView)
 		
 		button.titleLabel.font = font;
 		[button setTitleColor:titleColor forState:UIControlStateNormal];
+		[button setTitleColor:focusTitleColor forState:UIControlStateFocused];
 		
 		button.layer.backgroundColor = buttonBackgroundColor;
 		button.layer.borderWidth = borderWidth;
@@ -942,6 +1001,7 @@ static UIView *makePauseMenu(UIView *metalView)
 	CGFloat fontSize = 0.03 * metalViewSize.width;
 	UIFont *font = [UIFont systemFontOfSize:fontSize];
 	UIColor *titleColor = cellTextColor();
+	UIColor *focusTitleColor = focusCellTextColor();
 	CGColorRef buttonBackgroundColor = cellBackgroundColor().CGColor;
 	CGFloat borderWidth = 0.0;
 	CGFloat cornerRadius = 9.0;
@@ -954,6 +1014,7 @@ static UIView *makePauseMenu(UIView *metalView)
 		
 		button.titleLabel.font = font;
 		[button setTitleColor:titleColor forState:UIControlStateNormal];
+		[button setTitleColor:focusTitleColor forState:UIControlStateFocused];
 		
 		button.layer.backgroundColor = buttonBackgroundColor;
 		button.layer.borderWidth = borderWidth;
@@ -972,6 +1033,7 @@ static UIView *makePauseMenu(UIView *metalView)
 		
 		button.titleLabel.font = font;
 		[button setTitleColor:titleColor forState:UIControlStateNormal];
+		[button setTitleColor:focusTitleColor forState:UIControlStateFocused];
 		
 		button.layer.backgroundColor = buttonBackgroundColor;
 		button.layer.borderWidth = borderWidth;
@@ -1033,10 +1095,12 @@ static UIView *makeOptionsMenu(UIView *metalView)
 	tableView.dataSource = gOptionsMenuHandler;
 	tableView.delegate = gOptionsMenuHandler;
 	gOptionsMenuHandler.optionsTableView = tableView;
-	tableView.allowsSelection = NO;
+	
 	[optionsMenu addSubview:tableView];
 	
 #if !PLATFORM_TVOS
+	tableView.allowsSelection = NO;
+	
 	UIButton *cancelButton = makeCancelButton(metalViewSize);
 	[cancelButton addTarget:gOptionsMenuHandler action:@selector(navigateBack) forControlEvents:UIControlEventPrimaryActionTriggered];
 	[optionsMenu addSubview:cancelButton];
