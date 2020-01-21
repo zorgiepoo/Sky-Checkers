@@ -177,7 +177,6 @@ static void playGame(ZGWindow *window, bool tutorial)
 
 @implementation OptionsMenuHandler
 
-#if !PLATFORM_TVOS
 static uint8_t numberOfHumanPlayers(void)
 {
 	uint8_t numberOfHumans = 0;
@@ -215,6 +214,33 @@ static uint8_t numberOfHumanPlayers(void)
 	
 	return numberOfHumans;
 }
+
+#if PLATFORM_TVOS
+static uint8_t segmentedNumberOfPlayersIndex(void)
+{
+	uint8_t numberPlayers = numberOfHumanPlayers();
+	switch (numberPlayers)
+	{
+		case 0:
+			return 0;
+		default:
+			return numberPlayers - 1;
+	}
+}
+
+static uint8_t segmentedNumberOfLivesIndex(void)
+{
+	int numberOfLives = gCharacterLives;
+	switch (numberOfLives)
+	{
+		case 3:
+			return 0;
+		case 7:
+			return 2;
+		default:
+			return 1;
+	}
+}
 #endif
 
 static uint8_t currentAIModeIndex(void)
@@ -238,11 +264,8 @@ static uint8_t currentAIModeIndex(void)
 	return 0;
 }
 
-#if !PLATFORM_TVOS
-- (void)changeNumberOfHumans:(UIStepper *)stepper
+- (void)_changeNumberOfHumans:(uint8_t)humanPlayers
 {
-	uint8_t humanPlayers = (uint8_t)stepper.value;
-
 	gPinkBubbleGum.state = CHARACTER_AI_STATE;
 	gRedRover.state = CHARACTER_AI_STATE;
 	gGreenTree.state = CHARACTER_AI_STATE;
@@ -270,6 +293,12 @@ static uint8_t currentAIModeIndex(void)
 
 	[_optionsTableView reloadData];
 }
+
+#if !PLATFORM_TVOS
+- (void)changeNumberOfHumans:(UIStepper *)stepper
+{
+	[self _changeNumberOfHumans:(uint8_t)stepper.value];
+}
 #endif
 
 #if PLATFORM_TVOS
@@ -290,6 +319,41 @@ static uint8_t currentAIModeIndex(void)
 	
 	[_optionsTableView reloadData];
 }
+
+- (void)incrementNumberOfPlayers
+{
+	uint8_t numberPlayers = numberOfHumanPlayers();
+	switch (numberPlayers)
+	{
+		case 0:
+		case 1:
+		case 2:
+		case 3:
+			[self _changeNumberOfHumans:numberPlayers + 1];
+			break;
+		default:
+			[self _changeNumberOfHumans:1];
+		
+	}
+}
+
+- (void)incrementNumberOfLives
+{
+	switch (gCharacterLives)
+	{
+		case 5:
+			gCharacterLives = 7;
+			break;
+		case 7:
+			gCharacterLives = 3;
+			break;
+		default:
+			gCharacterLives = 5;
+	}
+	
+	[_optionsTableView reloadData];
+}
+
 #endif
 
 - (void)changeAIMode:(UISegmentedControl *)segmentedControl
@@ -365,7 +429,40 @@ static uint8_t currentAIModeIndex(void)
 	
 	if (indexPath.section == 0 && (indexPath.row == 0 || indexPath.row == 2))
 	{
-#if !PLATFORM_TVOS
+#if PLATFORM_TVOS
+		NSArray<NSString *> *items = nil;
+		if (indexPath.row == 0)
+		{
+			// Number of players
+			items = @[@"1", @"2", @"3", @"4"];
+		}
+		else if (indexPath.row == 2)
+		{
+			// Number of lives
+			items = @[@"3", @"5", @"7"];
+		}
+		
+		UISegmentedControl *segmentedControl = [[UISegmentedControl alloc] initWithItems:items];
+		NSDictionary *titleAttributes = @{NSFontAttributeName : textFont, NSForegroundColorAttributeName : cellTextColor()};
+		[segmentedControl setTitleTextAttributes:titleAttributes forState:UIControlStateNormal];
+		
+		[segmentedControl setSelectedSegmentTintColor:[UIColor colorWithRed:0.7 green:0.7 blue:0.7 alpha:0.3]];
+		
+		[segmentedControl setTitleTextAttributes:deselectedSegmentedControlTitleAttributes(metalViewSize) forState:UIControlStateSelected];
+		
+		if (indexPath.row == 0)
+		{
+			viewCell.textLabel.text = @"Human Players";
+			segmentedControl.selectedSegmentIndex = segmentedNumberOfPlayersIndex();
+		}
+		else if (indexPath.row == 2)
+		{
+			viewCell.textLabel.text = @"Player Lives";
+			segmentedControl.selectedSegmentIndex = segmentedNumberOfLivesIndex();
+		}
+		
+		viewCell.accessoryView = segmentedControl;
+#else
 		UIStepper *stepper = [[UIStepper alloc] init];
 		// Hack to get tint color respected
 		[stepper setDecrementImage:[stepper decrementImageForState:UIControlStateNormal] forState:UIControlStateNormal];
@@ -463,7 +560,18 @@ static uint8_t currentAIModeIndex(void)
 #if PLATFORM_TVOS
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-	if (indexPath.section == 0 && indexPath.row == 1)
+	if (indexPath.section == 0 && (indexPath.row == 0 || indexPath.row == 2))
+	{
+		if (indexPath.row == 0)
+		{
+			[self incrementNumberOfPlayers];
+		}
+		else
+		{
+			[self incrementNumberOfLives];
+		}
+	}
+	else if (indexPath.section == 0 && indexPath.row == 1)
 	{
 		[self incrementAIMode];
 	}
@@ -494,7 +602,7 @@ static uint8_t currentAIModeIndex(void)
 			UITableViewCell *viewCell = [tableView cellForRowAtIndexPath:nextIndexPath];
 			if (viewCell != nil)
 			{
-				if (nextIndexPath.section == 0 && nextIndexPath.row == 1)
+				if (nextIndexPath.section == 0)
 				{
 					UISegmentedControl *segmentedControl = (UISegmentedControl *)viewCell.accessoryView;
 					
@@ -520,7 +628,7 @@ static uint8_t currentAIModeIndex(void)
 			UITableViewCell *viewCell = [tableView cellForRowAtIndexPath:previousIndexPath];
 			if (viewCell != nil)
 			{
-				if (previousIndexPath.section == 0 && previousIndexPath.row == 1)
+				if (previousIndexPath.section == 0)
 				{
 					UISegmentedControl *segmentedControl = (UISegmentedControl *)viewCell.accessoryView;
 					[segmentedControl setTitleTextAttributes:deselectedSegmentedControlTitleAttributes(metalViewSize) forState:UIControlStateSelected];
