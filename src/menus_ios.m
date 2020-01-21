@@ -752,7 +752,11 @@ static uint8_t currentAIModeIndex(void)
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-	if (indexPath.section == 1)
+	if (indexPath.section == 0)
+	{
+		[_hostAddresstextField becomeFirstResponder];
+	}
+	else if (indexPath.section == 1)
 	{
 		UITableViewCell *viewCell = [tableView cellForRowAtIndexPath:indexPath];
 		if (viewCell.textLabel.enabled && connectToNetworkGame(_gameState))
