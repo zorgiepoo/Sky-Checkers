@@ -705,8 +705,57 @@ static uint8_t currentAIModeIndex(void)
 
 @implementation HostGameMenuHandler
 
+- (void)_changeNumberOfNetHumans:(int)newNumberOfNetHumans
+{
+	gNumberOfNetHumans = newNumberOfNetHumans;
+	[_tableView reloadData];
+}
+
+#if !PLATFORM_TVOS
+- (void)changeNumberOfNetHumans:(UIStepper *)stepper
+{
+	[self _changeNumberOfNetHumans:(int)stepper.value];
+}
+#endif
+
+#if PLATFORM_TVOS
+static uint8_t segmentedNumberOfNetNumansIndex(void)
+{
+	switch (gNumberOfNetHumans)
+	{
+		case 2:
+			return 1;
+		case 3:
+			return 2;
+		default:
+			return 0;
+	}
+}
+
+- (void)incrementNumberOfNetHumans
+{
+	switch (gNumberOfNetHumans)
+	{
+		case 1:
+		case 2:
+			[self _changeNumberOfNetHumans:gNumberOfNetHumans + 1];
+			break;
+		default:
+			[self _changeNumberOfNetHumans:1];
+	}
+}
+
+#endif
+
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
+#if PLATFORM_TVOS
+	if (indexPath.section == 0)
+	{
+		[self incrementNumberOfNetHumans];
+	}
+	else
+#endif
 	if (indexPath.section == 1)
 	{
 		if (startNetworkGame(_window))
@@ -715,15 +764,11 @@ static uint8_t currentAIModeIndex(void)
 			gCurrentMenuView = gMainMenuView;
 		}
 	}
-}
-
-#if !PLATFORM_TVOS
-- (void)changeNumberOfNetHumans:(UIStepper *)stepper
-{
-	gNumberOfNetHumans = (int)stepper.value;
-	[_tableView reloadData];
-}
+	
+#if PLATFORM_TVOS
+	[tableView deselectRowAtIndexPath:indexPath animated:NO];
 #endif
+}
 
 - (nonnull UITableViewCell *)tableView:(nonnull UITableView *)tableView cellForRowAtIndexPath:(nonnull NSIndexPath *)indexPath
 {
@@ -741,7 +786,20 @@ static uint8_t currentAIModeIndex(void)
 
 	if (indexPath.section == 0)
 	{
-#if !PLATFORM_TVOS
+#if PLATFORM_TVOS
+		UISegmentedControl *segmentedControl = [[UISegmentedControl alloc] initWithItems:@[@"1", @"2", @"3"]];
+		NSDictionary *titleAttributes = @{NSFontAttributeName : textFont, NSForegroundColorAttributeName : cellTextColor()};
+		[segmentedControl setTitleTextAttributes:titleAttributes forState:UIControlStateNormal];
+		
+		[segmentedControl setSelectedSegmentTintColor:[UIColor colorWithRed:0.7 green:0.7 blue:0.7 alpha:0.3]];
+		
+		[segmentedControl setTitleTextAttributes:deselectedSegmentedControlTitleAttributes(metalViewSize) forState:UIControlStateSelected];
+		
+		segmentedControl.selectedSegmentIndex = segmentedNumberOfNetNumansIndex();
+		
+		viewCell.textLabel.text = @"Friends Joining";
+		viewCell.accessoryView = segmentedControl;
+#else
 		UIStepper *stepper = [[UIStepper alloc] init];
 		// Hack to get tint color respected
 		[stepper setDecrementImage:[stepper decrementImageForState:UIControlStateNormal] forState:UIControlStateNormal];
@@ -784,6 +842,9 @@ static uint8_t currentAIModeIndex(void)
 #if PLATFORM_TVOS
 - (void)tableView:(UITableView *)tableView didUpdateFocusInContext:(UITableViewFocusUpdateContext *)context withAnimationCoordinator:(UIFocusAnimationCoordinator *)coordinator
 {
+	UIView *metalView = metalViewForWindow(_window);
+	CGSize metalViewSize = metalView.bounds.size;
+	
 	{
 		NSIndexPath *nextIndexPath = [context nextFocusedIndexPath];
 		if (nextIndexPath != nil)
@@ -791,6 +852,15 @@ static uint8_t currentAIModeIndex(void)
 			UITableViewCell *viewCell = [tableView cellForRowAtIndexPath:nextIndexPath];
 			if (viewCell != nil)
 			{
+				if (nextIndexPath.section == 0)
+				{
+					UISegmentedControl *segmentedControl = (UISegmentedControl *)viewCell.accessoryView;
+					
+					UIFont *boldTextFont = [UIFont boldSystemFontOfSize:0.0288 * metalViewSize.height];
+					UIColor *selectedColor = [UIColor colorWithRed:0.5 green:0.5 blue:0.5 alpha:1.0];
+					NSDictionary *selectedTitleAttributes = @{NSFontAttributeName : boldTextFont, NSForegroundColorAttributeName : selectedColor};
+					[segmentedControl setTitleTextAttributes:selectedTitleAttributes forState:UIControlStateSelected];
+				}
 				viewCell.textLabel.textColor = focusCellTextColor();
 			}
 		}
@@ -803,6 +873,11 @@ static uint8_t currentAIModeIndex(void)
 			UITableViewCell *viewCell = [tableView cellForRowAtIndexPath:previousIndexPath];
 			if (viewCell != nil)
 			{
+				if (previousIndexPath.section == 0)
+				{
+					UISegmentedControl *segmentedControl = (UISegmentedControl *)viewCell.accessoryView;
+					[segmentedControl setTitleTextAttributes:deselectedSegmentedControlTitleAttributes(metalViewSize) forState:UIControlStateSelected];
+				}
 				viewCell.textLabel.textColor = cellTextColor();
 			}
 		}
