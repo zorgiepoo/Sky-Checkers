@@ -263,6 +263,26 @@ static uint8_t currentAIModeIndex(void)
 }
 #endif
 
+#if PLATFORM_TVOS
+- (void)incrementAIMode
+{
+	if (gAIMode == AI_MEDIUM_MODE)
+	{
+		gAIMode = AI_HARD_MODE;
+	}
+	else if (gAIMode == AI_EASY_MODE)
+	{
+		gAIMode = AI_MEDIUM_MODE;
+	}
+	else
+	{
+		gAIMode = AI_EASY_MODE;
+	}
+	
+	[_optionsTableView reloadData];
+}
+#endif
+
 - (void)changeAIMode:(UISegmentedControl *)segmentedControl
 {
 	NSInteger segmentIndex = segmentedControl.selectedSegmentIndex;
@@ -375,7 +395,14 @@ static uint8_t currentAIModeIndex(void)
 		UISegmentedControl *segmentedControl = [[UISegmentedControl alloc] initWithItems:@[@"Easy", @"Medium", @"Hard"]];
 		NSDictionary *titleAttributes = @{NSFontAttributeName : textFont, NSForegroundColorAttributeName : cellTextColor()};
 		[segmentedControl setTitleTextAttributes:titleAttributes forState:UIControlStateNormal];
-		[segmentedControl setTitleTextAttributes:titleAttributes forState:UIControlStateSelected];
+		
+#if PLATFORM_TVOS
+		UIFont *boldTextFont = [UIFont boldSystemFontOfSize:0.0288 * metalViewSize.height];
+		UIColor *selectedColor = [UIColor colorWithRed:0.5 green:0.5 blue:0.5 alpha:1.0];
+		NSDictionary *selectedTitleAttributes = @{NSFontAttributeName : boldTextFont, NSForegroundColorAttributeName : selectedColor};
+		[segmentedControl setTitleTextAttributes:selectedTitleAttributes forState:UIControlStateSelected];
+#endif
+		
 		[segmentedControl setSelectedSegmentTintColor:[UIColor colorWithRed:0.7 green:0.7 blue:0.7 alpha:0.3]];
 		
 		segmentedControl.selectedSegmentIndex = currentAIModeIndex();
@@ -430,7 +457,11 @@ static uint8_t currentAIModeIndex(void)
 #if PLATFORM_TVOS
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-	if (indexPath.section == 1)
+	if (indexPath.section == 0 && indexPath.row == 1)
+	{
+		[self incrementAIMode];
+	}
+	else if (indexPath.section == 1)
 	{
 		if (indexPath.row == 0)
 		{
