@@ -1078,6 +1078,43 @@ static uint8_t currentAIModeIndex(void)
 	setSectionHeaderFont(_window, view);
 }
 
+#if PLATFORM_TVOS
+- (void)tableView:(UITableView *)tableView didUpdateFocusInContext:(UITableViewFocusUpdateContext *)context withAnimationCoordinator:(UIFocusAnimationCoordinator *)coordinator
+{
+	{
+		NSIndexPath *nextIndexPath = [context nextFocusedIndexPath];
+		if (nextIndexPath != nil)
+		{
+			UITableViewCell *viewCell = [tableView cellForRowAtIndexPath:nextIndexPath];
+			if (viewCell != nil)
+			{
+				if (nextIndexPath.section == 0)
+				{
+					_onlineNameTextField.textColor = focusCellTextColor();
+				}
+				viewCell.textLabel.textColor = focusCellTextColor();
+			}
+		}
+	}
+	
+	{
+		NSIndexPath *previousIndexPath = [context previouslyFocusedIndexPath];
+		if (previousIndexPath != nil)
+		{
+			UITableViewCell *viewCell = [tableView cellForRowAtIndexPath:previousIndexPath];
+			if (viewCell != nil)
+			{
+				if (previousIndexPath.section == 0)
+				{
+					_onlineNameTextField.textColor = cellTextColor();
+				}
+				viewCell.textLabel.textColor = cellTextColor();
+			}
+		}
+	}
+}
+#endif
+
 - (void)navigateBack
 {
 	UIView *metalView = metalViewForWindow(_window);
