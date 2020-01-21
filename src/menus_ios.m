@@ -790,7 +790,6 @@ static uint8_t currentAIModeIndex(void)
 		textField.font = textFont;
 		[textField setReturnKeyType:UIReturnKeyDone];
 		textField.delegate = self;
-		textField.placeholder = @"localhost";
 		textField.autocorrectionType = UITextAutocorrectionTypeNo;
 		textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
 		textField.keyboardType = UIKeyboardTypeNumbersAndPunctuation;
