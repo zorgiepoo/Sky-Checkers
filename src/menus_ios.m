@@ -58,6 +58,15 @@ static UIColor *cellBackgroundColor(void)
 	return [UIColor colorWithRed:0.33 green:0.33 blue:0.33 alpha:1.0];
 }
 
+#if PLATFORM_TVOS
+static NSDictionary *deselectedSegmentedControlTitleAttributes(CGSize metalViewSize)
+{
+	UIFont *boldTextFont = [UIFont boldSystemFontOfSize:0.0288 * metalViewSize.height];
+	UIColor *selectedColor = [UIColor colorWithRed:0.9 green:0.9 blue:0.9 alpha:1.0];
+	return @{NSFontAttributeName : boldTextFont, NSForegroundColorAttributeName : selectedColor};
+}
+#endif
+
 static void setSectionHeaderFont(ZGWindow *window, UIView *view)
 {
 	UIView *metalView = metalViewForWindow(window);
@@ -396,14 +405,11 @@ static uint8_t currentAIModeIndex(void)
 		NSDictionary *titleAttributes = @{NSFontAttributeName : textFont, NSForegroundColorAttributeName : cellTextColor()};
 		[segmentedControl setTitleTextAttributes:titleAttributes forState:UIControlStateNormal];
 		
-#if PLATFORM_TVOS
-		UIFont *boldTextFont = [UIFont boldSystemFontOfSize:0.0288 * metalViewSize.height];
-		UIColor *selectedColor = [UIColor colorWithRed:0.5 green:0.5 blue:0.5 alpha:1.0];
-		NSDictionary *selectedTitleAttributes = @{NSFontAttributeName : boldTextFont, NSForegroundColorAttributeName : selectedColor};
-		[segmentedControl setTitleTextAttributes:selectedTitleAttributes forState:UIControlStateSelected];
-#endif
-		
 		[segmentedControl setSelectedSegmentTintColor:[UIColor colorWithRed:0.7 green:0.7 blue:0.7 alpha:0.3]];
+		
+#if PLATFORM_TVOS
+		[segmentedControl setTitleTextAttributes:deselectedSegmentedControlTitleAttributes(metalViewSize) forState:UIControlStateSelected];
+#endif
 		
 		segmentedControl.selectedSegmentIndex = currentAIModeIndex();
 		
@@ -475,6 +481,61 @@ static uint8_t currentAIModeIndex(void)
 	
 	[tableView deselectRowAtIndexPath:indexPath animated:NO];
 }
+
+- (void)tableView:(UITableView *)tableView didUpdateFocusInContext:(UITableViewFocusUpdateContext *)context withAnimationCoordinator:(UIFocusAnimationCoordinator *)coordinator
+{
+	UIView *metalView = metalViewForWindow(_window);
+	CGSize metalViewSize = metalView.bounds.size;
+	
+	{
+		NSIndexPath *nextIndexPath = [context nextFocusedIndexPath];
+		if (nextIndexPath != nil)
+		{
+			UITableViewCell *viewCell = [tableView cellForRowAtIndexPath:nextIndexPath];
+			if (viewCell != nil)
+			{
+				if (nextIndexPath.section == 0 && nextIndexPath.row == 1)
+				{
+					UISegmentedControl *segmentedControl = (UISegmentedControl *)viewCell.accessoryView;
+					
+					UIFont *boldTextFont = [UIFont boldSystemFontOfSize:0.0288 * metalViewSize.height];
+					UIColor *selectedColor = [UIColor colorWithRed:0.5 green:0.5 blue:0.5 alpha:1.0];
+					NSDictionary *selectedTitleAttributes = @{NSFontAttributeName : boldTextFont, NSForegroundColorAttributeName : selectedColor};
+					[segmentedControl setTitleTextAttributes:selectedTitleAttributes forState:UIControlStateSelected];
+				}
+				else if (nextIndexPath.section == 1)
+				{
+					viewCell.detailTextLabel.textColor = focusCellTextColor();
+				}
+				
+				viewCell.textLabel.textColor = focusCellTextColor();
+			}
+		}
+	}
+	
+	{
+		NSIndexPath *previousIndexPath = [context previouslyFocusedIndexPath];
+		if (previousIndexPath != nil)
+		{
+			UITableViewCell *viewCell = [tableView cellForRowAtIndexPath:previousIndexPath];
+			if (viewCell != nil)
+			{
+				if (previousIndexPath.section == 0 && previousIndexPath.row == 1)
+				{
+					UISegmentedControl *segmentedControl = (UISegmentedControl *)viewCell.accessoryView;
+					[segmentedControl setTitleTextAttributes:deselectedSegmentedControlTitleAttributes(metalViewSize) forState:UIControlStateSelected];
+				}
+				else if (previousIndexPath.section == 1)
+				{
+					viewCell.detailTextLabel.textColor = cellTextColor();
+				}
+				
+				viewCell.textLabel.textColor = cellTextColor();
+			}
+		}
+	}
+}
+
 #endif
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
