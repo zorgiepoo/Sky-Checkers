@@ -197,7 +197,7 @@ void loadCharacterTextures(Renderer *renderer)
 {
 	TextureData textureData = loadTextureData("Data/Textures/face.bmp");
 	
-	_loadCharacterTextures(renderer, &gPinkBubbleGum, copyTextureData(textureData), 0.6f, 41, 21, 164);
+	_loadCharacterTextures(renderer, &gPinkBubbleGum, copyTextureData(textureData), 0.6f, 60, 36, 51);
 	_loadCharacterTextures(renderer, &gRedRover, copyTextureData(textureData), 0.65f, 18, 9, 73);
 	_loadCharacterTextures(renderer, &gGreenTree, copyTextureData(textureData), 0.6f, 20, 20, 20);
 	_loadCharacterTextures(renderer, &gBlueLightning, textureData, 0.65f, 32, 16, 126);
