@@ -1050,7 +1050,7 @@ static void drawScene(Renderer *renderer)
 			
 			//-10.792 to 10.792 for z=-25.0f without aspect ratio taken in account in x direction
 			const float scaleX = 10.792f * computeProjectionAspectRatio(renderer);
-			ZGFloat touchInputX = (ZGFloat)(scaleX * 2 * 0.1f + -scaleX);
+			ZGFloat touchInputX = (ZGFloat)(scaleX * 2 * 0.11f + -scaleX);
 			ZGFloat touchInputY = -1.0f;
 			
 			mat4_t upwardMatrix = m4_translation((vec3_t){touchInputX, touchInputY + arrowOffset, -25.0f});
