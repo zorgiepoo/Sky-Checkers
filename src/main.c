@@ -1184,7 +1184,7 @@ static void drawScene(Renderer *renderer)
 #endif
 					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, knockOffScale, "Knock everyone off!");
 					
-#if PLATFORM_IOS && !PLATFORM_TVOS
+#if PLATFORM_IOS
 					if (gTutorialStage == 5)
 					{
 						const char *subtext = "No more visuals.";
