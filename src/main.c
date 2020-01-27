@@ -1175,7 +1175,7 @@ static void drawScene(Renderer *renderer)
 #endif
 					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, fireScale, text);
 				}
-				else if (gTutorialStage == 4)
+				else if (gTutorialStage == 4 || gTutorialStage == 5)
 				{
 #if PLATFORM_IOS
 					ZGFloat knockOffScale = scale * 1.5f;
@@ -1183,16 +1183,22 @@ static void drawScene(Renderer *renderer)
 					ZGFloat knockOffScale = scale;
 #endif
 					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, knockOffScale, "Knock everyone off!");
-				}
-				else if (gTutorialStage == 5)
-				{
+					
 #if PLATFORM_IOS && !PLATFORM_TVOS
-					const char *text = "You're a pro! No more visuals.";
-					ZGFloat endTextScale = scale * 1.5f;
-#else
-					const char *text = "You're a pro!";
-					ZGFloat endTextScale = scale;
+					if (gTutorialStage == 5)
+					{
+						const char *subtext = "No more visuals.";
+						
+						mat4_t tutorialSubtextModelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, -1.3f, 0.0f}), tutorialModelViewMatrix);
+						drawStringScaled(renderer, tutorialSubtextModelViewMatrix, textColor, scale, subtext);
+					}
 #endif
+				}
+				else if (gTutorialStage == 6)
+				{
+					const char *text = "You're a pro!";
+					ZGFloat endTextScale = scale * 1.5f;
+					
 					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, endTextScale, text);
 					
 #if PLATFORM_IOS

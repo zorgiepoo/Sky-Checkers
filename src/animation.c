@@ -170,9 +170,17 @@ void animate(ZGWindow *window, double timeDelta, GameState gameState)
 			else if (gTutorialStage == 4)
 			{
 				int totalLives = gPinkBubbleGum.lives + gRedRover.lives + gGreenTree.lives + gBlueLightning.lives;
-				if (totalLives <= 1)
+				if (totalLives <= 2)
 				{
 					gTutorialStage = 5;
+				}
+			}
+			else if (gTutorialStage == 5)
+			{
+				int totalLives = gPinkBubbleGum.lives + gRedRover.lives + gGreenTree.lives + gBlueLightning.lives;
+				if (totalLives <= 1)
+				{
+					gTutorialStage = 6;
 				}
 			}
 		}
