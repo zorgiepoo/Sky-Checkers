@@ -1134,7 +1134,7 @@ static void drawScene(Renderer *renderer)
 					const char *text = "Touch outside the board. Swipe ↑→↓←.";
 					ZGFloat moveScale = scale;
 #else
-					const char *text = "Move around ⬆️➡️⬇️⬅️.";
+					const char *text = "Move with Arrow Keys.";
 					ZGFloat moveScale = scale;
 #endif
 					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, moveScale, text);
