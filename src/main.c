@@ -1204,10 +1204,12 @@ static void drawScene(Renderer *renderer)
 #if PLATFORM_IOS
 					const char *subtext = "Pause and Exit to end the Tutorial.";
 #else
-					const char *subtext = "Hit Escape to Exit the Tutorial.";
+					const char *subtext = "Escape to Exit the Tutorial.";
 #endif
-					mat4_t tutorialSubtextModelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, -1.3f, 0.0f}), tutorialModelViewMatrix);
-					drawStringScaled(renderer, tutorialSubtextModelViewMatrix, textColor, endTextScale, subtext);
+					ZGFloat subtextScale = scale;
+					
+					mat4_t tutorialSubtextModelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, -1.4f, 0.0f}), tutorialModelViewMatrix);
+					drawStringScaled(renderer, tutorialSubtextModelViewMatrix, textColor, subtextScale, subtext);
 				}
 			}
 			else if (!gGameHasStarted)
