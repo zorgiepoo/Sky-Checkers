@@ -51,6 +51,7 @@ bool gGameHasStarted;
 bool gGameShouldReset;
 int32_t gGameStartNumber;
 uint8_t gTutorialStage;
+float gTutorialCoverTimer;
 int gGameWinner;
 
 GamepadManager *gGamepadManager;
@@ -149,6 +150,38 @@ static void drawBlackBox(Renderer *renderer)
 	mat4_t modelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, 0.0f, -22.0f}), m4_scaling((vec3_t){computeProjectionAspectRatio(renderer), 1.0f, 1.0f}));
 	
 	drawVerticesFromIndices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertexArrayObject, indicesBufferObject, 6, (color4_t){0.0f, 0.0f, 0.0f, 0.7f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
+}
+
+static void drawTutorialCover(Renderer *renderer)
+{
+	static BufferArrayObject vertexArrayObject;
+	static BufferObject indicesBufferObject;
+	static bool initializedBuffers;
+	
+	if (!initializedBuffers)
+	{
+		const ZGFloat vertices[] =
+		{
+			-8.0f, 27.5f, 0.0f, 1.0,
+			8.0f, 27.5f, 0.0f, 1.0,
+			8.0f, 10.0f, 0.0f, 1.0,
+			-8.0f, 10.0f, 0.0f, 1.0
+		};
+		
+		vertexArrayObject = createVertexArrayObject(renderer, vertices, sizeof(vertices));
+		indicesBufferObject = rectangleIndexBufferObject(renderer);
+		
+		initializedBuffers = true;
+	}
+	
+	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((ZGFloat)M_PI / 180.0f));
+	mat4_t worldTranslationMatrix = m4_translation((vec3_t){-7.0f, 12.5f, -25.0f});
+	mat4_t worldMatrix = m4_mul(worldRotationMatrix, worldTranslationMatrix);
+	
+	mat4_t modelTranslationMatrix = m4_translation((vec3_t){7.0f, -14.0f, 4.0f});
+	mat4_t finalMatrix = m4_mul(worldMatrix, modelTranslationMatrix);
+	
+	drawVerticesFromIndices(renderer, finalMatrix, RENDERER_TRIANGLE_MODE, vertexArrayObject, indicesBufferObject, 6, (color4_t){0.0f, 0.0f, 0.0f, 0.8f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
 }
 
 static void initScene(Renderer *renderer)
@@ -1020,7 +1053,7 @@ static void drawScene(Renderer *renderer)
 		
 		// Render touch input visuals at z = -25.0f
 #if PLATFORM_IOS
-		if (gGameState == GAME_STATE_TUTORIAL && gTutorialStage >= 1 && gTutorialStage < 5)
+		if (gGameState == GAME_STATE_TUTORIAL && gTutorialStage >= 1 && gTutorialStage < 5 && gTutorialCoverTimer <= 0.0f)
 		{
 			pushDebugGroup(renderer, "Touch Input");
 			
@@ -1069,7 +1102,7 @@ static void drawScene(Renderer *renderer)
 		}
 		
 #if !PLATFORM_TVOS
-		if (gGameState == GAME_STATE_TUTORIAL && gTutorialStage >= 3 && gTutorialStage < 5)
+		if (gGameState == GAME_STATE_TUTORIAL && gTutorialStage >= 3 && gTutorialStage < 5 && gTutorialCoverTimer <= 0.0f)
 		{
 			//-10.792 to 10.792 for z=-25.0f without aspect ratio taken in account in x direction
 			const float scaleX = 10.792f * computeProjectionAspectRatio(renderer);
@@ -1386,6 +1419,14 @@ static void drawScene(Renderer *renderer)
 				popDebugGroup(renderer);
 			}
 #endif
+		}
+		
+		if (gGameState == GAME_STATE_TUTORIAL && gTutorialCoverTimer > 0.0f)
+		{
+			// Tutorial cover renders around z = -21.0 after a world rotation
+			pushDebugGroup(renderer, "Tutorial Cover");
+			drawTutorialCover(renderer);
+			popDebugGroup(renderer);
 		}
 		
 #if PLATFORM_IOS && !PLATFORM_TVOS

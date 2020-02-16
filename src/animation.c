@@ -91,6 +91,11 @@ void animate(ZGWindow *window, double timeDelta, GameState gameState)
 	
 	bool tutorialState = (gameState == GAME_STATE_TUTORIAL);
 	
+	if (tutorialState && gTutorialCoverTimer > 0.0f)
+	{
+		gTutorialCoverTimer -= (float)timeDelta;
+	}
+	
 	// Update gSecondTimer and change gLastSecond
 	if ((int)gLastSecond != (int)gSecondTimer)
 	{
@@ -98,9 +103,13 @@ void animate(ZGWindow *window, double timeDelta, GameState gameState)
 		
 		if (tutorialState)
 		{
-			if (gTutorialStage == 0 && gSecondTimer >= 3.0f)
+			if (gTutorialStage == 0)
 			{
-				gTutorialStage = 1;
+				if (gSecondTimer >= 3.0f)
+				{
+					gTutorialStage = 1;
+					gTutorialCoverTimer = 4.0f;
+				}
 			}
 			else if ((gTutorialStage == 1 || gTutorialStage == 2) && gSecondTimer >= 4.0f)
 			{
@@ -151,10 +160,12 @@ void animate(ZGWindow *window, double timeDelta, GameState gameState)
 					gTutorialStage = 3;
 					// Allow firing now
 					gGameHasStarted = true;
+					gTutorialCoverTimer = 4.0f;
 				}
-				else if (maxHumanDistance >= 30.0f)
+				else if (gTutorialStage < 2 && maxHumanDistance >= 30.0f)
 				{
 					gTutorialStage = 2;
+					gTutorialCoverTimer = 4.0f;
 				}
 			}
 			else if (gTutorialStage == 3)
@@ -181,6 +192,7 @@ void animate(ZGWindow *window, double timeDelta, GameState gameState)
 				if (totalLives <= 1)
 				{
 					gTutorialStage = 6;
+					gTutorialCoverTimer = 4.0f;
 				}
 			}
 		}

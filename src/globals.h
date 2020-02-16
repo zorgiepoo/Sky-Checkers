@@ -49,6 +49,7 @@ extern bool gGameShouldReset;
 extern int gGameWinner;
 extern int32_t gGameStartNumber;
 extern uint8_t gTutorialStage;
+extern float gTutorialCoverTimer;
 extern bool gDrawFPS;
 extern bool gDrawPings;
 
