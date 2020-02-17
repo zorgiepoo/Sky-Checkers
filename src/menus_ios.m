@@ -98,7 +98,29 @@ static void playGame(ZGWindow *window, bool tutorial)
 
 - (void)playGame
 {
-	playGame(_window, false);
+	if (gPlayedGame)
+	{
+		playGame(_window, false);
+	}
+	else
+	{
+		UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"How to Play" message:@"Do you want to learn the controls and play the tutorial?" preferredStyle:UIAlertControllerStyleAlert];
+		
+		[alertController addAction:[UIAlertAction actionWithTitle:@"Play Tutorial" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+			dispatch_async(dispatch_get_main_queue(), ^{
+				playGame(self->_window, true);
+			});
+		}]];
+		
+		[alertController addAction:[UIAlertAction actionWithTitle:@"Skip" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+			dispatch_async(dispatch_get_main_queue(), ^{
+				playGame(self->_window, false);
+			});
+		}]];
+		
+		UIWindow *window = (__bridge UIWindow *)(ZGWindowHandle(_window));
+		[window.rootViewController presentViewController:alertController animated:YES completion:nil];
+	}
 }
 
 - (void)playTutorial
@@ -1313,7 +1335,7 @@ static UIView *makeMainMenu(UIView *metalView)
 	
 	{
 		UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-		[button setTitle:@"Tutorial" forState:UIControlStateNormal];
+		[button setTitle:@"Online" forState:UIControlStateNormal];
 		
 		button.titleLabel.font = font;
 		[button setTitleColor:titleColor forState:UIControlStateNormal];
@@ -1325,14 +1347,14 @@ static UIView *makeMainMenu(UIView *metalView)
 		
 		button.frame = CGRectMake(metalViewSize.width * 0.5f - buttonWidth / 2.0, metalViewSize.height * 0.55 - buttonHeight / 2.0, buttonWidth, buttonHeight);
 		
-		[button addTarget:gMainMenuHandler action:@selector(playTutorial) forControlEvents:UIControlEventPrimaryActionTriggered];
+		[button addTarget:gMainMenuHandler action:@selector(showOnlineMenu) forControlEvents:UIControlEventPrimaryActionTriggered];
 		
 		[menuView addSubview:button];
 	}
 	
 	{
 		UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-		[button setTitle:@"Online" forState:UIControlStateNormal];
+		[button setTitle:@"Tutorial" forState:UIControlStateNormal];
 		
 		button.titleLabel.font = font;
 		[button setTitleColor:titleColor forState:UIControlStateNormal];
@@ -1344,7 +1366,7 @@ static UIView *makeMainMenu(UIView *metalView)
 		
 		button.frame = CGRectMake(metalViewSize.width * 0.5f - buttonWidth / 2.0, metalViewSize.height * 0.7 - buttonHeight / 2.0, buttonWidth, buttonHeight);
 		
-		[button addTarget:gMainMenuHandler action:@selector(showOnlineMenu) forControlEvents:UIControlEventPrimaryActionTriggered];
+		[button addTarget:gMainMenuHandler action:@selector(playTutorial) forControlEvents:UIControlEventPrimaryActionTriggered];
 		
 		[menuView addSubview:button];
 	}

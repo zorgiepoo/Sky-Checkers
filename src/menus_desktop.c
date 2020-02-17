@@ -331,21 +331,6 @@ void playGameAction(void *context)
 	initGame(menuContext->window, true, false);
 }
 
-void drawTutorialMenu(Renderer *renderer, color4_t preferredColor)
-{
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.00f, -20.00f});
-	drawString(renderer, modelViewMatrix, preferredColor, 14.0f / 14.0f, 5.0f / 14.0f, "Tutorial");
-}
-
-void tutorialMenuAction(void *context)
-{
-	addSubMenu(gTutorialMenu, gPauseResumeMenu);
-	addSubMenu(gTutorialMenu, gPauseExitMenu);
-	
-	GameMenuContext *menuContext = context;
-	playTutorial(menuContext->window);
-}
-
 void drawPauseResumeMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f / 14.0f, 15.0f / 14.0f, -20.0f});
@@ -377,7 +362,7 @@ void pauseExitMenuAction(void *context)
 
 void drawNetworkPlayMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -1.07f, -20.00f});
+	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.0f, -20.00f});
 	drawString(renderer, modelViewMatrix, preferredColor, 14.0f / 14.0f, 5.0f / 14.0f, "Online");
 }
 
@@ -547,6 +532,21 @@ void connectToNetworkGameMenuAction(void *context)
 	
 	GameMenuContext *menuContext = context;
 	connectToNetworkGame(menuContext->gameState);
+}
+
+void drawTutorialMenu(Renderer *renderer, color4_t preferredColor)
+{
+	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -1.07f, -20.00f});
+	drawString(renderer, modelViewMatrix, preferredColor, 14.0f / 14.0f, 5.0f / 14.0f, "Tutorial");
+}
+
+void tutorialMenuAction(void *context)
+{
+	addSubMenu(gTutorialMenu, gPauseResumeMenu);
+	addSubMenu(gTutorialMenu, gPauseExitMenu);
+	
+	GameMenuContext *menuContext = context;
+	playTutorial(menuContext->window);
 }
 
 void drawGameOptionsMenu(Renderer *renderer, color4_t preferredColor)
@@ -1059,7 +1059,6 @@ void initMenus(ZGWindow *window, GameState *gameState, void (*exitGame)(ZGWindow
 	initMainMenu();
 	
 	gPlayMenu =									calloc(1, sizeof(Menu));
-	gTutorialMenu =								calloc(1, sizeof(Menu));
 	gPauseResumeMenu = 							calloc(1, sizeof(Menu));
 	gPauseExitMenu = 							calloc(1, sizeof(Menu));
 	Menu *networkPlayMenu =						calloc(1, sizeof(Menu));
@@ -1070,6 +1069,7 @@ void initMenus(ZGWindow *window, GameState *gameState, void (*exitGame)(ZGWindow
 	Menu *networkUserNameMenu =					calloc(1, sizeof(Menu));
 	Menu *networkAddressFieldMenu =				calloc(1, sizeof(Menu));
 	gConnectToNetworkGameMenu =					calloc(1, sizeof(Menu));
+	gTutorialMenu =								calloc(1, sizeof(Menu));
 	Menu *gameOptionsMenu =						calloc(1, sizeof(Menu));
 	Menu *playerOptionsMenu =					calloc(1, sizeof(Menu));
 	Menu *pinkBubbleGumPlayerOptionsMenu =		calloc(1, sizeof(Menu));
@@ -1091,9 +1091,6 @@ void initMenus(ZGWindow *window, GameState *gameState, void (*exitGame)(ZGWindow
 	// set action and drawing functions
 	gPlayMenu->draw = drawPlayMenu;
 	gPlayMenu->action = playGameAction;
-	
-	gTutorialMenu->draw = drawTutorialMenu;
-	gTutorialMenu->action = tutorialMenuAction;
 	
 	gPauseResumeMenu->draw = drawPauseResumeMenu;
 	gPauseResumeMenu->action = pauseResumeMenuAction;
@@ -1124,6 +1121,9 @@ void initMenus(ZGWindow *window, GameState *gameState, void (*exitGame)(ZGWindow
 	
 	gConnectToNetworkGameMenu->draw = drawConnectToNetworkGameMenu;
 	gConnectToNetworkGameMenu->action = connectToNetworkGameMenuAction;
+	
+	gTutorialMenu->draw = drawTutorialMenu;
+	gTutorialMenu->action = tutorialMenuAction;
 	
 	gameOptionsMenu->draw = drawGameOptionsMenu;
 	gameOptionsMenu->action = gameOptionsMenuAction;
@@ -1244,8 +1244,8 @@ void initMenus(ZGWindow *window, GameState *gameState, void (*exitGame)(ZGWindow
 		
 	// Add Menus
 	addSubMenu(&gMainMenu, gPlayMenu);
-	addSubMenu(&gMainMenu, gTutorialMenu);
 	addSubMenu(&gMainMenu, networkPlayMenu);
+	addSubMenu(&gMainMenu, gTutorialMenu);
 	addSubMenu(&gMainMenu, gameOptionsMenu);
 	addSubMenu(&gMainMenu, quitMenu);
 	

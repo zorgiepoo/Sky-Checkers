@@ -44,6 +44,7 @@ typedef struct
 void initGame(ZGWindow *window, bool firstGame, bool tutorial);
 void endGame(ZGWindow *window, bool lastGame);
 
+extern bool gPlayedGame;
 extern bool gGameHasStarted;
 extern bool gGameShouldReset;
 extern int gGameWinner;

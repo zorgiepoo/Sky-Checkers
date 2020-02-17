@@ -57,6 +57,9 @@ int gGameWinner;
 GamepadManager *gGamepadManager;
 static GamepadIndex gGamepads[4] = {INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX};
 
+// Has the user played the game once?
+bool gPlayedGame = false;
+
 // Console flag indicating if we can use the console
 bool gConsoleFlag = false;
 
@@ -496,6 +499,13 @@ static void readDefaults(void)
 	int audioMusicFlag = 0;
 	if (fscanf(fp, "Music: %i\n", &audioMusicFlag) < 1) goto cleanup;
 	gAudioMusicFlag = (audioMusicFlag != 0);
+	
+	int playedGame = 0;
+	if (defaultsVersion > 4)
+	{
+		if (fscanf(fp, "\nPlayed: %i\n", &playedGame) < 1) goto cleanup;
+		gPlayedGame = (playedGame != 0);
+	}
 
 	gValidDefaults = true;
 cleanup:
@@ -586,15 +596,19 @@ static void writeDefaults(Renderer *renderer)
 	fprintf(fp, "Audio effects: %i\n", gAudioEffectsFlag);
 	fprintf(fp, "Music: %i\n", gAudioMusicFlag);
 	
+	fprintf(fp, "\nPlayed: %i\n", gPlayedGame);
+	
 	// If defaults version ever gets > 9, I may have to adjust the defaults reading code
 	// I doubt this will ever happen though
-	fprintf(fp, "\nDefaults version: 4\n");
+	fprintf(fp, "\nDefaults version: 5\n");
 
 	fclose(fp);
 }
 
 void initGame(ZGWindow *window, bool firstGame, bool tutorial)
 {
+	gPlayedGame = true;
+	
 	loadTiles();
 
 	loadCharacter(&gRedRover);
