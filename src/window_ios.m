@@ -21,8 +21,12 @@
 #include "time.h"
 #import <UIKit/UIKit.h>
 
+#if PLATFORM_TVOS
+#define ZGMenuTapRecognizerName @"ZGMenuTapRecognizerName"
+#else
 #define ZGTapRecognizerName @"ZGTapRecognizerName"
 #define ZGPannedRecognizerName @"ZGPannedRecognizerName"
+#endif
 
 @interface ZGViewController : UIViewController <UIGestureRecognizerDelegate>
 
@@ -34,8 +38,12 @@
 @implementation ZGViewController
 {
 	CGRect _frame;
+#if PLATFORM_TVOS
+	UITapGestureRecognizer *_menuTapGestureRecognizer;
+#else
 	UIPanGestureRecognizer *_panGestureRecognizer;
 	UITapGestureRecognizer *_tapGestureRecognizer;
+#endif
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -56,6 +64,27 @@
 	self.view = view;
 }
 
+#if PLATFORM_TVOS
+- (void)installMenuGesture
+{
+	UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(menuGestureTapped:)];
+	
+	tapGestureRecognizer.name = ZGMenuTapRecognizerName;
+	tapGestureRecognizer.allowedPressTypes = @[@(UIPressTypeMenu)];
+	_menuTapGestureRecognizer = tapGestureRecognizer;
+	
+	[self.view addGestureRecognizer:tapGestureRecognizer];
+}
+
+- (void)uninstallMenuGesture
+{
+	if (_menuTapGestureRecognizer != nil)
+	{
+		[self.view removeGestureRecognizer:_menuTapGestureRecognizer];
+		_menuTapGestureRecognizer = nil;
+	}
+}
+#else
 - (void)installTouchGestures
 {
 	UIView *view = self.view;
@@ -63,9 +92,7 @@
 	UIPanGestureRecognizer *panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(viewGesturePanned:)];
 	
 	panGestureRecognizer.name = ZGPannedRecognizerName;
-#if !PLATFORM_TVOS
 	panGestureRecognizer.maximumNumberOfTouches = 1;
-#endif
 	panGestureRecognizer.delegate = self;
 	_panGestureRecognizer = panGestureRecognizer;
 	
@@ -96,7 +123,22 @@
 		_tapGestureRecognizer = nil;
 	}
 }
+#endif
 
+#if PLATFORM_TVOS
+- (void)menuGestureTapped:(UITapGestureRecognizer *)tapGestureRecognizer
+{
+	if (tapGestureRecognizer.state == UIGestureRecognizerStateEnded)
+	{
+		if (_touchEventHandler != NULL)
+		{
+			ZGTouchEvent event = {};
+			event.type = ZGTouchEventTypeMenuTap;
+			_touchEventHandler(event, _touchEventContext);
+		}
+	}
+}
+#else
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer;
 {
 	NSArray<NSString *> *gestureNames = @[ZGTapRecognizerName, ZGPannedRecognizerName];
@@ -159,7 +201,6 @@
 	}
 }
 
-#if !PLATFORM_TVOS
 - (BOOL)prefersStatusBarHidden
 {
 	return YES;
@@ -207,6 +248,26 @@ void ZGSetTouchEventHandler(ZGWindow *windowRef, void *context, void (*touchEven
 	viewController.touchEventContext = context;
 }
 
+#if PLATFORM_TVOS
+void ZGInstallMenuGesture(ZGWindow *windowRef)
+{
+	UIWindow *window = (__bridge UIWindow *)(windowRef);
+	ZGViewController *viewController = (ZGViewController *)window.rootViewController;
+	assert([viewController isKindOfClass:[ZGViewController class]]);
+	
+	[viewController installMenuGesture];
+}
+
+void ZGUninstallMenuGesture(ZGWindow *windowRef)
+{
+	UIWindow *window = (__bridge UIWindow *)(windowRef);
+	ZGViewController *viewController = (ZGViewController *)window.rootViewController;
+	assert([viewController isKindOfClass:[ZGViewController class]]);
+	
+	[viewController uninstallMenuGesture];
+}
+
+#else
 void ZGInstallTouchGestures(ZGWindow *windowRef)
 {
 	UIWindow *window = (__bridge UIWindow *)(windowRef);
@@ -224,6 +285,7 @@ void ZGUninstallTouchGestures(ZGWindow *windowRef)
 	
 	[viewController uninstallTouchGestures];
 }
+#endif
 
 void ZGPollWindowAndInputEvents(ZGWindow *window, const void *systemEvent)
 {

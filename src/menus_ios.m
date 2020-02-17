@@ -135,6 +135,10 @@ static void playGame(ZGWindow *window, bool tutorial)
 	[gCurrentMenuView removeFromSuperview];
 	gCurrentMenuView = gOnlineView;
 	[metalView addSubview:gCurrentMenuView];
+	
+#if PLATFORM_TVOS
+	ZGInstallMenuGesture(_window);
+#endif
 }
 
 - (void)showOptions
@@ -144,6 +148,10 @@ static void playGame(ZGWindow *window, bool tutorial)
 	[gCurrentMenuView removeFromSuperview];
 	gCurrentMenuView = gOptionsView;
 	[metalView addSubview:gCurrentMenuView];
+	
+#if PLATFORM_TVOS
+	ZGInstallMenuGesture(_window);
+#endif
 }
 
 @end
@@ -162,7 +170,9 @@ static void playGame(ZGWindow *window, bool tutorial)
 - (void)resumeGame
 {
 	unPauseMusic();
-#if !PLATFORM_TVOS
+#if PLATFORM_TVOS
+	ZGInstallMenuGesture(_window);
+#else
 	ZGInstallTouchGestures(_window);
 #endif
 	[gPauseMenuView removeFromSuperview];
@@ -714,6 +724,10 @@ static uint8_t currentAIModeIndex(void)
 	[gCurrentMenuView removeFromSuperview];
 	gCurrentMenuView = gMainMenuView;
 	[metalView addSubview:gCurrentMenuView];
+	
+#if PLATFORM_TVOS
+	ZGUninstallMenuGesture(_window);
+#endif
 }
 
 @end
@@ -1285,6 +1299,10 @@ static uint8_t segmentedNumberOfNetNumansIndex(void)
 	[gCurrentMenuView removeFromSuperview];
 	gCurrentMenuView = gMainMenuView;
 	[metalView addSubview:gCurrentMenuView];
+	
+#if PLATFORM_TVOS
+	ZGUninstallMenuGesture(_window);
+#endif
 }
 
 @end
@@ -1643,7 +1661,9 @@ void hideGameMenus(ZGWindow *windowRef)
 void showPauseMenu(ZGWindow *window, GameState *gameState)
 {
 	pauseMusic();
-#if !PLATFORM_TVOS
+#if PLATFORM_TVOS
+	ZGUninstallMenuGesture(window);
+#else
 	ZGUninstallTouchGestures(window);
 #endif
 	
@@ -1655,6 +1675,32 @@ void showPauseMenu(ZGWindow *window, GameState *gameState)
 	
 	[metalView addSubview:gPauseMenuView];
 }
+
+#if PLATFORM_TVOS
+void performMenuTapAction(ZGWindow *window, GameState *gameState)
+{
+	if (*gameState == GAME_STATE_ON || *gameState == GAME_STATE_TUTORIAL)
+	{
+		showPauseMenu(window, gameState);
+	}
+	else if (gCurrentMenuView == gOptionsView)
+	{
+		[gOptionsMenuHandler navigateBack];
+	}
+	else if (gCurrentMenuView == gOnlineView)
+	{
+		[gOnlineMenuHandler navigateBack];
+	}
+	else if (gCurrentMenuView == gHostGameMenuView)
+	{
+		[gHostGameMenuHandler navigateBack];
+	}
+	else if (gCurrentMenuView == gJoinGameMenuView)
+	{
+		[gJoinGameMenuHandler navigateBack];
+	}
+}
+#endif
 
 void performGamepadMenuAction(GamepadEvent *event, GameState *gameState, ZGWindow *window)
 {

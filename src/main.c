@@ -787,7 +787,9 @@ void initGame(ZGWindow *window, bool firstGame, bool tutorial)
 	if (firstGame)
 	{
 		ZGAppSetAllowsScreenSaver(false);
-#if PLATFORM_IOS && !PLATFORM_TVOS
+#if PLATFORM_TVOS
+		ZGInstallMenuGesture(window);
+#elif PLATFORM_IOS
 		ZGInstallTouchGestures(window);
 #endif
 	}
@@ -833,7 +835,9 @@ void endGame(ZGWindow *window, bool lastGame)
 		
 		ZGAppSetAllowsScreenSaver(true);
 		
-#if PLATFORM_IOS && !PLATFORM_TVOS
+#if PLATFORM_TVOS
+		ZGUninstallMenuGesture(window);
+#elif PLATFORM_IOS
 		ZGUninstallTouchGestures(window);
 		showGameMenus(window);
 #endif
@@ -1720,6 +1724,14 @@ static void handleWindowEvent(ZGWindowEvent event, void *context)
 #define TUTORIAL_BOUNDARY_PERCENT_Y 0.2f
 static void handleTouchEvent(ZGTouchEvent event, void *context)
 {
+#if PLATFORM_TVOS
+	if (event.type == ZGTouchEventTypeMenuTap)
+	{
+		Renderer *renderer = context;
+		performMenuTapAction(renderer->window, &gGameState);
+	}
+	else
+#endif
 	if (gGameState == GAME_STATE_ON || gGameState == GAME_STATE_TUTORIAL)
 	{
 		Renderer *renderer = context;

@@ -69,8 +69,13 @@ bool ZGWindowIsFullscreen(ZGWindow *window);
 #if PLATFORM_IOS
 void ZGSetTouchEventHandler(ZGWindow *window, void *context, void (*touchEventHandler)(ZGTouchEvent, void *));
 
+#if PLATFORM_TVOS
+void ZGInstallMenuGesture(ZGWindow *window);
+void ZGUninstallMenuGesture(ZGWindow *window);
+#else
 void ZGInstallTouchGestures(ZGWindow *window);
 void ZGUninstallTouchGestures(ZGWindow *window);
+#endif
 
 #else
 void ZGSetKeyboardEventHandler(ZGWindow *window, void *context, void (*keyboardEventHandler)(ZGKeyboardEvent, void *));

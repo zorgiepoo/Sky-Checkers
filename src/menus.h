@@ -44,4 +44,8 @@ void performKeyboardMenuAction(ZGKeyboardEvent *event, GameState *gameState, ZGW
 void performKeyboardMenuTextInputAction(ZGKeyboardEvent *event);
 #endif
 
+#if PLATFORM_TVOS
+void performMenuTapAction(ZGWindow *window, GameState *gameState);
+#endif
+
 void performGamepadMenuAction(GamepadEvent *event, GameState *gameState, ZGWindow *window);

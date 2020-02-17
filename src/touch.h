@@ -20,12 +20,16 @@
 #pragma once
 
 #include <stdint.h>
+#include "platforms.h"
 
 typedef enum
 {
 	ZGTouchEventTypeTap,
 	ZGTouchEventTypePanChanged,
-	ZGTouchEventTypePanEnded
+	ZGTouchEventTypePanEnded,
+#if PLATFORM_TVOS
+	ZGTouchEventTypeMenuTap
+#endif
 } ZGTouchEventType;
 
 typedef struct
