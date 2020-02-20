@@ -161,7 +161,7 @@ static void _loadCharacterTextures(Renderer *renderer, Character *character, Tex
 	{
 		uint8_t *colorData = &textureData.pixelData[pixelIndex * 4];
 		// Face or Eyes
-		if ((colorData[0] == 126 && colorData[1] == 77 && colorData[2] == 108) || (colorData[0] == 126 && colorData[1] == 10 && colorData[2] == 32))
+		if (((colorData[0] <= 132 && colorData[0] >= 116) && (colorData[1] <= 85 && colorData[1] >= 70) && (colorData[2] <= 113 && colorData[2] >= 99)) || (colorData[0] == 126 && colorData[1] == 10 && colorData[2] == 32))
 		{
 			colorData[0] = (uint8_t)(character->red * 255.0f * facePercentage);
 			colorData[1] = (uint8_t)(character->green * 255.0f * facePercentage);
