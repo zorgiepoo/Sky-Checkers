@@ -1740,7 +1740,7 @@ static void handleTouchEvent(ZGTouchEvent event, void *context)
 		{
 			showPauseMenu(renderer->window, &gGameState);
 		}
-		else if (event.type == ZGTouchEventTypeTap && gGameWinner != NO_CHARACTER && gGameState == GAME_STATE_ON)
+		else if (event.type == ZGTouchEventTypeTap && gGameWinner != NO_CHARACTER && gGameState == GAME_STATE_ON && (gNetworkConnection == NULL || gNetworkConnection->type == NETWORK_SERVER_TYPE))
 		{
 			resetGame();
 		}

@@ -87,7 +87,7 @@ void performTouchAction(Input *input, ZGTouchEvent *event)
 	switch (event->type)
 	{
 		case ZGTouchEventTypeTap:
-			if (!input->weap && !input->character->weap->animationState)
+			if (!input->weap && !input->character->weap->animationState && gGameHasStarted)
 			{
 				prepareFiringFromInput(input);
 			}
