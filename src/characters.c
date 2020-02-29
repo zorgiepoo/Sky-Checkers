@@ -673,13 +673,8 @@ static void sendCharacterMovement(Character *character)
 	}
 }
 
-void moveCharacter(Character *character, double timeDelta, bool pausedState)
+void moveCharacter(Character *character, double timeDelta)
 {
-	if (pausedState && gNetworkConnection != NULL && gNetworkConnection->character == character)
-	{
-		return;
-	}
-	
 	if (character->active)
 	{
 		Character *characterB = NULL;

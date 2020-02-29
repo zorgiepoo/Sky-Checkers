@@ -266,10 +266,10 @@ void animate(ZGWindow *window, double timeDelta, GameState gameState)
 	fireCharacterWeapon(&gPinkBubbleGum);
 	fireCharacterWeapon(&gBlueLightning);
 	
-	moveCharacter(&gRedRover, timeDelta, pausedState);
-	moveCharacter(&gGreenTree, timeDelta, pausedState);
-	moveCharacter(&gPinkBubbleGum, timeDelta, pausedState);
-	moveCharacter(&gBlueLightning, timeDelta, pausedState);
+	moveCharacter(&gRedRover, timeDelta);
+	moveCharacter(&gGreenTree, timeDelta);
+	moveCharacter(&gPinkBubbleGum, timeDelta);
+	moveCharacter(&gBlueLightning, timeDelta);
 	
 	moveWeapon(gRedRover.weap, timeDelta);
 	moveWeapon(gGreenTree.weap, timeDelta);
