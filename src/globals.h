@@ -42,7 +42,7 @@ typedef struct
 } GameMenuContext;
 
 void initGame(ZGWindow *window, bool firstGame, bool tutorial);
-void endGame(ZGWindow *window, bool lastGame);
+void endNetworkGame(ZGWindow *window);
 
 extern bool gPlayedGame;
 extern bool gGameHasStarted;

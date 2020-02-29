@@ -1676,6 +1676,11 @@ void showPauseMenu(ZGWindow *window, GameState *gameState)
 	[metalView addSubview:gPauseMenuView];
 }
 
+void hidePauseMenu(ZGWindow *window, GameState *gameState)
+{
+	[gPauseMenuHandler resumeGame];
+}
+
 #if PLATFORM_TVOS
 void performMenuTapAction(ZGWindow *window, GameState *gameState)
 {

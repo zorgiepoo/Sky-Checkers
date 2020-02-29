@@ -1293,6 +1293,13 @@ void showPauseMenu(ZGWindow *window, GameState *gameState)
 	*gameState = GAME_STATE_PAUSED;
 }
 
+void hidePauseMenu(ZGWindow *window, GameState *gameState)
+{
+	changeMenu(LEFT, window);
+	unPauseMusic();
+	*gameState = gResumedGameState;
+}
+
 static char *convertKeyCodeToString(uint32_t theKeyCode)
 {
 	static char gKeyCode[64];
@@ -1469,9 +1476,7 @@ static void performMenuBackAction(GameState *gameState)
 {
 	if (*gameState == GAME_STATE_PAUSED)
 	{
-		changeMenu(LEFT, NULL);
-		unPauseMusic();
-		*gameState = gResumedGameState;
+		hidePauseMenu(NULL, gameState);
 	}
 	else if (gNetworkAddressFieldIsActive)
 	{

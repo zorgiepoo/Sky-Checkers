@@ -213,7 +213,7 @@ void syncNetworkState(ZGWindow *window, float timeDelta)
 				case PING_MESSAGE_TYPE:
 					break;
 				case QUIT_MESSAGE_TYPE:
-					endGame(window, true);
+					endNetworkGame(window);
 					cleanupStateFromNetwork();
 					
 					closeSocket(gNetworkConnection->socket);

@@ -844,6 +844,16 @@ void endGame(ZGWindow *window, bool lastGame)
 	}
 }
 
+void endNetworkGame(ZGWindow *window)
+{
+	if (gGameState == GAME_STATE_PAUSED)
+	{
+		hidePauseMenu(window, &gGameState);
+	}
+	
+	endGame(window, true);
+}
+
 static void exitGame(ZGWindow *window)
 {
 	resetCharacterWins();

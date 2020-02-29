@@ -34,6 +34,7 @@
 void initMenus(ZGWindow *window, GameState *gameState, void (*exitGame)(ZGWindow *));
 
 void showPauseMenu(ZGWindow *window, GameState *gameState);
+void hidePauseMenu(ZGWindow *window, GameState *gameState);
 
 #if PLATFORM_IOS
 void showGameMenus(ZGWindow *window);
