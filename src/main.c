@@ -760,7 +760,14 @@ void initGame(ZGWindow *window, bool firstGame, bool tutorial)
 	gPinkBubbleGum.lives = initialNumberOfLives;
 	gBlueLightning.lives = initialNumberOfLives;
 
-	gGameState = tutorial ? GAME_STATE_TUTORIAL : GAME_STATE_ON;
+	if (tutorial)
+	{
+		gGameState = GAME_STATE_TUTORIAL;
+	}
+	else if (gGameState != GAME_STATE_PAUSED)
+	{
+		gGameState = GAME_STATE_ON;
+	}
 
 	// wait until the game can be started.
 	if (tutorial)
@@ -778,13 +785,13 @@ void initGame(ZGWindow *window, bool firstGame, bool tutorial)
 	
 	gTutorialStage = 0;
 	
-	if (firstGame && gAudioMusicFlag)
+	if (firstGame && gAudioMusicFlag && gGameState != GAME_STATE_PAUSED)
 	{
 		bool windowFocus = ZGWindowHasFocus(window);
 		playGameMusic(!windowFocus);
 	}
 	
-	if (firstGame)
+	if (firstGame && gGameState != GAME_STATE_PAUSED)
 	{
 		ZGAppSetAllowsScreenSaver(false);
 #if PLATFORM_TVOS
@@ -801,7 +808,10 @@ void endGame(ZGWindow *window, bool lastGame)
 
 	endAnimation();
 
-	gGameState = GAME_STATE_OFF;
+	if (gGameState != GAME_STATE_PAUSED)
+	{
+		gGameState = GAME_STATE_OFF;
+	}
 
 	gGameWinner = NO_CHARACTER;
 	gGameShouldReset = false;
@@ -835,12 +845,15 @@ void endGame(ZGWindow *window, bool lastGame)
 		
 		ZGAppSetAllowsScreenSaver(true);
 		
-#if PLATFORM_TVOS
-		ZGUninstallMenuGesture(window);
-#elif PLATFORM_IOS
-		ZGUninstallTouchGestures(window);
-		showGameMenus(window);
-#endif
+		if (gGameState != GAME_STATE_PAUSED)
+		{
+	#if PLATFORM_TVOS
+			ZGUninstallMenuGesture(window);
+	#elif PLATFORM_IOS
+			ZGUninstallTouchGestures(window);
+			showGameMenus(window);
+	#endif
+		}
 	}
 }
 
