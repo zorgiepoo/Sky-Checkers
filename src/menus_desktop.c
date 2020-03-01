@@ -357,6 +357,7 @@ void pauseExitMenuAction(void *context)
 {
 	changeMenu(LEFT, NULL);
 	GameMenuContext *menuContext = context;
+	*menuContext->gameState = gResumedGameState;
 	menuContext->exitGame(menuContext->window);
 }
 

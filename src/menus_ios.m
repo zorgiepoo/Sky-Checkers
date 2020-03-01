@@ -192,6 +192,8 @@ static void playGame(ZGWindow *window, bool tutorial)
 	
 	unPauseMusic();
 	
+	*_gameState = _resumedGameState;
+	
 	if (_exitGameFunc != NULL)
 	{
 		_exitGameFunc(_window);
