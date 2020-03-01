@@ -346,9 +346,17 @@ static void crackTiles(float currentTime)
 {
 	for (int tileIndex = 0; tileIndex < NUMBER_OF_TILES; tileIndex++)
 	{
-		if (!gTiles[tileIndex].cracked && gTiles[tileIndex].crackedTime > 0.0f && currentTime >= gTiles[tileIndex].crackedTime)
+		if (gTiles[tileIndex].crackedTime > 0.0f)
 		{
-			gTiles[tileIndex].cracked = true;
+			if (!gTiles[tileIndex].cracked && currentTime >= gTiles[tileIndex].crackedTime)
+			{
+				gTiles[tileIndex].cracked = true;
+			}
+			else if (gTiles[tileIndex].cracked && gTiles[tileIndex].state && currentTime >= gTiles[tileIndex].crackedTime + 2.5f)
+			{
+				gTiles[tileIndex].cracked = false;
+				gTiles[tileIndex].crackedTime = 0.0f;
+			}
 		}
 	}
 }

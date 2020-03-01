@@ -581,6 +581,12 @@ void syncNetworkState(ZGWindow *window, float timeDelta)
 						gTiles[tileIndex].blue = character->weap->blue;
 						gTiles[tileIndex].coloredID = characterID;
 						
+						// Unless there's a prediction, make tile cracked immediately
+						if (gTiles[tileIndex].crackedTime == 0.0f)
+						{
+							gTiles[tileIndex].cracked = true;
+						}
+						
 						// Clear this particular tile's predicted color regardless of who set it
 						clearPredictedColor(tileIndex);
 						

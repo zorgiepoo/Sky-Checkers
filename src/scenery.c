@@ -126,9 +126,6 @@ void _clearPredictedColor(int tileIndex)
 	if (gTiles[tileIndex].coloredID == NO_CHARACTER)
 	{
 		restoreDefaultTileColor(tileIndex);
-		
-		gTiles[tileIndex].crackedTime = 0.0f;
-		gTiles[tileIndex].cracked = false;
 	}
 }
 
