@@ -50,7 +50,7 @@
     <ClInclude Include="..\src\text.h" />
     <ClInclude Include="..\src\texture.h" />
     <ClInclude Include="..\src\thread.h" />
-    <ClInclude Include="..\src\time.h" />
+    <ClInclude Include="..\src\zgtime.h" />
     <ClInclude Include="..\src\weapon.h" />
     <ClInclude Include="..\src\window.h" />
     <ClInclude Include="resource.h" />
@@ -288,7 +288,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>glew32.lib;opengl32.lib;d3d11.lib;dxgi.lib;SDL2.lib;SDL2main.lib;SDL2_ttf.lib;SDL2_mixer.lib;ws2_32.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;SDL2.lib;SDL2main.lib;SDL2_ttf.lib;SDL2_mixer.lib;ws2_32.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>

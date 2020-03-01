@@ -19,6 +19,7 @@
 
 #include "gamepad.h"
 #include "sdl_include.h"
+#include "zgtime.h"
 
 #include <stdbool.h>
 #include <string.h>

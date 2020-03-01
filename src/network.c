@@ -21,7 +21,7 @@
 #include "platforms.h"
 #include "animation.h"
 #include "audio.h"
-#include "time.h"
+#include "zgtime.h"
 
 #include <inttypes.h>
 #include <stdlib.h>

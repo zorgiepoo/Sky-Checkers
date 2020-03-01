@@ -156,23 +156,40 @@ int offlineCharacterState(Character *character)
 
 static void _loadCharacterTextures(Renderer *renderer, Character *character, TextureData textureData, float facePercentage, uint8_t mouthRed, uint8_t mouthGreen, uint8_t mouthBlue)
 {
+	uint8_t redIndex;
+	uint8_t greenIndex;
+	uint8_t blueIndex;
+	switch (textureData.pixelFormat)
+	{
+	case PIXEL_FORMAT_RGBA32:
+		redIndex = 0;
+		greenIndex = 1;
+		blueIndex = 2;
+		break;
+	case PIXEL_FORMAT_BGRA32:
+		blueIndex = 0;
+		greenIndex = 1;
+		redIndex = 2;
+		break;
+	}
+
 	// Adjust color of face, eyes, and mouth
 	for (uint32_t pixelIndex = 0; pixelIndex < (uint32_t)(textureData.width * textureData.height); pixelIndex++)
 	{
 		uint8_t *colorData = &textureData.pixelData[pixelIndex * 4];
 		// Face or Eyes
-		if (((colorData[0] <= 132 && colorData[0] >= 116) && (colorData[1] <= 85 && colorData[1] >= 70) && (colorData[2] <= 113 && colorData[2] >= 99)) || (colorData[0] == 126 && colorData[1] == 10 && colorData[2] == 32))
+		if (((colorData[redIndex] <= 132 && colorData[redIndex] >= 116) && (colorData[greenIndex] <= 85 && colorData[greenIndex] >= 70) && (colorData[blueIndex] <= 113 && colorData[blueIndex] >= 99)) || (colorData[redIndex] == 126 && colorData[greenIndex] == 10 && colorData[blueIndex] == 32))
 		{
-			colorData[0] = (uint8_t)(character->red * 255.0f * facePercentage);
-			colorData[1] = (uint8_t)(character->green * 255.0f * facePercentage);
-			colorData[2] = (uint8_t)(character->blue * 255.0f * facePercentage);
+			colorData[redIndex] = (uint8_t)(character->red * 255.0f * facePercentage);
+			colorData[greenIndex] = (uint8_t)(character->green * 255.0f * facePercentage);
+			colorData[blueIndex] = (uint8_t)(character->blue * 255.0f * facePercentage);
 		}
 		// Mouth
-		else if (colorData[0] == 32 && colorData[1] == 16 && colorData[2] == 126)
+		else if (colorData[redIndex] == 32 && colorData[greenIndex] == 16 && colorData[blueIndex] == 126)
 		{
-			colorData[0] = mouthRed;
-			colorData[1] = mouthGreen;
-			colorData[2] = mouthBlue;
+			colorData[redIndex] = mouthRed;
+			colorData[greenIndex] = mouthGreen;
+			colorData[blueIndex] = mouthBlue;
 		}
 	}
 	
