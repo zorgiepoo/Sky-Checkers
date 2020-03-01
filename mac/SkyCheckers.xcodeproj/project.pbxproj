@@ -180,7 +180,6 @@
 		727DAE22235BFFBB0030B29D /* mt_random.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = mt_random.c; path = ../src/mt_random.c; sourceTree = "<group>"; };
 		727DAE24235C10A50030B29D /* quit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = quit.h; path = ../src/quit.h; sourceTree = "<group>"; };
 		727DAE27235C1F650030B29D /* time_apple.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = time_apple.m; path = ../src/time_apple.m; sourceTree = "<group>"; };
-		727DAE28235C1F650030B29D /* time.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = time.h; path = ../src/time.h; sourceTree = "<group>"; };
 		727DAE4D235D284F0030B29D /* texture_apple.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = texture_apple.m; path = ../src/texture_apple.m; sourceTree = "<group>"; };
 		727DAE4F235D5C570030B29D /* thread.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = thread.h; path = ../src/thread.h; sourceTree = "<group>"; };
 		727DAE50235D5C570030B29D /* thread_posix.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = thread_posix.c; path = ../src/thread_posix.c; sourceTree = "<group>"; };
@@ -206,6 +205,7 @@
 		72817CB02394522000DB7677 /* float_metal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = float_metal.h; path = ../src/float_metal.h; sourceTree = "<group>"; };
 		72817CB22394A34D00DB7677 /* touch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = touch.h; path = ../src/touch.h; sourceTree = "<group>"; };
 		7282C624231CEC640063D3CB /* audio_apple.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = audio_apple.m; path = ../src/audio_apple.m; sourceTree = "<group>"; };
+		729630EE240B499E00D9E09A /* zgtime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = zgtime.h; path = ../src/zgtime.h; sourceTree = "<group>"; };
 		729BE4B82364121800DC70F7 /* gamepad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gamepad.h; path = ../src/gamepad.h; sourceTree = "<group>"; };
 		729BE4C0236667EE00DC70F7 /* gamepad_osx.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = gamepad_osx.m; path = ../src/gamepad_osx.m; sourceTree = "<group>"; };
 		72A14F1721A5E26200606E14 /* math_3d.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = math_3d.h; path = ../src/math_3d.h; sourceTree = "<group>"; };
@@ -414,7 +414,7 @@
 				729BE4C0236667EE00DC70F7 /* gamepad_osx.m */,
 				72EBBBBE239A29EB00DD4470 /* gamepad_gccontroller.h */,
 				72817C9C2393808B00DB7677 /* gamepad_gccontroller.m */,
-				727DAE28235C1F650030B29D /* time.h */,
+				729630EE240B499E00D9E09A /* zgtime.h */,
 				727DAE27235C1F650030B29D /* time_apple.m */,
 				727DAE4F235D5C570030B29D /* thread.h */,
 				727DAE50235D5C570030B29D /* thread_posix.c */,

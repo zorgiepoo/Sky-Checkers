@@ -19,7 +19,7 @@
 
 #import "window.h"
 #import "quit.h"
-#import "time.h"
+#import "zgtime.h"
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>

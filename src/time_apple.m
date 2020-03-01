@@ -17,7 +17,7 @@
 * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "time.h"
+#include "zgtime.h"
 #import <Foundation/Foundation.h>
 #include <mach/mach_time.h>
 

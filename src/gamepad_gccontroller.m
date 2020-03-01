@@ -18,7 +18,7 @@
 */
 
 #import "gamepad_gccontroller.h"
-#import "time.h"
+#import "zgtime.h"
 
 #import <Foundation/Foundation.h>
 #import <GameController/GameController.h>
