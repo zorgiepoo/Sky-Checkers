@@ -18,7 +18,7 @@
 */
 
 #import "window.h"
-#include "time.h"
+#include "zgtime.h"
 #import <UIKit/UIKit.h>
 
 #if PLATFORM_TVOS
