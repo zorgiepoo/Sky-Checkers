@@ -19,6 +19,7 @@
 
 #include "window.h"
 #include "sdl_include.h"
+#include "zgtime.h"
 
 #if PLATFORM_LINUX
 bool _ZGSetWindowFullscreen(ZGWindow *window, bool enabled, const char **errorString);

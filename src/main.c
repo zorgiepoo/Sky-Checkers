@@ -30,7 +30,7 @@
 #include "network.h"
 #include "mt_random.h"
 #include "quit.h"
-#include "time.h"
+#include "zgtime.h"
 #include "gamepad.h"
 #include "globals.h"
 #include "window.h"
