@@ -66,11 +66,11 @@ static void colorTile(int tileIndex, int tileColoredCounter, Character *characte
 
 static void crackTiles(float currentTime);
 
-static void animateTilesAndPlayerRecovery(double timeDelta, ZGWindow *window, Character *player, float currentTime);
+static void animateTilesAndPlayerRecovery(double timeDelta, ZGWindow *window, Character *player, float currentTime, GameState gameState);
 static void moveWeapon(Weapon *weapon, double timeDelta);
 
-static void firstTileLayerAnimation(ZGWindow *window);
-static void secondTileLayerAnimation(ZGWindow *window);
+static void firstTileLayerAnimation(ZGWindow *window, GameState gameState);
+static void secondTileLayerAnimation(ZGWindow *window, GameState gameState);
 
 static void loadFirstTileAnimationLayer(void);
 static void loadSecondTileAnimationLayer(void);
@@ -247,8 +247,7 @@ void animate(ZGWindow *window, double timeDelta, GameState gameState)
 	updateCharacterFromInput(&gPinkBubbleGumInput);
 	updateCharacterFromInput(&gBlueLightningInput);
 	
-	bool pausedState = (gameState == GAME_STATE_PAUSED);
-	if (!pausedState)
+	if (gameState != GAME_STATE_PAUSED)
 	{
 		updateCharacterFromAnyInput();
 	}
@@ -285,11 +284,10 @@ void animate(ZGWindow *window, double timeDelta, GameState gameState)
 	
 	collapseTiles(timeDelta);
 	
-	animateTilesAndPlayerRecovery(timeDelta, window, &gRedRover, gSecondTimer);
-	animateTilesAndPlayerRecovery(timeDelta, window, &gGreenTree, gSecondTimer);
-	animateTilesAndPlayerRecovery(timeDelta, window, &gPinkBubbleGum, gSecondTimer);
-	animateTilesAndPlayerRecovery(timeDelta, window, &gBlueLightning, gSecondTimer);
-	
+	animateTilesAndPlayerRecovery(timeDelta, window, &gRedRover, gSecondTimer, gameState);
+	animateTilesAndPlayerRecovery(timeDelta, window, &gGreenTree, gSecondTimer, gameState);
+	animateTilesAndPlayerRecovery(timeDelta, window, &gPinkBubbleGum, gSecondTimer, gameState);
+	animateTilesAndPlayerRecovery(timeDelta, window, &gBlueLightning, gSecondTimer, gameState);
 	crackTiles(gSecondTimer);
 	
 	recoverDestroyedTiles(timeDelta);
@@ -300,8 +298,8 @@ void animate(ZGWindow *window, double timeDelta, GameState gameState)
 	gTimeElapsedAccumulator += timeDelta;
 	while (gTimeElapsedAccumulator - ANIMATION_TIME_ELAPSED_INTERVAL >= 0.0)
 	{
-		firstTileLayerAnimation(window);
-		secondTileLayerAnimation(window);
+		firstTileLayerAnimation(window, gameState);
+		secondTileLayerAnimation(window, gameState);
 		
 		recoverCharacter(&gRedRover);
 		recoverCharacter(&gGreenTree);
@@ -436,11 +434,11 @@ static void moveWeapon(Weapon *weapon, double timeDelta)
 #define END_CHARACTER_ANIMATION ((70 + 1) * ANIMATION_TIME_ELAPSED_INTERVAL)
 #define NUM_ALPHA_FLASH_ITERATIONS 3
 #define ALPHA_FLUCUATION 0.5f
-static void animateTilesAndPlayerRecovery(double timeDelta, ZGWindow *window, Character *player, float currentTime)
+static void animateTilesAndPlayerRecovery(double timeDelta, ZGWindow *window, Character *player, float currentTime, GameState gameState)
 {
 	if (player->weap->animationState)
 	{
-		if (player->animation_timer == 0.0 && ZGWindowHasFocus(window) && gAudioEffectsFlag)
+		if (player->animation_timer == 0.0 && ZGWindowHasFocus(window) && gAudioEffectsFlag && gameState != GAME_STATE_PAUSED)
 		{
 			playShootingSound(IDOfCharacter(player) - 1);
 		}
@@ -549,7 +547,7 @@ static void animateTilesAndPlayerRecovery(double timeDelta, ZGWindow *window, Ch
 				gTiles[player->destroyedTileIndex].state = false;
 				gTiles[player->destroyedTileIndex].z -= OBJECT_FALLING_STEP;
 				
-				if (ZGWindowHasFocus(window) && gAudioEffectsFlag)
+				if (ZGWindowHasFocus(window) && gAudioEffectsFlag && gameState != GAME_STATE_PAUSED)
 				{
 					playTileFallingSound();
 				}
@@ -596,7 +594,7 @@ static void animateTilesAndPlayerRecovery(double timeDelta, ZGWindow *window, Ch
  * First layer of tiles to destroy (most outter one).
  * This animation is activated by setting gFirstLayerAnimationTimer = 1
  */
-static void firstTileLayerAnimation(ZGWindow *window)
+static void firstTileLayerAnimation(ZGWindow *window, GameState gameState)
 {
 	// Color the tiles dieing
 	if (gTileLayerStates[0].colorIndex != -1 && gTileLayerStates[0].animationTimer > BEGIN_TILE_LAYER_ANIMATION)
@@ -605,7 +603,7 @@ static void firstTileLayerAnimation(ZGWindow *window)
 		{
 			setDieingTileColor(gTilesLayer[gTileLayerStates[0].colorIndex]);
 			
-			if (ZGWindowHasFocus(window) && gAudioEffectsFlag)
+			if (ZGWindowHasFocus(window) && gAudioEffectsFlag && gameState != GAME_STATE_PAUSED)
 			{
 				playDieingStoneSound();
 			}
@@ -631,7 +629,7 @@ static void firstTileLayerAnimation(ZGWindow *window)
 			gTiles[gTilesLayer[gTileLayerStates[0].deathIndex]].z -= OBJECT_FALLING_STEP;
 			gTiles[gTilesLayer[gTileLayerStates[0].deathIndex]].isDead = true;
 			
-			if (ZGWindowHasFocus(window) && gAudioEffectsFlag)
+			if (ZGWindowHasFocus(window) && gAudioEffectsFlag && gameState != GAME_STATE_PAUSED)
 			{
 				playTileFallingSound();
 			}
@@ -661,7 +659,7 @@ static void firstTileLayerAnimation(ZGWindow *window)
  * Second layer of tiles to destroy (second most outter one)
  * This animation is activated by setting gSecondLayerAnimationTimer = 1
  */
-static void secondTileLayerAnimation(ZGWindow *window)
+static void secondTileLayerAnimation(ZGWindow *window, GameState gameState)
 {
 	// Color the tiles dieing
 	if (gTileLayerStates[1].colorIndex != -1 && gTileLayerStates[1].animationTimer > BEGIN_TILE_LAYER_ANIMATION)
@@ -670,7 +668,7 @@ static void secondTileLayerAnimation(ZGWindow *window)
 		{
 			setDieingTileColor(gTilesLayer[gTileLayerStates[1].colorIndex]);
 			
-			if (ZGWindowHasFocus(window) && gAudioEffectsFlag)
+			if (ZGWindowHasFocus(window) && gAudioEffectsFlag && gameState != GAME_STATE_PAUSED)
 			{
 				playDieingStoneSound();
 			}
@@ -696,7 +694,7 @@ static void secondTileLayerAnimation(ZGWindow *window)
 			gTiles[gTilesLayer[gTileLayerStates[1].deathIndex]].z -= OBJECT_FALLING_STEP;
 			gTiles[gTilesLayer[gTileLayerStates[1].deathIndex]].isDead = true;
 			
-			if (ZGWindowHasFocus(window) && gAudioEffectsFlag)
+			if (ZGWindowHasFocus(window) && gAudioEffectsFlag && gameState != GAME_STATE_PAUSED)
 			{
 				playTileFallingSound();
 			}

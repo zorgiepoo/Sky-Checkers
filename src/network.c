@@ -190,7 +190,7 @@ static void interpolateCharacter(Character *character, CharacterMovement *previo
 	}
 }
 
-void syncNetworkState(ZGWindow *window, float timeDelta)
+void syncNetworkState(ZGWindow *window, float timeDelta, GameState gameState)
 {
 	if (gNetworkConnection == NULL)
 	{
@@ -607,7 +607,7 @@ void syncNetworkState(ZGWindow *window, float timeDelta)
 						
 						gTiles[tileIndex].z -= OBJECT_FALLING_STEP;
 						
-						if (ZGWindowHasFocus(window) && gAudioEffectsFlag)
+						if (ZGWindowHasFocus(window) && gAudioEffectsFlag && gameState != GAME_STATE_PAUSED)
 						{
 							playTileFallingSound();
 						}

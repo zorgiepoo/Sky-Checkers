@@ -311,7 +311,7 @@ GameMessage *popNetworkMessages(GameMessageArray *messageArray, uint32_t *count)
 void initializeNetwork(void);
 void deinitializeNetwork(void);
 
-void syncNetworkState(ZGWindow *window, float timeDelta);
+void syncNetworkState(ZGWindow *window, float timeDelta, GameState gameState);
 
 void setPredictedDirection(Character *character, int direction);
 

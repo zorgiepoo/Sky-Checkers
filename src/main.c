@@ -1995,7 +1995,7 @@ static void appTerminatedHandler(void *context)
 		// Wait for the thread to finish before we terminate the main thread
 		while (gNetworkConnection != NULL)
 		{
-			syncNetworkState(renderer->window, (float)ANIMATION_TIMER_INTERVAL);
+			syncNetworkState(renderer->window, (float)ANIMATION_TIMER_INTERVAL, gGameState);
 			ZGDelay(10);
 		}
 	}
@@ -2034,7 +2034,7 @@ static void runLoopHandler(void *context)
 	{
 		updateIterations -= ANIMATION_TIMER_INTERVAL;
 		
-		syncNetworkState(renderer->window, (float)ANIMATION_TIMER_INTERVAL);
+		syncNetworkState(renderer->window, (float)ANIMATION_TIMER_INTERVAL, gGameState);
 		
 		if (gGameState == GAME_STATE_ON || gGameState == GAME_STATE_TUTORIAL || (gGameState == GAME_STATE_PAUSED && gNetworkConnection != NULL))
 		{
