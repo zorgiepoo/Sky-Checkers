@@ -48,9 +48,17 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 	}
 	
 #if PLATFORM_APPLE
-	createRenderer_metal(renderer, windowTitle, windowWidth, windowHeight, fullscreen, vsync, fsaa);
+	if (!createRenderer_metal(renderer, windowTitle, windowWidth, windowHeight, fullscreen, vsync, fsaa))
+	{
+		fprintf(stderr, "Failed to create Metal renderer\n");
+		abort();
+	}
 #elif PLATFORM_WINDOWS
-	createRenderer_d3d11(renderer, windowTitle, windowWidth, windowHeight, fullscreen, vsync, fsaa);
+	if (!createRenderer_d3d11(renderer, windowTitle, windowWidth, windowHeight, fullscreen, vsync, fsaa))
+	{
+		fprintf(stderr, "Failed to create D3D renderer\n");
+		abort();
+	}
 #elif PLATFORM_LINUX
 	createRenderer_gl(renderer, windowTitle, windowWidth, windowHeight, fullscreen, vsync, fsaa);
 #endif
