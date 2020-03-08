@@ -300,9 +300,6 @@ typedef struct
 extern uint8_t gCurrentSlot;
 extern uint8_t gClientStates[3];
 
-extern GameMessageArray gGameMessagesFromNet;
-extern GameMessageArray gGameMessagesToNet;
-
 extern NetworkConnection *gNetworkConnection;
 
 void initializeNetworkBuffers(void);
