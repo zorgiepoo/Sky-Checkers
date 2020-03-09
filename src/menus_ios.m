@@ -1676,6 +1676,10 @@ void showPauseMenu(ZGWindow *window, GameState *gameState)
 	((CAMetalLayer *)metalView.layer).presentsWithTransaction = YES;
 	
 	[metalView addSubview:gPauseMenuView];
+	
+#if PLATFORM_TVOS
+	[gPauseMenuView setNeedsFocusUpdate];
+#endif
 }
 
 void hidePauseMenu(ZGWindow *window, GameState *gameState)
