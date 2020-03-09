@@ -134,6 +134,10 @@ void performTouchAction(Input *input, ZGTouchEvent *event)
 			input->down_ticks = 0;
 			input->up_ticks = 0;
 			break;
+#if PLATFORM_TVOS
+		case ZGTouchEventTypeMenuTap:
+			break;
+#endif
 	}
 }
 #else
