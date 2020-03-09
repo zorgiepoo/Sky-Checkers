@@ -21,6 +21,8 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <stdbool.h>
+#include "platforms.h"
 
 #define MAX_GAMEPADS 8
 #define GAMEPAD_NAME_SIZE 256
@@ -84,5 +86,9 @@ GamepadManager *initGamepadManager(const char *databasePath, GamepadCallback add
 GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *systemEvent, uint16_t *eventCount);
 
 const char *gamepadName(GamepadManager *gamepadManager, GamepadIndex index);
+
+#if PLATFORM_TVOS
+bool siriGamepad(GamepadManager *gamepadManager, GamepadIndex index);
+#endif
 
 void setPlayerIndex(GamepadManager *gamepadManager, GamepadIndex index, int64_t playerIndex);

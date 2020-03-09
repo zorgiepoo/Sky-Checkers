@@ -306,6 +306,22 @@ const char *GC_NAME(gamepadName)(struct GC_NAME(_GamepadManager) *gamepadManager
 	return NULL;
 }
 
+#if PLATFORM_TVOS
+bool siriGamepad(GamepadManager *gamepadManager, GamepadIndex gcIndex)
+{
+	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
+	{
+		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[index];
+		if (gamepad->controller != NULL && gamepad->index == gcIndex)
+		{
+			GCController *controller = (__bridge GCController *)(gamepad->controller);
+			return (controller.extendedGamepad == nil && controller.microGamepad != nil);
+		}
+	}
+	return false;
+}
+#endif
+
 void GC_NAME(setPlayerIndex)(struct GC_NAME(_GamepadManager) *gamepadManager, GamepadIndex gcIndex, int64_t playerIndex)
 {
 	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
