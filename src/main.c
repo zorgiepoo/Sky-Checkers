@@ -2027,7 +2027,8 @@ static void runLoopHandler(void *context)
 	// Update game state
 	// http://ludobloom.com/tutorials/timestep.html
 	
-	double currentTime = ZGGetTicks() / 1000.0;
+	double currentTime = (double)ZGGetTicks() / 1000.0;
+	
 	double updateIterations = ((currentTime - appContext->lastFrameTime) + appContext->cyclesLeftOver);
 	
 	if (updateIterations > MAX_ITERATIONS)
