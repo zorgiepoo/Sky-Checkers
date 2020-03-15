@@ -74,9 +74,9 @@ int ZGAppInit(int argc, char *argv[], ZGAppHandlers *appHandlers, void *appConte
 	return 0;
 }
 
-void ZGAppSetAllowsScreenSaver(bool allowsScreenSaver)
+void ZGAppSetAllowsScreenIdling(bool allowsScreenIdling)
 {
-	if (!allowsScreenSaver)
+	if (!allowsScreenIdling)
 	{
 		if (SDL_IsScreenSaverEnabled())
 		{

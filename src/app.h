@@ -32,4 +32,4 @@ typedef struct
 
 int ZGAppInit(int argc, char *argv[], ZGAppHandlers *appHandlers, void *appContext);
 
-void ZGAppSetAllowsScreenSaver(bool allowsScreenSaver);
+void ZGAppSetAllowsScreenIdling(bool allowsScreenIdling);

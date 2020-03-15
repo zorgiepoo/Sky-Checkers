@@ -98,8 +98,8 @@ int ZGAppInit(int argc, char *argv[], ZGAppHandlers *appHandlers, void *appConte
 	}
 }
 
-void ZGAppSetAllowsScreenSaver(bool allowsScreenSaver)
+void ZGAppSetAllowsScreenIdling(bool allowsScreenIdling)
 {
 	UIApplication *application = [UIApplication sharedApplication];
-	[application setIdleTimerDisabled:!allowsScreenSaver];
+	[application setIdleTimerDisabled:!allowsScreenIdling];
 }

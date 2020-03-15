@@ -793,7 +793,7 @@ void initGame(ZGWindow *window, bool firstGame, bool tutorial)
 	
 	if (firstGame && gGameState != GAME_STATE_PAUSED)
 	{
-		ZGAppSetAllowsScreenSaver(false);
+		ZGAppSetAllowsScreenIdling(false);
 #if PLATFORM_TVOS
 		ZGInstallMenuGesture(window);
 #elif PLATFORM_IOS
@@ -843,7 +843,7 @@ void endGame(ZGWindow *window, bool lastGame)
 			playMainMenuMusic(!windowFocus);
 		}
 		
-		ZGAppSetAllowsScreenSaver(true);
+		ZGAppSetAllowsScreenIdling(true);
 		
 		if (gGameState != GAME_STATE_PAUSED)
 		{
