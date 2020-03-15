@@ -23,6 +23,7 @@
 #include "characters.h"
 #include "input.h"
 #include "platforms.h"
+#include "app.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -250,4 +251,29 @@ void playTutorial(ZGWindow *window)
 	}
 	
 	initGame(window, true, true);
+}
+
+void pauseGame(GameState *restoredGameState, GameState *newGameState)
+{
+	pauseMusic();
+	
+	if (gNetworkConnection == NULL)
+	{
+		ZGAppSetAllowsScreenIdling(true);
+	}
+	
+	*restoredGameState = *newGameState;
+	*newGameState = GAME_STATE_PAUSED;
+}
+
+void resumeGame(GameState restoredGameState, GameState *newGameState)
+{
+	unPauseMusic();
+	
+	if (gNetworkConnection == NULL)
+	{
+		ZGAppSetAllowsScreenIdling(false);
+	}
+	
+	*newGameState = restoredGameState;
 }

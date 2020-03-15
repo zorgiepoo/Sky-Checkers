@@ -30,3 +30,6 @@ bool startNetworkGame(ZGWindow *window);
 bool connectToNetworkGame(GameState *gameState);
 
 void playTutorial(ZGWindow *window);
+
+void pauseGame(GameState *restoredGameState, GameState *newGameState);
+void resumeGame(GameState restoredGameState, GameState *newGameState);

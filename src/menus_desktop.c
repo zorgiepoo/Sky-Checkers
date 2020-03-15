@@ -1289,16 +1289,13 @@ void initMenus(ZGWindow *window, GameState *gameState, void (*exitGame)(ZGWindow
 void showPauseMenu(ZGWindow *window, GameState *gameState)
 {
 	changeMenu(RIGHT, window);
-	pauseMusic();
-	gResumedGameState = *gameState;
-	*gameState = GAME_STATE_PAUSED;
+	pauseGame(&gResumedGameState, gameState);
 }
 
 void hidePauseMenu(ZGWindow *window, GameState *gameState)
 {
 	changeMenu(LEFT, window);
-	unPauseMusic();
-	*gameState = gResumedGameState;
+	resumeGame(gResumedGameState, gameState);
 }
 
 static char *convertKeyCodeToString(uint32_t theKeyCode)

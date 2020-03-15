@@ -157,10 +157,13 @@ static void playGame(ZGWindow *window, bool tutorial)
 @end
 
 @interface PauseMenuHandler : NSObject
+{
+@public
+	GameState _resumedGameState;
+}
 
 @property (nonatomic) ZGWindow *window;
 @property (nonatomic) GameState *gameState;
-@property (nonatomic) GameState resumedGameState;
 @property (nonatomic) void (*exitGameFunc)(ZGWindow *);
 
 @end
@@ -169,7 +172,6 @@ static void playGame(ZGWindow *window, bool tutorial)
 
 - (void)resumeGame
 {
-	unPauseMusic();
 #if PLATFORM_TVOS
 	ZGInstallMenuGesture(_window);
 #else
@@ -180,7 +182,7 @@ static void playGame(ZGWindow *window, bool tutorial)
 	UIView *metalView = metalViewForWindow(_window);
 	((CAMetalLayer *)metalView.layer).presentsWithTransaction = NO;
 	
-	*_gameState = _resumedGameState;
+	resumeGame(_resumedGameState, _gameState);
 }
 
 - (void)exitGame
@@ -1662,15 +1664,13 @@ void hideGameMenus(ZGWindow *windowRef)
 
 void showPauseMenu(ZGWindow *window, GameState *gameState)
 {
-	pauseMusic();
 #if PLATFORM_TVOS
 	ZGUninstallMenuGesture(window);
 #else
 	ZGUninstallTouchGestures(window);
 #endif
 	
-	gPauseMenuHandler.resumedGameState = *gameState;
-	*gameState = GAME_STATE_PAUSED;
+	pauseGame(&gPauseMenuHandler->_resumedGameState, gameState);
 	
 	UIView *metalView = metalViewForWindow(window);
 	((CAMetalLayer *)metalView.layer).presentsWithTransaction = YES;
