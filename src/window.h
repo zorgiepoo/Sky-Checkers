@@ -60,7 +60,9 @@ void ZGSetWindowMinimumSize(ZGWindow *window, int32_t minWidth, int32_t minHeigh
 
 void ZGGetWindowSize(ZGWindow *window, int32_t *width, int32_t *height);
 
+#if !PLATFORM_IOS
 void ZGSetWindowEventHandler(ZGWindow *window, void *context, void (*windowEventHandler)(ZGWindowEvent, void *));
+#endif
 
 #if PLATFORM_LINUX
 bool ZGWindowIsFullscreen(ZGWindow *window);
@@ -81,6 +83,8 @@ void ZGUninstallTouchGestures(ZGWindow *window);
 void ZGSetKeyboardEventHandler(ZGWindow *window, void *context, void (*keyboardEventHandler)(ZGKeyboardEvent, void *));
 #endif
 
+#if PLATFORM_WINDOWS || PLATFORM_LINUX
 void ZGPollWindowAndInputEvents(ZGWindow *window, const void *systemEvent);
+#endif
 
 void *ZGWindowHandle(ZGWindow *window);

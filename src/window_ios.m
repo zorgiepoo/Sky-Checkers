@@ -235,10 +235,6 @@ bool ZGWindowHasFocus(ZGWindow *windowRef)
 	return [window isKeyWindow];
 }
 
-void ZGSetWindowEventHandler(ZGWindow *window, void *context, void (*windowEventHandler)(ZGWindowEvent, void *))
-{
-}
-
 void ZGSetTouchEventHandler(ZGWindow *windowRef, void *context, void (*touchEventHandler)(ZGTouchEvent, void *))
 {
 	UIWindow *window = (__bridge UIWindow *)(windowRef);
@@ -286,10 +282,6 @@ void ZGUninstallTouchGestures(ZGWindow *windowRef)
 	[viewController uninstallTouchGestures];
 }
 #endif
-
-void ZGPollWindowAndInputEvents(ZGWindow *window, const void *systemEvent)
-{
-}
 
 void ZGGetWindowSize(ZGWindow *windowRef, int32_t *width, int32_t *height)
 {

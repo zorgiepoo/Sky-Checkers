@@ -373,11 +373,6 @@ void ZGSetKeyboardEventHandler(ZGWindow *window, void *context, void (*keyboardE
 	gameView.keyboardEventHandlerContext = context;
 }
 
-void ZGPollWindowAndInputEvents(ZGWindow *window, const void *systemEvent)
-{
-	// No need to do anything for macOS implementation
-}
-
 void ZGGetWindowSize(ZGWindow *windowRef, int32_t *width, int32_t *height)
 {
 	ZGGameWindowController *windowController = (__bridge ZGGameWindowController *)(windowRef);

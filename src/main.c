@@ -1712,6 +1712,7 @@ static void pollGamepads(GamepadManager *gamepadManager, ZGWindow *window, const
 	}
 }
 
+#if !PLATFORM_IOS
 static void handleWindowEvent(ZGWindowEvent event, void *context)
 {
 	AppContext *appContext = context;
@@ -1746,6 +1747,7 @@ static void handleWindowEvent(ZGWindowEvent event, void *context)
 			break;
 	}
 }
+#endif
 
 #if PLATFORM_IOS
 #define TUTORIAL_BOUNDARY_PERCENT_X 0.3f
@@ -1966,10 +1968,10 @@ static void appLaunchedHandler(void *context)
 		playMainMenuMusic(!windowFocus);
 	}
 	
-	ZGSetWindowEventHandler(renderer->window, appContext, handleWindowEvent);
 #if PLATFORM_IOS
 	ZGSetTouchEventHandler(renderer->window, renderer, handleTouchEvent);
 #else
+	ZGSetWindowEventHandler(renderer->window, appContext, handleWindowEvent);
 	ZGSetKeyboardEventHandler(renderer->window, renderer, handleKeyboardEvent);
 #endif
 }
@@ -2088,7 +2090,9 @@ static void pollEventHandler(void *context, void *systemEvent)
 	Renderer *renderer = &appContext->renderer;
 	
 	pollGamepads(gGamepadManager, renderer->window, systemEvent);
+#if PLATFORM_WINDOWS || PLATFORM_LINUX
 	ZGPollWindowAndInputEvents(renderer->window, systemEvent);
+#endif
 }
 
 int main(int argc, char *argv[])
