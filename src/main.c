@@ -1578,12 +1578,16 @@ static void handleTextInputEvent(ZGKeyboardEvent *event)
 		char *text = event->text;
 		for (uint8_t textIndex = 0; textIndex < sizeof(event->text); textIndex++)
 		{
-			if (text[textIndex] == 0x0 || text[textIndex] == 0x1 || text[textIndex] == '`' || text[textIndex] == '~')
+			uint8_t character = text[textIndex];
+			
+			if (ALLOWED_BASIC_TEXT_INPUT(character) || character == ' ' || character == '(' || character == ')')
+			{
+				writeConsoleText(character);
+			}
+			else
 			{
 				break;
 			}
-			
-			writeConsoleText((uint8_t)text[textIndex]);
 		}
 	}
 }

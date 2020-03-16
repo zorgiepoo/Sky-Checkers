@@ -936,6 +936,37 @@ static uint8_t segmentedNumberOfNetNumansIndex(void)
 
 @end
 
+//https://stackoverflow.com/questions/2523501/set-uitextfield-maximum-length
+static BOOL validateTextFieldChange(UITextField *textField, NSRange range, NSString *string, NSUInteger maxSize, BOOL allowsDash)
+{
+	NSUInteger oldLength = [textField.text length];
+    NSUInteger replacementLength = [string length];
+    NSUInteger rangeLength = range.length;
+	
+    NSUInteger newLength = oldLength - rangeLength + replacementLength;
+	
+    if (newLength > maxSize - 1)
+	{
+		return NO;
+	}
+	
+	const char *utf8String = [string UTF8String];
+	const char *character = utf8String;
+	while (*character != '\0')
+	{
+		if (!ALLOWED_BASIC_TEXT_INPUT(*character) && (!allowsDash || *character != '-'))
+		{
+			return NO;
+		}
+		else
+		{
+			character++;
+		}
+	}
+	
+	return YES;
+}
+
 @interface JoinGameMenuHandler : NSObject <UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate>
 
 @property (nonatomic) ZGWindow *window;
@@ -990,16 +1021,9 @@ static uint8_t segmentedNumberOfNetNumansIndex(void)
 	return YES;
 }
 
-//https://stackoverflow.com/questions/2523501/set-uitextfield-maximum-length
-- (BOOL)textField:(UITextField *) textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
 {
-    NSUInteger oldLength = [textField.text length];
-    NSUInteger replacementLength = [string length];
-    NSUInteger rangeLength = range.length;
-	
-    NSUInteger newLength = oldLength - rangeLength + replacementLength;
-	
-    return newLength <= MAX_SERVER_ADDRESS_SIZE - 1;
+	return validateTextFieldChange(textField, range, string, MAX_SERVER_ADDRESS_SIZE, YES);
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
@@ -1044,6 +1068,7 @@ static uint8_t segmentedNumberOfNetNumansIndex(void)
 		textField.delegate = self;
 		textField.autocorrectionType = UITextAutocorrectionTypeNo;
 		textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
+		textField.smartDashesType = UITextSmartDashesTypeNo;
 		textField.keyboardType = UIKeyboardTypeNumbersAndPunctuation;
 		
 		_hostAddresstextField = textField;
@@ -1167,16 +1192,9 @@ static uint8_t segmentedNumberOfNetNumansIndex(void)
 	return YES;
 }
 
-//https://stackoverflow.com/questions/2523501/set-uitextfield-maximum-length
-- (BOOL)textField:(UITextField *) textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
 {
-    NSUInteger oldLength = [textField.text length];
-    NSUInteger replacementLength = [string length];
-    NSUInteger rangeLength = range.length;
-	
-    NSUInteger newLength = oldLength - rangeLength + replacementLength;
-	
-    return newLength <= MAX_USER_NAME_SIZE - 1;
+	return validateTextFieldChange(textField, range, string, MAX_USER_NAME_SIZE, NO);
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath

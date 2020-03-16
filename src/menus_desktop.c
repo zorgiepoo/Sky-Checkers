@@ -1346,17 +1346,22 @@ static void writeMenuTextInput(const char *text, size_t maxSize)
 	{
 		for (uint8_t textIndex = 0; textIndex < maxSize; textIndex++)
 		{
-			if (text[textIndex] == 0x0 || text[textIndex] == 0x1)
+			uint8_t character = text[textIndex];
+			
+			if (ALLOWED_BASIC_TEXT_INPUT(character) || character == '-')
+			{
+				if (gNetworkAddressFieldIsActive)
+				{
+					writeNetworkAddressText(character);
+				}
+				else if (gNetworkUserNameFieldIsActive)
+				{
+					writeNetworkUserNameText(character);
+				}
+			}
+			else
 			{
 				break;
-			}
-			else if (gNetworkAddressFieldIsActive)
-			{
-				writeNetworkAddressText((uint8_t)text[textIndex]);
-			}
-			else if (gNetworkUserNameFieldIsActive)
-			{
-				writeNetworkUserNameText((uint8_t)text[textIndex]);
 			}
 		}
 	}

@@ -114,21 +114,7 @@
 			return;
 		}
 		
-		static NSCharacterSet *badCharacterSet;
-		if (badCharacterSet == nil)
-		{
-			NSMutableCharacterSet *goodCharacterSet = [NSMutableCharacterSet characterSetWithCharactersInString:@" .:-"];
-			[goodCharacterSet formUnionWithCharacterSet:[NSCharacterSet alphanumericCharacterSet]];
-			badCharacterSet = [goodCharacterSet invertedSet];
-		}
-		
-		NSString *strippedString = [string stringByTrimmingCharactersInSet:badCharacterSet];
-		if (strippedString.length == 0)
-		{
-			return;
-		}
-		
-		const char *utf8String = [strippedString UTF8String];
+		const char *utf8String = [string UTF8String];
 		if (utf8String == NULL)
 		{
 			return;
