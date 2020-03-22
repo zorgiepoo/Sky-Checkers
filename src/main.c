@@ -1616,12 +1616,9 @@ static void pollGamepads(GamepadManager *gamepadManager, ZGWindow *window, const
 		
 		if (gGameState == GAME_STATE_OFF || gGameState == GAME_STATE_PAUSED)
 		{
-#if PLATFORM_TVOS
-			if (!siriGamepad(gamepadManager, gamepadEvent->index))
+#if !PLATFORM_TVOS
+			performGamepadMenuAction(gamepadEvent, &gGameState, window);
 #endif
-			{
-				performGamepadMenuAction(gamepadEvent, &gGameState, window);
-			}
 		}
 		else if ((gGameState == GAME_STATE_ON || gGameState == GAME_STATE_TUTORIAL) && gamepadEvent->state == GAMEPAD_STATE_PRESSED && (gamepadEvent->button == GAMEPAD_BUTTON_START || gamepadEvent->button == GAMEPAD_BUTTON_BACK))
 		{

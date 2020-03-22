@@ -87,8 +87,4 @@ GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *syst
 
 const char *gamepadName(GamepadManager *gamepadManager, GamepadIndex index);
 
-#if PLATFORM_TVOS
-bool siriGamepad(GamepadManager *gamepadManager, GamepadIndex index);
-#endif
-
 void setPlayerIndex(GamepadManager *gamepadManager, GamepadIndex index, int64_t playerIndex);

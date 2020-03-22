@@ -1746,14 +1746,11 @@ void performGamepadMenuAction(GamepadEvent *event, GameState *gameState, ZGWindo
 	{
 		case GAMEPAD_BUTTON_A:
 		case GAMEPAD_BUTTON_START:
-#if !PLATFORM_TVOS
 			if (gCurrentMenuView == gMainMenuView && *gameState == GAME_STATE_OFF)
 			{
 				playGame(window, false);
 			}
-			else
-#endif
-			if (*gameState == GAME_STATE_PAUSED)
+			else if (*gameState == GAME_STATE_PAUSED)
 			{
 				[gPauseMenuHandler resumeGame];
 			}
