@@ -70,8 +70,12 @@ static NSDictionary *deselectedSegmentedControlTitleAttributes(CGSize metalViewS
 static void setSectionHeaderFont(ZGWindow *window, UIView *view)
 {
 	UIView *metalView = metalViewForWindow(window);
-    UITableViewHeaderFooterView *header = (UITableViewHeaderFooterView *)view;
-	header.textLabel.font = [UIFont boldSystemFontOfSize:metalView.frame.size.height * 0.03];
+	if ([view isKindOfClass:[UITableViewHeaderFooterView class]])
+	{
+		UITableViewHeaderFooterView *header = (UITableViewHeaderFooterView *)view;
+		header.textLabel.font = [UIFont boldSystemFontOfSize:metalView.frame.size.height * 0.03];
+		header.textLabel.textColor = [UIColor grayColor];
+	}
 }
 
 static void playGame(ZGWindow *window, bool tutorial)
