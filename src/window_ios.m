@@ -67,13 +67,16 @@
 #if PLATFORM_TVOS
 - (void)installMenuGesture
 {
-	UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(menuGestureTapped:)];
-	
-	tapGestureRecognizer.name = ZGMenuTapRecognizerName;
-	tapGestureRecognizer.allowedPressTypes = @[@(UIPressTypeMenu)];
-	_menuTapGestureRecognizer = tapGestureRecognizer;
-	
-	[self.view addGestureRecognizer:tapGestureRecognizer];
+	if (_menuTapGestureRecognizer == nil)
+	{
+		UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(menuGestureTapped:)];
+		
+		tapGestureRecognizer.name = ZGMenuTapRecognizerName;
+		tapGestureRecognizer.allowedPressTypes = @[@(UIPressTypeMenu)];
+		_menuTapGestureRecognizer = tapGestureRecognizer;
+		
+		[self.view addGestureRecognizer:tapGestureRecognizer];
+	}
 }
 
 - (void)uninstallMenuGesture
@@ -89,22 +92,28 @@
 {
 	UIView *view = self.view;
 	
-	UIPanGestureRecognizer *panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(viewGesturePanned:)];
+	if (_panGestureRecognizer == nil)
+	{
+		UIPanGestureRecognizer *panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(viewGesturePanned:)];
+		
+		panGestureRecognizer.name = ZGPannedRecognizerName;
+		panGestureRecognizer.maximumNumberOfTouches = 1;
+		panGestureRecognizer.delegate = self;
+		_panGestureRecognizer = panGestureRecognizer;
+		
+		[view addGestureRecognizer:panGestureRecognizer];
+	}
 	
-	panGestureRecognizer.name = ZGPannedRecognizerName;
-	panGestureRecognizer.maximumNumberOfTouches = 1;
-	panGestureRecognizer.delegate = self;
-	_panGestureRecognizer = panGestureRecognizer;
-	
-	[view addGestureRecognizer:panGestureRecognizer];
-	
-	UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(viewGestureTapped:)];
-	
-	tapGestureRecognizer.name = ZGTapRecognizerName;
-	tapGestureRecognizer.delegate = self;
-	_tapGestureRecognizer = tapGestureRecognizer;
-	
-	[view addGestureRecognizer:tapGestureRecognizer];
+	if (_tapGestureRecognizer == nil)
+	{
+		UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(viewGestureTapped:)];
+		
+		tapGestureRecognizer.name = ZGTapRecognizerName;
+		tapGestureRecognizer.delegate = self;
+		_tapGestureRecognizer = tapGestureRecognizer;
+		
+		[view addGestureRecognizer:tapGestureRecognizer];
+	}
 }
 
 - (void)uninstallTouchGestures
