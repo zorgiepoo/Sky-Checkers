@@ -1763,25 +1763,22 @@ static void gamepadAdded(GamepadIndex gamepadIndex, void *context)
 			{
 				Input *input = NULL;
 				int64_t playerIndex = 0;
-				if (gBlueLightningInput.gamepadIndex == INVALID_GAMEPAD_INDEX)
+				if ((gNetworkConnection != NULL || gBlueLightning.state == CHARACTER_HUMAN_STATE) && gBlueLightningInput.gamepadIndex == INVALID_GAMEPAD_INDEX)
 				{
 					input = &gBlueLightningInput;
 					playerIndex = 3;
 				}
-				
-				if (gGreenTreeInput.gamepadIndex == INVALID_GAMEPAD_INDEX)
+				else if ((gNetworkConnection != NULL || gGreenTree.state == CHARACTER_HUMAN_STATE) && gGreenTreeInput.gamepadIndex == INVALID_GAMEPAD_INDEX)
 				{
 					input = &gGreenTreeInput;
 					playerIndex = 2;
 				}
-				
-				if (gRedRoverInput.gamepadIndex == INVALID_GAMEPAD_INDEX)
+				else if ((gNetworkConnection != NULL || gRedRover.state == CHARACTER_HUMAN_STATE) && gRedRoverInput.gamepadIndex == INVALID_GAMEPAD_INDEX)
 				{
 					input = &gRedRoverInput;
 					playerIndex = 1;
 				}
-				
-				if (gPinkBubbleGumInput.gamepadIndex == INVALID_GAMEPAD_INDEX)
+				else if ((gNetworkConnection != NULL || gPinkBubbleGum.state == CHARACTER_HUMAN_STATE) && gPinkBubbleGumInput.gamepadIndex == INVALID_GAMEPAD_INDEX)
 				{
 					input = &gPinkBubbleGumInput;
 					playerIndex = 0;

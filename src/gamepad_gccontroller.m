@@ -164,9 +164,13 @@ static void _addController(struct GC_NAME(_GamepadManager) *gamepadManager, GCCo
 				productDescription = productCategory;
 			}
 		}
-		else
+		else if (vendorName != nil)
 		{
 			productDescription = vendorName;
+		}
+		else
+		{
+			productDescription = @"Gamepad";
 		}
 		
 		const char *productDescriptionUTF8 = [productDescription UTF8String];

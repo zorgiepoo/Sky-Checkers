@@ -24,6 +24,7 @@
 #include "texture.h"
 #include "mt_random.h"
 #include "globals.h"
+#include "platforms.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -534,6 +535,16 @@ static void drawCharacterControllerName(Renderer *renderer, mat4_t modelViewMatr
 	}
 }
 
+#if PLATFORM_IOS
+static void drawCharacterPendingController(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, Character *character)
+{
+	if (gNetworkConnection == NULL && character->state == CHARACTER_HUMAN_STATE && strlen(character->controllerName) == 0)
+	{
+		drawCharacterControllerName(renderer, modelViewMatrix, color, "Connect Controller");
+	}
+}
+#endif
+
 #define LIVES_DRAWING_OFFSET 0.8f
 void drawAllCharacterInfo(Renderer *renderer, const mat4_t *iconTranslations, bool displayControllerName)
 {
@@ -565,6 +576,15 @@ void drawAllCharacterInfo(Renderer *renderer, const mat4_t *iconTranslations, bo
 		drawCharacterControllerName(renderer, greenTreeModelViewMatrix, greenTreeColor, gGreenTree.controllerName);
 		drawCharacterControllerName(renderer, blueLightningModelViewMatrix, blueLightningColor, gBlueLightning.controllerName);
 	}
+	
+#if PLATFORM_TVOS
+	drawCharacterPendingController(renderer, pinkBubbleGumModelViewMatrix, pinkBubbleGumColor, &gPinkBubbleGum);
+#endif
+#if PLATFORM_IOS
+	drawCharacterPendingController(renderer, redRoverModelViewMatrix, redRoverColor, &gRedRover);
+	drawCharacterPendingController(renderer, greenTreeModelViewMatrix, greenTreeColor, &gGreenTree);
+	drawCharacterPendingController(renderer, blueLightningModelViewMatrix, blueLightningColor, &gBlueLightning);
+#endif
 }
 
 /*
