@@ -35,6 +35,7 @@ typedef struct GC_NAME(_Gamepad)
 	GamepadState lastStates[GAMEPAD_BUTTON_MAX];
 	char name[GAMEPAD_NAME_SIZE];
 	GamepadIndex index;
+	uint8_t rank;
 } GC_NAME(Gamepad);
 
 struct GC_NAME(_GamepadManager)
@@ -52,6 +53,8 @@ struct GC_NAME(_GamepadManager) *GC_NAME(initGamepadManager)(const char *databas
 GamepadEvent *GC_NAME(pollGamepadEvents)(struct GC_NAME(_GamepadManager) *gamepadManager, const void *systemEvent, uint16_t *eventCount);
 
 const char *GC_NAME(gamepadName)(struct GC_NAME(_GamepadManager) *gamepadManager, GamepadIndex index);
+
+uint8_t GC_NAME(gamepadRank)(struct GC_NAME(_GamepadManager) *gamepadManager, GamepadIndex index);
 
 void GC_NAME(setPlayerIndex)(struct GC_NAME(_GamepadManager) *gamepadManager, GamepadIndex index, int64_t playerIndex);
 

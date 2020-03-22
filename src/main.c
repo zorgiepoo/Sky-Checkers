@@ -57,7 +57,7 @@ float gTutorialCoverTimer;
 int gGameWinner;
 
 GamepadManager *gGamepadManager;
-static GamepadIndex gGamepads[4] = {INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX};
+static GamepadIndex gGamepads[12] = {INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX};
 
 // Has the user played the game once?
 bool gPlayedGame = false;
@@ -628,13 +628,18 @@ void initGame(ZGWindow *window, bool firstGame, bool tutorial)
 				}
 			}
 			
-			uint16_t maxGamepads = (uint16_t)(sizeof(gGamepads) / sizeof(*gGamepads));
+			// We only care about the first 4 gamepads
+			uint16_t maxGamepads = 4;
 			uint16_t gamepadCount = 0;
 			for (uint16_t gamepadIndex = 0; gamepadIndex < maxGamepads; gamepadIndex++)
 			{
 				if (gGamepads[gamepadIndex] != INVALID_GAMEPAD_INDEX)
 				{
 					gamepadCount++;
+				}
+				else
+				{
+					break;
 				}
 			}
 			
@@ -1748,6 +1753,44 @@ static void handleKeyboardEvent(ZGKeyboardEvent event, void *context)
 }
 #endif
 
+static int compareGamepads(const void *gamepad1IndexPtr, const void *gamepad2IndexPtr)
+{
+	GamepadIndex gamepad1Index = *(GamepadIndex *)gamepad1IndexPtr;
+	GamepadIndex gamepad2Index = *(GamepadIndex *)gamepad2IndexPtr;
+	
+	if (gamepad1Index == INVALID_GAMEPAD_INDEX && gamepad2Index == INVALID_GAMEPAD_INDEX)
+	{
+		return 0;
+	}
+	else if (gamepad1Index == INVALID_GAMEPAD_INDEX)
+	{
+		return 1;
+	}
+	else if (gamepad2Index == INVALID_GAMEPAD_INDEX)
+	{
+		return -1;
+	}
+	
+	uint8_t gamepad1Rank = gamepadRank(gGamepadManager, gamepad1Index);
+	uint8_t gamepad2Rank = gamepadRank(gGamepadManager, gamepad2Index);
+	
+	if (gamepad1Rank < gamepad2Rank)
+	{
+		return 1;
+	}
+	else if (gamepad1Rank > gamepad2Rank)
+	{
+		return -1;
+	}
+	
+	return 0;
+}
+
+static void sortGamepads(void)
+{
+	qsort(gGamepads, sizeof(gGamepads) / sizeof(gGamepads[0]), sizeof(gGamepads[0]), compareGamepads);
+}
+
 static void gamepadAdded(GamepadIndex gamepadIndex, void *context)
 {
 	for (uint16_t index = 0; index < sizeof(gGamepads) / sizeof(*gGamepads); index++)
@@ -1755,6 +1798,7 @@ static void gamepadAdded(GamepadIndex gamepadIndex, void *context)
 		if (gGamepads[index] == INVALID_GAMEPAD_INDEX)
 		{
 			gGamepads[index] = gamepadIndex;
+			sortGamepads();
 			
 			if (gGameState != GAME_STATE_OFF)
 			{
@@ -1812,6 +1856,7 @@ static void gamepadRemoved(GamepadIndex gamepadIndex, void *context)
 		if (gGamepads[index] == gamepadIndex)
 		{
 			gGamepads[index] = INVALID_GAMEPAD_INDEX;
+			sortGamepads();
 			
 			Input *input = NULL;
 			

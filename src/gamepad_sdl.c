@@ -243,6 +243,11 @@ const char *gamepadName(GamepadManager *gamepadManager, GamepadIndex index)
 	return SDL_GameControllerName(controller);
 }
 
+uint8_t gamepadRank(GamepadManager *gamepadManager, GamepadIndex index)
+{
+	return 0;
+}
+
 void setPlayerIndex(GamepadManager *gamepadManager, GamepadIndex index, int64_t playerIndex)
 {
 }

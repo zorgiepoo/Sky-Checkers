@@ -87,4 +87,6 @@ GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *syst
 
 const char *gamepadName(GamepadManager *gamepadManager, GamepadIndex index);
 
+uint8_t gamepadRank(GamepadManager *gamepadManager, GamepadIndex index);
+
 void setPlayerIndex(GamepadManager *gamepadManager, GamepadIndex index, int64_t playerIndex);

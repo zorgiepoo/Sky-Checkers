@@ -150,6 +150,8 @@ static void _addController(struct GC_NAME(_GamepadManager) *gamepadManager, GCCo
 		
 		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[availableGamepadIndex];
 		gamepad->controller = (void *)CFBridgingRetain(controller);
+		gamepad->rank = (microGamepad != nil && controller.extendedGamepad == nil) ? 1 : 3;
+		
 		NSString *vendorName = controller.vendorName;
 		NSString *productDescription;
 		if (@available(macOS 10.15, iOS 13, *))
@@ -322,6 +324,20 @@ const char *GC_NAME(gamepadName)(struct GC_NAME(_GamepadManager) *gamepadManager
 		}
 	}
 	return NULL;
+}
+
+uint8_t GC_NAME(gamepadRank)(struct GC_NAME(_GamepadManager) *gamepadManager, GamepadIndex gcIndex)
+{
+	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
+	{
+		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[index];
+		if (gamepad->controller != NULL && gamepad->index == gcIndex)
+		{
+			return gamepad->rank;
+		}
+	}
+	
+	return 0;
 }
 
 void GC_NAME(setPlayerIndex)(struct GC_NAME(_GamepadManager) *gamepadManager, GamepadIndex gcIndex, int64_t playerIndex)

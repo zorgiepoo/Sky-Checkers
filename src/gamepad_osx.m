@@ -81,6 +81,7 @@ typedef struct _Gamepad
 	GamepadElementMapping elementMappings[GAMEPAD_BUTTON_MAX];
 	char name[GAMEPAD_NAME_SIZE];
 	GamepadIndex index;
+	uint8_t rank;
 #if GC_PRODUCT_CHECK
 	bool gcController;
 #endif
@@ -423,6 +424,7 @@ static void _hidDeviceMatchingCallback(void *context, IOReturn result, void *sen
 #if GC_PRODUCT_CHECK
 	newGamepad->gcController = false;
 #endif
+	newGamepad->rank = 2;
 	newGamepad->index = gamepadManager->nextGamepadIndex;
 	gamepadManager->nextGamepadIndex++;
 	
@@ -593,6 +595,7 @@ static void _gcGamepadAdded(GamepadIndex gcIndex, void *context)
 	}
 	
 	nextFreeGamepad->gcController = true;
+	nextFreeGamepad->rank = GC_NAME(gamepadRank)(gamepadManager->gcManager, nextFreeGamepad->index);
 	nextFreeGamepad->index = gcIndex;
 	
 	const char *gamepadName = GC_NAME(gamepadName)(gamepadManager->gcManager, nextFreeGamepad->index);
@@ -845,6 +848,23 @@ const char *gamepadName(GamepadManager *gamepadManager, GamepadIndex gamepadInde
 	}
 	
 	return NULL;
+}
+
+uint8_t gamepadRank(GamepadManager *gamepadManager, GamepadIndex gamepadIndex)
+{
+	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
+	{
+		Gamepad *gamepad = &gamepadManager->gamepads[index];
+		
+#if GC_PRODUCT_CHECK
+		if ((!gamepad->gcController && gamepad->device == NULL) || gamepad->index != gamepadIndex) continue;
+#else
+		if (gamepad->device == NULL || gamepad->index != gamepadIndex) continue;
+#endif
+		
+		return gamepad->rank;
+	}
+	return 0;
 }
 
 void setPlayerIndex(GamepadManager *gamepadManager, GamepadIndex gamepadIndex, int64_t playerIndex)
