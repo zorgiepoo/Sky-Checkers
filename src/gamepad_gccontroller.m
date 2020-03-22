@@ -269,10 +269,24 @@ GamepadEvent *GC_NAME(pollGamepadEvents)(struct GC_NAME(_GamepadManager) *gamepa
 					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_START, extendedGamepad.buttonMenu.pressed, gamepadManager->eventsBuffer, &eventIndex);
 					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_BACK, extendedGamepad.buttonOptions.pressed, gamepadManager->eventsBuffer, &eventIndex);
 				}
-				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_UP, extendedGamepad.dpad.up.pressed, gamepadManager->eventsBuffer, &eventIndex);
-				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_DOWN, extendedGamepad.dpad.down.pressed, gamepadManager->eventsBuffer, &eventIndex);
-				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_LEFT, extendedGamepad.dpad.left.pressed, gamepadManager->eventsBuffer, &eventIndex);
-				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_RIGHT, extendedGamepad.dpad.right.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				
+				BOOL upPressed = extendedGamepad.dpad.up.pressed;
+				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_UP, upPressed, gamepadManager->eventsBuffer, &eventIndex);
+				
+				BOOL downPressed = extendedGamepad.dpad.down.pressed;
+				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_DOWN, downPressed, gamepadManager->eventsBuffer, &eventIndex);
+				
+				BOOL leftPressed = extendedGamepad.dpad.left.pressed;
+				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_LEFT, leftPressed, gamepadManager->eventsBuffer, &eventIndex);
+				
+				BOOL rightPressed = extendedGamepad.dpad.right.pressed;
+				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_RIGHT, rightPressed, gamepadManager->eventsBuffer, &eventIndex);
+				
+				if (!upPressed && !downPressed && !leftPressed && !rightPressed)
+				{
+					_addAxisEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_RIGHT, GAMEPAD_BUTTON_DPAD_LEFT, extendedGamepad.leftThumbstick.xAxis, gamepadManager->eventsBuffer, &eventIndex);
+					_addAxisEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_UP, GAMEPAD_BUTTON_DPAD_DOWN, extendedGamepad.leftThumbstick.yAxis, gamepadManager->eventsBuffer, &eventIndex);
+				}
 			}
 			else
 			{
