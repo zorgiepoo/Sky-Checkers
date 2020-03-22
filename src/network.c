@@ -2591,7 +2591,7 @@ void retrieveLocalIPAddress(char *ipAddressBuffer, size_t bufferSize)
 			if (ifa_addr != NULL)
 			{
 				sa_family_t family = ifa_addr->sa_family;
-				if ((family == AF_INET || (family == AF_INET6 && !retrievedIPv6Address)) && currentIfaddr->ifa_name != NULL && strcmp(currentIfaddr->ifa_name, "en0") == 0)
+				if ((family == AF_INET || (family == AF_INET6 && !retrievedIPv6Address)) && currentIfaddr->ifa_name != NULL && (strcmp(currentIfaddr->ifa_name, "en0") == 0 || strcmp(currentIfaddr->ifa_name, "en1") == 0))
 				{
 					int nameInfoResult = getnameinfo(ifa_addr, ifa_addr->sa_len, ipAddressBuffer, (socklen_t)bufferSize, NULL, 0, NI_NUMERICHOST);
 					if (nameInfoResult != 0)
