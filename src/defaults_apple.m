@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Mayur Pawashe
+ * Copyright 2020 Mayur Pawashe
  * https://zgcoder.net
  
  * This file is part of skycheckers.
@@ -20,69 +20,85 @@
 #import "defaults.h"
 #import <Foundation/Foundation.h>
 
-#if PLATFORM_OSX
-
-FILE *getUserDataFile(const char *mode)
+Defaults userDefaultsForReading(void)
 {
-	FILE *file = NULL;
-	NSArray *userLibraryPaths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
-	if (userLibraryPaths.count > 0)
-	{
-		NSString *userLibraryPath = [userLibraryPaths objectAtIndex:0];
-		NSString *appSupportPath = [userLibraryPath stringByAppendingPathComponent:@"Application Support"];
-		
-		if ([[NSFileManager defaultManager] fileExistsAtPath:appSupportPath])
-		{
-			NSString *skyCheckersPath = [appSupportPath stringByAppendingPathComponent:@"SkyCheckers"];
-			
-			if ([[NSFileManager defaultManager] fileExistsAtPath:skyCheckersPath] || [[NSFileManager defaultManager] createDirectoryAtPath:skyCheckersPath withIntermediateDirectories:NO attributes:nil error:NULL])
-			{
-				file = fopen([[skyCheckersPath stringByAppendingPathComponent:@"user_data.txt"] UTF8String], mode);
-			}
-		}
-	}
-	
-	return file;
+	Defaults defaults = {};
+	return defaults;
 }
 
+Defaults userDefaultsForWriting(void)
+{
+	Defaults defaults = {};
+	return defaults;
+}
+
+void closeDefaults(Defaults defaults)
+{
+}
+
+bool readDefaultKey(Defaults defaults, const char *key, char *valueBuffer, size_t maxValueSize)
+{
+	NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+	NSString *valueString = [userDefaults stringForKey:[NSString stringWithUTF8String:key]];
+	if (valueString == nil)
+	{
+		return false;
+	}
+	
+	return (bool)[valueString getCString:valueBuffer maxLength:maxValueSize encoding:NSUTF8StringEncoding];
+}
+
+int readDefaultIntKey(Defaults defaults, const char *key, int defaultValue)
+{
+	NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+	id object = [userDefaults objectForKey:[NSString stringWithUTF8String:key]];
+	if (object != nil && [object isKindOfClass:[NSNumber class]])
+	{
+		return [object intValue];
+	}
+	
+	return defaultValue;
+}
+
+bool readDefaultBoolKey(Defaults defaults, const char *key, bool defaultValue)
+{
+	NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+	id object = [userDefaults objectForKey:[NSString stringWithUTF8String:key]];
+	if (object != nil && [object isKindOfClass:[NSNumber class]])
+	{
+		return [object boolValue];
+	}
+	
+	return defaultValue;
+}
+
+void writeDefaultIntKey(Defaults defaults, const char *key, int value)
+{
+	NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+	[userDefaults setInteger:value forKey:[NSString stringWithUTF8String:key]];
+}
+
+void writeDefaultStringKey(Defaults defaults, const char *key, const char *value)
+{
+	NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+	[userDefaults setObject:[NSString stringWithUTF8String:value] forKey:[NSString stringWithUTF8String:key]];
+}
+
+#if PLATFORM_OSX
 void getDefaultUserName(char *defaultUserName, int maxLength)
 {
-	@autoreleasepool
+	NSString *fullUsername = NSFullUserName();
+	if (fullUsername)
 	{
-		NSString *fullUsername = NSFullUserName();
-		if (fullUsername)
+		NSUInteger spaceIndex = [fullUsername rangeOfString:@" "].location;
+		if (spaceIndex != NSNotFound)
 		{
-			NSUInteger spaceIndex = [fullUsername rangeOfString:@" "].location;
-			if (spaceIndex != NSNotFound)
-			{
-				strncpy(defaultUserName, [[fullUsername substringToIndex:spaceIndex] UTF8String], maxLength);
-			}
-			else
-			{
-				strncpy(defaultUserName, [fullUsername UTF8String], maxLength);
-			}
+			strncpy(defaultUserName, [[fullUsername substringToIndex:spaceIndex] UTF8String], maxLength);
+		}
+		else
+		{
+			strncpy(defaultUserName, [fullUsername UTF8String], maxLength);
 		}
 	}
 }
-
-#elif PLATFORM_IOS
-
-FILE *getUserDataFile(const char *mode)
-{
-	FILE *file = NULL;
-	NSArray *userDocumentPaths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-	if (userDocumentPaths.count > 0)
-	{
-		NSString *userDocumentPath = [userDocumentPaths objectAtIndex:0];
-		NSString *skyCheckersPath = [userDocumentPath stringByAppendingPathComponent:@"SkyCheckers"];
-		
-		if ([[NSFileManager defaultManager] fileExistsAtPath:skyCheckersPath] || [[NSFileManager defaultManager] createDirectoryAtPath:skyCheckersPath withIntermediateDirectories:NO attributes:nil error:NULL])
-		{
-			file = fopen([[skyCheckersPath stringByAppendingPathComponent:@"user_data.txt"] UTF8String], mode);
-		}
-	}
-	
-	return file;
-}
-
 #endif

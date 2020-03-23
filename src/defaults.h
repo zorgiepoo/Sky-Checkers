@@ -26,7 +26,9 @@
 
 typedef struct
 {
+#if !PLATFORM_APPLE
 	FILE *file;
+#endif
 } Defaults;
 
 Defaults userDefaultsForReading(void);

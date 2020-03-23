@@ -90,11 +90,8 @@
 		72817CAB2393860E00DB7677 /* network.c in Sources */ = {isa = PBXBuildFile; fileRef = 772B6A840D15CBA000A216BD /* network.c */; };
 		72817CB123946C0000DB7677 /* quit_apple.m in Sources */ = {isa = PBXBuildFile; fileRef = 72817BD32392C33800DB7677 /* quit_apple.m */; };
 		7282C625231CEC640063D3CB /* audio_apple.m in Sources */ = {isa = PBXBuildFile; fileRef = 7282C624231CEC640063D3CB /* audio_apple.m */; };
-		72983A8F24289656005F984D /* defaults_uni.c in Sources */ = {isa = PBXBuildFile; fileRef = 72983A8E24289656005F984D /* defaults_uni.c */; };
 		72983A90242897F6005F984D /* defaults_apple.m in Sources */ = {isa = PBXBuildFile; fileRef = 770FFA0710B8F465009FD46A /* defaults_apple.m */; };
-		72983A9124289810005F984D /* defaults_uni.c in Sources */ = {isa = PBXBuildFile; fileRef = 72983A8E24289656005F984D /* defaults_uni.c */; };
 		72983A9224289817005F984D /* defaults_apple.m in Sources */ = {isa = PBXBuildFile; fileRef = 770FFA0710B8F465009FD46A /* defaults_apple.m */; };
-		72983A9324289817005F984D /* defaults_uni.c in Sources */ = {isa = PBXBuildFile; fileRef = 72983A8E24289656005F984D /* defaults_uni.c */; };
 		729BE4C1236667EE00DC70F7 /* gamepad_osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 729BE4C0236667EE00DC70F7 /* gamepad_osx.m */; };
 		72A14F3121A71C6900606E14 /* renderer.c in Sources */ = {isa = PBXBuildFile; fileRef = 72A14F2F21A71C6700606E14 /* renderer.c */; };
 		72A5D135239C1725004C12D6 /* menus_ios.m in Sources */ = {isa = PBXBuildFile; fileRef = 72A5D134239C1725004C12D6 /* menus_ios.m */; };
@@ -207,7 +204,6 @@
 		72817CB22394A34D00DB7677 /* touch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = touch.h; path = ../src/touch.h; sourceTree = "<group>"; };
 		7282C624231CEC640063D3CB /* audio_apple.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = audio_apple.m; path = ../src/audio_apple.m; sourceTree = "<group>"; };
 		729630EE240B499E00D9E09A /* zgtime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = zgtime.h; path = ../src/zgtime.h; sourceTree = "<group>"; };
-		72983A8E24289656005F984D /* defaults_uni.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = defaults_uni.c; path = ../src/defaults_uni.c; sourceTree = "<group>"; };
 		729BE4B82364121800DC70F7 /* gamepad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gamepad.h; path = ../src/gamepad.h; sourceTree = "<group>"; };
 		729BE4C0236667EE00DC70F7 /* gamepad_osx.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = gamepad_osx.m; path = ../src/gamepad_osx.m; sourceTree = "<group>"; };
 		72A14F1721A5E26200606E14 /* math_3d.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = math_3d.h; path = ../src/math_3d.h; sourceTree = "<group>"; };
@@ -357,7 +353,6 @@
 				72A14F1721A5E26200606E14 /* math_3d.h */,
 				770FFA0610B8F465009FD46A /* defaults.h */,
 				770FFA0710B8F465009FD46A /* defaults_apple.m */,
-				72983A8E24289656005F984D /* defaults_uni.c */,
 				72817B6E238E0EA700DB7677 /* platforms.h */,
 				72817B6C238E0DA500DB7677 /* globals.h */,
 				774A441E0B2BEA57000C04D9 /* main.c */,
@@ -669,7 +664,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				72983A9224289817005F984D /* defaults_apple.m in Sources */,
-				72983A9324289817005F984D /* defaults_uni.c in Sources */,
 				720D528B23D3BA65002C9972 /* texture.c in Sources */,
 				7243ACED23C302F000A83ADD /* shaders.metal in Sources */,
 				7243ACBF23C2ED7300A83ADD /* main.c in Sources */,
@@ -704,7 +698,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				72983A9124289810005F984D /* defaults_uni.c in Sources */,
 				72983A90242897F6005F984D /* defaults_apple.m in Sources */,
 				72817CB123946C0000DB7677 /* quit_apple.m in Sources */,
 				72817CAB2393860E00DB7677 /* network.c in Sources */,
@@ -742,7 +735,6 @@
 			files = (
 				72EBBBBA239A213600DD4470 /* gamepad_gccontroller.m in Sources */,
 				72817B70238ED9D200DB7677 /* window_osx.m in Sources */,
-				72983A8F24289656005F984D /* defaults_uni.c in Sources */,
 				720D528923D397DC002C9972 /* texture.c in Sources */,
 				774A44200B2BEA58000C04D9 /* main.c in Sources */,
 				774A44610B2BEB46000C04D9 /* scenery.c in Sources */,
