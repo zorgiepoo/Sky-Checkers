@@ -97,7 +97,6 @@
 		72A5D135239C1725004C12D6 /* menus_ios.m in Sources */ = {isa = PBXBuildFile; fileRef = 72A5D134239C1725004C12D6 /* menus_ios.m */; };
 		72A5D138239C1F21004C12D6 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72A5D137239C1F21004C12D6 /* Foundation.framework */; };
 		72A5D13B239C1F8D004C12D6 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72A5D13A239C1F8D004C12D6 /* AppKit.framework */; };
-		72BE1BF2225708E000E3192A /* container-migration.plist in Resources */ = {isa = PBXBuildFile; fileRef = 72BE1BF1225708E000E3192A /* container-migration.plist */; };
 		72EBBB92239A1C9300DD4470 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72EBBB91239A1C9300DD4470 /* CoreServices.framework */; };
 		72EBBB94239A1C9C00DD4470 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72EBBB93239A1C9C00DD4470 /* Carbon.framework */; };
 		72EBBB96239A1CA200DD4470 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72EBBB95239A1CA200DD4470 /* IOKit.framework */; };
@@ -214,7 +213,6 @@
 		72A5D13A239C1F8D004C12D6 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		72B6149322E0305D007B50B9 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		72BE1BF02257089300E3192A /* SkyCheckers.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SkyCheckers.entitlements; sourceTree = "<group>"; };
-		72BE1BF1225708E000E3192A /* container-migration.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "container-migration.plist"; sourceTree = "<group>"; };
 		72EBBB91239A1C9300DD4470 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		72EBBB93239A1C9C00DD4470 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
 		72EBBB95239A1CA200DD4470 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
@@ -431,7 +429,6 @@
 				77C7A2630CFA8C6500295420 /* Data */,
 				8D1107310486CEB800E47090 /* Info.plist */,
 				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
-				72BE1BF1225708E000E3192A /* container-migration.plist */,
 				72817BD72392F98300DB7677 /* MainMenu.xib */,
 			);
 			name = Resources;
@@ -650,7 +647,6 @@
 			files = (
 				8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */,
 				72817BD82392F98300DB7677 /* MainMenu.xib in Resources */,
-				72BE1BF2225708E000E3192A /* container-migration.plist in Resources */,
 				77C7A2640CFA8C6500295420 /* Data in Resources */,
 				771B6CA010BE60320014884B /* sc_icon.icns in Resources */,
 			);
