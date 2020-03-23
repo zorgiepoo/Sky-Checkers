@@ -50,7 +50,6 @@
 		7243ACE623C2EDA100A83ADD /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7243ACE523C2EDA100A83ADD /* Foundation.framework */; };
 		7243ACE823C2EDA900A83ADD /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7243ACE723C2EDA900A83ADD /* UIKit.framework */; };
 		7243ACEA23C2EDAE00A83ADD /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7243ACE923C2EDAE00A83ADD /* GameController.framework */; };
-		7243ACEB23C302C400A83ADD /* sc_icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 771B6C9F10BE60320014884B /* sc_icon.icns */; };
 		7243ACEC23C302CC00A83ADD /* Data in Resources */ = {isa = PBXBuildFile; fileRef = 77C7A2630CFA8C6500295420 /* Data */; };
 		7243ACED23C302F000A83ADD /* shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 721A007621AB11CC0099D093 /* shaders.metal */; };
 		7272B29E21E5CBEB00C305D3 /* renderer_projection.c in Sources */ = {isa = PBXBuildFile; fileRef = 7272B29D21E5CBEB00C305D3 /* renderer_projection.c */; };
@@ -63,7 +62,7 @@
 		72817BD22392B6FA00DB7677 /* app_osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 72817BD12392B6FA00DB7677 /* app_osx.m */; };
 		72817BD42392C33900DB7677 /* quit_apple.m in Sources */ = {isa = PBXBuildFile; fileRef = 72817BD32392C33800DB7677 /* quit_apple.m */; };
 		72817BD82392F98300DB7677 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 72817BD72392F98300DB7677 /* MainMenu.xib */; };
-		72817C6E23934C4100DB7677 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 72817C6D23934C4100DB7677 /* Assets.xcassets */; };
+		72817C6E23934C4100DB7677 /* Assets-ios.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 72817C6D23934C4100DB7677 /* Assets-ios.xcassets */; };
 		72817C7123934C4100DB7677 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 72817C6F23934C4100DB7677 /* LaunchScreen.storyboard */; };
 		72817C7923934DB500DB7677 /* audio_apple.m in Sources */ = {isa = PBXBuildFile; fileRef = 7282C624231CEC640063D3CB /* audio_apple.m */; };
 		72817C8A23934E7300DB7677 /* characters.c in Sources */ = {isa = PBXBuildFile; fileRef = 72817C8923934E7300DB7677 /* characters.c */; };
@@ -90,7 +89,6 @@
 		72817CA92393860100DB7677 /* animation.c in Sources */ = {isa = PBXBuildFile; fileRef = 774686A00B750F7200F73E92 /* animation.c */; };
 		72817CAA2393860600DB7677 /* ai.c in Sources */ = {isa = PBXBuildFile; fileRef = 778FA7900D0656FA002A3C26 /* ai.c */; };
 		72817CAB2393860E00DB7677 /* network.c in Sources */ = {isa = PBXBuildFile; fileRef = 772B6A840D15CBA000A216BD /* network.c */; };
-		72817CAE2393D45E00DB7677 /* sc_icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 771B6C9F10BE60320014884B /* sc_icon.icns */; };
 		72817CB123946C0000DB7677 /* quit_apple.m in Sources */ = {isa = PBXBuildFile; fileRef = 72817BD32392C33800DB7677 /* quit_apple.m */; };
 		7282C625231CEC640063D3CB /* audio_apple.m in Sources */ = {isa = PBXBuildFile; fileRef = 7282C624231CEC640063D3CB /* audio_apple.m */; };
 		729BE4C1236667EE00DC70F7 /* gamepad_osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 729BE4C0236667EE00DC70F7 /* gamepad_osx.m */; };
@@ -194,7 +192,7 @@
 		72817BD32392C33800DB7677 /* quit_apple.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = quit_apple.m; path = ../src/quit_apple.m; sourceTree = "<group>"; };
 		72817BD72392F98300DB7677 /* MainMenu.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MainMenu.xib; sourceTree = "<group>"; };
 		72817C5F23934C3E00DB7677 /* SkyCheckers.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SkyCheckers.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		72817C6D23934C4100DB7677 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		72817C6D23934C4100DB7677 /* Assets-ios.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Assets-ios.xcassets"; sourceTree = "<group>"; };
 		72817C7023934C4100DB7677 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		72817C7223934C4100DB7677 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		72817C8923934E7300DB7677 /* characters.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = characters.c; path = ../src/characters.c; sourceTree = "<group>"; };
@@ -482,7 +480,7 @@
 		72817C6023934C3E00DB7677 /* iOS */ = {
 			isa = PBXGroup;
 			children = (
-				72817C6D23934C4100DB7677 /* Assets.xcassets */,
+				72817C6D23934C4100DB7677 /* Assets-ios.xcassets */,
 				72817C6F23934C4100DB7677 /* LaunchScreen.storyboard */,
 				72817C7223934C4100DB7677 /* Info.plist */,
 				72EBBBA7239A1D8000DD4470 /* Frameworks */,
@@ -633,7 +631,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				7243ACEC23C302CC00A83ADD /* Data in Resources */,
-				7243ACEB23C302C400A83ADD /* sc_icon.icns in Resources */,
 				7243ACB623C2EB5900A83ADD /* LaunchScreen.storyboard in Resources */,
 				7243ACB323C2EB5900A83ADD /* Assets.xcassets in Resources */,
 			);
@@ -643,10 +640,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				72817CAE2393D45E00DB7677 /* sc_icon.icns in Resources */,
 				72817C9823937FF600DB7677 /* Data in Resources */,
 				72817C7123934C4100DB7677 /* LaunchScreen.storyboard in Resources */,
-				72817C6E23934C4100DB7677 /* Assets.xcassets in Resources */,
+				72817C6E23934C4100DB7677 /* Assets-ios.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -926,6 +922,7 @@
 		72817C7623934C4100DB7677 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -969,6 +966,7 @@
 		72817C7723934C4100DB7677 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -1006,6 +1004,7 @@
 		72817C7823934C4100DB7677 /* Profiling-Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
