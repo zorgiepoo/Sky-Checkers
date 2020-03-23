@@ -13,7 +13,7 @@
 		720D528B23D3BA65002C9972 /* texture.c in Sources */ = {isa = PBXBuildFile; fileRef = 720D528823D397DC002C9972 /* texture.c */; };
 		721A007121AA7B420099D093 /* renderer_metal.m in Sources */ = {isa = PBXBuildFile; fileRef = 721A007021AA7B420099D093 /* renderer_metal.m */; };
 		721A007721AB11CD0099D093 /* shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 721A007621AB11CC0099D093 /* shaders.metal */; };
-		7243ACB323C2EB5900A83ADD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7243ACB223C2EB5900A83ADD /* Assets.xcassets */; };
+		7243ACB323C2EB5900A83ADD /* Assets-tvOS.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7243ACB223C2EB5900A83ADD /* Assets-tvOS.xcassets */; };
 		7243ACB623C2EB5900A83ADD /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7243ACB423C2EB5900A83ADD /* LaunchScreen.storyboard */; };
 		7243ACBE23C2ED7300A83ADD /* defaults_ios.m in Sources */ = {isa = PBXBuildFile; fileRef = 72FC1202239E0E5700E97E45 /* defaults_ios.m */; };
 		7243ACBF23C2ED7300A83ADD /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 774A441E0B2BEA57000C04D9 /* main.c */; };
@@ -160,7 +160,7 @@
 		721A007621AB11CC0099D093 /* shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; name = shaders.metal; path = ../src/shaders.metal; sourceTree = "<group>"; };
 		721A007821AB96C60099D093 /* metal_indices.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = metal_indices.h; path = ../src/metal_indices.h; sourceTree = "<group>"; };
 		7243ACA723C2EB5700A83ADD /* SkyCheckers.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SkyCheckers.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		7243ACB223C2EB5900A83ADD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		7243ACB223C2EB5900A83ADD /* Assets-tvOS.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Assets-tvOS.xcassets"; sourceTree = "<group>"; };
 		7243ACB523C2EB5900A83ADD /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		7243ACB723C2EB5900A83ADD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7243ACD923C2ED8700A83ADD /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.2.sdk/System/Library/Frameworks/Metal.framework; sourceTree = DEVELOPER_DIR; };
@@ -443,7 +443,7 @@
 			isa = PBXGroup;
 			children = (
 				7243ACD823C2ED8600A83ADD /* Frameworks */,
-				7243ACB223C2EB5900A83ADD /* Assets.xcassets */,
+				7243ACB223C2EB5900A83ADD /* Assets-tvOS.xcassets */,
 				7243ACB423C2EB5900A83ADD /* LaunchScreen.storyboard */,
 				7243ACB723C2EB5900A83ADD /* Info.plist */,
 			);
@@ -632,7 +632,7 @@
 			files = (
 				7243ACEC23C302CC00A83ADD /* Data in Resources */,
 				7243ACB623C2EB5900A83ADD /* LaunchScreen.storyboard in Resources */,
-				7243ACB323C2EB5900A83ADD /* Assets.xcassets in Resources */,
+				7243ACB323C2EB5900A83ADD /* Assets-tvOS.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
