@@ -428,8 +428,10 @@ static void readDefaults(void)
 	readDefaultKey(file, "Net name", gUserNameString, sizeof(gUserNameString));
 	if (strlen(gUserNameString) == 0)
 	{
+#if PLATFORM_OSX
 		getDefaultUserName(gUserNameString, MAX_USER_NAME_SIZE - 1);
 		if (strlen(gUserNameString) == 0)
+#endif
 		{
 			char *randomNames[] = { "Tale", "Backer", "Hop", "Expel", "Rida", "Tao", "Eyez", "Phia", "Sync", "Witty", "Poet", "Roost", "Kuro", "Spot", "Carb", "Unow", "Gil", "Needle", "Oxy", "Kale" };
 			

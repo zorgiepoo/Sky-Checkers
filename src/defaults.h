@@ -19,6 +19,10 @@
 
 #include <stdio.h>
 #include "renderer_types.h"
+#include "platforms.h"
 
 FILE *getUserDataFile(const char *mode);
+
+#if PLATFORM_OSX
 void getDefaultUserName(char *defaultUserName, int maxLength);
+#endif
