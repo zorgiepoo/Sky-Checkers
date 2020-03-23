@@ -47,11 +47,3 @@
 	}
 	return NULL;
  }
-
- void getDefaultUserName(char *defaultUserName, int maxLength)
- {
- 	if (maxLength > 0)
- 	{
- 		defaultUserName[0] = '\0';
- 	}
- }

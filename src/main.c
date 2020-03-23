@@ -212,144 +212,31 @@ static void initScene(Renderer *renderer)
 #endif
 }
 
-static bool readDefaultLine(FILE *file, char *lineBuffer, size_t maxLineSize)
-{
-	memset(lineBuffer, 0, maxLineSize);
-	
-	size_t bufferIndex = 0;
-	while (true)
-	{
-		int character = fgetc(file);
-		if (ferror(file) != 0)
-		{
-			return false;
-		}
-		
-		if (character == '\n' || character == '\r' || character == EOF)
-		{
-			break;
-		}
-		else if (bufferIndex < maxLineSize - 1)
-		{
-			lineBuffer[bufferIndex] = character;
-			bufferIndex++;
-		}
-		else
-		{
-			fprintf(stderr, "Line in defaults is too big...: %s\n", lineBuffer);
-			return false;
-		}
-	}
-	
-	return true;
-}
-
-static bool readDefaultKey(FILE *file, const char *key, char *valueBuffer, size_t maxValueSize)
-{
-	memset(valueBuffer, 0, maxValueSize);
-	
-	if (file == NULL)
-	{
-		return false;
-	}
-	
-	long initialOffset = ftell(file);
-	if (initialOffset == -1)
-	{
-		return false;
-	}
-	
-	char lineBuffer[512];
-	bool hitEOFOnce = false;
-	while (true)
-	{
-		if (!readDefaultLine(file, lineBuffer, sizeof(lineBuffer)))
-		{
-			return false;
-		}
-		
-		char *endPointer = strstr(lineBuffer, ": ");
-		if (endPointer != NULL && strncmp(lineBuffer, key, strlen(key)) == 0)
-		{
-			strncpy(valueBuffer, endPointer + 2, maxValueSize - 1);
-			return true;
-		}
-		
-		if (feof(file) != 0)
-		{
-			if (hitEOFOnce)
-			{
-				return false;
-			}
-			else
-			{
-				hitEOFOnce = true;
-				if (fseek(file, 0, SEEK_SET) == -1)
-				{
-					return false;
-				}
-			}
-		}
-		
-		if (hitEOFOnce)
-		{
-			long currentOffset = ftell(file);
-			if (currentOffset == -1)
-			{
-				return false;
-			}
-			
-			if (currentOffset >= initialOffset)
-			{
-				return false;
-			}
-		}
-	}
-	
-	return false;
-}
-
-static int readDefaultIntKey(FILE *file, const char *key, int defaultValue)
-{
-	char valueBuffer[512];
-	if (readDefaultKey(file, key, valueBuffer, sizeof(valueBuffer)))
-	{
-		return atoi(valueBuffer);
-	}
-	return defaultValue;
-}
-
-static bool readDefaultBoolKey(FILE *file, const char *key, bool defaultValue)
-{
-	int value = readDefaultIntKey(file, key, defaultValue ? 1 : 0);
-	return (value != 0);
-}
-
 #if !PLATFORM_IOS
-static int readDefaultKeyCode(FILE *file, const char *characterName, const char *keyType, ZGConstantKeyCode defaultKeyCode)
+static int readDefaultKeyCode(Defaults defaults, const char *characterName, const char *keyType, ZGConstantKeyCode defaultKeyCode)
 {
 	char keyBuffer[512] = {0};
 	snprintf(keyBuffer, sizeof(keyBuffer), "%s %s", characterName, keyType);
 	
-	return readDefaultIntKey(file, keyBuffer, defaultKeyCode);
+	return readDefaultIntKey(defaults, keyBuffer, defaultKeyCode);
 }
 
-static void readCharacterKeyboardDefaults(FILE *file, const char *characterName, Input *input, ZGConstantKeyCode rightDefault, ZGConstantKeyCode leftDefault, ZGConstantKeyCode upDefault, ZGConstantKeyCode downDefault, ZGConstantKeyCode weaponDefault)
+static void readCharacterKeyboardDefaults(Defaults defaults, const char *characterName, Input *input, ZGConstantKeyCode rightDefault, ZGConstantKeyCode leftDefault, ZGConstantKeyCode upDefault, ZGConstantKeyCode downDefault, ZGConstantKeyCode weaponDefault)
 {
-	int right = readDefaultKeyCode(file, characterName, "key right", rightDefault);
-	int left = readDefaultKeyCode(file, characterName, "key left", leftDefault);
-	int up = readDefaultKeyCode(file, characterName, "key up", upDefault);
-	int down = readDefaultKeyCode(file, characterName, "key down", downDefault);
-	int weapon = readDefaultKeyCode(file, characterName, "key weapon", weaponDefault);
+	int right = readDefaultKeyCode(defaults, characterName, "key right", rightDefault);
+	int left = readDefaultKeyCode(defaults, characterName, "key left", leftDefault);
+	int up = readDefaultKeyCode(defaults, characterName, "key up", upDefault);
+	int down = readDefaultKeyCode(defaults, characterName, "key down", downDefault);
+	int weapon = readDefaultKeyCode(defaults, characterName, "key weapon", weaponDefault);
 	
 	initInput(input);
 	setInputKeys(input, right, left, up, down, weapon);
 }
 #endif
 
-static void readDefaultCharacterState(FILE *file, const char *defaultKey, Character *character, int defaultMode)
+static void readDefaultCharacterState(Defaults defaults, const char *defaultKey, Character *character, int defaultMode)
 {
-	character->state = readDefaultIntKey(file, defaultKey, defaultMode);
+	character->state = readDefaultIntKey(defaults, defaultKey, defaultMode);
 	if (character->state != CHARACTER_HUMAN_STATE && character->state != CHARACTER_AI_STATE)
 	{
 		character->state = defaultMode;
@@ -358,14 +245,14 @@ static void readDefaultCharacterState(FILE *file, const char *defaultKey, Charac
 
 static void readDefaults(void)
 {
-	FILE *file = getUserDataFile("rb");
+	Defaults defaults = userDefaultsForReading();
 
 	// conole flag default
-	gConsoleFlag = readDefaultBoolKey(file, "Console flag", false);
+	gConsoleFlag = readDefaultBoolKey(defaults, "Console flag", false);
 
 	// video defaults
-	int windowWidth = readDefaultIntKey(file, "screen width", 800);
-	int windowHeight = readDefaultIntKey(file, "screen height", 500);
+	int windowWidth = readDefaultIntKey(defaults, "screen width", 800);
+	int windowHeight = readDefaultIntKey(defaults, "screen height", 500);
 	
 	if (windowWidth <= 0 || windowHeight <= 0)
 	{
@@ -378,10 +265,10 @@ static void readDefaults(void)
 		gWindowHeight = windowHeight;
 	}
  
-	gFsaaFlag = readDefaultBoolKey(file, "FSAA flag", true);
-	gFullscreenFlag = readDefaultBoolKey(file, "Fullscreen flag", false);
+	gFsaaFlag = readDefaultBoolKey(defaults, "FSAA flag", true);
+	gFullscreenFlag = readDefaultBoolKey(defaults, "Fullscreen flag", false);
 
-	gCharacterLives = readDefaultIntKey(file, "Number of lives", MAX_CHARACTER_LIVES / 2);
+	gCharacterLives = readDefaultIntKey(defaults, "Number of lives", MAX_CHARACTER_LIVES / 2);
 	if (gCharacterLives > MAX_CHARACTER_LIVES)
 	{
 		gCharacterLives = MAX_CHARACTER_LIVES;
@@ -392,31 +279,31 @@ static void readDefaults(void)
 	}
 
 	// character states
-	readDefaultCharacterState(file, "Pink Bubblegum state", &gPinkBubbleGum, CHARACTER_HUMAN_STATE);
-	readDefaultCharacterState(file, "Red Rover state", &gRedRover, CHARACTER_AI_STATE);
-	readDefaultCharacterState(file, "Green Tree state", &gGreenTree, CHARACTER_AI_STATE);
-	readDefaultCharacterState(file, "Blue Lightning state", &gBlueLightning, CHARACTER_AI_STATE);
+	readDefaultCharacterState(defaults, "Pink Bubblegum state", &gPinkBubbleGum, CHARACTER_HUMAN_STATE);
+	readDefaultCharacterState(defaults, "Red Rover state", &gRedRover, CHARACTER_AI_STATE);
+	readDefaultCharacterState(defaults, "Green Tree state", &gGreenTree, CHARACTER_AI_STATE);
+	readDefaultCharacterState(defaults, "Blue Lightning state", &gBlueLightning, CHARACTER_AI_STATE);
 	
-	gAIMode = readDefaultIntKey(file, "AI Mode", AI_EASY_MODE);
+	gAIMode = readDefaultIntKey(defaults, "AI Mode", AI_EASY_MODE);
 	if (gAIMode != AI_EASY_MODE && gAIMode != AI_MEDIUM_MODE && gAIMode != AI_HARD_MODE)
 	{
 		gAIMode = AI_EASY_MODE;
 	}
 	
-	gNumberOfNetHumans = readDefaultIntKey(file, "Number of Net Humans", 1);
+	gNumberOfNetHumans = readDefaultIntKey(defaults, "Number of Net Humans", 1);
 	if (gNumberOfNetHumans < 0 || gNumberOfNetHumans > 3)
 	{
 		gNumberOfNetHumans = 1;
 	}
 	
 #if !PLATFORM_IOS
-	readCharacterKeyboardDefaults(file, "Pink Bubblegum", &gPinkBubbleGumInput, ZG_KEYCODE_RIGHT, ZG_KEYCODE_LEFT, ZG_KEYCODE_UP, ZG_KEYCODE_DOWN, ZG_KEYCODE_SPACE);
-	readCharacterKeyboardDefaults(file, "Red Rover", &gRedRoverInput, ZG_KEYCODE_B, ZG_KEYCODE_C, ZG_KEYCODE_F, ZG_KEYCODE_V, ZG_KEYCODE_G);
-	readCharacterKeyboardDefaults(file, "Green Tree", &gGreenTreeInput, ZG_KEYCODE_L, ZG_KEYCODE_J, ZG_KEYCODE_I, ZG_KEYCODE_K, ZG_KEYCODE_M);
-	readCharacterKeyboardDefaults(file, "Blue Lightning", &gBlueLightningInput, ZG_KEYCODE_D, ZG_KEYCODE_A, ZG_KEYCODE_W, ZG_KEYCODE_S, ZG_KEYCODE_Z);
+	readCharacterKeyboardDefaults(defaults, "Pink Bubblegum", &gPinkBubbleGumInput, ZG_KEYCODE_RIGHT, ZG_KEYCODE_LEFT, ZG_KEYCODE_UP, ZG_KEYCODE_DOWN, ZG_KEYCODE_SPACE);
+	readCharacterKeyboardDefaults(defaults, "Red Rover", &gRedRoverInput, ZG_KEYCODE_B, ZG_KEYCODE_C, ZG_KEYCODE_F, ZG_KEYCODE_V, ZG_KEYCODE_G);
+	readCharacterKeyboardDefaults(defaults, "Green Tree", &gGreenTreeInput, ZG_KEYCODE_L, ZG_KEYCODE_J, ZG_KEYCODE_I, ZG_KEYCODE_K, ZG_KEYCODE_M);
+	readCharacterKeyboardDefaults(defaults, "Blue Lightning", &gBlueLightningInput, ZG_KEYCODE_D, ZG_KEYCODE_A, ZG_KEYCODE_W, ZG_KEYCODE_S, ZG_KEYCODE_Z);
 #endif
 	
-	readDefaultKey(file, "Server IP Address", gServerAddressString, sizeof(gServerAddressString));
+	readDefaultKey(defaults, "Server IP Address", gServerAddressString, sizeof(gServerAddressString));
 #if !PLATFORM_IOS
 	if (strlen(gServerAddressString) == 0)
 	{
@@ -425,7 +312,7 @@ static void readDefaults(void)
 #endif
 	gServerAddressStringIndex = (int)strlen(gServerAddressString);
 	
-	readDefaultKey(file, "Net name", gUserNameString, sizeof(gUserNameString));
+	readDefaultKey(defaults, "Net name", gUserNameString, sizeof(gUserNameString));
 	if (strlen(gUserNameString) == 0)
 	{
 #if PLATFORM_OSX
@@ -443,97 +330,80 @@ static void readDefaults(void)
 	}
 	gUserNameStringIndex = (int)strlen(gUserNameString);
 	
-	gAudioEffectsFlag = readDefaultBoolKey(file, "Audio effects", true);
-	gAudioMusicFlag = readDefaultBoolKey(file, "Music", true);
+	gAudioEffectsFlag = readDefaultBoolKey(defaults, "Audio effects", true);
+	gAudioMusicFlag = readDefaultBoolKey(defaults, "Music", true);
 	
-	gPlayedGame = readDefaultBoolKey(file, "Played", false);
+	gPlayedGame = readDefaultBoolKey(defaults, "Played", false);
 	
-	if (file != NULL)
-	{
-		fclose(file);
-	}
+	closeDefaults(defaults);
 }
 
 #if !PLATFORM_IOS
-static void writeCharacterInput(FILE *fp, const char *characterName, Input *input)
+static void writeCharacterInput(Defaults defaults, const char *characterName, Input *input)
 {
-	fprintf(fp, "%s key right: %i\n", characterName, input->r_id);
-	fprintf(fp, "%s key left: %i\n", characterName, input->l_id);
-	fprintf(fp, "%s key up: %i\n", characterName, input->u_id);
-	fprintf(fp, "%s key down: %i\n", characterName, input->d_id);
-	fprintf(fp, "%s key weapon: %i\n", characterName, input->weap_id);
+	char keyBuffer[256] = {0};
 	
-	fprintf(fp, "\n");
+	snprintf(keyBuffer, sizeof(keyBuffer), "%s key right", characterName);
+	writeDefaultIntKey(defaults, keyBuffer, input->r_id);
+	
+	snprintf(keyBuffer, sizeof(keyBuffer), "%s key left", characterName);
+	writeDefaultIntKey(defaults, keyBuffer, input->l_id);
+	
+	snprintf(keyBuffer, sizeof(keyBuffer), "%s key up", characterName);
+	writeDefaultIntKey(defaults, keyBuffer, input->u_id);
+	
+	snprintf(keyBuffer, sizeof(keyBuffer), "%s key down", characterName);
+	writeDefaultIntKey(defaults, keyBuffer, input->d_id);
+	
+	snprintf(keyBuffer, sizeof(keyBuffer), "%s key weapon", characterName);
+	writeDefaultIntKey(defaults, keyBuffer, input->weap_id);
 }
 #endif
 
 static void writeDefaults(Renderer *renderer)
 {
-	FILE *fp = getUserDataFile("wb");
-
-	if (fp == NULL)
-	{
-		fprintf(stderr, "writeDefaults: file pointer is NULL\n");
-		return;
-	}
-
-	// conole flag default
-	fprintf(fp, "Console flag: %i\n\n", gConsoleFlag);
+	Defaults defaults = userDefaultsForWriting();
+	
+	writeDefaultIntKey(defaults, "Defaults version", CURRENT_DEFAULT_VERSION);
+	
+	writeDefaultIntKey(defaults, "Console flag", gConsoleFlag);
 
 	// video defaults
-	fprintf(fp, "screen width: %i\n", renderer->windowWidth);
-	fprintf(fp, "screen height: %i\n", renderer->windowHeight);
+	writeDefaultIntKey(defaults, "screen width", renderer->windowWidth);
+	writeDefaultIntKey(defaults, "screen height", renderer->windowHeight);
 	
-	fprintf(fp, "FSAA flag: %i\n", gFsaaFlag);
-	fprintf(fp, "Fullscreen flag: %i\n", renderer->fullscreen);
-
-	fprintf(fp, "\n");
-
-	fprintf(fp, "Number of lives: %i\n", gCharacterLives);
-
-	fprintf(fp, "\n");
-
+	writeDefaultIntKey(defaults, "FSAA flag", gFsaaFlag);
+	writeDefaultIntKey(defaults, "Fullscreen flag", renderer->fullscreen);
+	
+	writeDefaultIntKey(defaults, "Number of lives", gCharacterLives);
+	
 	// character states
-	fprintf(fp, "Pink Bubblegum state: %i\n", offlineCharacterState(&gPinkBubbleGum));
-	fprintf(fp, "Red Rover state: %i\n", offlineCharacterState(&gRedRover));
-	fprintf(fp, "Green Tree state: %i\n", offlineCharacterState(&gGreenTree));
-	fprintf(fp, "Blue Lightning state: %i\n", offlineCharacterState(&gBlueLightning));
-
-	fprintf(fp, "AI Mode: %i\n", gAIMode);
-	fprintf(fp, "Number of Net Humans: %i\n", gNumberOfNetHumans);
-
-	fprintf(fp, "\n");
+	writeDefaultIntKey(defaults, "Pink Bubblegum state", offlineCharacterState(&gPinkBubbleGum));
+	writeDefaultIntKey(defaults, "Red Rover state", offlineCharacterState(&gRedRover));
+	writeDefaultIntKey(defaults, "Green Tree state", offlineCharacterState(&gGreenTree));
+	writeDefaultIntKey(defaults, "Blue Lightning state", offlineCharacterState(&gBlueLightning));
+	
+	
+	writeDefaultIntKey(defaults, "AI Mode", gAIMode);
+	writeDefaultIntKey(defaults, "Number of Net Humans", gNumberOfNetHumans);
 
 	// Character defaults
-	
 #if !PLATFORM_IOS
-	writeCharacterInput(fp, "Pink Bubblegum", &gPinkBubbleGumInput);
-	fprintf(fp, "\n");
-	
-	writeCharacterInput(fp, "Red Rover", &gRedRoverInput);
-	fprintf(fp, "\n");
-	
-	writeCharacterInput(fp, "Green Tree", &gGreenTreeInput);
-	fprintf(fp, "\n");
-	
-	writeCharacterInput(fp, "Blue Lightning", &gBlueLightningInput);
-	fprintf(fp, "\n");
+	writeCharacterInput(defaults, "Pink Bubblegum", &gPinkBubbleGumInput);
+	writeCharacterInput(defaults, "Red Rover", &gRedRoverInput);
+	writeCharacterInput(defaults, "Green Tree", &gGreenTreeInput);
+	writeCharacterInput(defaults, "Blue Lightning", &gBlueLightningInput);
 #endif
 	
-	fprintf(fp, "Server IP Address: %s\n", gServerAddressString);
+	writeDefaultStringKey(defaults, "Server IP Address", gServerAddressString);
+	writeDefaultStringKey(defaults, "Net name", gUserNameString);
+	
+	writeDefaultIntKey(defaults, "Audio effects", gAudioEffectsFlag);
+	writeDefaultIntKey(defaults, "Music", gAudioMusicFlag);
+	
+	writeDefaultIntKey(defaults, "Played", gPlayedGame);
 
-	fprintf(fp, "\n");
-	fprintf(fp, "Net name: %s\n", gUserNameString);
-	
-	fprintf(fp, "\n");
-	fprintf(fp, "Audio effects: %i\n", gAudioEffectsFlag);
-	fprintf(fp, "Music: %i\n", gAudioMusicFlag);
-	
-	fprintf(fp, "\nPlayed: %i\n", gPlayedGame);
-	
-	fprintf(fp, "\nDefaults version: %d\n", CURRENT_DEFAULT_VERSION);
-
-	fclose(fp);
+	closeDefaults(defaults);
 }
 
 void initGame(ZGWindow *window, bool firstGame, bool tutorial)

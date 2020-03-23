@@ -17,11 +17,29 @@
  * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
+
 #include <stdio.h>
-#include "renderer_types.h"
+#include <stdbool.h>
+
 #include "platforms.h"
 
-FILE *getUserDataFile(const char *mode);
+typedef struct
+{
+	FILE *file;
+} Defaults;
+
+Defaults userDefaultsForReading(void);
+Defaults userDefaultsForWriting(void);
+
+void closeDefaults(Defaults defaults);
+
+bool readDefaultKey(Defaults defaults, const char *key, char *valueBuffer, size_t maxValueSize);
+int readDefaultIntKey(Defaults defaults, const char *key, int defaultValue);
+bool readDefaultBoolKey(Defaults defaults, const char *key, bool defaultValue);
+
+void writeDefaultIntKey(Defaults defaults, const char *key, int value);
+void writeDefaultStringKey(Defaults defaults, const char *key, const char *value);
 
 #if PLATFORM_OSX
 void getDefaultUserName(char *defaultUserName, int maxLength);

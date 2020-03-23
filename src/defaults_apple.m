@@ -20,6 +20,8 @@
 #import "defaults.h"
 #import <Foundation/Foundation.h>
 
+#if PLATFORM_OSX
+
 FILE *getUserDataFile(const char *mode)
 {
 	FILE *file = NULL;
@@ -62,3 +64,25 @@ void getDefaultUserName(char *defaultUserName, int maxLength)
 		}
 	}
 }
+
+#elif PLATFORM_IOS
+
+FILE *getUserDataFile(const char *mode)
+{
+	FILE *file = NULL;
+	NSArray *userDocumentPaths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+	if (userDocumentPaths.count > 0)
+	{
+		NSString *userDocumentPath = [userDocumentPaths objectAtIndex:0];
+		NSString *skyCheckersPath = [userDocumentPath stringByAppendingPathComponent:@"SkyCheckers"];
+		
+		if ([[NSFileManager defaultManager] fileExistsAtPath:skyCheckersPath] || [[NSFileManager defaultManager] createDirectoryAtPath:skyCheckersPath withIntermediateDirectories:NO attributes:nil error:NULL])
+		{
+			file = fopen([[skyCheckersPath stringByAppendingPathComponent:@"user_data.txt"] UTF8String], mode);
+		}
+	}
+	
+	return file;
+}
+
+#endif
