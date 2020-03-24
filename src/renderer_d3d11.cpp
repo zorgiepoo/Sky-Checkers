@@ -424,8 +424,8 @@ extern "C" bool createRenderer_d3d11(Renderer *renderer, const char *windowTitle
 	ID3D11BlendState *oneMinusAlphaBlendState = nullptr;
 	ID3D11RasterizerState *rasterState = nullptr;
 
-	renderer->windowWidth = max(windowWidth, 1);
-	renderer->windowHeight = max(windowHeight, 1);
+	renderer->windowWidth = windowWidth > 1 ? windowWidth : 1;
+	renderer->windowHeight = windowHeight > 1 ? windowHeight : 1;
 
 	renderer->window = renderer->window = ZGCreateWindow(windowTitle, windowWidth, windowHeight, nullptr);
 	if (renderer->window == NULL)

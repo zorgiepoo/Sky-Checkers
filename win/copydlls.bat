@@ -1,5 +1,5 @@
 
-xcopy /y /d "%~1\SDL2-2.0.9\lib\x64\SDL2.dll" "%~2"
+xcopy /y /d "%~1\SDL2-2.0.12\lib\x64\SDL2.dll" "%~2"
 
 
 xcopy /y /d "%~1\SDL2_mixer-2.0.4\lib\x64\SDL2_mixer.dll" "%~2"
