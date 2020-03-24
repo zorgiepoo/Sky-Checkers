@@ -245,6 +245,24 @@ const char *gamepadName(GamepadManager *gamepadManager, GamepadIndex index)
 
 uint8_t gamepadRank(GamepadManager *gamepadManager, GamepadIndex index)
 {
+#if SDL_VERSION_ATLEAST(2, 0, 12)
+	SDL_GameController* controller = SDL_GameControllerFromInstanceID(index);
+
+	switch (SDL_GameControllerGetType(controller))
+	{
+	case SDL_CONTROLLER_TYPE_UNKNOWN:
+		return 1;
+	case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO:
+	case SDL_CONTROLLER_TYPE_PS3:
+	case SDL_CONTROLLER_TYPE_PS4:
+		return 2;
+	case SDL_CONTROLLER_TYPE_XBOX360:
+	case SDL_CONTROLLER_TYPE_XBOXONE:
+		return 4 + SDL_GameControllerGetPlayerIndex(controller);
+	}
+#else
+#warning Upgrade to SDL 2_0_12 for full controller support
+#endif
 	return 0;
 }
 
