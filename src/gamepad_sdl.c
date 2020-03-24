@@ -257,8 +257,19 @@ uint8_t gamepadRank(GamepadManager *gamepadManager, GamepadIndex index)
 	case SDL_CONTROLLER_TYPE_PS4:
 		return 2;
 	case SDL_CONTROLLER_TYPE_XBOX360:
-	case SDL_CONTROLLER_TYPE_XBOXONE:
-		return 4 + SDL_GameControllerGetPlayerIndex(controller);
+	case SDL_CONTROLLER_TYPE_XBOXONE: {
+		int playerIndex = SDL_GameControllerGetPlayerIndex(controller);
+		int rankIndex;
+		if (playerIndex >= 0 && playerIndex < 4)
+		{
+			rankIndex = 3 - playerIndex;
+		}
+		else
+		{
+			rankIndex = -1;
+		}
+		return 4 + rankIndex;
+	}
 	}
 #else
 #warning Upgrade to SDL 2_0_12 for full controller support
