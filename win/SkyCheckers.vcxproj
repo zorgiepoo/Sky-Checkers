@@ -63,6 +63,7 @@
     <ClCompile Include="..\src\characters.c" />
     <ClCompile Include="..\src\collision.c" />
     <ClCompile Include="..\src\console.c" />
+    <ClCompile Include="..\src\defaults_file.c" />
     <ClCompile Include="..\src\defaults_win.c" />
     <ClCompile Include="..\src\font_sdl.c" />
     <ClCompile Include="..\src\gamepad_sdl.c" />
