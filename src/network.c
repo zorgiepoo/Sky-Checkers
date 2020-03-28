@@ -1567,8 +1567,6 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 		}
 	}
 	
-	deinitializeNetwork();
-	
 	return 0;
 }
 
