@@ -2413,7 +2413,7 @@ static void _pushNetworkMessage(GameMessageArray *messageArray, GameMessage mess
 	
 	if (messageArray->count >= messageArray->capacity)
 	{
-		messageArray->capacity = (uint32_t)(messageArray->capacity * 1.6f);
+		uint32_t newCapacity = (uint32_t)(messageArray->capacity * 1.6f);
 		void *newBuffer = realloc(messageArray->messages, messageArray->capacity * sizeof(message));
 		if (newBuffer == NULL)
 		{
@@ -2422,6 +2422,7 @@ static void _pushNetworkMessage(GameMessageArray *messageArray, GameMessage mess
 		else
 		{
 			messageArray->messages = newBuffer;
+			messageArray->capacity = newCapacity;
 		}
 	}
 	
