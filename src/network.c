@@ -1635,7 +1635,7 @@ int clientNetworkThread(void *context)
 					else
 					{
 						bool foundAck = false;
-						uint32_t maxPacketCount = receivedAckPacketCount < (uint32_t)receivedAckPacketsCapacity ? receivedAckPacketCount + 1 : (uint32_t)receivedAckPacketsCapacity;
+						uint32_t maxPacketCount = receivedAckPacketCount < (uint32_t)receivedAckPacketsCapacity ? receivedAckPacketCount : (uint32_t)receivedAckPacketsCapacity;
 						for (uint32_t packetIndex = 0; packetIndex < maxPacketCount; packetIndex++)
 						{
 							if (message.packetNumber == receivedAckPacketNumbers[packetIndex])
