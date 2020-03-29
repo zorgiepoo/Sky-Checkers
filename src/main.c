@@ -1105,7 +1105,7 @@ static void drawScene(Renderer *renderer)
 						if (gNetworkConnection->numberOfPlayersToWaitFor > 1)
 						{
 							char buffer[256] = {0};
-							snprintf(buffer, sizeof(buffer) - 1, "Waiting for %d players to connect...", gNetworkConnection->numberOfPlayersToWaitFor);
+							snprintf(buffer, sizeof(buffer) - 1, "Waiting for %d players to connect…", gNetworkConnection->numberOfPlayersToWaitFor);
 							
 							mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-6.8f, 1.2f, 0.0f}), modelViewMatrix);
 							
@@ -1115,13 +1115,13 @@ static void drawScene(Renderer *renderer)
 						{
 							mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-6.8f, 1.2f, 0.0f}), modelViewMatrix);
 							
-							drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, scale, "Waiting for players to connect...");
+							drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, scale, "Waiting for players to connect…");
 						}
 						else
 						{
 							mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-6.8f, 1.2f, 0.0f}), modelViewMatrix);
 							
-							drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, scale, "Waiting for 1 player to connect...");
+							drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, scale, "Waiting for 1 player to connect…");
 						}
 						
 						if (gNetworkConnection->type == NETWORK_SERVER_TYPE && strlen(gNetworkConnection->ipAddress) > 0)
@@ -1333,7 +1333,7 @@ static void drawScene(Renderer *renderer)
 			color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 1.0f};
 			
 			pushDebugGroup(renderer, "Connecting Text");
-			drawString(renderer, translationMatrix, textColor, 50.0f / 14.0f, 5.0f / 14.0f, "Connecting to server...");
+			drawString(renderer, translationMatrix, textColor, 50.0f / 14.0f, 5.0f / 14.0f, "Connecting to server…");
 			popDebugGroup(renderer);
 		}
 		else /* if (gGameState == GAME_STATE_OFF) */
