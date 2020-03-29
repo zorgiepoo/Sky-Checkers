@@ -273,6 +273,8 @@ void syncNetworkState(ZGWindow *window, float timeDelta, GameState gameState)
 					if (gNetworkConnection->type == NETWORK_SERVER_TYPE)
 					{
 						character->state = CHARACTER_AI_STATE;
+						
+						gNetworkConnection->clientHalfPings[characterID - 1] = 0;
 					}
 					
 					break;
@@ -400,7 +402,6 @@ void syncNetworkState(ZGWindow *window, float timeDelta, GameState gameState)
 						{
 							gNetworkConnection->clientHalfPings[message.addressIndex] = 0;
 						}
-
 					}
 					
 					break;

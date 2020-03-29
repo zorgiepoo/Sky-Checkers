@@ -545,6 +545,29 @@ static void drawCharacterPendingController(Renderer *renderer, mat4_t modelViewM
 }
 #endif
 
+#define BAD_HALF_PING 185
+static void drawCharacterLaggingNote(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, Character *character)
+{
+	if (gNetworkConnection != NULL)
+	{
+		if (gNetworkConnection->type == NETWORK_SERVER_TYPE && gNetworkConnection->character != character)
+		{
+			int addressIndex = IDOfCharacter(character) - 1;
+			if (gNetworkConnection->clientHalfPings[addressIndex] >= BAD_HALF_PING)
+			{
+				drawCharacterControllerName(renderer, modelViewMatrix, color, "Lagging…");
+			}
+		}
+		else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE && gNetworkConnection->character == character)
+		{
+			if (gNetworkConnection->serverHalfPing >= BAD_HALF_PING)
+			{
+				drawCharacterControllerName(renderer, modelViewMatrix, color, "Lagging…");
+			}
+		}
+	}
+}
+
 #define LIVES_DRAWING_OFFSET 0.8f
 void drawAllCharacterInfo(Renderer *renderer, const mat4_t *iconTranslations, bool displayControllerName)
 {
@@ -585,6 +608,11 @@ void drawAllCharacterInfo(Renderer *renderer, const mat4_t *iconTranslations, bo
 	drawCharacterPendingController(renderer, greenTreeModelViewMatrix, greenTreeColor, &gGreenTree);
 	drawCharacterPendingController(renderer, blueLightningModelViewMatrix, blueLightningColor, &gBlueLightning);
 #endif
+	
+	drawCharacterLaggingNote(renderer, pinkBubbleGumModelViewMatrix, pinkBubbleGumColor, &gPinkBubbleGum);
+	drawCharacterLaggingNote(renderer, redRoverModelViewMatrix, redRoverColor, &gRedRover);
+	drawCharacterLaggingNote(renderer, greenTreeModelViewMatrix, greenTreeColor, &gGreenTree);
+	drawCharacterLaggingNote(renderer, blueLightningModelViewMatrix, blueLightningColor, &gBlueLightning);
 }
 
 /*
