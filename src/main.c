@@ -1015,7 +1015,7 @@ static void drawScene(Renderer *renderer)
 #else
 					const char *subtext = "For the keyboard.";
 #endif
-					ZGFloat subtextScale = scale * 0.8f;
+					ZGFloat subtextScale = scale * 0.85f;
 					mat4_t tutorialSubtextModelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, -1.3f, 0.0f}), tutorialModelViewMatrix);
 					drawStringScaled(renderer, tutorialSubtextModelViewMatrix, textColor, subtextScale, subtext);
 				}
