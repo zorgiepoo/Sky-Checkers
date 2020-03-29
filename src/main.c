@@ -450,6 +450,9 @@ void initGame(ZGWindow *window, bool firstGame, bool tutorial)
 		spawnCharacter(characterB);
 		spawnCharacter(characterC);
 		spawnCharacter(characterD);
+		
+		// Start tutorial with black cover
+		gTutorialCoverTimer = 4.0f;
 	}
 
 	startAnimation();
