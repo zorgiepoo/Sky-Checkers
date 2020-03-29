@@ -1127,11 +1127,11 @@ static void drawScene(Renderer *renderer)
 						if (gNetworkConnection->type == NETWORK_SERVER_TYPE && strlen(gNetworkConnection->ipAddress) > 0)
 						{
 							float yLocation = gGameState == GAME_STATE_PAUSED ? -2.0f : -0.2f;
-							mat4_t scaledModelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, yLocation, 0.0f}), modelViewMatrix);
+							mat4_t translatedModelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, yLocation, 0.0f}), modelViewMatrix);
 							
 							char hostAddressDescription[256] = {0};
 							snprintf(hostAddressDescription, sizeof(hostAddressDescription) - 1, "Address: %s", gNetworkConnection->ipAddress);
-							drawStringScaled(renderer, scaledModelViewMatrix, (color4_t){gPinkBubbleGum.red, gPinkBubbleGum.green, gPinkBubbleGum.blue, 1.0f}, 0.003f, hostAddressDescription);
+							drawStringScaled(renderer, translatedModelViewMatrix, (color4_t){gPinkBubbleGum.red, gPinkBubbleGum.green, gPinkBubbleGum.blue, 1.0f}, 0.003f, hostAddressDescription);
 						}
 					}
 				}
