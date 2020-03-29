@@ -1081,7 +1081,11 @@ static void drawScene(Renderer *renderer)
 #if PLATFORM_IOS
 					if (gTutorialStage == 5)
 					{
+#if PLATFORM_TVOS
 						const char *subtext = "No more visuals.";
+#else
+						const char *subtext = "No more visuals. Swipe controls work anywhere.";
+#endif
 						
 						mat4_t tutorialSubtextModelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, -1.3f, 0.0f}), tutorialModelViewMatrix);
 						drawStringScaled(renderer, tutorialSubtextModelViewMatrix, textColor, scale, subtext);

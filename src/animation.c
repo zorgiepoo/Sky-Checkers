@@ -184,6 +184,9 @@ void animate(ZGWindow *window, double timeDelta, GameState gameState)
 				if (totalLives <= 2)
 				{
 					gTutorialStage = 5;
+#if PLATFORM_IOS && !PLATFORM_TVOS
+					gTutorialCoverTimer = 3.0f;
+#endif
 				}
 			}
 			else if (gTutorialStage == 5)
