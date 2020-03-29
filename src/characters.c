@@ -527,7 +527,7 @@ static void drawCharacterLives(Renderer *renderer, mat4_t modelViewMatrix, color
 	drawStringLeftAligned(renderer, playerLabelModelViewMatrix(modelViewMatrix), color, 0.0027f, playerLabel);
 }
 
-static void drawCharacterControllerName(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, const char *controllerName)
+static void drawCharacterNote(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, const char *controllerName)
 {
 	if (strlen(controllerName) > 0)
 	{
@@ -540,7 +540,7 @@ static void drawCharacterPendingController(Renderer *renderer, mat4_t modelViewM
 {
 	if (gNetworkConnection == NULL && character->state == CHARACTER_HUMAN_STATE && strlen(character->controllerName) == 0)
 	{
-		drawCharacterControllerName(renderer, modelViewMatrix, color, "Connect Controller");
+		drawCharacterNote(renderer, modelViewMatrix, color, "Connect Controller");
 	}
 }
 #endif
@@ -555,14 +555,14 @@ static void drawCharacterLaggingNote(Renderer *renderer, mat4_t modelViewMatrix,
 			int addressIndex = IDOfCharacter(character) - 1;
 			if (gNetworkConnection->clientHalfPings[addressIndex] >= BAD_HALF_PING)
 			{
-				drawCharacterControllerName(renderer, modelViewMatrix, color, "Lagging…");
+				drawCharacterNote(renderer, modelViewMatrix, color, "Lagging…");
 			}
 		}
 		else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE && gNetworkConnection->character == character)
 		{
 			if (gNetworkConnection->serverHalfPing >= BAD_HALF_PING)
 			{
-				drawCharacterControllerName(renderer, modelViewMatrix, color, "Lagging…");
+				drawCharacterNote(renderer, modelViewMatrix, color, "Lagging…");
 			}
 		}
 	}
@@ -594,10 +594,10 @@ void drawAllCharacterInfo(Renderer *renderer, const mat4_t *iconTranslations, bo
 	
 	if (displayControllerName)
 	{
-		drawCharacterControllerName(renderer, pinkBubbleGumModelViewMatrix, pinkBubbleGumColor, gPinkBubbleGum.controllerName);
-		drawCharacterControllerName(renderer, redRoverModelViewMatrix, redRoverColor, gRedRover.controllerName);
-		drawCharacterControllerName(renderer, greenTreeModelViewMatrix, greenTreeColor, gGreenTree.controllerName);
-		drawCharacterControllerName(renderer, blueLightningModelViewMatrix, blueLightningColor, gBlueLightning.controllerName);
+		drawCharacterNote(renderer, pinkBubbleGumModelViewMatrix, pinkBubbleGumColor, gPinkBubbleGum.controllerName);
+		drawCharacterNote(renderer, redRoverModelViewMatrix, redRoverColor, gRedRover.controllerName);
+		drawCharacterNote(renderer, greenTreeModelViewMatrix, greenTreeColor, gGreenTree.controllerName);
+		drawCharacterNote(renderer, blueLightningModelViewMatrix, blueLightningColor, gBlueLightning.controllerName);
 	}
 	
 #if PLATFORM_TVOS
