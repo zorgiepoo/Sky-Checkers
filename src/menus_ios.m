@@ -114,7 +114,13 @@ static void playGame(ZGWindow *window, bool tutorial)
 	{
 		gSuggestedTutorial = true;
 		
-		UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"How to Play" message:@"Do you want to learn the controls and play the tutorial?" preferredStyle:UIAlertControllerStyleAlert];
+#if PLATFORM_TVOS
+		NSString *message = @"Do you want to play the tutorial to learn the Siri Remote controls?";
+#else
+		NSString *message = @"Do you want to play the tutorial to learn the touch controls?";
+#endif
+		
+		UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"How to Play" message:message preferredStyle:UIAlertControllerStyleAlert];
 		
 		[alertController addAction:[UIAlertAction actionWithTitle:@"Play Tutorial" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
 			dispatch_async(dispatch_get_main_queue(), ^{
