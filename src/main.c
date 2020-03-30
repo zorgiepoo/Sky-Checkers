@@ -1054,7 +1054,7 @@ static void drawScene(Renderer *renderer)
 					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, welcomeScale, "Welcome to the Tutorial!");
 					
 #if PLATFORM_TVOS
-					const char *subtext = "For the Siri Remote. Hold in Landscape mode.";
+					const char *subtext = "For the Siri Remote. Rotate to Landscape mode.";
 #elif PLATFORM_IOS
 					const char *subtext = "For touch controls.";
 #else
