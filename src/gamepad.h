@@ -27,6 +27,8 @@
 #define MAX_GAMEPADS 8
 #define GAMEPAD_NAME_SIZE 256
 
+#define LOWEST_REMOTE_RANK 1
+
 typedef enum
 {
 	GAMEPAD_BUTTON_A = 0,

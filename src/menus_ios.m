@@ -102,12 +102,18 @@ static void playGame(ZGWindow *window, bool tutorial)
 
 - (void)playGame
 {
-	if (gPlayedGame)
+#if PLATFORM_TVOS
+	if (gSuggestedTutorial || !willUseSiriRemote())
+#else
+	if (gSuggestedTutorial)
+#endif
 	{
 		playGame(_window, false);
 	}
 	else
 	{
+		gSuggestedTutorial = true;
+		
 		UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"How to Play" message:@"Do you want to learn the controls and play the tutorial?" preferredStyle:UIAlertControllerStyleAlert];
 		
 		[alertController addAction:[UIAlertAction actionWithTitle:@"Play Tutorial" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
@@ -129,6 +135,12 @@ static void playGame(ZGWindow *window, bool tutorial)
 
 - (void)playTutorial
 {
+#if PLATFORM_TVOS
+	if (!gSuggestedTutorial && willUseSiriRemote())
+	{
+		gSuggestedTutorial = true;
+	}
+#endif
 	playGame(_window, true);
 }
 

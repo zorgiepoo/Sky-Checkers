@@ -150,7 +150,7 @@ static void _addController(struct GC_NAME(_GamepadManager) *gamepadManager, GCCo
 		
 		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[availableGamepadIndex];
 		gamepad->controller = (void *)CFBridgingRetain(controller);
-		gamepad->rank = (microGamepad != nil && controller.extendedGamepad == nil) ? 1 : 3;
+		gamepad->rank = (microGamepad != nil && controller.extendedGamepad == nil) ? LOWEST_REMOTE_RANK : 3;
 		
 		NSString *vendorName = controller.vendorName;
 		NSString *productDescription;

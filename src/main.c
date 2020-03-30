@@ -59,8 +59,10 @@ int gGameWinner;
 GamepadManager *gGamepadManager;
 static GamepadIndex gGamepads[12] = {INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX};
 
-// Has the user played the game once?
-bool gPlayedGame = false;
+#if PLATFORM_IOS
+// Have we suggested the tutorial
+bool gSuggestedTutorial = false;
+#endif
 
 // Console flag indicating if we can use the console
 bool gConsoleFlag = false;
@@ -333,7 +335,9 @@ static void readDefaults(void)
 	gAudioEffectsFlag = readDefaultBoolKey(defaults, "Audio effects", true);
 	gAudioMusicFlag = readDefaultBoolKey(defaults, "Music", true);
 	
-	gPlayedGame = readDefaultBoolKey(defaults, "Played", false);
+#if PLATFORM_IOS
+	gSuggestedTutorial = readDefaultBoolKey(defaults, "suggested_tutorial", false);
+#endif
 	
 	closeDefaults(defaults);
 }
@@ -401,15 +405,56 @@ static void writeDefaults(Renderer *renderer)
 	writeDefaultIntKey(defaults, "Audio effects", gAudioEffectsFlag);
 	writeDefaultIntKey(defaults, "Music", gAudioMusicFlag);
 	
-	writeDefaultIntKey(defaults, "Played", gPlayedGame);
+#if PLATFORM_IOS
+	writeDefaultIntKey(defaults, "suggested_tutorial", gSuggestedTutorial);
+#endif
 
 	closeDefaults(defaults);
 }
 
+#if PLATFORM_TVOS
+bool willUseSiriRemote(void)
+{
+	Input *characterInputs[4] = {&gPinkBubbleGumInput, &gRedRoverInput, &gGreenTreeInput, &gBlueLightningInput};
+	
+	uint8_t numberOfHumanPlayers = 0;
+	for (uint8_t characterIndex = 0; characterIndex < sizeof(characterInputs) / sizeof(characterInputs[0]); characterIndex++)
+	{
+		if (characterInputs[characterIndex]->character->state == CHARACTER_HUMAN_STATE)
+		{
+			numberOfHumanPlayers++;
+		}
+	}
+	
+	if (numberOfHumanPlayers == 0)
+	{
+		return false;
+	}
+	
+	uint16_t maxGamepads = 4;
+	uint16_t numberOfGamepads = 0;
+	for (uint16_t gamepadIndex = 0; gamepadIndex < maxGamepads; gamepadIndex++)
+	{
+		if (gGamepads[gamepadIndex] != INVALID_GAMEPAD_INDEX)
+		{
+			numberOfGamepads++;
+			
+			if (numberOfGamepads <= numberOfHumanPlayers)
+			{
+				if (gamepadRank(gGamepadManager, gGamepads[gamepadIndex]) == LOWEST_REMOTE_RANK)
+				{
+					return true;
+				}
+			}
+		}
+	}
+	
+	return false;
+}
+#endif
+
 void initGame(ZGWindow *window, bool firstGame, bool tutorial)
 {
-	gPlayedGame = true;
-	
 	loadTiles();
 
 	loadCharacter(&gRedRover);

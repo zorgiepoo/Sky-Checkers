@@ -22,6 +22,7 @@
 #include "window.h"
 #include <stdbool.h>
 #include <stdint.h>
+#include "platforms.h"
 
 #define MAX_CHARACTER_LIVES 10
 
@@ -44,7 +45,9 @@ typedef struct
 void initGame(ZGWindow *window, bool firstGame, bool tutorial);
 void endNetworkGame(ZGWindow *window);
 
-extern bool gPlayedGame;
+#if PLATFORM_IOS
+extern bool gSuggestedTutorial;
+#endif
 extern bool gGameHasStarted;
 extern bool gGameShouldReset;
 extern int gGameWinner;
@@ -68,3 +71,7 @@ extern char gUserNameString[MAX_USER_NAME_SIZE];
 extern int gUserNameStringIndex;
 
 #define ALLOWED_BASIC_TEXT_INPUT(character) ((character >= '0' && character <= '9') || character == '.' || character == ':' || (character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z'))
+
+#if PLATFORM_TVOS
+bool willUseSiriRemote(void);
+#endif
