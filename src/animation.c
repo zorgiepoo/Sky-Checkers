@@ -105,13 +105,13 @@ void animate(ZGWindow *window, double timeDelta, GameState gameState)
 		{
 			if (gTutorialStage == 0)
 			{
-				if (gSecondTimer >= 3.0f)
+				if (gSecondTimer >= 5.0f)
 				{
 					gTutorialStage = 1;
 					gTutorialCoverTimer = 4.0f;
 				}
 			}
-			else if ((gTutorialStage == 1 || gTutorialStage == 2) && gSecondTimer >= 4.0f)
+			else if ((gTutorialStage == 1 || gTutorialStage == 2) && gSecondTimer >= 6.0f)
 			{
 				float maxHumanDistance = 0.0f;
 				if (gPinkBubbleGum.state == CHARACTER_HUMAN_STATE && maxHumanDistance < gPinkBubbleGum.distance)

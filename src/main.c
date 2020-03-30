@@ -1053,14 +1053,14 @@ static void drawScene(Renderer *renderer)
 #endif
 					drawStringScaled(renderer, tutorialModelViewMatrix, textColor, welcomeScale, "Welcome to the Tutorial!");
 					
-#if PLATFORM_IOS
+#if PLATFORM_TVOS
+					const char *subtext = "For the Siri Remote. Hold in Landscape mode.";
+#elif PLATFORM_IOS
 					const char *subtext = "For touch controls.";
-#elif PLATFORM_TVOS
-					const char *subtext = "For the Siri Remote.";
 #else
 					const char *subtext = "For the keyboard.";
 #endif
-					ZGFloat subtextScale = scale * 0.85f;
+					ZGFloat subtextScale = scale * 0.95f;
 					mat4_t tutorialSubtextModelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, -1.3f, 0.0f}), tutorialModelViewMatrix);
 					drawStringScaled(renderer, tutorialSubtextModelViewMatrix, textColor, subtextScale, subtext);
 				}
@@ -1104,7 +1104,7 @@ static void drawScene(Renderer *renderer)
 				{
 #if PLATFORM_TVOS
 					ZGFloat fireScale = scale;
-					const char *text = "Click to Fire.";
+					const char *text = "Click or ⏯ to Fire.";
 #elif PLATFORM_IOS
 					ZGFloat fireScale = scale * 1.4f;
 					const char *text = "Tap with secondary Finger to Fire.";
