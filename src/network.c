@@ -829,11 +829,11 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 	
 	uint32_t triggerIncomingPacketNumbers[] = {0, 0, 0};
 	
-	size_t receivedAckPacketsCapacity = 1024;
+	size_t receivedAckPacketsCapacity = 512;
 	uint32_t *receivedAckPacketNumbers[3];
 	for (size_t receivedAckPacketNumberIndex = 0; receivedAckPacketNumberIndex < sizeof(receivedAckPacketNumbers) / sizeof(receivedAckPacketNumbers[0]); receivedAckPacketNumberIndex++)
 	{
-		receivedAckPacketNumbers[receivedAckPacketNumberIndex] = calloc(1, receivedAckPacketsCapacity);
+		receivedAckPacketNumbers[receivedAckPacketNumberIndex] = calloc(sizeof(*receivedAckPacketNumbers[receivedAckPacketNumberIndex]), receivedAckPacketsCapacity);
 	}
 	
 	uint32_t receivedAckPacketCount = 0;
@@ -1588,8 +1588,8 @@ int clientNetworkThread(void *context)
 	uint32_t triggerIncomingPacketNumber = 0;
 	uint32_t realTimeIncomingPacketNumber = 0;
 	
-	size_t receivedAckPacketsCapacity = 1024;
-	uint32_t *receivedAckPacketNumbers = calloc(1, receivedAckPacketsCapacity);
+	size_t receivedAckPacketsCapacity = 512;
+	uint32_t *receivedAckPacketNumbers = calloc(sizeof(*receivedAckPacketNumbers), receivedAckPacketsCapacity);
 	uint32_t receivedAckPacketCount = 0;
 	
 	// tell the server we exist
