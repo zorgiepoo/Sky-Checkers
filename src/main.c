@@ -441,7 +441,7 @@ bool willUseSiriRemote(void)
 			
 			if (numberOfGamepads <= numberOfHumanPlayers)
 			{
-				if (gamepadRank(gGamepadManager, gGamepads[gamepadIndex]) == LOWEST_REMOTE_RANK)
+				if (gamepadRank(gGamepadManager, gGamepads[gamepadIndex]) == LOWEST_GAMEPAD_RANK)
 				{
 					return true;
 				}

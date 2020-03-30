@@ -27,7 +27,7 @@
 #define MAX_GAMEPADS 8
 #define GAMEPAD_NAME_SIZE 256
 
-#define LOWEST_REMOTE_RANK 1
+#define LOWEST_GAMEPAD_RANK 1
 
 typedef enum
 {
