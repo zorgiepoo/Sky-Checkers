@@ -70,7 +70,7 @@ extern int gServerAddressStringIndex;
 extern char gUserNameString[MAX_USER_NAME_SIZE];
 extern int gUserNameStringIndex;
 
-#define ALLOWED_BASIC_TEXT_INPUT(character) ((character >= '0' && character <= '9') || character == '.' || character == ':' || (character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z'))
+#define ALLOWED_BASIC_TEXT_INPUT(character) ((character >= '0' && character <= '9') || character == '.' || character == ':' || character == '%' || (character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z'))
 
 #if PLATFORM_TVOS
 bool willUseSiriRemote(void);
