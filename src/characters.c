@@ -555,14 +555,14 @@ static void drawCharacterLaggingNote(Renderer *renderer, mat4_t modelViewMatrix,
 			int addressIndex = IDOfCharacter(character) - 1;
 			if (gNetworkConnection->clientHalfPings[addressIndex] >= BAD_HALF_PING)
 			{
-				drawCharacterNote(renderer, modelViewMatrix, color, "Lagging…");
+				drawCharacterNote(renderer, modelViewMatrix, color, "Lagging...");
 			}
 		}
 		else if (gNetworkConnection->type == NETWORK_CLIENT_TYPE && gNetworkConnection->character == character)
 		{
 			if (gNetworkConnection->serverHalfPing >= BAD_HALF_PING)
 			{
-				drawCharacterNote(renderer, modelViewMatrix, color, "Lagging…");
+				drawCharacterNote(renderer, modelViewMatrix, color, "Lagging...");
 			}
 		}
 	}
