@@ -29,6 +29,8 @@
 
 #if PLATFORM_IOS
 #include <sys/time.h> // for select()
+#elif PLATFORM_WINDOWS
+#include <iphlpapi.h> // for GetAdaptersAddresses()
 #endif
 
 #define MAX_PACKET_SIZE 500
@@ -2580,10 +2582,86 @@ void closeSocket(socket_t sockfd)
 #if PLATFORM_WINDOWS
 void retrieveLocalIPAddress(char *ipAddressBuffer, size_t bufferSize)
 {
-	if (bufferSize > 0)
+	ULONG addressesSize = 16000;
+	int attempts = 0;
+	ULONG adapterAddressesResult = 0;
+	IP_ADAPTER_ADDRESSES* adapterAddresses = NULL;
+	
+	do
 	{
-		ipAddressBuffer[0] = '\0';
+		adapterAddresses = malloc((size_t)addressesSize);
+		if (adapterAddresses == NULL)
+		{
+			fprintf(stderr, "Retrieving ip address failed because ran out of memory..\n");
+			return;
+		}
+
+		adapterAddressesResult = GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER | GAA_FLAG_SKIP_FRIENDLY_NAME, NULL, adapterAddresses, &addressesSize);
+		if (adapterAddressesResult == ERROR_BUFFER_OVERFLOW)
+		{
+			free(adapterAddresses);
+			adapterAddresses = NULL;
+		}
+		else if (adapterAddressesResult != ERROR_SUCCESS)
+		{
+			fprintf(stderr, "Error: Failed to retrieve local ip address: %d\n", adapterAddressesResult);
+			free(adapterAddresses);
+			adapterAddresses = NULL;
+			return;
+		}
+
+		attempts++;
+	} while (attempts < 3 && adapterAddressesResult == ERROR_BUFFER_OVERFLOW);
+
+	if (adapterAddressesResult != ERROR_SUCCESS)
+	{
+		fprintf(stderr, "Failed to retrieve IP address because of overflow..\n");
+		free(adapterAddresses);
+		return;
 	}
+
+	IP_ADAPTER_ADDRESSES *currentAddress = adapterAddresses;
+	while (currentAddress != NULL)
+	{
+		if (currentAddress->IfType != IF_TYPE_SOFTWARE_LOOPBACK && currentAddress->OperStatus == IfOperStatusUp)
+		{
+			IP_ADAPTER_UNICAST_ADDRESS* unicastAddress = currentAddress->FirstUnicastAddress;
+			while (unicastAddress != NULL)
+			{
+				ADDRESS_FAMILY family = unicastAddress->Address.lpSockaddr->sa_family;
+				if (family == AF_INET)
+				{
+					SOCKADDR_IN* ipv4 = (SOCKADDR_IN*)unicastAddress->Address.lpSockaddr;
+					if (inet_ntop(AF_INET, &ipv4->sin_addr, ipAddressBuffer, bufferSize) != NULL)
+					{
+						break;
+					}
+					else
+					{
+						memset(ipAddressBuffer, 0, bufferSize);
+					}
+				}
+				else if (family == AF_INET6)
+				{
+					SOCKADDR_IN6* ipv6 = (SOCKADDR_IN6*)unicastAddress->Address.lpSockaddr;
+					if (inet_ntop(AF_INET6, &ipv6->sin6_addr, ipAddressBuffer, bufferSize) != NULL)
+					{
+						break;
+					}
+					else
+					{
+						memset(ipAddressBuffer, 0, bufferSize);
+					}
+				}
+
+				unicastAddress = unicastAddress->Next;
+			}
+		}
+
+		currentAddress = currentAddress->Next;
+	}
+
+	free(adapterAddresses);
 }
 #else
 void retrieveLocalIPAddress(char *ipAddressBuffer, size_t bufferSize)
