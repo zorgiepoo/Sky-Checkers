@@ -251,7 +251,7 @@ uint8_t gamepadRank(GamepadManager *gamepadManager, GamepadIndex index)
 	switch (SDL_GameControllerGetType(controller))
 	{
 	case SDL_CONTROLLER_TYPE_UNKNOWN:
-		return 1;
+		return LOWEST_GAMEPAD_RANK;
 	case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO:
 	case SDL_CONTROLLER_TYPE_PS3:
 	case SDL_CONTROLLER_TYPE_PS4:
