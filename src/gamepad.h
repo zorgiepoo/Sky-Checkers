@@ -28,6 +28,7 @@
 #define GAMEPAD_NAME_SIZE 256
 
 #define LOWEST_GAMEPAD_RANK 1
+#define AXIS_THRESHOLD_PERCENT 0.6f
 
 typedef enum
 {

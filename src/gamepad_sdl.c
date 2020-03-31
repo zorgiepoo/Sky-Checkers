@@ -26,7 +26,7 @@
 
 #define INVALID_JOYSTICK_INSTANCE_ID -1
 
-#define AXIS_THRESHOLD (Sint16)(32767 * 0.6f)
+#define AXIS_THRESHOLD (Sint16)(32767 * AXIS_THRESHOLD_PERCENT)
 
 typedef struct
 {
