@@ -236,8 +236,8 @@ static void _addAxisEventIfNeeded(GC_NAME(Gamepad) *gamepad, GamepadButton posit
 {
 	float axisValue = axisInput.value;
 	
-	_addButtonEventIfNeeded(gamepad, positiveButton, axisValue >= 0.6f, eventsBuffer, eventIndex);
-	_addButtonEventIfNeeded(gamepad, negativeButton, axisValue <= -0.6f, eventsBuffer, eventIndex);
+	_addButtonEventIfNeeded(gamepad, positiveButton, axisValue >= AXIS_THRESHOLD_PERCENT, eventsBuffer, eventIndex);
+	_addButtonEventIfNeeded(gamepad, negativeButton, axisValue <= -AXIS_THRESHOLD_PERCENT, eventsBuffer, eventIndex);
 }
 
 GamepadEvent *GC_NAME(pollGamepadEvents)(struct GC_NAME(_GamepadManager) *gamepadManager, const void *systemEvent, uint16_t *eventCount)
