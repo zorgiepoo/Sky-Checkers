@@ -21,7 +21,7 @@
 
 bool ZGTestReturnKeyCode(uint16_t keyCode)
 {
-	return (keyCode == SDL_SCANCODE_RETURN || keyCode == SDL_SCANCODE_RETURN || keyCode == SDL_SCANCODE_KP_ENTER);
+	return (keyCode == SDL_SCANCODE_RETURN || keyCode == SDL_SCANCODE_KP_ENTER);
 }
 
 bool ZGTestMetaModifier(uint64_t modifier)

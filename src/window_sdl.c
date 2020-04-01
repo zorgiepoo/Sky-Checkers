@@ -149,9 +149,9 @@ void ZGPollWindowAndInputEvents(ZGWindow *windowRef, const void *systemEvent)
 		} break;
 		case SDL_KEYDOWN:
 		{
-#if PLATFORM_LINUX
-			if (ZGTestReturnKeyCode(sdlEvent->key.keysym.scancode) && ZGTestMetaModifier(sdlEvent->key.keysym.mod))
+			if (ZGTestReturnKeyCode(sdlEvent->key.keysym.scancode) && ((sdlEvent->key.keysym.mod & (KMOD_LALT | KMOD_RALT)) != 0))
 			{
+#if PLATFORM_LINUX
 				const char *fullscreenErrorString = NULL;
 				if (!ZGWindowIsFullscreen(windowController))
 				{
@@ -175,10 +175,9 @@ void ZGPollWindowAndInputEvents(ZGWindow *windowRef, const void *systemEvent)
 						*windowController->fullscreenFlag = false;
 					}
 				}
-			}
-			else
 #endif
-			if (windowController->keyboardEventHandler != NULL)
+			}
+			else if (windowController->keyboardEventHandler != NULL)
 			{
 				ZGKeyboardEvent event;
 				event.type = ZGKeyboardEventTypeKeyDown;
