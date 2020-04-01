@@ -2683,18 +2683,34 @@ void retrieveLocalIPAddress(char *ipAddressBuffer, size_t bufferSize)
 				sa_family_t family = ifa_addr->sa_family;
 				if ((family == AF_INET || (family == AF_INET6 && !retrievedIPv6Address)) && currentIfaddr->ifa_name != NULL && (strcmp(currentIfaddr->ifa_name, "en0") == 0 || strcmp(currentIfaddr->ifa_name, "en1") == 0))
 				{
-					int nameInfoResult = getnameinfo(ifa_addr, ifa_addr->sa_len, ipAddressBuffer, (socklen_t)bufferSize, NULL, 0, NI_NUMERICHOST);
-					if (nameInfoResult != 0)
+					// Don't use ifa_addr->sa_len because it's not portable
+					socklen_t socketAddressLength = 0;
+					bool ipv4Address = false;
+					if (family == AF_INET)
 					{
-						fprintf(stderr, "Error: failed to getnameinfo(): %d - %s\n", nameInfoResult, gai_strerror(nameInfoResult));
-					}
-					else if (family == AF_INET)
-					{
-						break;
+						socketAddressLength = sizeof(struct sockaddr_in);
+						ipv4Address = true;
 					}
 					else if (family == AF_INET6)
 					{
-						retrievedIPv6Address = true;
+						socketAddressLength = sizeof(struct sockaddr_in6);
+					}
+					
+					if (socketAddressLength > 0)
+					{
+						int nameInfoResult = getnameinfo(ifa_addr, socketAddressLength, ipAddressBuffer, (socklen_t)bufferSize, NULL, 0, NI_NUMERICHOST);
+						if (nameInfoResult != 0)
+						{
+							fprintf(stderr, "Error: failed to getnameinfo(): %d - %s\n", nameInfoResult, gai_strerror(nameInfoResult));
+						}
+						else if (ipv4Address)
+						{
+							break;
+						}
+						else
+						{
+							retrievedIPv6Address = true;
+						}
 					}
 				}
 			}
