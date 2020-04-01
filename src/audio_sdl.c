@@ -84,6 +84,7 @@ void playMainMenuMusic(bool paused)
 	if (gMainMenuMusic)
 	{
 		Mix_PlayMusic(gMainMenuMusic, -1);
+		Mix_ResumeMusic(); // necessary on CentOS
 		if (paused)
 		{
 			pauseMusic();
@@ -99,6 +100,7 @@ void playGameMusic(bool paused)
 	if (gGameMusic)
 	{
 		Mix_PlayMusic(gGameMusic, -1);
+		Mix_ResumeMusic(); // necessary on CentOS
 		if (paused)
 		{
 			pauseMusic();
