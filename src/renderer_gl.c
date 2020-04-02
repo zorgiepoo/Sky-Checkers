@@ -99,7 +99,7 @@ static bool compileShader(GLuint *shader, uint16_t glslVersion, GLenum type, con
 #ifdef _DEBUG
 	GLint logLength;
 	glGetShaderiv(*shader, GL_INFO_LOG_LENGTH, &logLength);
-	if (logLength > 0)
+	if (logLength > 1) // ignore just null terminator or useless log
 	{
 		GLchar *log = (GLchar *)malloc(logLength);
 		glGetShaderInfoLog(*shader, logLength, &logLength, log);
@@ -126,7 +126,7 @@ static bool linkProgram(GLuint prog)
 #ifdef _DEBUG
 	GLint logLength;
 	glGetProgramiv(prog, GL_INFO_LOG_LENGTH, &logLength);
-	if (logLength > 0)
+	if (logLength > 1) // ignore just null terminator or useless log
 	{
 		GLchar *log = (GLchar *)malloc(logLength);
 		glGetProgramInfoLog(prog, logLength, &logLength, log);
