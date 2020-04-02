@@ -166,8 +166,8 @@ static void drawTutorialCover(Renderer *renderer)
 		{
 			-8.0f, 27.5f, 0.0f, 1.0,
 			8.0f, 27.5f, 0.0f, 1.0,
-			8.0f, 10.0f, 0.0f, 1.0,
-			-8.0f, 10.0f, 0.0f, 1.0
+			8.0f, 10.3f, 0.0f, 1.0,
+			-8.0f, 10.3f, 0.0f, 1.0
 		};
 		
 		vertexArrayObject = createVertexArrayObject(renderer, vertices, sizeof(vertices));
