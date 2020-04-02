@@ -177,11 +177,7 @@ static void compileAndLinkShader(Shader_gl *shader, uint16_t glslVersion, const 
 		glBindAttribLocation(shaderProgram, TEXTURE_ATTRIBUTE, "textureCoordIn");
 	}
 	
-	if (glslVersion < 130)
-	{
-		glBindFragDataLocation(shaderProgram, 0, "gl_FragColor");
-	}
-	else
+	if (glslVersion >= 130)
 	{
 		glBindFragDataLocation(shaderProgram, 0, "fragColor");
 	}
