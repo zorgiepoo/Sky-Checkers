@@ -2674,13 +2674,14 @@ void retrieveLocalIPAddress(char *ipAddressBuffer, size_t bufferSize)
 	else
 	{
 		struct ifaddrs *currentIfaddr = ifaddrs;
+		bool retrievedIPv6Address = false;
 		do
 		{
 			struct sockaddr *ifa_addr = currentIfaddr->ifa_addr;
 			if (ifa_addr != NULL)
 			{
 				sa_family_t family = ifa_addr->sa_family;
-				if ((family == AF_INET || family == AF_INET6) && currentIfaddr->ifa_name != NULL && (strcmp(currentIfaddr->ifa_name, "en0") == 0 || strcmp(currentIfaddr->ifa_name, "en1") == 0 || strncmp(currentIfaddr->ifa_name, "enp", 3) == 0))
+				if ((family == AF_INET || (family == AF_INET6 && !retrievedIPv6Address)) && currentIfaddr->ifa_name != NULL && (strcmp(currentIfaddr->ifa_name, "en0") == 0 || strcmp(currentIfaddr->ifa_name, "en1") == 0 || strncmp(currentIfaddr->ifa_name, "enp", 3) == 0))
 				{
 					// Don't use ifa_addr->sa_len because it's not portable
 					socklen_t socketAddressLength = 0;
@@ -2701,9 +2702,13 @@ void retrieveLocalIPAddress(char *ipAddressBuffer, size_t bufferSize)
 							fprintf(stderr, "Error: failed to getnameinfo(): %d - %s\n", nameInfoResult, gai_strerror(nameInfoResult));
 							memset(ipAddressBuffer, 0, bufferSize);
 						}
-						else
+						else if (family == AF_INET)
 						{
 							break;
+						}
+						else
+						{
+							retrievedIPv6Address = true;
 						}
 					}
 				}
