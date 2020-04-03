@@ -2621,6 +2621,7 @@ void retrieveLocalIPAddress(char *ipAddressBuffer, size_t bufferSize)
 	}
 
 	IP_ADAPTER_ADDRESSES *currentAddress = adapterAddresses;
+	bool retrievedIPv6Address = false;
 	while (currentAddress != NULL)
 	{
 		if (currentAddress->IfType != IF_TYPE_SOFTWARE_LOOPBACK && currentAddress->OperStatus == IfOperStatusUp)
@@ -2632,25 +2633,32 @@ void retrieveLocalIPAddress(char *ipAddressBuffer, size_t bufferSize)
 				if (family == AF_INET)
 				{
 					SOCKADDR_IN* ipv4 = (SOCKADDR_IN*)unicastAddress->Address.lpSockaddr;
-					if (inet_ntop(AF_INET, &ipv4->sin_addr, ipAddressBuffer, bufferSize) != NULL)
+					char* tempBuffer = calloc(1, bufferSize);
+					if (inet_ntop(AF_INET, &ipv4->sin_addr, tempBuffer, bufferSize) != NULL)
 					{
+						memcpy(ipAddressBuffer, tempBuffer, bufferSize);
+						free(tempBuffer);
 						break;
 					}
 					else
 					{
-						memset(ipAddressBuffer, 0, bufferSize);
+						free(tempBuffer);
 					}
 				}
-				else if (family == AF_INET6)
+				else if (family == AF_INET6 && !retrievedIPv6Address)
 				{
 					SOCKADDR_IN6* ipv6 = (SOCKADDR_IN6*)unicastAddress->Address.lpSockaddr;
-					if (inet_ntop(AF_INET6, &ipv6->sin6_addr, ipAddressBuffer, bufferSize) != NULL)
+					char* tempBuffer = calloc(1, bufferSize);
+					if (inet_ntop(AF_INET6, &ipv6->sin6_addr, tempBuffer, bufferSize) != NULL)
 					{
-						break;
+						memcpy(ipAddressBuffer, tempBuffer, bufferSize);
+						free(tempBuffer);
+
+						retrievedIPv6Address = true;
 					}
 					else
 					{
-						memset(ipAddressBuffer, 0, bufferSize);
+						free(tempBuffer);
 					}
 				}
 
