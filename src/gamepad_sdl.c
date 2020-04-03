@@ -267,47 +267,42 @@ GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *syst
 			
 			break;
 		}
-#if SDL_VERSION_ATLEAST(2, 0, 12)
 		case SDL_CONTROLLERAXISMOTION:
 		{
 			Uint8 sdlAxis = sdlEvent->caxis.axis;
 			if (sdlAxis == SDL_CONTROLLER_AXIS_LEFTX || sdlAxis == SDL_CONTROLLER_AXIS_LEFTY)
 			{
 				SDL_JoystickID joystickInstanceID = sdlEvent->cbutton.which;
-				if (gamepadRank(gamepadManager, (GamepadIndex)joystickInstanceID) > LOWEST_GAMEPAD_RANK)
+				for (SDL_JoystickID gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
 				{
-					for (SDL_JoystickID gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
+					Gamepad* gamepad = &gamepadManager->gamepads[gamepadIndex];
+					if (gamepad->joystickInstanceID == joystickInstanceID)
 					{
-						Gamepad* gamepad = &gamepadManager->gamepads[gamepadIndex];
-						if (gamepad->joystickInstanceID == joystickInstanceID)
+						Sint16 sdlAxisValue = sdlEvent->caxis.value;
+
+						if (sdlAxis == SDL_CONTROLLER_AXIS_LEFTX)
 						{
-							Sint16 sdlAxisValue = sdlEvent->caxis.value;
-							
-							if (sdlAxis == SDL_CONTROLLER_AXIS_LEFTX)
-							{
-								uint64_t timestamp = CONVERT_MS_TO_NS(sdlEvent->common.timestamp);
+							uint64_t timestamp = CONVERT_MS_TO_NS(sdlEvent->common.timestamp);
 
-								_addButtonEventIfNeeded((GamepadIndex)gamepad->joystickInstanceID, GAMEPAD_BUTTON_DPAD_RIGHT, GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS, timestamp, (sdlAxisValue >= AXIS_THRESHOLD), &gamepad->lastRightAxisState, eventsBuffer, eventCount);
+							_addButtonEventIfNeeded((GamepadIndex)gamepad->joystickInstanceID, GAMEPAD_BUTTON_DPAD_RIGHT, GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS, timestamp, (sdlAxisValue >= AXIS_THRESHOLD), &gamepad->lastRightAxisState, eventsBuffer, eventCount);
 
-								_addButtonEventIfNeeded((GamepadIndex)gamepad->joystickInstanceID, GAMEPAD_BUTTON_DPAD_LEFT, GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS, timestamp, (sdlAxisValue <= -AXIS_THRESHOLD), &gamepad->lastLeftAxisState, eventsBuffer, eventCount);
-							}
-							else if (sdlAxis == SDL_CONTROLLER_AXIS_LEFTY)
-							{
-								uint64_t timestamp = CONVERT_MS_TO_NS(sdlEvent->common.timestamp);
-
-								_addButtonEventIfNeeded((GamepadIndex)gamepad->joystickInstanceID, GAMEPAD_BUTTON_DPAD_DOWN, GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS, timestamp, (sdlAxisValue >= AXIS_THRESHOLD), &gamepad->lastDownAxisState, eventsBuffer, eventCount);
-
-								_addButtonEventIfNeeded((GamepadIndex)gamepad->joystickInstanceID, GAMEPAD_BUTTON_DPAD_UP, GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS, timestamp, (sdlAxisValue <= -AXIS_THRESHOLD), &gamepad->lastUpAxisState, eventsBuffer, eventCount);
-							}
-
-							break;
+							_addButtonEventIfNeeded((GamepadIndex)gamepad->joystickInstanceID, GAMEPAD_BUTTON_DPAD_LEFT, GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS, timestamp, (sdlAxisValue <= -AXIS_THRESHOLD), &gamepad->lastLeftAxisState, eventsBuffer, eventCount);
 						}
+						else if (sdlAxis == SDL_CONTROLLER_AXIS_LEFTY)
+						{
+							uint64_t timestamp = CONVERT_MS_TO_NS(sdlEvent->common.timestamp);
+
+							_addButtonEventIfNeeded((GamepadIndex)gamepad->joystickInstanceID, GAMEPAD_BUTTON_DPAD_DOWN, GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS, timestamp, (sdlAxisValue >= AXIS_THRESHOLD), &gamepad->lastDownAxisState, eventsBuffer, eventCount);
+
+							_addButtonEventIfNeeded((GamepadIndex)gamepad->joystickInstanceID, GAMEPAD_BUTTON_DPAD_UP, GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS, timestamp, (sdlAxisValue <= -AXIS_THRESHOLD), &gamepad->lastUpAxisState, eventsBuffer, eventCount);
+						}
+
+						break;
 					}
 				}
 			}
 			break;
 		}
-#endif
 		default:
 			break;
 	}
