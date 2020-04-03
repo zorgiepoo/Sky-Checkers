@@ -2704,19 +2704,24 @@ void retrieveLocalIPAddress(char *ipAddressBuffer, size_t bufferSize)
 					
 					if (socketAddressLength > 0)
 					{
-						int nameInfoResult = getnameinfo(ifa_addr, socketAddressLength, ipAddressBuffer, (socklen_t)bufferSize, NULL, 0, NI_NUMERICHOST);
+						char *tempBuffer = calloc(1, bufferSize);
+						int nameInfoResult = getnameinfo(ifa_addr, socketAddressLength, tempBuffer, (socklen_t)bufferSize, NULL, 0, NI_NUMERICHOST);
 						if (nameInfoResult != 0)
 						{
 							fprintf(stderr, "Error: failed to getnameinfo(): %d - %s\n", nameInfoResult, gai_strerror(nameInfoResult));
-							memset(ipAddressBuffer, 0, bufferSize);
-						}
-						else if (family == AF_INET)
-						{
-							break;
 						}
 						else
 						{
-							retrievedIPv6Address = true;
+							memcpy(ipAddressBuffer, tempBuffer, bufferSize);
+							
+							if (family == AF_INET)
+							{
+								break;
+							}
+							else
+							{
+								retrievedIPv6Address = true;
+							}
 						}
 					}
 				}
