@@ -2699,6 +2699,7 @@ void retrieveLocalIPAddress(char *ipAddressBuffer, size_t bufferSize)
 						if (nameInfoResult != 0)
 						{
 							fprintf(stderr, "Error: failed to getnameinfo(): %d - %s\n", nameInfoResult, gai_strerror(nameInfoResult));
+							memset(ipAddressBuffer, 0, bufferSize);
 						}
 						else
 						{
