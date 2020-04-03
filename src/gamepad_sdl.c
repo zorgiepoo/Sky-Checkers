@@ -60,38 +60,51 @@ static void _notifyGamepadAdded(GamepadManager *gamepadManager, Sint32 joystickI
 		}
 		else
 		{
+			bool foundExistingGamepad = false;
 			SDL_JoystickID joystickInstanceID = SDL_JoystickGetDeviceInstanceID(joystickIndex);
 			for (SDL_JoystickID gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
 			{
-				if (gamepadManager->gamepads[gamepadIndex].joystickInstanceID == INVALID_JOYSTICK_INSTANCE_ID)
+				if (gamepadManager->gamepads[gamepadIndex].joystickInstanceID == joystickInstanceID)
 				{
-					gamepadManager->gamepads[gamepadIndex].joystickInstanceID = joystickInstanceID;
-					gamepadManager->gamepads[gamepadIndex].dpadAxis = false;
-					
-					char *controllerMapping = SDL_GameControllerMapping(controller);
-					if (controllerMapping != NULL)
-					{
-						const char *prefixString = "dpdown:";
-						char *substring = strstr(controllerMapping, prefixString);
-						if (substring != NULL)
-						{
-							char *codeString = substring + sizeof(prefixString);
-							size_t codeStringLength = strlen(codeString);
-							if ((codeStringLength > 0 && codeString[0] == 'a') || (codeStringLength > 1 && codeString[0] == '+' && codeString[1] == 'a') || (codeStringLength > 1 && codeString[0] == '-' && codeString[1] == 'a'))
-							{
-								gamepadManager->gamepads[gamepadIndex].dpadAxis = true;
-							}
-						}
-						SDL_free(controllerMapping);
-					}
-					
+					foundExistingGamepad = true;
 					break;
 				}
 			}
-			
-			if (gamepadManager->addedCallback != NULL)
+
+			if (!foundExistingGamepad)
 			{
-				gamepadManager->addedCallback((GamepadIndex)joystickInstanceID, gamepadManager->context);
+				for (SDL_JoystickID gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
+				{
+					if (gamepadManager->gamepads[gamepadIndex].joystickInstanceID == INVALID_JOYSTICK_INSTANCE_ID)
+					{
+						gamepadManager->gamepads[gamepadIndex].joystickInstanceID = joystickInstanceID;
+						gamepadManager->gamepads[gamepadIndex].dpadAxis = false;
+
+						char* controllerMapping = SDL_GameControllerMapping(controller);
+						if (controllerMapping != NULL)
+						{
+							const char* prefixString = "dpdown:";
+							char* substring = strstr(controllerMapping, prefixString);
+							if (substring != NULL)
+							{
+								char* codeString = substring + sizeof(prefixString);
+								size_t codeStringLength = strlen(codeString);
+								if ((codeStringLength > 0 && codeString[0] == 'a') || (codeStringLength > 1 && codeString[0] == '+' && codeString[1] == 'a') || (codeStringLength > 1 && codeString[0] == '-' && codeString[1] == 'a'))
+								{
+									gamepadManager->gamepads[gamepadIndex].dpadAxis = true;
+								}
+							}
+							SDL_free(controllerMapping);
+						}
+
+						break;
+					}
+				}
+
+				if (gamepadManager->addedCallback != NULL)
+				{
+					gamepadManager->addedCallback((GamepadIndex)joystickInstanceID, gamepadManager->context);
+				}
 			}
 		}
 	}
