@@ -328,7 +328,6 @@
 				29B97315FDCFA39411CA2CEA /* Sources */,
 				72970F4124386D47008ECB13 /* Data */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
-				72970F09243869A7008ECB13 /* Frameworks */,
 			);
 			name = SkyCheckers;
 			sourceTree = "<group>";
@@ -458,6 +457,7 @@
 				72970F6224387141008ECB13 /* InfoPlist.strings */,
 				72970EFF243864C3008ECB13 /* Info.plist */,
 				72970F082438680A008ECB13 /* macOS.entitlements */,
+				72970F09243869A7008ECB13 /* Frameworks */,
 			);
 			path = macOS;
 			sourceTree = "<group>";
@@ -479,6 +479,7 @@
 				72970F0A243869A8008ECB13 /* AppKit.framework */,
 			);
 			name = Frameworks;
+			path = ..;
 			sourceTree = "<group>";
 		};
 		72EBBBA7239A1D8000DD4470 /* Frameworks */ = {
