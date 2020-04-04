@@ -120,6 +120,7 @@
 		72970F4224386D47008ECB13 /* Data in Resources */ = {isa = PBXBuildFile; fileRef = 72970F4124386D47008ECB13 /* Data */; };
 		72970F4324386D47008ECB13 /* Data in Resources */ = {isa = PBXBuildFile; fileRef = 72970F4124386D47008ECB13 /* Data */; };
 		72970F4424386D47008ECB13 /* Data in Resources */ = {isa = PBXBuildFile; fileRef = 72970F4124386D47008ECB13 /* Data */; };
+		72970F652438716C008ECB13 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 72970F6224387141008ECB13 /* InfoPlist.strings */; };
 		72983A90242897F6005F984D /* defaults_apple.m in Sources */ = {isa = PBXBuildFile; fileRef = 770FFA0710B8F465009FD46A /* defaults_apple.m */; };
 		72983A9224289817005F984D /* defaults_apple.m in Sources */ = {isa = PBXBuildFile; fileRef = 770FFA0710B8F465009FD46A /* defaults_apple.m */; };
 		72A5D135239C1725004C12D6 /* menus_ios.m in Sources */ = {isa = PBXBuildFile; fileRef = 72A5D134239C1725004C12D6 /* menus_ios.m */; };
@@ -206,6 +207,7 @@
 		72970F1E243869D4008ECB13 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
 		72970F20243869DA008ECB13 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		72970F4124386D47008ECB13 /* Data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Data; path = ../Data; sourceTree = "<group>"; };
+		72970F6324387141008ECB13 /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		729BE4B82364121800DC70F7 /* gamepad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gamepad.h; path = ../src/gamepad.h; sourceTree = "<group>"; };
 		729BE4C0236667EE00DC70F7 /* gamepad_osx.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = gamepad_osx.m; path = ../src/gamepad_osx.m; sourceTree = "<group>"; };
 		72A14F1721A5E26200606E14 /* math_3d.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = math_3d.h; path = ../src/math_3d.h; sourceTree = "<group>"; };
@@ -453,6 +455,7 @@
 			children = (
 				72970EFA243864C2008ECB13 /* Assets.xcassets */,
 				72970EFC243864C3008ECB13 /* MainMenu.xib */,
+				72970F6224387141008ECB13 /* InfoPlist.strings */,
 				72970EFF243864C3008ECB13 /* Info.plist */,
 				72970F082438680A008ECB13 /* macOS.entitlements */,
 			);
@@ -612,6 +615,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				72970F652438716C008ECB13 /* InfoPlist.strings in Resources */,
 				72970EFB243864C2008ECB13 /* Assets.xcassets in Resources */,
 				72970EFE243864C3008ECB13 /* MainMenu.xib in Resources */,
 				72970F4224386D47008ECB13 /* Data in Resources */,
@@ -754,6 +758,14 @@
 				72970EFD243864C3008ECB13 /* Base */,
 			);
 			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+		72970F6224387141008ECB13 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				72970F6324387141008ECB13 /* Base */,
+			);
+			name = InfoPlist.strings;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
