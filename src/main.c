@@ -1841,7 +1841,7 @@ static void appLaunchedHandler(void *context)
 	readDefaults();
 
 	// Create renderer
-#ifdef _PROFILING
+#if _PROFILING
 	bool vsync = false;
 #else
 	bool vsync = true;
@@ -1855,7 +1855,7 @@ static void appLaunchedHandler(void *context)
 	
 	// Initialize game related things
 	
-#ifdef _PROFILING
+#if _PROFILING
 	gDrawFPS = true;
 #endif
 	
