@@ -27,7 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if PLATFORM_IOS
+#if PLATFORM_APPLE
 #include <sys/time.h> // for select()
 #elif PLATFORM_WINDOWS
 #include <iphlpapi.h> // for GetAdaptersAddresses()
