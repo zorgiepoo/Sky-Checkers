@@ -183,7 +183,7 @@ static void drawTutorialCover(Renderer *renderer)
 	mat4_t modelTranslationMatrix = m4_translation((vec3_t){7.0f, -14.0f, 4.0f});
 	mat4_t finalMatrix = m4_mul(worldMatrix, modelTranslationMatrix);
 	
-	drawVerticesFromIndices(renderer, finalMatrix, RENDERER_TRIANGLE_MODE, vertexArrayObject, indicesBufferObject, 6, (color4_t){0.0f, 0.0f, 0.0f, 0.9f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
+	drawVerticesFromIndices(renderer, finalMatrix, RENDERER_TRIANGLE_MODE, vertexArrayObject, indicesBufferObject, 6, (color4_t){0.0f, 0.0f, 0.0f, 0.8f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
 }
 
 static void initScene(Renderer *renderer)
