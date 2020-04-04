@@ -148,7 +148,7 @@
 	}
 }
 #else
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer;
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
 {
 	NSArray<NSString *> *gestureNames = @[ZGTapRecognizerName, ZGPannedRecognizerName];
 	return [gestureNames containsObject:gestureRecognizer.name] && [gestureNames containsObject:otherGestureRecognizer.name];
