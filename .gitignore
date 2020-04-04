@@ -13,5 +13,6 @@ win/.vs
 *.vcxproj.user
 *.aps
 *.opensdf
-Data/Shaders/*.cso
+Data/Shaders
+Data/gamecontrollerdb.txt
 
