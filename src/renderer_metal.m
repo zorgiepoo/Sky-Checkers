@@ -490,53 +490,56 @@ bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t w
 		
 		id<MTLDevice> preferredDevice = nil;
 #if PLATFORM_OSX
-		// Find the preffered device for our game which isn't integrated, headless, or external
-		// Maybe one day I will support external/removable GPUs but my game isn't very demanding
-		NSArray<id<MTLDevice>> *devices = MTLCopyAllDevices();
-		NSMutableArray<id<MTLDevice>> *preferredDevices = [NSMutableArray array];
-		for (id<MTLDevice> device in devices)
+		if (@available(macOS 10.12, *))
 		{
-			BOOL removable;
-			if (@available(macOS 10.13, *))
+			// Find the preffered device for our game which isn't integrated, headless, or external
+			// Maybe one day I will support external/removable GPUs but my game isn't very demanding
+			NSArray<id<MTLDevice>> *devices = MTLCopyAllDevices();
+			NSMutableArray<id<MTLDevice>> *preferredDevices = [NSMutableArray array];
+			for (id<MTLDevice> device in devices)
 			{
-				removable = device.removable;
-			}
-			else
-			{
-				removable = NO;
+				BOOL removable;
+				if (@available(macOS 10.13, *))
+				{
+					removable = device.removable;
+				}
+				else
+				{
+					removable = NO;
+				}
+				
+				if (!device.lowPower && !removable && !device.headless)
+				{
+					[preferredDevices addObject:device];
+				}
 			}
 			
-			if (!device.lowPower && !removable && !device.headless)
-			{
-				[preferredDevices addObject:device];
-			}
+			[preferredDevices sortUsingComparator:^NSComparisonResult(id<MTLDevice> _Nonnull device1, id<MTLDevice> _Nonnull device2) {
+				uint64_t device1Score = device1.recommendedMaxWorkingSetSize;
+				uint64_t device2Score = device2.recommendedMaxWorkingSetSize;
+				
+				if (@available(macOS 10.14, *))
+				{
+					device1Score += device1.maxBufferLength;
+					device2Score += device2.maxBufferLength;
+				}
+				
+				if (device1Score < device2Score)
+				{
+					return NSOrderedAscending;
+				}
+				else if (device1Score > device2Score)
+				{
+					return NSOrderedDescending;
+				}
+				else
+				{
+					return NSOrderedSame;
+				}
+			}];
+			
+			preferredDevice = preferredDevices.lastObject;
 		}
-		
-		[preferredDevices sortUsingComparator:^NSComparisonResult(id<MTLDevice> _Nonnull device1, id<MTLDevice> _Nonnull device2) {
-			uint64_t device1Score = device1.recommendedMaxWorkingSetSize;
-			uint64_t device2Score = device2.recommendedMaxWorkingSetSize;
-			
-			if (@available(macOS 10.14, *))
-			{
-				device1Score += device1.maxBufferLength;
-				device2Score += device2.maxBufferLength;
-			}
-			
-			if (device1Score < device2Score)
-			{
-				return NSOrderedAscending;
-			}
-			else if (device1Score > device2Score)
-			{
-				return NSOrderedDescending;
-			}
-			else
-			{
-				return NSOrderedSame;
-			}
-		}];
-		
-		preferredDevice = preferredDevices.lastObject;
 #endif
 		
 		id<MTLDevice> device = (preferredDevice != nil) ? preferredDevice : MTLCreateSystemDefaultDevice();
@@ -733,7 +736,12 @@ static id<MTLBuffer> createBuffer(Renderer *renderer, const void *data, uint32_t
 BufferObject createIndexBufferObject_metal(Renderer *renderer, const void *data, uint32_t size)
 {
 	id<MTLBuffer> buffer = createBuffer(renderer, data, size);
-	[buffer addDebugMarker:@"Indices" range:NSMakeRange(0, size)];
+#if _DEBUG
+	if (@available(macOS 10.12, *))
+	{
+		[buffer addDebugMarker:@"Indices" range:NSMakeRange(0, size)];
+	}
+#endif
 	
 	return (BufferObject){.metalObject = (void *)CFBridgingRetain(buffer)};
 }
@@ -741,7 +749,12 @@ BufferObject createIndexBufferObject_metal(Renderer *renderer, const void *data,
 BufferArrayObject createVertexArrayObject_metal(Renderer *renderer, const void *vertices, uint32_t verticesSize)
 {
 	id<MTLBuffer> buffer = createBuffer(renderer, vertices, verticesSize);
-	[buffer addDebugMarker:@"Vertices" range:NSMakeRange(0, verticesSize)];
+#if _DEBUG
+	if (@available(macOS 10.12, *))
+	{
+		[buffer addDebugMarker:@"Vertices" range:NSMakeRange(0, verticesSize)];
+	}
+#endif
 	
 	return (BufferArrayObject){.metalObject = (void *)CFBridgingRetain(buffer), .metalVerticesSize = verticesSize};
 }
@@ -749,8 +762,13 @@ BufferArrayObject createVertexArrayObject_metal(Renderer *renderer, const void *
 BufferArrayObject createVertexAndTextureCoordinateArrayObject_metal(Renderer *renderer, const void *verticesAndTextureCoordinates, uint32_t verticesSize, uint32_t textureCoordinatesSize)
 {
 	id<MTLBuffer> buffer = createBuffer(renderer, verticesAndTextureCoordinates, verticesSize + textureCoordinatesSize);
-	[buffer addDebugMarker:@"Vertices" range:NSMakeRange(0, verticesSize)];
-	[buffer addDebugMarker:@"Tex Coords" range:NSMakeRange(verticesSize, textureCoordinatesSize)];
+#if _DEBUG
+	if (@available(macOS 10.12, *))
+	{
+		[buffer addDebugMarker:@"Vertices" range:NSMakeRange(0, verticesSize)];
+		[buffer addDebugMarker:@"Tex Coords" range:NSMakeRange(verticesSize, textureCoordinatesSize)];
+	}
+#endif
 	
 	return (BufferArrayObject){.metalObject = (void *)CFBridgingRetain(buffer), .metalVerticesSize = verticesSize};
 }
@@ -854,14 +872,18 @@ void drawTextureWithVerticesFromIndices_metal(Renderer *renderer, ZGFloat *model
 
 void pushDebugGroup_metal(Renderer *renderer, const char *debugGroupName)
 {
+#if _DEBUG
 	id<MTLRenderCommandEncoder> renderCommandEncoder = (__bridge id<MTLRenderCommandEncoder>)(renderer->metalCurrentRenderCommandEncoder);
 	
 	[renderCommandEncoder pushDebugGroup:@(debugGroupName)];
+#endif
 }
 
 void popDebugGroup_metal(Renderer *renderer)
 {
+#if _DEBUG
 	id<MTLRenderCommandEncoder> renderCommandEncoder = (__bridge id<MTLRenderCommandEncoder>)(renderer->metalCurrentRenderCommandEncoder);
 	
 	[renderCommandEncoder popDebugGroup];
+#endif
 }
