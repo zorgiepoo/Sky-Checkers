@@ -1289,7 +1289,7 @@ void initMenus(ZGWindow *window, GameState *gameState, void (*exitGame)(ZGWindow
 void showPauseMenu(ZGWindow *window, GameState *gameState)
 {
 	changeMenu(RIGHT, window);
-	pauseGame(&gResumedGameState, gameState);
+	gResumedGameState = pauseGame(gameState);
 }
 
 void hidePauseMenu(ZGWindow *window, GameState *gameState)

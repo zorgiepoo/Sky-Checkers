@@ -253,7 +253,7 @@ void playTutorial(ZGWindow *window)
 	initGame(window, true, true);
 }
 
-void pauseGame(GameState *restoredGameState, GameState *newGameState)
+GameState pauseGame(GameState *newGameState)
 {
 	pauseMusic();
 	
@@ -262,8 +262,9 @@ void pauseGame(GameState *restoredGameState, GameState *newGameState)
 		ZGAppSetAllowsScreenIdling(true);
 	}
 	
-	*restoredGameState = *newGameState;
+	GameState restoredGameState = *newGameState;
 	*newGameState = GAME_STATE_PAUSED;
+	return restoredGameState;
 }
 
 void resumeGame(GameState restoredGameState, GameState *newGameState)

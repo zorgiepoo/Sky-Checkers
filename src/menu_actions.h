@@ -31,5 +31,5 @@ bool connectToNetworkGame(GameState *gameState);
 
 void playTutorial(ZGWindow *window);
 
-void pauseGame(GameState *restoredGameState, GameState *newGameState);
+GameState pauseGame(GameState *newGameState);
 void resumeGame(GameState restoredGameState, GameState *newGameState);
