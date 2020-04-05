@@ -1710,7 +1710,7 @@ void showPauseMenu(ZGWindow *window, GameState *gameState)
 	ZGUninstallTouchGestures(window);
 #endif
 	
-	pauseGame(&gPauseMenuHandler->_resumedGameState, gameState);
+	gPauseMenuHandler->_resumedGameState = pauseGame(gameState);
 	
 	UIView *metalView = metalViewForWindow(window);
 	((CAMetalLayer *)metalView.layer).presentsWithTransaction = YES;
