@@ -5,7 +5,7 @@
 ## Introduction
 Sky Checkers is a multiplayer action based game. Knock off your enemies and be the last one standing!
 
-Sky Checkers supports macOS, iOS / tvOS, and Windows officially. A Linux version is buildable from source too. Stable downloads can be found on the [releases page](https://github.com/zorgiepoo/Sky-Checkers/releases). For information on compiling the latest changes from source, please see [INSTALL](INSTALL).
+Sky Checkers supports macOS, iOS, tvOS, and Windows officially. A Linux version is buildable from source too. Stable downloads can be found on the [releases page](https://github.com/zorgiepoo/Sky-Checkers/releases). For information on compiling the latest changes from source, please see [INSTALL](INSTALL).
 
 This game is based on an old N64 Kirby mini-game and was originally written during my high school years, but still kept up to date ❤️.
 
