@@ -74,7 +74,7 @@ static void setSectionHeaderFont(ZGWindow *window, UIView *view)
 	{
 		UITableViewHeaderFooterView *header = (UITableViewHeaderFooterView *)view;
 		header.textLabel.font = [UIFont boldSystemFontOfSize:metalView.frame.size.height * 0.03];
-		header.textLabel.textColor = [UIColor grayColor];
+		header.textLabel.textColor = [UIColor colorWithRed:0.5 green:0.5 blue:0.5 alpha:1.0];
 	}
 }
 
