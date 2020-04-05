@@ -227,16 +227,16 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="position-vertex.hlsl">
+    <FxCompile Include="Shaders\position-pixel.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="position-pixel.hlsl">
+    <FxCompile Include="Shaders\position-vertex.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="texture-position-vertex.hlsl">
+    <FxCompile Include="Shaders\texture-position-pixel.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="texture-position-pixel.hlsl">
+    <FxCompile Include="Shaders\texture-position-vertex.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

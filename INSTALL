@@ -28,4 +28,4 @@ For macOS and iOS, no major dependencies are used.
 
 To compile under macOS or iOS, build and run the Xcode project in mac/ using the appropriate scheme
 To compile under Windows, build and run the Visual Studio project in win/
-To compile under Linux, execute make and it will output a skycheckers executable.
+To compile under Linux, cd into the project directory and run linux/build.sh which will output a skycheckers executable.
