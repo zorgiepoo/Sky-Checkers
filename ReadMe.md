@@ -1,6 +1,6 @@
 # Sky Checkers
 
-![alt text](https://zgcoder.net/software/skycheckers/images/playing-thumb.png "A screen-shot of Sky Checker's game-play")
+![alt text](https://zgcoder.net/software/skycheckers/images/playing-thumb.png?1 "A screen-shot of Sky Checker's game-play")
 
 ## Introduction
 Sky Checkers is a multiplayer action based game. Knock off your enemies and be the last one standing!
