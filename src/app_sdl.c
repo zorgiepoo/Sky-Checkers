@@ -24,6 +24,8 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <unistd.h>
+#include <errno.h>
 
 int ZGAppInit(int argc, char *argv[], ZGAppHandlers *appHandlers, void *appContext)
 {
@@ -31,9 +33,27 @@ int ZGAppInit(int argc, char *argv[], ZGAppHandlers *appHandlers, void *appConte
 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
-        fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
+		fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
 		ZGQuit();
 	}
+
+#if PLATFORM_LINUX && !_DEBUG
+	char *basePath;
+	if (argc > 2 && strcmp(argv[1], "--base") == 0)
+	{
+		basePath = argv[2];
+	}
+	else
+	{
+		basePath = "/usr/share/skycheckers/";
+	}
+
+	if (chdir(basePath) != 0)
+	{
+		fprintf(stderr, "Failed to chdir() to %s: %d\n", basePath, errno);
+		ZGQuit();
+	}
+#endif
 	
 	if (appHandlers->launchedHandler != NULL)
 	{

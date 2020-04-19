@@ -1,7 +1,8 @@
 mac/SkyCheckers.xcodeproj/xcuserdata
 mac/SkyCheckers.xcodeproj/project.xcworkspace/xcuserdata
 .DS_Store
-skycheckers
+linux/skycheckers
+linux/Data
 win/Debug
 win/Release
 win/x64/Debug
