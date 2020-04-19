@@ -15,7 +15,9 @@ install: uninstall
 	cp skycheckers $(DESTDIR)/usr/bin/skycheckers
 	mkdir -p $(DESTDIR)/usr/share/skycheckers
 	cp -R Data $(DESTDIR)/usr/share/skycheckers/Data
+	mkdir -p $(DESTDIR)/usr/share/icons/
 	cp skycheckers.png $(DESTDIR)/usr/share/icons/skycheckers.png
+	mkdir -p $(DESTDIR)/usr/share/applications
 	cp skycheckers.desktop $(DESTDIR)/usr/share/applications/skycheckers.desktop
 
 uninstall:

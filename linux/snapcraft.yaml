@@ -14,26 +14,23 @@ apps:
 
 parts:
   skycheckers:
-    after: [sdl2, sdl2-mixer, sdl2-ttf, glew]
+    after: [sdl2]
     source: https://github.com/zorgiepoo/Sky-Checkers.git
     source-subdir: linux
     plugin: make
+    build-packages:
+      - libsdl2-mixer-dev
+      - libsdl2-ttf-dev
+      - libglew-dev
+    stage-packages:
+      - libsdl2-mixer-2.0-0
+      - libsdl2-ttf-2.0-0
+      - libglew2.0
   
   sdl2:
     source: https://www.libsdl.org/release/SDL2-2.0.12.tar.gz
     plugin: autotools
-  
-  sdl2-mixer:
-    after: [sdl2]
-    source: https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-2.0.4.tar.gz
-    plugin: autotools
+    build-packages:
+      - libx11-dev
 
-  sdl2-ttf:
-    after: [sdl2]
-    source: https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-2.0.15.tar.gz
-    plugin: autotools
-
-  glew:
-    source: https://github.com/nigels-com/glew/releases/download/glew-2.1.0/glew-2.1.0.tgz
-    plugin: make
 
