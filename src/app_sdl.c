@@ -50,7 +50,7 @@ int ZGAppInit(int argc, char *argv[], ZGAppHandlers *appHandlers, void *appConte
 
 	if (chdir(basePath) != 0)
 	{
-		fprintf(stderr, "Failed to chdir() to %s: %d\n", basePath, errno);
+		fprintf(stderr, "Failed to chdir() to %s: %d\nFor development builds use: make scdev\n", basePath, errno);
 		ZGQuit();
 	}
 #endif
