@@ -1,6 +1,8 @@
 DESTDIR?=/
 
-SOURCE=../src/main.c ../src/ai.c ../src/animation.c ../src/audio_sdl.c ../src/characters.c ../src/collision.c ../src/console.c ../src/text.c ../src/font_sdl.c ../src/gamepad_sdl.c ../src/menus_desktop.c ../src/menu_actions.c ../src/input.c ../src/defaults_linux.c ../src/defaults_file.c ../src/network.c ../src/scenery.c ../src/texture.c ../src/texture_sdl.c ../src/thread_posix.c ../src/quit_sdl.c ../src/time_sdl.c ../src/window_sdl.c ../src/keyboard_sdl.c ../src/app_sdl.c ../src/mt_random.c ../src/weapon.c ../src/renderer.c ../src/renderer_gl.c ../src/renderer_projection.c
+FILES=main.c ai.c animation.c audio_sdl.c characters.c collision.c console.c text.c font_sdl.c gamepad_sdl.c menus_desktop.c menu_actions.c input.c defaults_linux.c defaults_file.c network.c scenery.c texture.c texture_sdl.c thread_posix.c quit_sdl.c time_sdl.c window_sdl.c keyboard_sdl.c app_sdl.c mt_random.c weapon.c renderer.c renderer_gl.c renderer_projection.c
+
+SOURCE=$(addprefix ../src/, $(FILES))
 
 WARNINGS=-Wall -Wextra -Wno-unused-parameter
 
