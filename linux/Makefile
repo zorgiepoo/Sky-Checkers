@@ -11,7 +11,7 @@ clean:
 	rm -rf Data
 	rm -f skycheckers
 
-install:
+install: uninstall
 	cp skycheckers $(DESTDIR)/usr/bin/skycheckers
 	mkdir -p $(DESTDIR)/usr/share/skycheckers
 	cp -R Data $(DESTDIR)/usr/share/skycheckers/Data
@@ -20,8 +20,7 @@ install:
 
 uninstall:
 	rm -f $(DESTDIR)/usr/bin/skycheckers
-	rm -f $(DESTDIR)/usr/share/skycheckers
-	rm -rf $(DESTDIR)/usr/share/skycheckers/Data
+	rm -rf $(DESTDIR)/usr/share/skycheckers
 	rm -f $(DESTDIR)/usr/share/icons/skycheckers.png
 	rm -f $(DESTDIR)/usr/share/applications/skycheckers.desktop
 
