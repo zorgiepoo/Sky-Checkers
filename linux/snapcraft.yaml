@@ -24,8 +24,6 @@ apps:
       - screen-inhibit-control
       - wayland
       - x11
-      - desktop
-      - desktop-legacy
 
 parts:
   skycheckers:
@@ -44,8 +42,6 @@ parts:
       - libsdl2-ttf-2.0-0
       - libglew2.0
       - libglu1-mesa
-      - libgl1-mesa-glx
-      - libgl1-mesa-dri
 
   # https://forum.snapcraft.io/t/adding-opengl-gpu-support-to-a-snap/6273
   # https://github.com/ubuntu/snapcraft-desktop-helpers/blob/master/snapcraft.yaml
