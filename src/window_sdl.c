@@ -22,8 +22,11 @@
 #include "zgtime.h"
 
 #if PLATFORM_LINUX
+// for setting window icon
+#include <unistd.h>
 #include <assert.h>
-#include "texture.h" // for setting window icon
+#include "texture.h"
+
 bool _ZGSetWindowFullscreen(ZGWindow *window, bool enabled, const char **errorString);
 #endif
 
@@ -61,25 +64,29 @@ ZGWindow *ZGCreateWindow(const char *windowTitle, int32_t windowWidth, int32_t w
 	windowController->window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags);
 
 #if PLATFORM_LINUX
-	// Set the window icon
-	TextureData iconData = loadTextureData("Data/Textures/sc_icon.bmp");
-	SDL_Surface *iconSurface = iconData.context;
-	assert(iconSurface != NULL);
-
-	// Filter out bright background and make transparent
-	const int iconThresholdFilter = 70;
-	for (uint32_t pixelIndex = 0; pixelIndex < (uint32_t)(iconData.width * iconData.height); pixelIndex++)
+	// Set the window icon if available
+	const char *iconPath = "Data/Textures/sc_icon.bmp";
+	if (access(iconPath, F_OK) != -1)
 	{
-		uint8_t *colorData = &iconData.pixelData[pixelIndex * 4];
-		if (colorData[0] >= iconThresholdFilter && colorData[1] >= iconThresholdFilter && colorData[2] >= iconThresholdFilter)
+		TextureData iconData = loadTextureData(iconPath);
+		SDL_Surface *iconSurface = iconData.context;
+		assert(iconSurface != NULL);
+
+		// Filter out bright background and make transparent
+		const int iconThresholdFilter = 70;
+		for (uint32_t pixelIndex = 0; pixelIndex < (uint32_t)(iconData.width * iconData.height); pixelIndex++)
 		{
+			uint8_t *colorData = &iconData.pixelData[pixelIndex * 4];
+			if (colorData[0] >= iconThresholdFilter && colorData[1] >= iconThresholdFilter && colorData[2] >= iconThresholdFilter)
+			{
 			colorData[3] = 0;
+			}
 		}
+	
+		SDL_SetWindowIcon(windowController->window, iconSurface);
+	
+		freeTextureData(iconData);
 	}
-	
-	SDL_SetWindowIcon(windowController->window, iconSurface);
-	
-	freeTextureData(iconData);
 #endif
 	return windowController;
 }
