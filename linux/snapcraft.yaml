@@ -27,21 +27,24 @@ apps:
 
 parts:
   skycheckers:
-    after: [desktop-glib-only]
+    after: [sdl2, desktop-glib-only]
     source: https://github.com/zorgiepoo/Sky-Checkers.git
     source-subdir: linux
     plugin: make
     build-packages:
-      - libsdl2-dev
       - libsdl2-mixer-dev
       - libsdl2-ttf-dev
       - libglew-dev
     stage-packages:
-      - libsdl2-2.0-0
       - libsdl2-mixer-2.0-0
       - libsdl2-ttf-2.0-0
       - libglew2.0
       - libglu1-mesa
+  sdl2:
+    source: https://www.libsdl.org/release/SDL2-2.0.12.tar.gz
+    plugin: autotools
+    build-packages:
+      - libx11-dev
 
   # https://forum.snapcraft.io/t/adding-opengl-gpu-support-to-a-snap/6273
   # https://github.com/ubuntu/snapcraft-desktop-helpers/blob/master/snapcraft.yaml
