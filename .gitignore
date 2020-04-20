@@ -3,6 +3,7 @@ mac/SkyCheckers.xcodeproj/project.xcworkspace/xcuserdata
 .DS_Store
 linux/skycheckers
 linux/Data
+linux/scdev
 win/Debug
 win/Release
 win/x64/Debug
