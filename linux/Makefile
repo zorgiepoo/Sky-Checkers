@@ -19,6 +19,7 @@ scdev: precopy
 .PHONY: precopy
 precopy: clean
 	cp -R ../Data Data
+	cp sc_icon.bmp Data/Textures/
 	cp ../gamecontrollerdb.txt Data/
 	cp -R Shaders Data/Shaders
 
@@ -34,14 +35,14 @@ install: uninstall
 	mkdir -p $(DESTDIR)/usr/share/skycheckers
 	cp -R Data $(DESTDIR)/usr/share/skycheckers/Data
 	mkdir -p $(DESTDIR)/usr/share/icons/
-	cp skycheckers.png $(DESTDIR)/usr/share/icons/skycheckers.png
+	cp com.zgcoder.skycheckers.icon.png $(DESTDIR)/usr/share/icons/com.zgcoder.skycheckers.icon.png
 	mkdir -p $(DESTDIR)/usr/share/applications
-	cp skycheckers.desktop $(DESTDIR)/usr/share/applications/skycheckers.desktop
+	cp com.zgcoder.skycheckers.desktop $(DESTDIR)/usr/share/applications/com.zgcoder.skycheckers.desktop
 
 .PHONY: uninstall
 uninstall:
 	rm -f $(DESTDIR)/usr/bin/skycheckers
 	rm -rf $(DESTDIR)/usr/share/skycheckers
-	rm -f $(DESTDIR)/usr/share/icons/skycheckers.png
-	rm -f $(DESTDIR)/usr/share/applications/skycheckers.desktop
+	rm -f $(DESTDIR)/usr/share/icons/com.zgcoder.skycheckers.icon.png
+	rm -f $(DESTDIR)/usr/share/applications/com.zgcoder.skycheckers.desktop
 
