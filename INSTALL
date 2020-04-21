@@ -14,7 +14,7 @@ apt-get install libsdl2-mixer-dev
 apt-get install libsdl2-ttf-dev
 apt-get install libglew-dev
 
-On CentOS, I executed:
+On CentOS 7, I executed:
 
 yum groupinstall 'Development Tools'
 yum install epel-release
@@ -27,5 +27,13 @@ For Windows, these dependencies are bundled in the source code already.
 For macOS and iOS, no major dependencies are used.
 
 To compile under macOS or iOS, build and run the Xcode project in mac/ using the appropriate scheme
-To compile under Windows, build and run the Visual Studio project in win/
-To compile under Linux, cd into the project directory and run linux/build.sh which will output a skycheckers executable.
+To compile under Windows, build and run the Visual Studio project in win/ using the appropriate scheme
+To compile under Linux, cd into linux and:
+  1. If you want to build development build run:
+     make scdev
+     This will output a scdev executable that can be ran.
+  2. If you want to build and install a production build run:
+     make
+     sudo make install
+     This will install skycheckers on your system with a desktop entry and executable in /usr/bin/
+
