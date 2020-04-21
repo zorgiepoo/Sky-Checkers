@@ -1,6 +1,6 @@
 name: skycheckers
 base: core18
-version: '1.2'
+version: '1.2.1'
 summary: Blast enemies off a stage
 description: |
   Blast off your enemies in a 1-4 multiplayer action packed battle and be the last one standing!
@@ -8,12 +8,15 @@ description: |
 grade: stable
 confinement: strict
 
+architectures:
+  - amd64
+
 apps:
   skycheckers:
     command: bin/skycheckers --base $SNAP/usr/share/skycheckers/
     desktop: usr/share/applications/com.zgcoder.skycheckers.desktop
     environment:
-      # https://forum.snapcraft.io/t/adding-opengl-gpu-support-to-a-snap/6273
+      # https://forum.snapcraft.io/t/opengl-error-mesa-loader-fails/15197
       LD_LIBRARY_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/dri:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/mesa:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/mesa-gl:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/xorg
       LIBGL_DRIVERS_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/dri
     plugs:
@@ -41,6 +44,11 @@ parts:
       - libsdl2-ttf-2.0-0
       - libglew2.0
       - libglu1-mesa
+    override-pull: |
+      snapcraftctl pull
+      sed -i 's/Icon=com.zgcoder.skycheckers.icon.png/Icon=\/usr\/share\/icons\/com.zgcoder.skycheckers.icon.png/g' linux/com.zgcoder.skycheckers.desktop
+    prime:
+      - -usr/share/skycheckers/Data/Textures/sc_icon.bmp
   sdl2:
     source: https://www.libsdl.org/release/SDL2-2.0.12.tar.gz
     plugin: autotools

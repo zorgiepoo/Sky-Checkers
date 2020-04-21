@@ -4,6 +4,7 @@ mac/SkyCheckers.xcodeproj/project.xcworkspace/xcuserdata
 linux/skycheckers
 linux/Data
 linux/scdev
+linux/skycheckers*_amd64.*
 win/Debug
 win/Release
 win/x64/Debug
