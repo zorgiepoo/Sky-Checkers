@@ -44,9 +44,6 @@ parts:
       - libsdl2-ttf-2.0-0
       - libglew2.0
       - libglu1-mesa
-    override-pull: |
-      snapcraftctl pull
-      sed -i 's/Icon=com.zgcoder.skycheckers.icon.png/Icon=\/usr\/share\/icons\/com.zgcoder.skycheckers.icon.png/g' linux/com.zgcoder.skycheckers.desktop
     prime:
       - -usr/share/skycheckers/Data/Textures/sc_icon.bmp
   sdl2:

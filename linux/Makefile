@@ -19,7 +19,7 @@ scdev: precopy
 .PHONY: precopy
 precopy: clean
 	cp -R ../Data Data
-	cp sc_icon.bmp Data/Textures/
+	cp icons/sc_icon.bmp Data/Textures/
 	cp ../gamecontrollerdb.txt Data/
 	cp -R Shaders Data/Shaders
 
@@ -33,16 +33,16 @@ clean:
 install: uninstall
 	cp skycheckers $(DESTDIR)/usr/bin/skycheckers
 	mkdir -p $(DESTDIR)/usr/share/skycheckers
-	cp -R Data $(DESTDIR)/usr/share/skycheckers/Data
-	mkdir -p $(DESTDIR)/usr/share/icons/
-	cp com.zgcoder.skycheckers.icon.png $(DESTDIR)/usr/share/icons/com.zgcoder.skycheckers.icon.png
+	cp -R Data $(DESTDIR)/usr/share/skycheckers/
+	mkdir -p $(DESTDIR)/usr/share/icons/hicolor/512x512/apps/
+	cp icons/512x512/com.zgcoder.skycheckers.png $(DESTDIR)/usr/share/icons/hicolor/512x512/apps/
 	mkdir -p $(DESTDIR)/usr/share/applications
-	cp com.zgcoder.skycheckers.desktop $(DESTDIR)/usr/share/applications/com.zgcoder.skycheckers.desktop
+	cp com.zgcoder.skycheckers.desktop $(DESTDIR)/usr/share/applications/
 
 .PHONY: uninstall
 uninstall:
 	rm -f $(DESTDIR)/usr/bin/skycheckers
 	rm -rf $(DESTDIR)/usr/share/skycheckers
-	rm -f $(DESTDIR)/usr/share/icons/com.zgcoder.skycheckers.icon.png
+	rm -f $(DESTDIR)/usr/share/icons/hicolor/512x512/apps/com.zgcoder.skycheckers.png
 	rm -f $(DESTDIR)/usr/share/applications/com.zgcoder.skycheckers.desktop
 
