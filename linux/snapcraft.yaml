@@ -13,7 +13,7 @@ architectures:
 
 apps:
   skycheckers:
-    command: bin/skycheckers --base $SNAP/usr/share/skycheckers/
+    command: bin/skycheckers
     desktop: usr/share/applications/com.zgcoder.skycheckers.desktop
     environment:
       # https://forum.snapcraft.io/t/opengl-error-mesa-loader-fails/15197

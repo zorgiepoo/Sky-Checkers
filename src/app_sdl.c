@@ -24,8 +24,13 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+
+#if PLATFORM_LINUX
+#include <libgen.h>
 #include <unistd.h>
 #include <errno.h>
+#include <limits.h>
+#endif
 
 int ZGAppInit(int argc, char *argv[], ZGAppHandlers *appHandlers, void *appContext)
 {
@@ -38,18 +43,27 @@ int ZGAppInit(int argc, char *argv[], ZGAppHandlers *appHandlers, void *appConte
 	}
 
 #if PLATFORM_LINUX && !_DEBUG
-	char *basePath;
+	char basePath[PATH_MAX + 1] = {0};
 	if (argc > 2 && strcmp(argv[1], "--base") == 0)
 	{
-		basePath = argv[2];
+		strncpy(basePath, argv[2], sizeof(basePath) - 1);
 	}
 	else
 	{
-#if _FLATPAK
-		basePath = "/app/share/skycheckers/";
-#else
-		basePath = "/usr/share/skycheckers/";
-#endif
+		// This approach would need to be adjusted if skycheckers is ported to other Unix systems
+		char executablePath[PATH_MAX + 1] = {0};
+		if (readlink("/proc/self/exe", executablePath, sizeof(executablePath) - 1) == -1)
+		{
+			fprintf(stderr, "Error: Failed to read /proc/self/exe: %d.. Assuming default path\n", errno);
+			strncpy(basePath, "/usr/share/skycheckers", sizeof(basePath) - 1);
+		}
+		else
+		{
+			// Note this may modify executablePath
+			char *parentPath = dirname(executablePath);
+			
+			snprintf(basePath, sizeof(basePath) - 1, "%s/../share/skycheckers", parentPath);
+		}
 	}
 
 	if (chdir(basePath) != 0)

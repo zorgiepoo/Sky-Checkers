@@ -92,9 +92,6 @@
 			"name": "skycheckers",
 			"subdir": "linux",
 			"no-autogen": true,
-			"make-args": [
-				"EXTRAOPTS=-D_FLATPAK"
-			],
 			"make-install-args": [
 				"DESTDIR=/",
 				"USER_DIRNAME=app"
