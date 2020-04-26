@@ -7,6 +7,6 @@ Terminal=false
 Exec=skycheckers
 Name=SkyCheckers
 Comment=Blast enemies off a stage
-Icon=/usr/share/icons/hicolor/512x512/apps/com.zgcoder.skycheckers.png
+Icon=com.zgcoder.skycheckers
 Categories=Game;
 
