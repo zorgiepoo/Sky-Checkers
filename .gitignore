@@ -5,6 +5,8 @@ linux/skycheckers
 linux/Data
 linux/scdev
 linux/skycheckers*_amd64.*
+linux/build-dir/
+linux/.flatpak-builder
 win/Debug
 win/Release
 win/x64/Debug
