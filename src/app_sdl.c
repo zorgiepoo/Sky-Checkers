@@ -45,7 +45,11 @@ int ZGAppInit(int argc, char *argv[], ZGAppHandlers *appHandlers, void *appConte
 	}
 	else
 	{
+#if _FLATPAK
+		basePath = "/app/share/skycheckers/";
+#else
 		basePath = "/usr/share/skycheckers/";
+#endif
 	}
 
 	if (chdir(basePath) != 0)

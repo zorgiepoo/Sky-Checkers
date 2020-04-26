@@ -1,5 +1,6 @@
 DESTDIR?=/
 USER_DIRNAME?=usr
+EXTRAOPTS?=
 
 FILES=main.c ai.c animation.c audio_sdl.c characters.c collision.c console.c text.c font_sdl.c gamepad_sdl.c menus_desktop.c menu_actions.c input.c defaults_linux.c defaults_file.c network.c scenery.c texture.c texture_sdl.c thread_posix.c quit_sdl.c time_sdl.c window_sdl.c keyboard_sdl.c app_sdl.c mt_random.c weapon.c renderer.c renderer_gl.c renderer_projection.c
 
@@ -12,7 +13,7 @@ LIBS=-lm -lX11 -lGL -lpthread -lGLEW `sdl2-config --cflags --libs` -lSDL2_mixer 
 CSTD=-std=gnu99
 
 skycheckers: precopy
-	cc $(CSTD) -O2 $(WARNINGS) $(SOURCE) $(LIBS) -o skycheckers
+	cc $(CSTD) -O2 $(EXTRAOPTS) $(WARNINGS) $(SOURCE) $(LIBS) -o skycheckers
 
 scdev: precopy
 	cc $(CSTD) -g -D_DEBUG $(WARNINGS) $(SOURCE) $(LIBS) -o scdev
