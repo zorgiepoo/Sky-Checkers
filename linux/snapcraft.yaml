@@ -44,13 +44,24 @@ parts:
       - libsdl2-ttf-2.0-0
       - libglew2.0
       - libglu1-mesa
+    override-pull: |
+      snapcraftctl pull
+      sed -i 's/Icon=com.zgcoder.skycheckers/Icon=\/usr\/share\/icons\/hicolor\/512x512\/apps\/com.zgcoder.skycheckers.png/g' linux/com.zgcoder.skycheckers.desktop
     prime:
       - -usr/share/skycheckers/Data/Textures/sc_icon.bmp
   sdl2:
     source: https://www.libsdl.org/release/SDL2-2.0.12.tar.gz
     plugin: autotools
+    configflags:
+      - --disable-static
     build-packages:
       - libx11-dev
+    prime:
+      - -bin/
+      - -include/
+      - -lib/libSDL2main.a
+      - -lib/libSDL2_test.a
+      - -lib/cmake
 
   # https://forum.snapcraft.io/t/adding-opengl-gpu-support-to-a-snap/6273
   # https://github.com/ubuntu/snapcraft-desktop-helpers/blob/master/snapcraft.yaml
