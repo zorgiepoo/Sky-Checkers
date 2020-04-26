@@ -28,21 +28,42 @@
  
  FILE *getUserDataFile(const char *mode)
  {
-	char *homeEnv = getenv("HOME");
-	if (homeEnv == NULL)
-	{
-		return NULL;
-	}
-
 	char dataDirectory[PATH_MAX + 1] = {0};
 
-	strncpy(dataDirectory, homeEnv, sizeof(dataDirectory) - 1);
-	strncat(dataDirectory, "/.skycheckers/", sizeof(dataDirectory) - 1 - strlen(dataDirectory));
+	char *xdgConfigHome = getenv("XDG_CONFIG_HOME");
+	if (xdgConfigHome != NULL)
+	{
+		int configSuccess = mkdir(xdgConfigHome, 0777);
+		if (configSuccess != 0 && errno != EEXIST)
+		{
+			return NULL;
+		}
+		snprintf(dataDirectory, sizeof(dataDirectory) - 1, "%s/skycheckers", xdgConfigHome);
+	}
+	else
+	{
+		char *homeEnv = getenv("HOME");
+		if (homeEnv == NULL)
+		{
+			return NULL;
+		}
+		
+		char configDirectory[PATH_MAX + 1] = {0};
+		snprintf(configDirectory, sizeof(configDirectory) - 1, "%s/.config", homeEnv);
+
+		int configSuccess = mkdir(configDirectory, 0777);
+		if (configSuccess != 0 && errno != EEXIST)
+		{
+			return NULL;
+		}
+
+		snprintf(dataDirectory, sizeof(dataDirectory) - 1, "%s/skycheckers", configDirectory);
+	}
 	
 	int success = mkdir(dataDirectory, 0777);
 	if (success == 0 || errno == EEXIST)
 	{
-		strncat(dataDirectory, "user_data.txt", sizeof(dataDirectory) - 1 - strlen(dataDirectory));
+		strncat(dataDirectory, "/user_data.txt", sizeof(dataDirectory) - 1 - strlen(dataDirectory));
 		return fopen(dataDirectory, mode);
 	}
 	return NULL;
