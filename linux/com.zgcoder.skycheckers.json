@@ -114,20 +114,22 @@
 			"sources": [
 				{
 					"type": "extra-data",
-					"filename": "Data.tgz",
+					"filename": "sc-snap-pak-data.tgz",
 					"url": "https://github.com/zorgiepoo/Sky-Checkers/releases/download/1.2/sc-snap-pak-data.tgz",
-					"sha256": "8e93af49437f60a245825163cc96219f05f8361c0530a2637c9882b4ccc6f6e2",
-					"size": 9651165
+					"sha256": "898bb4bd4b94faf6f3078cc1f2f6d10ca517b2377d60f7a0263ba2e5bd16ff95",
+					"size": 9651499
 				},
 				{
 					"type": "script",
 					"dest-filename": "apply_extra",
 					"commands": [
-						"tar -xf Data.tgz",
-						"rm -f Data.tgz",
+						"tar -xf sc-snap-pak-data.tgz",
+						"rm -f sc-snap-pak-data.tgz",
+						"mv sc-snap-pak-data/* .",
+						"rm -rf sc-snap-pak-data",
 						"mkdir -p export/share/icons/hicolor/512x512/apps",
-						"mv Data/icons/512x512/com.zgcoder.skycheckers.png export/share/icons/hicolor/512x512/apps",
-						"rm -rf Data/icons"
+						"mv icons/512x512/com.zgcoder.skycheckers.png export/share/icons/hicolor/512x512/apps",
+						"rm -rf icons"
 					]
 				}
 			],

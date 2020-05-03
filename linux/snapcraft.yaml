@@ -56,11 +56,7 @@ parts:
     plugin: dump
     organize:
       icons/512x512/com.zgcoder.skycheckers.png : usr/share/icons/hicolor/512x512/apps/com.zgcoder.skycheckers.png
-      Audio : usr/share/skycheckers/Data/Audio
-      Fonts : usr/share/skycheckers/Data/Fonts
-      gamecontrollerdb.txt : usr/share/skycheckers/Data/gamecontrollerdb.txt
-      Shaders : usr/share/skycheckers/Data/Shaders
-      Textures : usr/share/skycheckers/Data/Textures
+      Data : usr/share/skycheckers/Data
     prime:
       - -icons
       - -usr/share/skycheckers/Data/Textures/sc_icon.bmp
