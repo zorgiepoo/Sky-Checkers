@@ -93,7 +93,8 @@
 			"no-autogen": true,
 			"make-install-args": [
 				"DESTDIR=/",
-				"USER_DIRNAME=app"
+				"USER_DIRNAME=app",
+				"INSTALL_DATA=0"
 			],
 			"sources": [
 				{
