@@ -1,6 +1,6 @@
 name: skycheckers
 base: core18
-version: '1.2.1'
+version: '1.2'
 summary: Blast enemies off a stage
 description: |
   Blast off your enemies in a 1-4 multiplayer action packed battle and be the last one standing!
