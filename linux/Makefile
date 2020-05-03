@@ -41,7 +41,7 @@ clean:
 install: uninstall
 	cp skycheckers $(DESTDIR)/$(USER_DIRNAME)/bin/skycheckers
 	mkdir -p $(DESTDIR)/$(USER_DIRNAME)/share/skycheckers
-	$(INSTALL_SC_DATA) && (cp -R Data $(DESTDIR)/$(USER_DIRNAME)/share/skycheckers/ || true)
+	-$(INSTALL_SC_DATA) && cp -R Data $(DESTDIR)/$(USER_DIRNAME)/share/skycheckers/
 	mkdir -p $(DESTDIR)/$(USER_DIRNAME)/share/icons/hicolor/512x512/apps/
 	cp icons/512x512/com.zgcoder.skycheckers.png $(DESTDIR)/$(USER_DIRNAME)/share/icons/hicolor/512x512/apps/
 	mkdir -p $(DESTDIR)/$(USER_DIRNAME)/share/applications
