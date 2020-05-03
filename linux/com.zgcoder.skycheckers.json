@@ -91,6 +91,9 @@
 			"name": "skycheckers",
 			"subdir": "linux",
 			"no-autogen": true,
+			"make-args": [
+				"RELEASEOPTS=-D_FLATPAK_BUILD"
+			],
 			"make-install-args": [
 				"DESTDIR=/",
 				"USER_DIRNAME=app",
@@ -101,6 +104,30 @@
 					"type": "git",
 					"url": "https://github.com/zorgiepoo/Sky-Checkers.git"
 				}
+			]
+		},
+		{
+			"name": "game-data",
+			"buildsystem": "simple",
+			"sources": [
+				{
+					"type": "extra-data",
+					"filename": "Data.tgz",
+					"url": "https://github.com/zorgiepoo/Sky-Checkers/releases/download/1.2/sc-linux-data.tgz",
+					"sha256": "49bb0074bcf89e80e3e14ae7c7b134fd219e2d1ed767f132e711f40f73959a11",
+					"size": 9476680
+				},
+				{
+					"type": "script",
+					"dest-filename": "apply_extra",
+					"commands": [
+						"tar -xf Data.tgz",
+						"rm Data.tgz"
+					]
+				}
+			],
+			"build-commands": [
+				"install apply_extra /app/bin/apply_extra"
 			]
 		}
 	]
