@@ -71,7 +71,6 @@ int ZGAppInit(int argc, char *argv[], ZGAppHandlers *appHandlers, void *appConte
 		fprintf(stderr, "Failed to chdir() to %s: %d\nFor development builds use: make scdev\n", basePath, errno);
 		ZGQuit();
 	}
-	fprintf(stderr, "Changed to dir: %s\n", basePath);
 #endif
 	
 	if (appHandlers->launchedHandler != NULL)
