@@ -1,6 +1,7 @@
 DESTDIR?=/
 USER_DIRNAME?=usr
 INSTALL_DATA?=1
+RELEASEOPTS?=
 
 ifeq ($(INSTALL_DATA),1)
 INSTALL_SC_DATA=true
@@ -19,7 +20,7 @@ LIBS=-lm -lX11 -lGL -lpthread -lGLEW `sdl2-config --cflags --libs` -lSDL2_mixer 
 CSTD=-std=gnu99
 
 skycheckers: precopy
-	cc $(CSTD) -O2 $(WARNINGS) $(SOURCE) $(LIBS) -o skycheckers
+	cc $(CSTD) -O2 $(RELEASEOPTS) $(WARNINGS) $(SOURCE) $(LIBS) -o skycheckers
 
 scdev: precopy
 	cc $(CSTD) -g -D_DEBUG $(WARNINGS) $(SOURCE) $(LIBS) -o scdev
