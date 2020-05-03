@@ -102,8 +102,9 @@
 			],
 			"sources": [
 				{
-					"type": "git",
-					"url": "https://github.com/zorgiepoo/Sky-Checkers.git"
+					"type": "archive",
+					"url": "https://github.com/zorgiepoo/Sky-Checkers/releases/download/1.2/sc-snap-pak-repo.tgz",
+					"sha256": "f7981c31deba5528485c6b1562f11b5c16ebf26f1915bedb2a99a8476f3f4c32"
 				}
 			]
 		},
@@ -114,16 +115,19 @@
 				{
 					"type": "extra-data",
 					"filename": "Data.tgz",
-					"url": "https://github.com/zorgiepoo/Sky-Checkers/releases/download/1.2/sc-linux-data.tgz",
-					"sha256": "49bb0074bcf89e80e3e14ae7c7b134fd219e2d1ed767f132e711f40f73959a11",
-					"size": 9476680
+					"url": "https://github.com/zorgiepoo/Sky-Checkers/releases/download/1.2/sc-snap-pak-data.tgz",
+					"sha256": "8e93af49437f60a245825163cc96219f05f8361c0530a2637c9882b4ccc6f6e2",
+					"size": 9651165
 				},
 				{
 					"type": "script",
 					"dest-filename": "apply_extra",
 					"commands": [
 						"tar -xf Data.tgz",
-						"rm Data.tgz"
+						"rm -f Data.tgz",
+						"mkdir -p export/share/icons/hicolor/512x512/apps",
+						"mv Data/icons/512x512/com.zgcoder.skycheckers.png export/share/icons/hicolor/512x512/apps",
+						"rm -rf Data/icons"
 					]
 				}
 			],

@@ -43,11 +43,11 @@ install: uninstall
 	cp skycheckers $(DESTDIR)/$(USER_DIRNAME)/bin/skycheckers
 	-$(INSTALL_SC_DATA) && mkdir -p $(DESTDIR)/$(USER_DIRNAME)/share/skycheckers
 	-$(INSTALL_SC_DATA) && cp -R Data $(DESTDIR)/$(USER_DIRNAME)/share/skycheckers/
-	mkdir -p $(DESTDIR)/$(USER_DIRNAME)/share/icons/hicolor/512x512/apps/
-	cp icons/512x512/com.zgcoder.skycheckers.png $(DESTDIR)/$(USER_DIRNAME)/share/icons/hicolor/512x512/apps/
+	-$(INSTALL_SC_DATA) && mkdir -p $(DESTDIR)/$(USER_DIRNAME)/share/icons/hicolor/512x512/apps/
+	-$(INSTALL_SC_DATA) && cp icons/512x512/com.zgcoder.skycheckers.png $(DESTDIR)/$(USER_DIRNAME)/share/icons/hicolor/512x512/apps/
+	-$(INSTALL_SC_DATA) && touch -a -c /$(USER_DIRNAME)/share/icons/hicolor
 	mkdir -p $(DESTDIR)/$(USER_DIRNAME)/share/applications
 	cp com.zgcoder.skycheckers.desktop $(DESTDIR)/$(USER_DIRNAME)/share/applications/
-	touch -a -c /$(USER_DIRNAME)/share/icons/hicolor
 
 .PHONY: uninstall
 uninstall:

@@ -8,6 +8,8 @@ linux/skycheckers*_amd64.*
 linux/flatpak-build/
 linux/.flatpak-builder
 linux/sc-repo
+linux/sc-snap-pak-data.tgz
+linux/sc-snap-pak-repo.tgz
 win/Debug
 win/Release
 win/x64/Debug
