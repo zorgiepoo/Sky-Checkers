@@ -92,7 +92,8 @@
 			"subdir": "linux",
 			"no-autogen": true,
 			"make-args": [
-				"RELEASEOPTS=-D_FLATPAK_BUILD"
+				"RELEASEOPTS=-D_FLATPAK_BUILD",
+				"INSTALL_DATA=0"
 			],
 			"make-install-args": [
 				"DESTDIR=/",
