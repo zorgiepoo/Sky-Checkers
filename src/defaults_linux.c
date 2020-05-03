@@ -60,6 +60,7 @@
 		snprintf(dataDirectory, sizeof(dataDirectory) - 1, "%s/skycheckers", configDirectory);
 	}
 	
+	fprintf(stderr, "user data dir: %s\n", dataDirectory);
 	int success = mkdir(dataDirectory, 0777);
 	if (success == 0 || errno == EEXIST)
 	{
