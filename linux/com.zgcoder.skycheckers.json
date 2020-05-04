@@ -128,7 +128,11 @@
 						"mv sc-snap-pak-data/* .",
 						"rm -rf sc-snap-pak-data",
 						"mkdir -p export/share/icons/hicolor/512x512/apps",
+						"mkdir -p export/share/icons/hicolor/128x128/apps",
+						"mkdir -p export/share/icons/hicolor/64x64/apps",
 						"mv icons/512x512/com.zgcoder.skycheckers.png export/share/icons/hicolor/512x512/apps",
+						"mv icons/128x128/com.zgcoder.skycheckers.png export/share/icons/hicolor/128x128/apps",
+						"mv icons/64x64/com.zgcoder.skycheckers.png export/share/icons/hicolor/64x64/apps",
 						"rm -rf icons"
 					]
 				}
