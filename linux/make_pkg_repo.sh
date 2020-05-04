@@ -17,7 +17,7 @@ rm -rf /tmp/sc-snap-pak-repo/linux/Shaders
 rm -f /tmp/sc-snap-pak-repo/linux/*.sh
 rm -f /tmp/sc-snap-pak-repo/linux/snapcraft.yaml
 rm -f /tmp/sc-snap-pak-repo/linux/com.zgcoder.skycheckers.json
-rm -f /tmp/sc-snap-pak-repo/linux/com.zgcoder.skycheckers.metainfo.xml
+rm -f /tmp/sc-snap-pak-repo/linux/com.zgcoder.skycheckers.appdata.xml
 rm -rf /tmp/sc-snap-pak-repo/mac
 rm -rf /tmp/sc-snap-pak-repo/win
 rm -rf /tmp/sc-snap-pak-repo/Data
