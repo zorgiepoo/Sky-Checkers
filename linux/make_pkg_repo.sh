@@ -9,6 +9,9 @@ rm -f /tmp/sc-snap-pak-repo/linux/skycheckers*.txt
 rm -rf /tmp/sc-snap-pak-repo/linux/flatpak-build
 rm -rf /tmp/sc-snap-pak-repo/linux/.flatpak-builder
 rm -rf /tmp/sc-snap-pak-repo/linux/Data
+rm -f /tmp/sc-snap-pak-repo/linux/skycheckers
+rm -f /tmp/sc-snap-pak-repo/linux/scdev
+rm -f /tmp/sc-snap-pak-repo/linux/icons/sc_icon.bmp
 rm -rf /tmp/sc-snap-pak-repo/linux/sc-snap-pak-data
 rm -f /tmp/sc-snap-pak-repo/linux/skycheckers*.snap
 rm -rf /tmp/sc-snap-pak-repo/linux/sc-repo
