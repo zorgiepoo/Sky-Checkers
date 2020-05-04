@@ -48,6 +48,8 @@ install: uninstall
 	-$(INSTALL_SC_DATA) && touch -a -c /$(USER_DIRNAME)/share/icons/hicolor
 	mkdir -p $(DESTDIR)/$(USER_DIRNAME)/share/applications
 	cp com.zgcoder.skycheckers.desktop $(DESTDIR)/$(USER_DIRNAME)/share/applications/
+	mkdir -p $(DESTDIR)/$(USER_DIRNAME)/share/metainfo
+	cp com.zgcoder.skycheckers.metainfo.xml $(DESTDIR)/$(USER_DIRNAME)/share/metainfo/
 
 .PHONY: uninstall
 uninstall:
@@ -55,5 +57,6 @@ uninstall:
 	rm -rf $(DESTDIR)/$(USER_DIRNAME)/share/skycheckers
 	rm -f $(DESTDIR)/$(USER_DIRNAME)/share/icons/hicolor/512x512/apps/com.zgcoder.skycheckers.png
 	rm -f $(DESTDIR)/$(USER_DIRNAME)/share/applications/com.zgcoder.skycheckers.desktop
+	rm -f $(DESTDIR)/$(USER_DIRNAME)/share/metainfo/com.zgcoder.skycheckers.metainfo.xml
 	touch -a -c /$(USER_DIRNAME)/share/icons/hicolor 2>&1 >/dev/null
 
