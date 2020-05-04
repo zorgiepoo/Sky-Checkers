@@ -51,8 +51,6 @@ install:
 	-$(INSTALL_SC_DATA) && cp icons/64x64/com.zgcoder.skycheckers.png $(DESTDIR)/$(USER_DIRNAME)/share/icons/hicolor/64x64/apps/
 	mkdir -p $(DESTDIR)/$(USER_DIRNAME)/share/applications
 	cp com.zgcoder.skycheckers.desktop $(DESTDIR)/$(USER_DIRNAME)/share/applications/
-	mkdir -p $(DESTDIR)/$(USER_DIRNAME)/share/metainfo
-	cp com.zgcoder.skycheckers.metainfo.xml $(DESTDIR)/$(USER_DIRNAME)/share/metainfo/
 	-$(INSTALL_SC_DATA) && touch -a -c /$(USER_DIRNAME)/share/icons/hicolor
 	-$(INSTALL_SC_DATA) && gtk-update-icon-cache $(DESTDIR)/$(USER_DIRNAME)/share/icons/hicolor/
 
@@ -64,7 +62,6 @@ uninstall:
 	rm -f $(DESTDIR)/$(USER_DIRNAME)/share/icons/hicolor/128x128/apps/com.zgcoder.skycheckers.png
 	rm -f $(DESTDIR)/$(USER_DIRNAME)/share/icons/hicolor/64x64/apps/com.zgcoder.skycheckers.png
 	rm -f $(DESTDIR)/$(USER_DIRNAME)/share/applications/com.zgcoder.skycheckers.desktop
-	rm -f $(DESTDIR)/$(USER_DIRNAME)/share/metainfo/com.zgcoder.skycheckers.metainfo.xml
 	-$(INSTALL_SC_DATA) && touch -a -c /$(USER_DIRNAME)/share/icons/hicolor 2>&1 >/dev/null
 	-$(INSTALL_SC_DATA) && gtk-update-icon-cache $(DESTDIR)/$(USER_DIRNAME)/share/icons/hicolor/ 2>&1 >/dev/null
 
