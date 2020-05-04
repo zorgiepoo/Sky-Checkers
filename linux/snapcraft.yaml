@@ -49,16 +49,17 @@ parts:
     override-pull: |
       snapcraftctl pull
       sed -i 's/Icon=com.zgcoder.skycheckers/Icon=\/usr\/share\/icons\/hicolor\/512x512\/apps\/com.zgcoder.skycheckers.png/g' linux/com.zgcoder.skycheckers.desktop
+    prime:
+      - -usr/share/icons/hicolor/128x128/apps/com.zgcoder.skycheckers.png
+      - -usr/share/icons/hicolor/64x64/apps/com.zgcoder.skycheckers.png
 
   gamedata:
     after: [skycheckers]
     source: https://github.com/zorgiepoo/Sky-Checkers/releases/download/1.2/sc-snap-pak-data.tgz
     plugin: dump
     organize:
-      icons/512x512/com.zgcoder.skycheckers.png : usr/share/icons/hicolor/512x512/apps/com.zgcoder.skycheckers.png
       Data : usr/share/skycheckers/Data
     prime:
-      - -icons
       - -usr/share/skycheckers/Data/Textures/sc_icon.bmp
   
   sdl2:

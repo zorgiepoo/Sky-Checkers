@@ -104,7 +104,7 @@
 				{
 					"type": "archive",
 					"url": "https://github.com/zorgiepoo/Sky-Checkers/releases/download/1.2/sc-snap-pak-repo.tgz",
-					"sha256": "f7981c31deba5528485c6b1562f11b5c16ebf26f1915bedb2a99a8476f3f4c32"
+					"sha256": "b7433a9ef056fbc9b8088c923065f167c446a3bc2276a88d5328481e9564ead0"
 				}
 			]
 		},
@@ -116,8 +116,8 @@
 					"type": "extra-data",
 					"filename": "sc-snap-pak-data.tgz",
 					"url": "https://github.com/zorgiepoo/Sky-Checkers/releases/download/1.2/sc-snap-pak-data.tgz",
-					"sha256": "898bb4bd4b94faf6f3078cc1f2f6d10ca517b2377d60f7a0263ba2e5bd16ff95",
-					"size": 9651499
+					"sha256": "aab2fc095ef959fbc904047d04386208e61409664b81c4a7a6834d2ffe25e119",
+					"size": 9678065
 				},
 				{
 					"type": "script",
@@ -126,14 +126,7 @@
 						"tar -xf sc-snap-pak-data.tgz",
 						"rm -f sc-snap-pak-data.tgz",
 						"mv sc-snap-pak-data/* .",
-						"rm -rf sc-snap-pak-data",
-						"mkdir -p export/share/icons/hicolor/512x512/apps",
-						"mkdir -p export/share/icons/hicolor/128x128/apps",
-						"mkdir -p export/share/icons/hicolor/64x64/apps",
-						"mv icons/512x512/com.zgcoder.skycheckers.png export/share/icons/hicolor/512x512/apps",
-						"mv icons/128x128/com.zgcoder.skycheckers.png export/share/icons/hicolor/128x128/apps",
-						"mv icons/64x64/com.zgcoder.skycheckers.png export/share/icons/hicolor/64x64/apps",
-						"rm -rf icons"
+						"rm -rf sc-snap-pak-data"
 					]
 				}
 			],
