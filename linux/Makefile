@@ -39,7 +39,7 @@ clean:
 	rm -f scdev
 
 .PHONY: install
-install: uninstall
+install:
 	cp skycheckers $(DESTDIR)/$(USER_DIRNAME)/bin/skycheckers
 	-$(INSTALL_SC_DATA) && mkdir -p $(DESTDIR)/$(USER_DIRNAME)/share/skycheckers
 	-$(INSTALL_SC_DATA) && cp -R Data $(DESTDIR)/$(USER_DIRNAME)/share/skycheckers/
