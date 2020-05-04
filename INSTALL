@@ -1,4 +1,6 @@
-Sky Checkers relies on the following dependencies:
+This document is for building Sky Checkers from source. Available binaries are at https://github.com/zorgiepoo/Sky-Checkers/releases
+
+To compile Sky Checkers from source, the following dependencies are needed:
 
 * SDL2 (Windows, Linux)
 * SDL2_mixer (Windows, Linux)
@@ -29,11 +31,13 @@ For macOS and iOS, no major dependencies are used.
 To compile under macOS or iOS, build and run the Xcode project in mac/ using the appropriate scheme
 To compile under Windows, build and run the Visual Studio project in win/ using the appropriate scheme
 To compile under Linux, cd into linux and:
-  1. If you want to build development build run:
-     make scdev
-     This will output a scdev executable that can be ran.
-  2. If you want to build and install a production build run:
+  1. If you want to build and install a production build run:
      make
      sudo make install
-     This will install skycheckers on your system with a desktop entry and executable in /usr/bin/
+     This will install /usr/bin/skycheckers on your system along with a desktop entry
+  2. If you want to make a development build run:
+     make scdev
+     This will output a scdev executable in the current directory that can be executed.
 
+--
+This document is licensed under CC BY-SA 3.0: https://creativecommons.org/licenses/by-sa/3.0/
