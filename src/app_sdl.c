@@ -63,7 +63,7 @@ int ZGAppInit(int argc, char *argv[], ZGAppHandlers *appHandlers, void *appConte
 			char *parentPath = dirname(executablePath);
 			
 #if _FLATPAK_BUILD
-			snprintf(basePath, sizeof(basePath) - 1, "%s/../extra", parentPath);
+			snprintf(basePath, sizeof(basePath) - 1, "%s/../extra/sc-snap-pak-data", parentPath);
 #else
 			snprintf(basePath, sizeof(basePath) - 1, "%s/../share/skycheckers", parentPath);
 #endif

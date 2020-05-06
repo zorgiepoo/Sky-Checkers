@@ -124,9 +124,7 @@
 					"dest-filename": "apply_extra",
 					"commands": [
 						"tar -xf sc-snap-pak-data.tgz",
-						"rm -f sc-snap-pak-data.tgz",
-						"mv sc-snap-pak-data/* .",
-						"rm -rf sc-snap-pak-data"
+						"rm -f sc-snap-pak-data.tgz"
 					]
 				}
 			],
