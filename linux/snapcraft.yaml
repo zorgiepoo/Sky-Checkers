@@ -14,7 +14,7 @@ architectures:
 apps:
   skycheckers:
     command: bin/skycheckers
-    desktop: usr/share/applications/com.zgcoder.skycheckers.desktop
+    desktop: usr/share/applications/net.zgcoder.skycheckers.desktop
     environment:
       # https://forum.snapcraft.io/t/opengl-error-mesa-loader-fails/15197
       LD_LIBRARY_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/dri:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/mesa:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/mesa-gl:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/xorg
@@ -48,10 +48,10 @@ parts:
       - libglu1-mesa
     override-pull: |
       snapcraftctl pull
-      sed -i 's/Icon=com.zgcoder.skycheckers/Icon=\/usr\/share\/icons\/hicolor\/512x512\/apps\/com.zgcoder.skycheckers.png/g' linux/com.zgcoder.skycheckers.desktop
+      sed -i 's/Icon=net.zgcoder.skycheckers/Icon=\/usr\/share\/icons\/hicolor\/512x512\/apps\/net.zgcoder.skycheckers.png/g' linux/net.zgcoder.skycheckers.desktop
     prime:
-      - -usr/share/icons/hicolor/128x128/apps/com.zgcoder.skycheckers.png
-      - -usr/share/icons/hicolor/64x64/apps/com.zgcoder.skycheckers.png
+      - -usr/share/icons/hicolor/128x128/apps/net.zgcoder.skycheckers.png
+      - -usr/share/icons/hicolor/64x64/apps/net.zgcoder.skycheckers.png
 
   gamedata:
     after: [skycheckers]

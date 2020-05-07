@@ -1,5 +1,5 @@
 {
-	"app-id": "com.zgcoder.skycheckers",
+	"app-id": "net.zgcoder.skycheckers",
 	"runtime": "org.freedesktop.Platform",
 	"runtime-version": "18.08",
 	"sdk": "org.freedesktop.Sdk",
