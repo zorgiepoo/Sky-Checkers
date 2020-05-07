@@ -5,6 +5,8 @@ linux/skycheckers
 linux/Data
 linux/scdev
 linux/skycheckers*_amd64.*
+linux/skycheckers*_i386.*
+linux/skycheckers*_arm64.*
 linux/flatpak-build/
 linux/.flatpak-builder
 linux/sc-repo
