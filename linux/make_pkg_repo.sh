@@ -21,9 +21,6 @@ rm -f /tmp/sc-snap-pak-repo/linux/snapcraft.yaml
 rm -f /tmp/sc-snap-pak-repo/linux/net.zgcoder.skycheckers.json
 rm -f /tmp/sc-snap-pak-repo/.gitmodules
 rm -rf /tmp/sc-snap-pak-repo/linux/shared-modules
-mkdir /tmp/sc-snap-pak-repo/linux/shared-modules
-cp -R shared-modules/glew /tmp/sc-snap-pak-repo/linux/shared-modules/glew
-cp -R shared-modules/glu /tmp/sc-snap-pak-repo/linux/shared-modules/glu
 rm -rf /tmp/sc-snap-pak-repo/mac
 rm -rf /tmp/sc-snap-pak-repo/win
 rm -rf /tmp/sc-snap-pak-repo/Data
