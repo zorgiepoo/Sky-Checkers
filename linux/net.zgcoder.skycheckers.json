@@ -5,8 +5,12 @@
 	"sdk": "org.freedesktop.Sdk",
 	"command": "skycheckers",
 	"finish-args": [
-		"--socket=x11", "--share=ipc",
-		"--device=dri", "--socket=pulseaudio", "--share=network", "--device=all"
+		"--socket=x11",
+		"--share=ipc",
+		"--device=dri",
+		"--socket=pulseaudio",
+		"--share=network",
+		"--device=all"
 	],
 	"modules": [
 		{
