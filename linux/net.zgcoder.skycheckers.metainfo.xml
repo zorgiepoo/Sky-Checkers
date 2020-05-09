@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright 2020 Mayur Pawashe <zorgiepoo@gmail.com> -->
 <component type="desktop-application">
-	<id>com.zgcoder.skycheckers</id>
+	<id>net.zgcoder.skycheckers</id>
 	<metadata_license>FSFAP</metadata_license>
 	<project_license>GPL-3.0+</project_license>
 	<name>Sky Checkers</name>
@@ -10,7 +10,7 @@
 		<p>Blast off your enemies in a 1-4 multiplayer action packed battle and be the last one standing!</p>
 		<p>Hook up gamepads to add more friends or host/join a game with your friends online (absent of firwall / network restrictions).</p>
 	</description>
-	<launchable type="desktop-id">com.zgcoder.skycheckers.desktop</launchable>
+	<launchable type="desktop-id">net.zgcoder.skycheckers.desktop</launchable>
 	<screenshots>
 		<screenshot type="default">
 			<caption>Gameplay</caption>
