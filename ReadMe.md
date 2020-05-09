@@ -13,7 +13,7 @@ This game is based on an old N64 Kirby mini-game and was originally written duri
 ## Features
 
 * 3-D graphics supporting Metal, Direct3D 11, OpenGL backends
-* Local and online battles with 1 - 4 players
+* Local and [online battles](https://www.youtube.com/watch?v=NjZAAgJhsho&t=30s) with 1 - 4 players
 * Bots with an easy, medium, or hard difficulty
 * Gamepad support
 
