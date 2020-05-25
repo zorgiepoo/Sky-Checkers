@@ -15,8 +15,7 @@ linux/sc-snap-pak-data.tgz
 linux/sc-snap-pak-repo.tgz
 win/Debug
 win/Release
-win/x64/Debug
-win/x64/Release
+win/x64
 win/dinput.pdb
 win/.vs
 *.sdf

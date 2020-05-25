@@ -164,9 +164,6 @@
     <ClCompile Include="..\src\renderer_d3d11.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\audio_sdl.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\font_sdl.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -213,6 +210,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\defaults_file.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\audio_win.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

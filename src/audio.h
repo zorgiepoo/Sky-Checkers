@@ -19,6 +19,10 @@
 
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 
 #define MUSIC_VOLUME					32
@@ -53,3 +57,7 @@ void playMenuSound(void);
 void playShootingSound(int soundIndex);
 void playTileFallingSound(void);
 void playDieingStoneSound(void);
+
+#ifdef __cplusplus
+}
+#endif

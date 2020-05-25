@@ -59,7 +59,7 @@
     <ClCompile Include="..\src\ai.c" />
     <ClCompile Include="..\src\animation.c" />
     <ClCompile Include="..\src\app_sdl.c" />
-    <ClCompile Include="..\src\audio_sdl.c" />
+    <ClCompile Include="..\src\audio_win.cpp" />
     <ClCompile Include="..\src\characters.c" />
     <ClCompile Include="..\src\collision.c" />
     <ClCompile Include="..\src\console.c" />
@@ -221,7 +221,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;dxgi.lib;SDL2.lib;SDL2main.lib;SDL2_ttf.lib;SDL2_mixer.lib;ws2_32.lib;Shlwapi.lib;iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;SDL2.lib;SDL2main.lib;SDL2_ttf.lib;Xaudio2.lib;ws2_32.lib;Shlwapi.lib;iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
@@ -268,7 +268,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>d3d11.lib;dxgi.lib;SDL2.lib;SDL2main.lib;SDL2_ttf.lib;SDL2_mixer.lib;ws2_32.lib;Shlwapi.lib;iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;SDL2.lib;SDL2main.lib;SDL2_ttf.lib;Xaudio2.lib;ws2_32.lib;Shlwapi.lib;iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
