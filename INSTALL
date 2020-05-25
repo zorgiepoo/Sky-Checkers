@@ -3,8 +3,8 @@ This document is for building Sky Checkers from source. Available binaries are a
 To compile Sky Checkers from source, the following dependencies are needed:
 
 * SDL2 (Windows, Linux)
-* SDL2_mixer (Windows, Linux)
 * SDL2_ttf (Windows, Linux)
+* SDL2_mixer (Linux)
 * glew (Linux)
 
 On Linux, development libraries for these dependencies may need to first be installed.
