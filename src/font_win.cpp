@@ -90,7 +90,7 @@ extern "C" TextureData createTextData(const char* string)
 
     const DWRITE_RENDERING_MODE1 rendereringMode = DWRITE_RENDERING_MODE1_NATURAL;
     const DWRITE_MEASURING_MODE measuringMode = DWRITE_MEASURING_MODE_NATURAL;
-    const DWRITE_GRID_FIT_MODE gridFitMode = DWRITE_GRID_FIT_MODE_DISABLED;
+    const DWRITE_GRID_FIT_MODE gridFitMode = DWRITE_GRID_FIT_MODE_ENABLED;
     const DWRITE_TEXT_ANTIALIAS_MODE antialiasMode = DWRITE_TEXT_ANTIALIAS_MODE_GRAYSCALE;
 
     HRESULT glyphRunAnalysisResult = gWriteFactory->CreateGlyphRunAnalysis(&glyphRun, nullptr, rendereringMode, measuringMode, gridFitMode, antialiasMode, 0.0f, 0.0f, &glyphRunAnalysis);
