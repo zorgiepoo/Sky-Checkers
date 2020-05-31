@@ -80,10 +80,7 @@ extern "C" TextureData createTextData(const char* string)
 
     DWRITE_GLYPH_RUN glyphRun;
     glyphRun.fontFace = gFontFace;
-
-    float fontSizeInInches = (float)(FONT_POINT_SIZE - 35) / 72.0f;
-    float fontSizeInDIPs = fontSizeInInches * 96.0f;
-    glyphRun.fontEmSize = fontSizeInDIPs;
+    glyphRun.fontEmSize = (float)FONT_POINT_SIZE;
 
     glyphRun.glyphCount = (UINT32)length;
     glyphRun.glyphIndices = glyphIndices;
@@ -91,7 +88,7 @@ extern "C" TextureData createTextData(const char* string)
     glyphRun.glyphOffsets = nullptr;
     glyphRun.isSideways = false;
 
-    const DWRITE_RENDERING_MODE1 rendereringMode = DWRITE_RENDERING_MODE1_NATURAL;
+    const DWRITE_RENDERING_MODE1 rendereringMode = DWRITE_RENDERING_MODE1_ALIASED;
     const DWRITE_MEASURING_MODE measuringMode = DWRITE_MEASURING_MODE_NATURAL;
     const DWRITE_GRID_FIT_MODE gridFitMode = DWRITE_GRID_FIT_MODE_DISABLED;
     const DWRITE_TEXT_ANTIALIAS_MODE antialiasMode = DWRITE_TEXT_ANTIALIAS_MODE_GRAYSCALE;
