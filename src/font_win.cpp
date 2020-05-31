@@ -94,8 +94,7 @@ extern "C" TextureData createTextData(const char* string)
     const DWRITE_RENDERING_MODE1 rendereringMode = DWRITE_RENDERING_MODE1_NATURAL;
     const DWRITE_MEASURING_MODE measuringMode = DWRITE_MEASURING_MODE_NATURAL;
     const DWRITE_GRID_FIT_MODE gridFitMode = DWRITE_GRID_FIT_MODE_DISABLED;
-    const DWRITE_TEXT_ANTIALIAS_MODE antialiasMode = DWRITE_TEXT_ANTIALIAS_MODE_CLEARTYPE;
-    //const DWRITE_TEXT_ANTIALIAS_MODE antialiasMode = DWRITE_TEXT_ANTIALIAS_MODE_GRAYSCALE;
+    const DWRITE_TEXT_ANTIALIAS_MODE antialiasMode = DWRITE_TEXT_ANTIALIAS_MODE_GRAYSCALE;
 
     HRESULT glyphRunAnalysisResult = gWriteFactory->CreateGlyphRunAnalysis(&glyphRun, nullptr, rendereringMode, measuringMode, gridFitMode, antialiasMode, 0.0f, 0.0f, &glyphRunAnalysis);
     if (FAILED(glyphRunAnalysisResult))
@@ -105,9 +104,8 @@ extern "C" TextureData createTextData(const char* string)
     }
     
     free(glyphIndices);
-
-    DWRITE_TEXTURE_TYPE textureType = DWRITE_TEXTURE_CLEARTYPE_3x1;
-    //DWRITE_TEXTURE_TYPE textureType = DWRITE_TEXTURE_ALIASED_1x1;
+    
+    DWRITE_TEXTURE_TYPE textureType = DWRITE_TEXTURE_ALIASED_1x1;
     RECT textureBounds;
     HRESULT textureBoundsResult = glyphRunAnalysis->GetAlphaTextureBounds(textureType, &textureBounds);
     if (FAILED(textureBoundsResult))
@@ -118,7 +116,7 @@ extern "C" TextureData createTextData(const char* string)
 
     const size_t width = (size_t)abs(textureBounds.right - textureBounds.left);
     const size_t height = (size_t)abs(textureBounds.top - textureBounds.bottom);
-    const size_t bytesPerPixel = 3;
+    const size_t bytesPerPixel = 1;
     const size_t bufferSize = (size_t)(width * bytesPerPixel * height);
     
     BYTE* alphaBytes = (BYTE *)calloc(1, bufferSize);
@@ -138,8 +136,11 @@ extern "C" TextureData createTextData(const char* string)
 
     for (size_t pixelIndex = 0; pixelIndex < width * height; pixelIndex++)
     {
-        memcpy(rgbaBytes + newBytesPerPixel * pixelIndex, alphaBytes + bytesPerPixel * pixelIndex, bytesPerPixel);
-        rgbaBytes[newBytesPerPixel * (pixelIndex + 1) - 1] = 0xFF;
+        BYTE pixelValue = alphaBytes[pixelIndex];
+        rgbaBytes[newBytesPerPixel * pixelIndex] = pixelValue;
+        rgbaBytes[newBytesPerPixel * pixelIndex + 1] = pixelValue;
+        rgbaBytes[newBytesPerPixel * pixelIndex + 2] = pixelValue;
+        rgbaBytes[newBytesPerPixel * pixelIndex + 3] = pixelValue;
     }
 
     free(alphaBytes);
