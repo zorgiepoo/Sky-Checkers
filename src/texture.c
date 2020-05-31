@@ -18,6 +18,7 @@
 */
 
 #include "texture.h"
+#include "renderer.h"
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
