@@ -19,11 +19,17 @@
 
 #include "font.h"
 #include <stdio.h>
-//#include <dwrite.h>
 #include <dwrite_3.h>
 
 static IDWriteFontFace3* gFontFace;
 static IDWriteFactory3* gWriteFactory;
+static RECT gMaxBoundingRect;
+
+const DWRITE_RENDERING_MODE1 RENDERING_MODE = DWRITE_RENDERING_MODE1_NATURAL;
+const DWRITE_MEASURING_MODE MEASURING_MODE = DWRITE_MEASURING_MODE_NATURAL;
+const DWRITE_GRID_FIT_MODE GRID_FIT_MODE = DWRITE_GRID_FIT_MODE_ENABLED;
+const DWRITE_TEXT_ANTIALIAS_MODE ANTIALIAS_MODE = DWRITE_TEXT_ANTIALIAS_MODE_GRAYSCALE;
+const DWRITE_TEXTURE_TYPE TEXTURE_TYPE = DWRITE_TEXTURE_ALIASED_1x1;
 
 extern "C" void initFont(void)
 {
@@ -50,6 +56,47 @@ extern "C" void initFont(void)
     {
         fprintf(stderr, "Error: failed to create font face: %d\n", fontFaceResult);
         abort();
+    }
+
+    UINT16 glyphCount = fontFace->GetGlyphCount();
+    for (UINT16 glyphIndex = 0; glyphIndex < glyphCount; glyphIndex++)
+    {
+        IDWriteGlyphRunAnalysis* glyphRunAnalysis = nullptr;
+
+        DWRITE_GLYPH_RUN glyphRun;
+        glyphRun.fontFace = fontFace;
+        glyphRun.fontEmSize = (float)FONT_POINT_SIZE;
+
+        glyphRun.glyphCount = 1;
+        glyphRun.glyphIndices = &glyphIndex;
+        glyphRun.glyphAdvances = nullptr;
+        glyphRun.glyphOffsets = nullptr;
+        glyphRun.isSideways = false;
+
+        HRESULT glyphRunAnalysisResult = writeFactory->CreateGlyphRunAnalysis(&glyphRun, nullptr, RENDERING_MODE, MEASURING_MODE, GRID_FIT_MODE, ANTIALIAS_MODE, 0.0f, 0.0f, &glyphRunAnalysis);
+        if (FAILED(glyphRunAnalysisResult))
+        {
+            fprintf(stderr, "Error: failed to create glyph run analysis: %d\n", glyphRunAnalysisResult);
+            continue;
+        }
+        
+        RECT textureBounds;
+        HRESULT textureBoundsResult = glyphRunAnalysis->GetAlphaTextureBounds(TEXTURE_TYPE, &textureBounds);
+        if (FAILED(textureBoundsResult))
+        {
+            fprintf(stderr, "Error: failed to get texture bounds: %d\n", textureBoundsResult);
+            continue;
+        }
+        
+        if (textureBounds.bottom > gMaxBoundingRect.bottom)
+        {
+            gMaxBoundingRect.bottom = textureBounds.bottom;
+        }
+
+        if (textureBounds.top < gMaxBoundingRect.top)
+        {
+            gMaxBoundingRect.top = textureBounds.top;
+        }
     }
 
     gFontFace = fontFace;
@@ -88,12 +135,7 @@ extern "C" TextureData createTextData(const char* string)
     glyphRun.glyphOffsets = nullptr;
     glyphRun.isSideways = false;
 
-    const DWRITE_RENDERING_MODE1 rendereringMode = DWRITE_RENDERING_MODE1_NATURAL;
-    const DWRITE_MEASURING_MODE measuringMode = DWRITE_MEASURING_MODE_NATURAL;
-    const DWRITE_GRID_FIT_MODE gridFitMode = DWRITE_GRID_FIT_MODE_ENABLED;
-    const DWRITE_TEXT_ANTIALIAS_MODE antialiasMode = DWRITE_TEXT_ANTIALIAS_MODE_GRAYSCALE;
-
-    HRESULT glyphRunAnalysisResult = gWriteFactory->CreateGlyphRunAnalysis(&glyphRun, nullptr, rendereringMode, measuringMode, gridFitMode, antialiasMode, 0.0f, 0.0f, &glyphRunAnalysis);
+    HRESULT glyphRunAnalysisResult = gWriteFactory->CreateGlyphRunAnalysis(&glyphRun, nullptr, RENDERING_MODE, MEASURING_MODE, GRID_FIT_MODE, ANTIALIAS_MODE, 0.0f, 0.0f, &glyphRunAnalysis);
     if (FAILED(glyphRunAnalysisResult))
     {
         fprintf(stderr, "Error: failed to create glyph run analysis: %d\n", glyphRunAnalysisResult);
@@ -102,14 +144,17 @@ extern "C" TextureData createTextData(const char* string)
     
     free(glyphIndices);
     
-    DWRITE_TEXTURE_TYPE textureType = DWRITE_TEXTURE_ALIASED_1x1;
-    RECT textureBounds;
-    HRESULT textureBoundsResult = glyphRunAnalysis->GetAlphaTextureBounds(textureType, &textureBounds);
+    RECT initialTextureBounds;
+    HRESULT textureBoundsResult = glyphRunAnalysis->GetAlphaTextureBounds(TEXTURE_TYPE, &initialTextureBounds);
     if (FAILED(textureBoundsResult))
     {
         fprintf(stderr, "Error: failed to get texture bounds: %d\n", textureBoundsResult);
         abort();
     }
+
+    RECT textureBounds = initialTextureBounds;
+    textureBounds.top = gMaxBoundingRect.top;
+    textureBounds.bottom = gMaxBoundingRect.bottom;
 
     const size_t width = (size_t)abs(textureBounds.right - textureBounds.left);
     const size_t height = (size_t)abs(textureBounds.top - textureBounds.bottom);
@@ -118,7 +163,7 @@ extern "C" TextureData createTextData(const char* string)
     
     BYTE* alphaBytes = (BYTE *)calloc(1, bufferSize);
 
-    HRESULT alphaTextureResult = glyphRunAnalysis->CreateAlphaTexture(textureType, &textureBounds, alphaBytes, (UINT32)bufferSize);
+    HRESULT alphaTextureResult = glyphRunAnalysis->CreateAlphaTexture(TEXTURE_TYPE, &textureBounds, alphaBytes, (UINT32)bufferSize);
     if (FAILED(alphaTextureResult))
     {
         fprintf(stderr, "Error: failed to create alpha texture: %d\n", alphaTextureResult);
