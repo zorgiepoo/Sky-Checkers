@@ -24,12 +24,70 @@
 static IDWriteFontFace3* gFontFace;
 static IDWriteFactory3* gWriteFactory;
 static RECT gMaxBoundingRect;
+static size_t gSpaceWidth;
 
 const DWRITE_RENDERING_MODE1 RENDERING_MODE = DWRITE_RENDERING_MODE1_NATURAL;
 const DWRITE_MEASURING_MODE MEASURING_MODE = DWRITE_MEASURING_MODE_NATURAL;
 const DWRITE_GRID_FIT_MODE GRID_FIT_MODE = DWRITE_GRID_FIT_MODE_ENABLED;
 const DWRITE_TEXT_ANTIALIAS_MODE ANTIALIAS_MODE = DWRITE_TEXT_ANTIALIAS_MODE_GRAYSCALE;
 const DWRITE_TEXTURE_TYPE TEXTURE_TYPE = DWRITE_TEXTURE_ALIASED_1x1;
+
+typedef struct
+{
+    BYTE* bytes;
+    size_t width;
+    size_t height;
+} GlyphData;
+
+static RECT getTextureBounds(IDWriteFontFace3 *fontFace, IDWriteFactory3 *writeFactory, UINT32* codePoints, UINT32 codePointCount, IDWriteGlyphRunAnalysis** outGlyphRunAnalysis)
+{
+    UINT16* glyphIndices = (UINT16*)calloc(codePointCount, sizeof(*glyphIndices));
+
+    HRESULT glyphIndicesResult = fontFace->GetGlyphIndicesA(codePoints, codePointCount, glyphIndices);
+    if (FAILED(glyphIndicesResult))
+    {
+        fprintf(stderr, "Error: failed to get glyph indices result: %d\n", glyphIndicesResult);
+        abort();
+    }
+
+    DWRITE_GLYPH_RUN glyphRun;
+    glyphRun.fontFace = fontFace;
+    glyphRun.fontEmSize = (float)FONT_POINT_SIZE;
+    glyphRun.glyphCount = codePointCount;
+    glyphRun.glyphIndices = glyphIndices;
+    glyphRun.glyphAdvances = nullptr;
+    glyphRun.glyphOffsets = nullptr;
+    glyphRun.isSideways = false;
+
+    IDWriteGlyphRunAnalysis* glyphRunAnalysis = nullptr;
+    HRESULT glyphRunAnalysisResult = writeFactory->CreateGlyphRunAnalysis(&glyphRun, nullptr, RENDERING_MODE, MEASURING_MODE, GRID_FIT_MODE, ANTIALIAS_MODE, 0.0f, 0.0f, &glyphRunAnalysis);
+    if (FAILED(glyphRunAnalysisResult))
+    {
+        fprintf(stderr, "Error: failed to create glyph run analysis: %d\n", glyphRunAnalysisResult);
+        abort();
+    }
+
+    free(glyphIndices);
+
+    RECT textureBounds;
+    HRESULT textureBoundsResult = glyphRunAnalysis->GetAlphaTextureBounds(TEXTURE_TYPE, &textureBounds);
+    if (FAILED(textureBoundsResult))
+    {
+        fprintf(stderr, "Error: failed to get texture bounds: %d\n", textureBoundsResult);
+        abort();
+    }
+
+    if (outGlyphRunAnalysis != nullptr)
+    {
+        *outGlyphRunAnalysis = glyphRunAnalysis;
+    }
+    else
+    {
+        glyphRunAnalysis->Release();
+    }
+
+    return textureBounds;
+}
 
 extern "C" void initFont(void)
 {
@@ -58,6 +116,7 @@ extern "C" void initFont(void)
         abort();
     }
 
+    // Compute max bounding rect vertically
     UINT16 glyphCount = fontFace->GetGlyphCount();
     for (UINT16 glyphIndex = 0; glyphIndex < glyphCount; glyphIndex++)
     {
@@ -82,6 +141,9 @@ extern "C" void initFont(void)
         
         RECT textureBounds;
         HRESULT textureBoundsResult = glyphRunAnalysis->GetAlphaTextureBounds(TEXTURE_TYPE, &textureBounds);
+
+        glyphRunAnalysis->Release();
+
         if (FAILED(textureBoundsResult))
         {
             fprintf(stderr, "Error: failed to get texture bounds: %d\n", textureBoundsResult);
@@ -99,58 +161,25 @@ extern "C" void initFont(void)
         }
     }
 
+    // Determine width of a space
+    // DirectWrite doesn't allow us to render or get the texture bounds of a space glyph just by itself
+
+    UINT32 spacedCodePoints[] = { 'a', ' ', 'a' };
+    RECT spacedRect = getTextureBounds(fontFace, writeFactory, spacedCodePoints, sizeof(spacedCodePoints) / sizeof(*spacedCodePoints), nullptr);
+
+    UINT32 nonSpacedCodePoints[] = { 'a', 'a' };
+    RECT nonSpacedRect = getTextureBounds(fontFace, writeFactory, nonSpacedCodePoints, sizeof(nonSpacedCodePoints) / sizeof(*nonSpacedCodePoints), nullptr);
+
+    gSpaceWidth = (size_t)abs(spacedRect.right - spacedRect.left) - (size_t)abs(nonSpacedRect.right - nonSpacedRect.left);
+
     gFontFace = fontFace;
     gWriteFactory = writeFactory;
 }
 
-extern "C" TextureData createTextData(const char* string)
+static GlyphData createGlyphTexture(UINT32 codePoint)
 {
-    size_t length = strlen(string);
-    UINT32* codePoints = (UINT32 *)calloc(length, sizeof(*codePoints));
-    for (size_t stringIndex = 0; stringIndex < length; stringIndex++)
-    {
-        codePoints[stringIndex] = (UINT32)string[stringIndex];
-    }
-    
-    UINT16* glyphIndices = (UINT16 *)calloc(length, sizeof(*glyphIndices));
-
-    HRESULT glyphIndicesResult = gFontFace->GetGlyphIndicesA(codePoints, (UINT32)length, glyphIndices);
-    if (FAILED(glyphIndicesResult))
-    {
-        fprintf(stderr, "Error: failed to get glyph indices result: %d\n", glyphIndicesResult);
-        abort();
-    }
-
-    free(codePoints);
-
     IDWriteGlyphRunAnalysis* glyphRunAnalysis = nullptr;
-
-    DWRITE_GLYPH_RUN glyphRun;
-    glyphRun.fontFace = gFontFace;
-    glyphRun.fontEmSize = (float)FONT_POINT_SIZE;
-
-    glyphRun.glyphCount = (UINT32)length;
-    glyphRun.glyphIndices = glyphIndices;
-    glyphRun.glyphAdvances = nullptr;
-    glyphRun.glyphOffsets = nullptr;
-    glyphRun.isSideways = false;
-
-    HRESULT glyphRunAnalysisResult = gWriteFactory->CreateGlyphRunAnalysis(&glyphRun, nullptr, RENDERING_MODE, MEASURING_MODE, GRID_FIT_MODE, ANTIALIAS_MODE, 0.0f, 0.0f, &glyphRunAnalysis);
-    if (FAILED(glyphRunAnalysisResult))
-    {
-        fprintf(stderr, "Error: failed to create glyph run analysis: %d\n", glyphRunAnalysisResult);
-        abort();
-    }
-    
-    free(glyphIndices);
-    
-    RECT initialTextureBounds;
-    HRESULT textureBoundsResult = glyphRunAnalysis->GetAlphaTextureBounds(TEXTURE_TYPE, &initialTextureBounds);
-    if (FAILED(textureBoundsResult))
-    {
-        fprintf(stderr, "Error: failed to get texture bounds: %d\n", textureBoundsResult);
-        abort();
-    }
+    RECT initialTextureBounds = getTextureBounds(gFontFace, gWriteFactory, &codePoint, 1, &glyphRunAnalysis);
 
     RECT textureBounds = initialTextureBounds;
     textureBounds.top = gMaxBoundingRect.top;
@@ -158,10 +187,11 @@ extern "C" TextureData createTextData(const char* string)
 
     const size_t width = (size_t)abs(textureBounds.right - textureBounds.left);
     const size_t height = (size_t)abs(textureBounds.top - textureBounds.bottom);
+
     const size_t bytesPerPixel = 1;
     const size_t bufferSize = (size_t)(width * bytesPerPixel * height);
-    
-    BYTE* alphaBytes = (BYTE *)calloc(1, bufferSize);
+
+    BYTE* alphaBytes = (BYTE*)calloc(1, bufferSize);
 
     HRESULT alphaTextureResult = glyphRunAnalysis->CreateAlphaTexture(TEXTURE_TYPE, &textureBounds, alphaBytes, (UINT32)bufferSize);
     if (FAILED(alphaTextureResult))
@@ -172,27 +202,75 @@ extern "C" TextureData createTextData(const char* string)
 
     glyphRunAnalysis->Release();
 
-    const size_t newBytesPerPixel = 4;
-    const size_t newBufferSize = (size_t)(width * newBytesPerPixel * height);
-    BYTE* rgbaBytes = (BYTE *)calloc(1, newBufferSize);
+    GlyphData glyphData;
+    glyphData.bytes = alphaBytes;
+    glyphData.width = width;
+    glyphData.height = height;
+    return glyphData;
+}
 
-    for (size_t pixelIndex = 0; pixelIndex < width * height; pixelIndex++)
+extern "C" TextureData createTextData(const char* string)
+{
+    size_t length = strlen(string);
+
+    GlyphData* glyphsData = (GlyphData*)calloc(length, sizeof(*glyphsData));
+
+    // Get the texture of every individual glyph
+    // We don't pass all the code points at once to CreateGlyphRunAnalysis() because there appears to be a bug where the order
+    // the glyphs are outputted in are non-deterministic. Instead, we get individual glyphs and stitch them together in one final texture buffer.
+    size_t totalWidth = 0;
+    size_t height = (size_t)abs(gMaxBoundingRect.top - gMaxBoundingRect.bottom);
+    for (size_t stringIndex = 0; stringIndex < length; stringIndex++)
     {
-        BYTE pixelValue = alphaBytes[pixelIndex];
-        rgbaBytes[newBytesPerPixel * pixelIndex] = pixelValue;
-        rgbaBytes[newBytesPerPixel * pixelIndex + 1] = pixelValue;
-        rgbaBytes[newBytesPerPixel * pixelIndex + 2] = pixelValue;
-        rgbaBytes[newBytesPerPixel * pixelIndex + 3] = pixelValue;
+        UINT32 codePoint = (UINT32)string[stringIndex];
+
+        // Spaces are a special case because DirectWrite would give us a 0 width if we only asked for a space, without padding from other glyphs
+        // So we use a precomputed space width instead with a zeroed alpha buffer
+        if (codePoint == ' ')
+        {
+            glyphsData[stringIndex].width = gSpaceWidth;
+            glyphsData[stringIndex].height = height;
+            glyphsData[stringIndex].bytes = (BYTE *)calloc(1, glyphsData[stringIndex].width * glyphsData[stringIndex].height);
+        }
+        else
+        {
+            glyphsData[stringIndex] = createGlyphTexture(codePoint);
+        }
+        totalWidth += glyphsData[stringIndex].width;
     }
 
-    free(alphaBytes);
+    // Stitch all the glyphs together
+    const size_t bytesPerPixel = 4;
+    const size_t bufferSize = (size_t)(totalWidth * bytesPerPixel * height);
+    BYTE* rgbaBytes = (BYTE*)calloc(1, bufferSize);
+
+    size_t accumulatedWidth = 0;
+    for (size_t stringIndex = 0; stringIndex < length; stringIndex++)
+    {
+        for (size_t rowIndex = 0; rowIndex < glyphsData[stringIndex].height; rowIndex++)
+        {
+            for (size_t columnIndex = 0; columnIndex < glyphsData[stringIndex].width; columnIndex++)
+            {
+                BYTE alphaValue = glyphsData[stringIndex].bytes[rowIndex * glyphsData[stringIndex].width + columnIndex];
+
+                // Convert grayscale -> RGBA
+                BYTE* pixelValues = &rgbaBytes[bytesPerPixel * (rowIndex * totalWidth + accumulatedWidth + columnIndex)];
+                pixelValues[0] = alphaValue;
+                pixelValues[1] = alphaValue;
+                pixelValues[2] = alphaValue;
+                pixelValues[3] = alphaValue;
+            }
+        }
+
+        accumulatedWidth += glyphsData[stringIndex].width;
+        free(glyphsData[stringIndex].bytes);
+    }
 
     TextureData textureData = { 0 };
-    textureData.width = (int32_t)width;
+    textureData.width = (int32_t)totalWidth;
     textureData.height = (int32_t)height;
     textureData.context = nullptr;
-    textureData.pixelData = (uint8_t *)rgbaBytes;
+    textureData.pixelData = (uint8_t*)rgbaBytes;
     textureData.pixelFormat = PIXEL_FORMAT_RGBA32;
-
     return textureData;
 }
