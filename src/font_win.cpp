@@ -39,21 +39,12 @@ typedef struct
     size_t height;
 } GlyphData;
 
-static RECT getTextureBounds(IDWriteFontFace3 *fontFace, IDWriteFactory3 *writeFactory, UINT32* codePoints, UINT32 codePointCount, IDWriteGlyphRunAnalysis** outGlyphRunAnalysis)
+static RECT getTextureBoundsWithGlyphIndices(IDWriteFontFace3* fontFace, IDWriteFactory3* writeFactory, UINT16 *glyphIndices, UINT32 glyphCount, IDWriteGlyphRunAnalysis** outGlyphRunAnalysis)
 {
-    UINT16* glyphIndices = (UINT16*)calloc(codePointCount, sizeof(*glyphIndices));
-
-    HRESULT glyphIndicesResult = fontFace->GetGlyphIndicesA(codePoints, codePointCount, glyphIndices);
-    if (FAILED(glyphIndicesResult))
-    {
-        fprintf(stderr, "Error: failed to get glyph indices result: %d\n", glyphIndicesResult);
-        abort();
-    }
-
     DWRITE_GLYPH_RUN glyphRun;
     glyphRun.fontFace = fontFace;
     glyphRun.fontEmSize = (float)FONT_POINT_SIZE;
-    glyphRun.glyphCount = codePointCount;
+    glyphRun.glyphCount = glyphCount;
     glyphRun.glyphIndices = glyphIndices;
     glyphRun.glyphAdvances = nullptr;
     glyphRun.glyphOffsets = nullptr;
@@ -66,8 +57,6 @@ static RECT getTextureBounds(IDWriteFontFace3 *fontFace, IDWriteFactory3 *writeF
         fprintf(stderr, "Error: failed to create glyph run analysis: %d\n", glyphRunAnalysisResult);
         abort();
     }
-
-    free(glyphIndices);
 
     RECT textureBounds;
     HRESULT textureBoundsResult = glyphRunAnalysis->GetAlphaTextureBounds(TEXTURE_TYPE, &textureBounds);
@@ -85,6 +74,23 @@ static RECT getTextureBounds(IDWriteFontFace3 *fontFace, IDWriteFactory3 *writeF
     {
         glyphRunAnalysis->Release();
     }
+
+    return textureBounds;
+}
+
+static RECT getTextureBounds(IDWriteFontFace3 *fontFace, IDWriteFactory3 *writeFactory, UINT32* codePoints, UINT32 codePointCount, IDWriteGlyphRunAnalysis** outGlyphRunAnalysis)
+{
+    UINT16* glyphIndices = (UINT16*)calloc(codePointCount, sizeof(*glyphIndices));
+
+    HRESULT glyphIndicesResult = fontFace->GetGlyphIndicesA(codePoints, codePointCount, glyphIndices);
+    if (FAILED(glyphIndicesResult))
+    {
+        fprintf(stderr, "Error: failed to get glyph indices result: %d\n", glyphIndicesResult);
+        abort();
+    }
+
+    RECT textureBounds = getTextureBoundsWithGlyphIndices(fontFace, writeFactory, glyphIndices, codePointCount, outGlyphRunAnalysis);
+    free(glyphIndices);
 
     return textureBounds;
 }
@@ -120,35 +126,7 @@ extern "C" void initFont(void)
     UINT16 glyphCount = fontFace->GetGlyphCount();
     for (UINT16 glyphIndex = 0; glyphIndex < glyphCount; glyphIndex++)
     {
-        IDWriteGlyphRunAnalysis* glyphRunAnalysis = nullptr;
-
-        DWRITE_GLYPH_RUN glyphRun;
-        glyphRun.fontFace = fontFace;
-        glyphRun.fontEmSize = (float)FONT_POINT_SIZE;
-
-        glyphRun.glyphCount = 1;
-        glyphRun.glyphIndices = &glyphIndex;
-        glyphRun.glyphAdvances = nullptr;
-        glyphRun.glyphOffsets = nullptr;
-        glyphRun.isSideways = false;
-
-        HRESULT glyphRunAnalysisResult = writeFactory->CreateGlyphRunAnalysis(&glyphRun, nullptr, RENDERING_MODE, MEASURING_MODE, GRID_FIT_MODE, ANTIALIAS_MODE, 0.0f, 0.0f, &glyphRunAnalysis);
-        if (FAILED(glyphRunAnalysisResult))
-        {
-            fprintf(stderr, "Error: failed to create glyph run analysis: %d\n", glyphRunAnalysisResult);
-            continue;
-        }
-        
-        RECT textureBounds;
-        HRESULT textureBoundsResult = glyphRunAnalysis->GetAlphaTextureBounds(TEXTURE_TYPE, &textureBounds);
-
-        glyphRunAnalysis->Release();
-
-        if (FAILED(textureBoundsResult))
-        {
-            fprintf(stderr, "Error: failed to get texture bounds: %d\n", textureBoundsResult);
-            continue;
-        }
+        RECT textureBounds = getTextureBoundsWithGlyphIndices(fontFace, writeFactory, &glyphIndex, 1, nullptr);
         
         if (textureBounds.bottom > gMaxBoundingRect.bottom)
         {
