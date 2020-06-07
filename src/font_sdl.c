@@ -45,7 +45,6 @@ void initFont(void)
 	}
 }
 
-// Info on how to grab raw pixel data from drawn text using CoreText - https://stackoverflow.com/a/41798782/871119
 TextureData createTextData(const char *string)
 {
 	SDL_Color color = {255, 255, 255, 0};
