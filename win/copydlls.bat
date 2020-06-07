@@ -1,5 +1,2 @@
 xcopy /y /d "%~1\SDL2-2.0.12\lib\x64\SDL2.dll" "%~2"
-xcopy /y /d "%~1\SDL2_ttf-2.0.14\lib\x64\SDL2_ttf.dll" "%~2"
-xcopy /y /d "%~1\SDL2_ttf-2.0.14\lib\x64\libfreetype-6.dll" "%~2"
-xcopy /y /d "%~1\SDL2_ttf-2.0.14\lib\x64\zlib1.dll" "%~2"
-xcopy /y /d "%~1\SDL2_ttf-2.0.14\lib\x64\LICENSE.freetype.txt" "%~2"
+

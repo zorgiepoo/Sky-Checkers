@@ -19,7 +19,10 @@
 
 #pragma once
 
-#include "renderer_types.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "texture.h"
 
 #define FONT_POINT_SIZE 144
@@ -29,4 +32,8 @@
 
 void initFont(void);
 
-TextureData createTextData(const char *string);
+TextureData createTextData(const char* string);
+
+#ifdef __cplusplus
+}
+#endif
