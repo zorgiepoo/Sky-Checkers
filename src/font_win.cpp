@@ -247,6 +247,8 @@ extern "C" TextureData createTextData(const char* string)
         free(glyphsData[stringIndex].bytes);
     }
 
+    free(glyphsData);
+
     TextureData textureData = { 0 };
     textureData.width = (int32_t)totalWidth;
     textureData.height = (int32_t)height;
