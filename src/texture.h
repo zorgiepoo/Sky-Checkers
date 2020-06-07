@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "renderer.h"
+#include "renderer_types.h"
 #include "platforms.h"
 
 typedef struct
