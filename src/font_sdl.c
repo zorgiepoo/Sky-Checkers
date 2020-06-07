@@ -20,11 +20,7 @@
 #include "font.h"
 #include "platforms.h"
 
-#if PLATFORM_WINDOWS
-#include "SDL_ttf.h"
-#elif PLATFORM_LINUX
 #include <SDL2/SDL_ttf.h>
-#endif
 
 static TTF_Font *gFont;
 

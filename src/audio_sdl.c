@@ -22,12 +22,7 @@
 #include "sdl_include.h"
 
 #include <stdio.h>
-
-#if PLATFORM_WINDOWS
-#include "SDL_mixer.h"
-#elif PLATFORM_LINUX
 #include <SDL2/SDL_mixer.h>
-#endif
 
 static bool gInitializedAudio = SDL_FALSE;
 
