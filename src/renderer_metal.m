@@ -32,7 +32,6 @@
 
 #if PLATFORM_IOS
 #import <UIKit/UIKit.h>
-#define NO_SCALE_THRESHOLD 0.0001
 #else
 #import <AppKit/AppKit.h>
 #endif
@@ -89,28 +88,12 @@ void popDebugGroup_metal(Renderer *renderer);
 	if (self != nil)
 	{
 		_renderer = renderer;
+		self.layer.contentsScale = scale;
 		
-		[self zgUpdateScale:scale];
+		[self updateDrawableSize];
 	}
 	
 	return self;
-}
-
-- (void)zgUpdateScale:(ZGFloat)scale
-{
-	self.layer.contentsScale = scale;
-	[self updateDrawableSize];
-}
-
-- (void)zgUpdateViewportAndScale:(CGFloat)scale
-{
-	[self zgUpdateScale:scale];
-	
-	if (_renderer->metalWantsFsaa)
-	{
-		createPipelines(_renderer);
-	}
-	updateRealViewport(_renderer);
 }
 
 - (void)layoutSubviews
@@ -297,29 +280,27 @@ static void updateRealViewport(Renderer *renderer)
 	renderer->drawableWidth = (int32_t)drawableSize.width;
 	renderer->drawableHeight = (int32_t)drawableSize.height;
 	
-	id<MTLDevice> device = metalLayer.device;
-	id<MTLTexture> multisampleTexture;
+	// Configure Anti Aliasing
 	
-	if (renderer->drawableWidth > 0 && renderer->drawableHeight > 0)
+	id<MTLDevice> device = metalLayer.device;
+	
+	id<MTLTexture> multisampleTexture;
+	if (renderer->fsaa)
 	{
-		// Configure Anti Aliasing
-		if (renderer->fsaa)
-		{
-			MTLTextureDescriptor *multisampleTextureDescriptor = [MTLTextureDescriptor new];
-			multisampleTextureDescriptor.pixelFormat = metalLayer.pixelFormat;
-			multisampleTextureDescriptor.width = (NSUInteger)renderer->drawableWidth;
-			multisampleTextureDescriptor.height = (NSUInteger)renderer->drawableHeight;
-			multisampleTextureDescriptor.resourceOptions = MTLResourceStorageModePrivate;
-			multisampleTextureDescriptor.usage = MTLTextureUsageRenderTarget;
-			multisampleTextureDescriptor.sampleCount = renderer->sampleCount;
-			multisampleTextureDescriptor.textureType = MTLTextureType2DMultisample;
-			
-			multisampleTexture = [device newTextureWithDescriptor:multisampleTextureDescriptor];
-		}
-		else
-		{
-			multisampleTexture = nil;
-		}
+		MTLTextureDescriptor *multisampleTextureDescriptor = [MTLTextureDescriptor new];
+		multisampleTextureDescriptor.pixelFormat = metalLayer.pixelFormat;
+		multisampleTextureDescriptor.width = (NSUInteger)renderer->drawableWidth;
+		multisampleTextureDescriptor.height = (NSUInteger)renderer->drawableHeight;
+		multisampleTextureDescriptor.resourceOptions = MTLResourceStorageModePrivate;
+		multisampleTextureDescriptor.usage = MTLTextureUsageRenderTarget;
+		multisampleTextureDescriptor.sampleCount = renderer->sampleCount;
+		multisampleTextureDescriptor.textureType = MTLTextureType2DMultisample;
+		
+		multisampleTexture = [device newTextureWithDescriptor:multisampleTextureDescriptor];
+	}
+	else
+	{
+		multisampleTexture = nil;
 	}
 	
 	// Set up depth stencil
@@ -340,27 +321,19 @@ static void updateRealViewport(Renderer *renderer)
 		ZGQuit();
 	}
 	
-	id<MTLTexture> depthTexture;
-	if (renderer->drawableWidth > 0 && renderer->drawableHeight > 0)
+	MTLTextureDescriptor *depthTextureDescriptor = [MTLTextureDescriptor new];
+	depthTextureDescriptor.pixelFormat = DEPTH_STENCIL_PIXEL_FORMAT;
+	depthTextureDescriptor.width = (NSUInteger)renderer->drawableWidth;
+	depthTextureDescriptor.height = (NSUInteger)renderer->drawableHeight;
+	depthTextureDescriptor.resourceOptions = MTLResourceStorageModePrivate;
+	depthTextureDescriptor.usage = MTLTextureUsageRenderTarget;
+	if (renderer->fsaa)
 	{
-		MTLTextureDescriptor *depthTextureDescriptor = [MTLTextureDescriptor new];
-		depthTextureDescriptor.pixelFormat = DEPTH_STENCIL_PIXEL_FORMAT;
-		depthTextureDescriptor.width = (NSUInteger)renderer->drawableWidth;
-		depthTextureDescriptor.height = (NSUInteger)renderer->drawableHeight;
-		depthTextureDescriptor.resourceOptions = MTLResourceStorageModePrivate;
-		depthTextureDescriptor.usage = MTLTextureUsageRenderTarget;
-		if (renderer->fsaa)
-		{
-			depthTextureDescriptor.sampleCount = renderer->sampleCount;
-			depthTextureDescriptor.textureType = MTLTextureType2DMultisample;
-		}
-		
-		depthTexture = [device newTextureWithDescriptor:depthTextureDescriptor];
+		depthTextureDescriptor.sampleCount = renderer->sampleCount;
+		depthTextureDescriptor.textureType = MTLTextureType2DMultisample;
 	}
-	else
-	{
-		depthTexture = nil;
-	}
+	
+	id<MTLTexture> depthTexture = [device newTextureWithDescriptor:depthTextureDescriptor];
 	
 	// Set up render pass descriptor
 	
@@ -659,34 +632,6 @@ void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *))
 		id<MTLCommandQueue> queue = (__bridge id<MTLCommandQueue>)(renderer->metalCommandQueue);
 		
 		id<CAMetalDrawable> drawable = [metalLayer nextDrawable];
-		
-#if PLATFORM_IOS
-		// Hack to update our drawable size when the content scale changes from zero on iOS
-		// On tvOS for example, when the display is asleep, the native content scale of the screen may be zero
-		// When the display wakes, it will become non-zero
-		if (drawable == nil && metalLayer.contentsScale <= NO_SCALE_THRESHOLD)
-		{
-			UIWindow *window = (__bridge UIWindow *)(ZGWindowHandle(renderer->window));
-			CGFloat nativeScale = window.screen.nativeScale;
-			
-			if (nativeScale > NO_SCALE_THRESHOLD)
-			{
-				UIView *contentView = window.rootViewController.view;
-				for (UIView *subview in contentView.subviews)
-				{
-					if ([subview isKindOfClass:[ZGMetalView class]])
-					{
-						ZGMetalView *metalView = (ZGMetalView *)subview;
-						[metalView zgUpdateViewportAndScale:nativeScale];
-						
-						drawable = [metalLayer nextDrawable];
-						
-						break;
-					}
-				}
-			}
-		}
-#endif
 		
 		if (drawable != nil)
 		{
