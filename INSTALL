@@ -3,7 +3,7 @@ This document is for building Sky Checkers from source. Available binaries are a
 To compile Sky Checkers from source, the following dependencies are needed:
 
 * SDL2 (Windows, Linux)
-* SDL2_ttf (Windows, Linux)
+* SDL2_ttf (Linux)
 * SDL2_mixer (Linux)
 * glew (Linux)
 
@@ -25,7 +25,7 @@ yum install SDL2_mixer-devel.x86_64
 yum install SDL2_ttf-devel.x86_64
 yum install glew-devel.x86_64
 
-For Windows, these dependencies are bundled in the source code already.
+For Windows, dependencies are bundled in the source code repository already.
 For macOS and iOS, no major dependencies are used.
 
 To compile under macOS or iOS, build and run the Xcode project in mac/ using the appropriate scheme
