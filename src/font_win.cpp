@@ -32,6 +32,10 @@ const DWRITE_GRID_FIT_MODE GRID_FIT_MODE = DWRITE_GRID_FIT_MODE_ENABLED;
 const DWRITE_TEXT_ANTIALIAS_MODE ANTIALIAS_MODE = DWRITE_TEXT_ANTIALIAS_MODE_GRAYSCALE;
 const DWRITE_TEXTURE_TYPE TEXTURE_TYPE = DWRITE_TEXTURE_ALIASED_1x1;
 
+#define _WIN_WIDEN(x) L ## x
+#define WIN_WIDEN(x) _WIN_WIDEN(x)
+#define WIN_FONT_PATH WIN_WIDEN(FONT_PATH)
+
 typedef struct
 {
     BYTE* bytes;
@@ -106,8 +110,7 @@ extern "C" void initFont(void)
     }
 
     IDWriteFontFaceReference* fontFaceReference = nullptr;
-    const WCHAR* filePath = L"Data\\Fonts\\typelib.dat";
-    HRESULT fontFaceReferenceResult = writeFactory->CreateFontFaceReference(filePath, nullptr, 0, DWRITE_FONT_SIMULATIONS_NONE, &fontFaceReference);
+    HRESULT fontFaceReferenceResult = writeFactory->CreateFontFaceReference(WIN_FONT_PATH, nullptr, 0, DWRITE_FONT_SIMULATIONS_NONE, &fontFaceReference);
     if (FAILED(fontFaceReferenceResult))
     {
         fprintf(stderr, "Error: failed to create font face reference: %d\n", fontFaceReferenceResult);
