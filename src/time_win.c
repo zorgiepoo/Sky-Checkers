@@ -20,7 +20,6 @@
 #include "zgtime.h"
 
 #include <windows.h>
-#include <stdbool.h>
 
 static uint64_t getMicroTicks(void)
 {
