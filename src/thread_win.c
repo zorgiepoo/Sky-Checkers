@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Mayur Pawashe
+ * Copyright 2020 Mayur Pawashe
  * https://zgcoder.net
 
  * This file is part of skycheckers.
@@ -18,37 +18,54 @@
  */
 
 #include "thread.h"
-#include "sdl_include.h"
-#include <assert.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <Windows.h>
+
+#define SPIN_COUNT 2000
 
 ZGThread ZGCreateThread(ZGThreadFunction function, const char *name, void *data)
 {
-	return SDL_CreateThread(function, name, data);
+	HANDLE threadHandle = CreateThread(NULL, 0, function, data, 0, NULL);
+	if (threadHandle == NULL)
+	{
+		fprintf(stderr, "Error: Failed to create thread: %d\n", GetLastError());
+	}
+	return threadHandle;
 }
 
 void ZGWaitThread(ZGThread thread)
 {
-	SDL_WaitThread(thread, NULL);
+	if (WaitForSingleObjectEx(thread, INFINITE, FALSE) == WAIT_FAILED)
+	{
+		fprintf(stderr, "Error: Failed to WaitForSingleObjectEx()\n");
+	}
+	
+	if (!CloseHandle(thread))
+	{
+		fprintf(stderr, "Error: Failed to CloseHandle()\n");
+	}
 }
 
 ZGMutex ZGCreateMutex(void)
 {
-	return SDL_CreateMutex();
+	CRITICAL_SECTION* mutex = calloc(1, sizeof(*mutex));
+	InitializeCriticalSectionAndSpinCount(mutex, SPIN_COUNT);
+	return mutex;
 }
 
 void ZGLockMutex(ZGMutex mutex)
 {
-	int result = SDL_LockMutex(mutex);
-	assert(result == 0);
+	EnterCriticalSection(mutex);
 }
 
 void ZGUnlockMutex(ZGMutex mutex)
 {
-	int result = SDL_UnlockMutex(mutex);
-	assert(result == 0);
+	LeaveCriticalSection(mutex);
 }
 
 void ZGDelay(uint32_t delayMilliseconds)
 {
-	SDL_Delay(delayMilliseconds);
+	Sleep(delayMilliseconds);
 }
