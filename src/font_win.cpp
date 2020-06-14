@@ -252,7 +252,6 @@ extern "C" TextureData createTextData(const char* string)
     TextureData textureData = { 0 };
     textureData.width = (int32_t)totalWidth;
     textureData.height = (int32_t)height;
-    textureData.context = nullptr;
     textureData.pixelData = (uint8_t*)rgbaBytes;
     textureData.pixelFormat = PIXEL_FORMAT_RGBA32;
     return textureData;

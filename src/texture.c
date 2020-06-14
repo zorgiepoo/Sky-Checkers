@@ -42,7 +42,9 @@ TextureObject loadTexture(Renderer *renderer, const char *filePath)
 TextureData copyTextureData(TextureData textureData)
 {
 	TextureData copyData = textureData;
+#if TEXTURE_DATA_HAS_CONTEXT
 	copyData.context = NULL;
+#endif
 	
 	size_t numBytes = textureData.width * textureData.height * 4;
 	copyData.pixelData = calloc(1, numBytes);
