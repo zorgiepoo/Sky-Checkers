@@ -81,7 +81,7 @@
     <ClCompile Include="..\src\scenery.c" />
     <ClCompile Include="..\src\text.c" />
     <ClCompile Include="..\src\texture.c" />
-    <ClCompile Include="..\src\texture_sdl.c" />
+    <ClCompile Include="..\src\texture_win.cpp" />
     <ClCompile Include="..\src\thread_sdl.c" />
     <ClCompile Include="..\src\time_sdl.c" />
     <ClCompile Include="..\src\weapon.c" />
@@ -221,7 +221,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;dxgi.lib;SDL2.lib;SDL2main.lib;Dwrite.lib;Xaudio2.lib;ws2_32.lib;Shlwapi.lib;iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;SDL2.lib;SDL2main.lib;Dwrite.lib;Xaudio2.lib;windowscodecs.lib;ws2_32.lib;Shlwapi.lib;iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
@@ -268,7 +268,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>d3d11.lib;dxgi.lib;SDL2.lib;SDL2main.lib;Dwrite.lib;Xaudio2.lib;ws2_32.lib;Shlwapi.lib;iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;SDL2.lib;SDL2main.lib;Dwrite.lib;Xaudio2.lib;windowscodecs.lib;ws2_32.lib;Shlwapi.lib;iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>

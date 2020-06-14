@@ -185,9 +185,6 @@
     <ClCompile Include="..\src\quit_sdl.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\texture_sdl.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\thread_sdl.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -213,6 +210,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\font_win.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\texture_win.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
