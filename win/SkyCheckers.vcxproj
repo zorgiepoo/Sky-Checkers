@@ -83,7 +83,7 @@
     <ClCompile Include="..\src\texture.c" />
     <ClCompile Include="..\src\texture_win.cpp" />
     <ClCompile Include="..\src\thread_sdl.c" />
-    <ClCompile Include="..\src\time_sdl.c" />
+    <ClCompile Include="..\src\time_win.c" />
     <ClCompile Include="..\src\weapon.c" />
     <ClCompile Include="..\src\window_sdl.c" />
   </ItemGroup>
