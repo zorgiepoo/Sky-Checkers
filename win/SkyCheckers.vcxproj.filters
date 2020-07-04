@@ -173,9 +173,6 @@
     <ClCompile Include="..\src\defaults_win.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\gamepad_sdl.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\keyboard_sdl.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -213,6 +210,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\thread_win.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\gamepad_win.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -66,7 +66,7 @@
     <ClCompile Include="..\src\defaults_file.c" />
     <ClCompile Include="..\src\defaults_win.c" />
     <ClCompile Include="..\src\font_win.cpp" />
-    <ClCompile Include="..\src\gamepad_sdl.c" />
+    <ClCompile Include="..\src\gamepad_win.c" />
     <ClCompile Include="..\src\input.c" />
     <ClCompile Include="..\src\keyboard_sdl.c" />
     <ClCompile Include="..\src\main.c" />
@@ -221,7 +221,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;dxgi.lib;SDL2.lib;SDL2main.lib;Dwrite.lib;Xaudio2.lib;windowscodecs.lib;ws2_32.lib;Shlwapi.lib;iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;SDL2.lib;SDL2main.lib;Dwrite.lib;Xaudio2.lib;windowscodecs.lib;Xinput.lib;ws2_32.lib;Shlwapi.lib;iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
@@ -268,7 +268,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>d3d11.lib;dxgi.lib;SDL2.lib;SDL2main.lib;Dwrite.lib;Xaudio2.lib;windowscodecs.lib;ws2_32.lib;Shlwapi.lib;iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;SDL2.lib;SDL2main.lib;Dwrite.lib;Xaudio2.lib;windowscodecs.lib;Xinput.lib;ws2_32.lib;Shlwapi.lib;iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>

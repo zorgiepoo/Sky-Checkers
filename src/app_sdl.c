@@ -100,6 +100,13 @@ int ZGAppInit(int argc, char *argv[], ZGAppHandlers *appHandlers, void *appConte
 					}
 			}
 		}
+
+#if PLATFORM_WINDOWS
+		if (appHandlers->pollEventHandler != NULL)
+		{
+			appHandlers->pollEventHandler(appContext, NULL);
+		}
+#endif
 		
 		if (appHandlers->runLoopHandler != NULL)
 		{
