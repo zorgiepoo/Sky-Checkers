@@ -5,10 +5,10 @@ To compile under Windows, build and run the Visual Studio project in win/ using 
 
 To compile for linux, the following dependencies are needed:
 
-* SDL2 (Windows, Linux)
-* SDL2_ttf (Linux)
-* SDL2_mixer (Linux)
-* glew (Linux)
+* SDL2
+* SDL2_ttf
+* SDL2_mixer
+* glew
 
 On Linux, development libraries for these dependencies may need to first be installed.
 
