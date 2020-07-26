@@ -6,16 +6,21 @@
 ## Introduction
 Sky Checkers is a multiplayer action based game. Knock off your enemies and be the last one standing!
 
-Sky Checkers supports macOS, Windows, Linux, iOS, and tvOS. Stable downloads can be found on the [releases page](https://github.com/zorgiepoo/Sky-Checkers/releases). For information on compiling the latest changes from source, please see [INSTALL](INSTALL).
+Sky Checkers supports macOS, Windows, Linux, iOS, and tvOS. Stable downloads can be found on the [releases page](https://github.com/zorgiepoo/Sky-Checkers/releases). For compiling the latest changes from source, please see [INSTALL](INSTALL).
 
-This game is based on an old N64 Kirby mini-game and was originally written during my high school years, but still kept up to date ❤️.
+This game is based on an old N64 Kirby mini-game and was originally written during my high school years, but still keeps my interest ❤️.
 
-## Features
+## Remarks
 
-* 3-D graphics supporting Metal, Direct3D 11, OpenGL backends
-* Local and [online battles](https://www.youtube.com/watch?v=NjZAAgJhsho) with 1 - 4 players
-* Bots with an easy, medium, or hard difficulty
-* Gamepad support
+Sky Checkers was one of my first programming projects when I was learning C and has been first released over a decade ago, longer than popular game engines (Unity, Unreal) have been mainstream. In recent years, it has received updates due to still tackling interesting problems.
+
+This is a real-time 3-D video game written to push matrix transformations and buffers to multiple rendering backends -- Metal, Direct3D 11, OpenGL. It uses the preferred backend for the appropriate platform, which is aligned with how professional game engines operate today.
+
+This game is now mostly written from "scratch" on most platforms, opting to use native system libraries for functionality such as relating to textures, audio, fonts, gamepads, touch, UI, and more. This gives me full control of what code my game leverages; I can use present and future platform-specific features where available, and I can avoid any issues a major 3rd party library may abstract wrongly. SDL libraries are used only on Linux.
+
+Sky Checkers additionally supports [playing online](https://www.youtube.com/watch?v=NjZAAgJhsho) with friends over UDP in a client-server model. This posed many interesting challenges for smooth playing such as tagging packets, channeling real-time and important messages, minimizing data transferred, lag compensation of firing, client-side interpolation, and client-side prediction.
+
+Other aspects expected in a game are present such as a tutorial, AI, and multiplayer mayhem 😁.
 
 ## Licensing
 
