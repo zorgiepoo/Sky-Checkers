@@ -16,7 +16,7 @@ Sky Checkers was one of my first programming projects when I was learning C and 
 
 This is a real-time 3-D video game written to push matrix transformations and buffers to multiple rendering backends -- Metal, Direct3D 11, OpenGL. It uses the preferred backend for the appropriate platform, which is aligned with how professional game engines operate today.
 
-This game is now mostly written from "scratch" on most platforms, opting to use native system libraries for functionality such as relating to textures, audio, fonts, gamepads, touch, UI, and more. This gives me full control of what code my game leverages; I can use present and future platform-specific features where available, and I can avoid any issues a major 3rd party library may abstract wrongly. SDL libraries are used only on Linux.
+This game is now mostly written from "scratch" on most platforms, opting to use native system libraries for functionality such as relating to textures, audio, fonts, gamepads, touch, UI, and more. This gives full control of what code the game leverages; it can use present and future platform-specific features where available, and avoid any issues a major 3rd party library may abstract incorrectly. SDL libraries are used only on Linux.
 
 Sky Checkers additionally supports [playing online](https://www.youtube.com/watch?v=NjZAAgJhsho) with friends over UDP in a client-server model. This posed many interesting challenges for smooth playing such as tagging packets, channeling real-time and important messages, minimizing data transferred, lag compensation of firing, client-side interpolation, and client-side prediction.
 
