@@ -19,6 +19,7 @@
 
 #include "window.h"
 #include "zgtime.h"
+#include "quit.h"
 
 #include <Windows.h>
 #include "resource.h"
@@ -44,6 +45,10 @@ LRESULT CALLBACK windowCallback(HWND handle, UINT message, WPARAM wParam, LPARAM
 	bool handledMessage = false;
 	switch (message)
 	{
+	case WM_DESTROY:
+		ZGSendQuitEvent();
+		handledMessage = true;
+		break;
 	case WM_SIZE: {
 		WindowContext* windowContext = (WindowContext *)GetWindowLongPtr(handle, GWLP_USERDATA);
 
@@ -247,8 +252,6 @@ ZGWindow* ZGCreateWindow(const char* windowTitle, int32_t windowWidth, int32_t w
 
 	WindowContext* context = calloc(1, sizeof(*context));
 	SetWindowLongPtr(handle, GWLP_USERDATA, (LONG_PTR)context);
-
-	//ShowWindow(handle, SW_SHOW);
 
 	return handle;
 }
