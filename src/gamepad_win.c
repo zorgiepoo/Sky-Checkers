@@ -149,7 +149,9 @@ GamepadEvent* pollGamepadEvents(GamepadManager* gamepadManager, const void* syst
 
 const char* gamepadName(GamepadManager* gamepadManager, GamepadIndex index)
 {
-	return "Xbox";
+	static char nameBuffer[8] = { 0 };
+	snprintf(nameBuffer, sizeof(nameBuffer), "Xbox %d", (int)(index + 1));
+	return nameBuffer;
 }
 
 uint8_t gamepadRank(GamepadManager* gamepadManager, GamepadIndex index)
