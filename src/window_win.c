@@ -147,7 +147,7 @@ LRESULT CALLBACK windowCallback(HWND handle, UINT message, WPARAM wParam, LPARAM
 		}
 	} break;
 	case WM_SYSCHAR:
-		if (wParam == VK_RETURN)
+		if (ZGTestReturnKeyCode((uint16_t)wParam))
 		{
 			handledMessage = true;
 		}
@@ -157,7 +157,7 @@ LRESULT CALLBACK windowCallback(HWND handle, UINT message, WPARAM wParam, LPARAM
 		WindowContext* windowContext = (WindowContext*)GetWindowLongPtr(handle, GWLP_USERDATA);
 		if (windowContext != NULL && windowContext->keyboardEventHandler != NULL)
 		{
-			bool downEvent = (message == WM_KEYDOWN || message == WM_SYSKEYDOWN);
+			bool downEvent = (message == WM_KEYDOWN);
 
 			// Control is the only modifier we care about
 			SHORT controlModifierStatus = GetKeyState(VK_CONTROL);
