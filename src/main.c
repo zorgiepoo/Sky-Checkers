@@ -37,11 +37,6 @@
 #include "defaults.h"
 #include "renderer_projection.h"
 
-// Temporary for Windows. Needs to be included for correct main() linkage
-#if PLATFORM_WINDOWS
-#include "sdl_include.h"
-#endif
-
 #if !PLATFORM_IOS
 #include "console.h"
 #endif

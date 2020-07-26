@@ -28,6 +28,13 @@
 
 #define MAX_EVENTS 10
 
+extern int main(int argc, char* argv[]);
+
+INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR commandLine, int nCmdShow)
+{
+	return main(0, NULL);
+}
+
 int ZGAppInit(int argc, char* argv[], ZGAppHandlers* appHandlers, void* appContext)
 {
 	// Initialize COM for audio and font implementations
