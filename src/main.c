@@ -1894,10 +1894,12 @@ static void appLaunchedHandler(void *context)
 	rendererOptions.fullscreen = gFullscreenFlag;
 	rendererOptions.vsync = vsync;
 	rendererOptions.fsaa = gFsaaFlag;
+#if !PLATFORM_IOS
 	rendererOptions.windowEventHandler = handleWindowEvent;
 	rendererOptions.windowEventContext = appContext;
 	rendererOptions.keyboardEventHandler = handleKeyboardEvent;
 	rendererOptions.keyboardEventContext = renderer;
+#endif
 
 	createRenderer(renderer, rendererOptions);
 	

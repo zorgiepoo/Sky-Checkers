@@ -26,19 +26,24 @@ extern "C" {
 #include "platforms.h"
 #include "float.h"
 #include "window.h"
-#include "keyboard.h"
 #include <stdbool.h>
 #include <stdint.h>
+
+#if !PLATFORM_IOS
+#include "keyboard.h"
+#endif
 
 #define MSAA_PREFERRED_RETINA_SAMPLE_COUNT 2
 #define MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT 4
 
 typedef struct
 {
+#if !PLATFORM_IOS
 	void (*windowEventHandler)(ZGWindowEvent, void*);
 	void* windowEventContext;
 	void (*keyboardEventHandler)(ZGKeyboardEvent, void*);
 	void* keyboardEventContext;
+#endif
 
 	const char* windowTitle;
 
