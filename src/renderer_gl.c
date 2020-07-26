@@ -314,11 +314,11 @@ static void updateViewport_gl(Renderer *renderer, int32_t windowWidth, int32_t w
 	updateGLProjectionMatrix(renderer);
 }
 
-void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, bool fullscreen, bool vsync, bool fsaa)
+void createRenderer_gl(Renderer *renderer, RendererCreateOptions options)
 {
-	renderer->windowWidth = windowWidth;
-	renderer->windowHeight = windowHeight;
-	renderer->fullscreen = fullscreen;
+	renderer->windowWidth = options.windowWidth;
+	renderer->windowHeight = options.windowHeight;
+	renderer->fullscreen = options.fullscreen;
 	
 	// Buffer sizes
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
@@ -326,13 +326,13 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	
 	uint16_t glslVersion = GLSL_VERSION_410;
 	SDL_GLContext glContext = NULL;
-	if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, windowTitle, windowWidth, windowHeight, &renderer->fullscreen, fsaa))
+	if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, options.windowTitle, options.windowWidth, options.windowHeight, &renderer->fullscreen, options.fsaa))
 	{
 		glslVersion = GLSL_VERSION_330;
-		if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, windowTitle, windowWidth, windowHeight, &renderer->fullscreen, fsaa))
+		if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, options.windowTitle, options.windowWidth, options.windowHeight, &renderer->fullscreen, options.fsaa))
 		{
 			glslVersion = GLSL_VERSION_120;
-			if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, windowTitle, windowWidth, windowHeight, &renderer->fullscreen, fsaa))
+			if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, options.windowTitle, options.windowWidth, options.windowHeight, &renderer->fullscreen, options.fsaa))
 			{
 				fprintf(stderr, "Failed to create OpenGL context with even glsl version %d\n", glslVersion);
 				ZGQuit();
@@ -347,7 +347,7 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	}
 	
 	// VSYNC
-	SDL_GL_SetSwapInterval(!!vsync);
+	SDL_GL_SetSwapInterval(!!options.vsync);
 	
 	glewExperimental = GL_TRUE;
 	GLenum glewError = glewInit();
@@ -405,6 +405,10 @@ void createRenderer_gl(Renderer *renderer, const char *windowTitle, int32_t wind
 	renderer->drawTextureWithVerticesFromIndicesPtr = drawTextureWithVerticesFromIndices_gl;
 	renderer->pushDebugGroupPtr = pushDebugGroup_gl;
 	renderer->popDebugGroupPtr = popDebugGroup_gl;
+
+	// Set window & keyboard handlers
+	ZGSetWindowEventHandler(renderer->window, options.windowEventContext, options.windowEventHandler);
+	ZGSetKeyboardEventHandler(renderer->window, options.keyboardEventContext, options.keyboardEventHandler);
 }
 
 void renderFrame_gl(Renderer *renderer, void (*drawFunc)(Renderer *))
@@ -538,12 +542,6 @@ BufferArrayObject createVertexAndTextureCoordinateArrayObject_gl(Renderer *rende
 
 static void beginDrawingVertices(Shader_gl *shader, BufferArrayObject vertexArrayObject, RendererOptions options)
 {
-	bool disableDepthTest = (options & RENDERER_OPTION_DISABLE_DEPTH_TEST) != 0;
-	if (disableDepthTest)
-	{
-		glDisable(GL_DEPTH_TEST);
-	}
-	
 	bool blendingAlpha = (options & RENDERER_OPTION_BLENDING_ALPHA) != 0;
 	bool blendingOneMinusAlpha = (options & RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA) != 0;
 	bool blending = (blendingAlpha || blendingOneMinusAlpha);
@@ -582,12 +580,6 @@ static void endDrawingVerticesAndTextures(RendererOptions options)
 	if (blending)
 	{
 		glDisable(GL_BLEND);
-	}
-	
-	bool disableDepthTest = (options & RENDERER_OPTION_DISABLE_DEPTH_TEST) != 0;
-	if (disableDepthTest)
-	{
-		glEnable(GL_DEPTH_TEST);
 	}
 }
 

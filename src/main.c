@@ -1929,11 +1929,6 @@ static void appLaunchedHandler(void *context)
 		bool windowFocus = ZGWindowHasFocus(renderer->window);
 		playMainMenuMusic(!windowFocus);
 	}
-	
-#if PLATFORM_LINUX
-	ZGSetWindowEventHandler(renderer->window, appContext, handleWindowEvent);
-	ZGSetKeyboardEventHandler(renderer->window, renderer, handleKeyboardEvent);
-#endif
 }
 
 static void appTerminatedHandler(void *context)

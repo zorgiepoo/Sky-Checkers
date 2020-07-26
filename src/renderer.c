@@ -62,7 +62,7 @@ void createRenderer(Renderer *renderer, RendererCreateOptions options)
 		abort();
 	}
 #elif PLATFORM_LINUX
-	createRenderer_gl(renderer, windowTitle, windowWidth, windowHeight, fullscreen, vsync, fsaa);
+	createRenderer_gl(renderer, options);
 #endif
 }
 
