@@ -50,7 +50,7 @@ void createRenderer(Renderer *renderer, RendererCreateOptions options)
 	}
 	
 #if PLATFORM_APPLE
-	if (!createRenderer_metal(renderer, windowTitle, windowWidth, windowHeight, fullscreen, vsync, fsaa))
+	if (!createRenderer_metal(renderer, options))
 	{
 		fprintf(stderr, "Failed to create Metal renderer\n");
 		abort();

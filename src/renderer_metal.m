@@ -465,7 +465,7 @@ static void createPipelines(Renderer *renderer)
 	renderer->metalCreatedInitialPipelines = true;
 }
 
-bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, bool fullscreen, bool vsync, bool fsaa)
+bool createRenderer_metal(Renderer *renderer, RendererCreateOptions options)
 {
 	@autoreleasepool
 	{
@@ -478,15 +478,15 @@ bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t w
 			return false;
 		}
 		
-		renderer->windowWidth = windowWidth;
-		renderer->windowHeight = windowHeight;
+		renderer->windowWidth = options.windowWidth;
+		renderer->windowHeight = options.windowHeight;
 		
 		renderer->metalLayer = NULL;
 		renderer->metalCreatedInitialPipelines = false;
 		renderer->metalRenderPassDescriptor = NULL;
 		renderer->metalDepthTestStencilState = NULL;
 		renderer->metalShaderFunctions = NULL;
-		renderer->fullscreen = fullscreen;
+		renderer->fullscreen = options.fullscreen;
 		
 		id<MTLDevice> preferredDevice = nil;
 #if PLATFORM_OSX
@@ -549,7 +549,7 @@ bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t w
 			return false;
 		}
 		
-		renderer->window = ZGCreateWindow(windowTitle, windowWidth, windowHeight, &renderer->fullscreen);
+		renderer->window = ZGCreateWindow(options.windowTitle, options.windowWidth, options.windowHeight, &renderer->fullscreen);
 		if (renderer->window == NULL)
 		{
 			return false;
@@ -582,8 +582,8 @@ bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t w
 #if PLATFORM_OSX
 		if (@available(macOS 10.13, *))
 		{
-			metalLayer.displaySyncEnabled = vsync;
-			renderer->vsync = vsync;
+			metalLayer.displaySyncEnabled = options.vsync;
+			renderer->vsync = options.vsync;
 		}
 		else
 #endif
@@ -592,7 +592,7 @@ bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t w
 		}
 		
 		// Create pipelines
-		renderer->metalWantsFsaa = fsaa;
+		renderer->metalWantsFsaa = options.fsaa;
 		renderer->metalLayer = (void *)CFBridgingRetain(metalLayer);
 		memset(renderer->metalPipelineStates, 0, sizeof(renderer->metalPipelineStates));
 		createPipelines(renderer);
@@ -619,6 +619,10 @@ bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t w
 		renderer->drawTextureWithVerticesFromIndicesPtr = drawTextureWithVerticesFromIndices_metal;
 		renderer->pushDebugGroupPtr = pushDebugGroup_metal;
 		renderer->popDebugGroupPtr = popDebugGroup_metal;
+		
+		// Set window and keyboard handlers
+		ZGSetWindowEventHandler(renderer->window, options.windowEventContext, options.windowEventHandler);
+		ZGSetKeyboardEventHandler(renderer->window, options.keyboardEventContext, options.keyboardEventHandler);
 	}
 	
 	return true;
@@ -652,7 +656,11 @@ void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *))
 			
 			id<MTLRenderCommandEncoder> renderCommandEncoder = [commandBuffer renderCommandEncoderWithDescriptor:renderPassDescriptor];
 			
-			[renderCommandEncoder setViewport:(MTLViewport){0.0, 0.0, (double)renderer->drawableWidth, (double)renderer->drawableHeight, -1.0, 1.0 }];
+			[renderCommandEncoder setViewport:(MTLViewport){0.0, 0.0, (double)renderer->drawableWidth, (double)renderer->drawableHeight, 0.0, 1.0 }];
+			
+			id <MTLDepthStencilState> depthStencilState = (__bridge id<MTLDepthStencilState>)(renderer->metalDepthTestStencilState);
+			[renderCommandEncoder setDepthStencilState:depthStencilState];
+			
 			renderer->metalCurrentRenderCommandEncoder = (__bridge void *)(renderCommandEncoder);
 			
 			drawFunc(renderer);
@@ -792,12 +800,6 @@ static void encodeVertexState(id<MTLRenderCommandEncoder> renderCommandEncoder, 
 	id<MTLRenderPipelineState> pipelineState = (__bridge id<MTLRenderPipelineState>)(renderer->metalPipelineStates[pipelineIndex(shaderFunctionPairIndex, pipelineOptionIndex)]);
 	
 	[renderCommandEncoder setRenderPipelineState:pipelineState];
-	
-	if ((options & RENDERER_OPTION_DISABLE_DEPTH_TEST) == 0)
-	{
-		id <MTLDepthStencilState> depthStencilState = (__bridge id<MTLDepthStencilState>)(renderer->metalDepthTestStencilState);
-		[renderCommandEncoder setDepthStencilState:depthStencilState];
-	}
 	
 	[renderCommandEncoder setVertexBuffer:vertexBuffer offset:0 atIndex:METAL_BUFFER_VERTICES_INDEX];
 }

@@ -21,4 +21,4 @@
 
 #include "renderer_types.h"
 
-bool createRenderer_metal(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, bool fullscreen, bool vsync, bool fsaa);
+bool createRenderer_metal(Renderer *renderer, RendererCreateOptions options);

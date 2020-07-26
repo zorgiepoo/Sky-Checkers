@@ -1927,7 +1927,7 @@ static void appLaunchedHandler(void *context)
 	
 #if PLATFORM_IOS
 	ZGSetTouchEventHandler(renderer->window, renderer, handleTouchEvent);
-#elif !PLATFORM_WINDOWS
+#elif PLATFORM_LINUX
 	ZGSetWindowEventHandler(renderer->window, appContext, handleWindowEvent);
 	ZGSetKeyboardEventHandler(renderer->window, renderer, handleKeyboardEvent);
 #endif
