@@ -18,7 +18,7 @@ This is a real-time 3-D video game written to push matrix transformations and bu
 
 This game is now mostly written from "scratch" on most platforms, opting to use native system libraries for functionality such as relating to textures, audio, fonts, gamepads, touch, UI, and more. This gives full control of what code the game leverages; it can use present and future platform-specific features where available, and avoid any issues a major 3rd party library may abstract incorrectly. SDL libraries are used only on Linux.
 
-Sky Checkers additionally supports [playing online](https://www.youtube.com/watch?v=NjZAAgJhsho) with friends over UDP in a client-server model. This posed many interesting challenges for smooth playing such as tagging packets, channeling real-time and important messages, minimizing data transferred, lag compensation of firing, client-side interpolation, and client-side prediction.
+Sky Checkers additionally supports [playing online](https://www.youtube.com/watch?v=NjZAAgJhsho) with friends over UDP in a client-server model. This posed many interesting challenges for smooth gameplay such as tagging packets, channeling real-time and important messages, minimizing data transferred, lag compensation of firing, client-side interpolation, and client-side prediction.
 
 Other aspects expected in a game are present such as a tutorial, AI, and multiplayer mayhem 😁.
 
