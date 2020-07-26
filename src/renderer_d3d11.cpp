@@ -612,6 +612,9 @@ extern "C" bool createRenderer_d3d11(Renderer *renderer, RendererCreateOptions o
 		goto INIT_FAILURE;
 	}
 
+	// Set depth stencil state
+	context->OMSetDepthStencilState(depthStencilState, 0);
+
 	// Create alpha blend state
 	D3D11_BLEND_DESC alphaBlendDescription;
 	ZeroMemory(&alphaBlendDescription, sizeof(alphaBlendDescription));
@@ -709,8 +712,6 @@ extern "C" bool createRenderer_d3d11(Renderer *renderer, RendererCreateOptions o
 	renderer->d3d11RenderTargetView = nullptr;
 	renderer->d3d11DepthStencilView = nullptr;
 	renderer->d3d11DepthStencilBuffer = nullptr;
-
-	renderer->d3d11DepthStencilState = depthStencilState;
 
 	renderer->d3d11AlphaBlendState = alphaBlendState;
 	renderer->d3d11OneMinusAlphaBlendState = oneMinusAlphaBlendState;
@@ -1020,9 +1021,6 @@ static void copyDataToDynamicBuffer(ID3D11DeviceContext *context, ID3D11Buffer *
 static void encodeRendererAndShaderState(Renderer *renderer, Shader_d3d11 *shader, float *modelViewProjectionMatrix, RendererMode mode, color4_t color, RendererOptions options)
 {
 	ID3D11DeviceContext *context = (ID3D11DeviceContext *)renderer->d3d11Context;
-
-	ID3D11DepthStencilState* depthStencilState = (ID3D11DepthStencilState*)renderer->d3d11DepthStencilState;
-	context->OMSetDepthStencilState(depthStencilState, 0);
 
 	if ((options & RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA) != 0)
 	{

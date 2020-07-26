@@ -208,7 +208,6 @@ typedef struct _Renderer
 			void *d3d11RenderTargetView;
 			void *d3d11DepthStencilView;
 			void *d3d11DepthStencilBuffer;
-			void *d3d11DepthStencilState;
 			void *d3d11OneMinusAlphaBlendState;
 			void *d3d11AlphaBlendState;
 			void *d3d11SwapChain;
