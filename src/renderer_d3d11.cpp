@@ -428,7 +428,6 @@ extern "C" bool createRenderer_d3d11(Renderer *renderer, RendererCreateOptions o
 	IDXGISwapChain *swapChain = nullptr;
 	ID3D11DeviceContext *context = nullptr;
 	ID3D11DepthStencilState *depthStencilState = nullptr;
-	ID3D11DepthStencilState *disabledDepthStencilState = nullptr;
 	ID3D11BlendState *alphaBlendState = nullptr;
 	ID3D11BlendState *oneMinusAlphaBlendState = nullptr;
 	ID3D11RasterizerState *rasterState = nullptr;
@@ -619,33 +618,6 @@ extern "C" bool createRenderer_d3d11(Renderer *renderer, RendererCreateOptions o
 		goto INIT_FAILURE;
 	}
 
-	// Create disabled depth stencil state
-	D3D11_DEPTH_STENCIL_DESC disabledDepthStencilDescription;
-	ZeroMemory(&disabledDepthStencilDescription, sizeof(disabledDepthStencilDescription));
-
-	disabledDepthStencilDescription.DepthEnable = FALSE;
-	disabledDepthStencilDescription.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-	disabledDepthStencilDescription.DepthFunc = D3D11_COMPARISON_LESS;
-	disabledDepthStencilDescription.StencilEnable = FALSE;
-	disabledDepthStencilDescription.StencilReadMask = 0xFF;
-	disabledDepthStencilDescription.StencilWriteMask = 0xFF;
-	disabledDepthStencilDescription.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-	disabledDepthStencilDescription.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
-	disabledDepthStencilDescription.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-	disabledDepthStencilDescription.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-	disabledDepthStencilDescription.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-	disabledDepthStencilDescription.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
-	disabledDepthStencilDescription.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-	disabledDepthStencilDescription.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-	
-	HRESULT disabledDepthStencilResult = device->CreateDepthStencilState(&disabledDepthStencilDescription, &disabledDepthStencilState);
-	if (FAILED(disabledDepthStencilResult))
-	{
-		fprintf(stderr, "Error: Failed to create D3D11 depth stencil: %d\n", disabledDepthStencilResult);
-		disabledDepthStencilState = nullptr;
-		goto INIT_FAILURE;
-	}
-
 	// Create alpha blend state
 	D3D11_BLEND_DESC alphaBlendDescription;
 	ZeroMemory(&alphaBlendDescription, sizeof(alphaBlendDescription));
@@ -745,7 +717,6 @@ extern "C" bool createRenderer_d3d11(Renderer *renderer, RendererCreateOptions o
 	renderer->d3d11DepthStencilBuffer = nullptr;
 
 	renderer->d3d11DepthStencilState = depthStencilState;
-	renderer->d3d11DisabledDepthStencilState = disabledDepthStencilState;
 
 	renderer->d3d11AlphaBlendState = alphaBlendState;
 	renderer->d3d11OneMinusAlphaBlendState = oneMinusAlphaBlendState;
@@ -826,11 +797,6 @@ INIT_FAILURE:
 	if (depthStencilState != nullptr)
 	{
 		depthStencilState->Release();
-	}
-
-	if (disabledDepthStencilState != nullptr)
-	{
-		disabledDepthStencilState->Release();
 	}
 
 	if (alphaBlendState != nullptr)
@@ -1060,17 +1026,6 @@ static void copyDataToDynamicBuffer(ID3D11DeviceContext *context, ID3D11Buffer *
 static void encodeRendererAndShaderState(Renderer *renderer, Shader_d3d11 *shader, float *modelViewProjectionMatrix, RendererMode mode, color4_t color, RendererOptions options)
 {
 	ID3D11DeviceContext *context = (ID3D11DeviceContext *)renderer->d3d11Context;
-	
-	if ((options & RENDERER_OPTION_DISABLE_DEPTH_TEST) != 0)
-	{
-		ID3D11DepthStencilState *disabledDepthStencilState = (ID3D11DepthStencilState *)renderer->d3d11DisabledDepthStencilState;
-		context->OMSetDepthStencilState(disabledDepthStencilState, 0);
-	}
-	else
-	{
-		ID3D11DepthStencilState *depthStencilState = (ID3D11DepthStencilState *)renderer->d3d11DepthStencilState;
-		context->OMSetDepthStencilState(depthStencilState, 0);
-	}
 
 	ID3D11DepthStencilState* depthStencilState = (ID3D11DepthStencilState*)renderer->d3d11DepthStencilState;
 	context->OMSetDepthStencilState(depthStencilState, 0);

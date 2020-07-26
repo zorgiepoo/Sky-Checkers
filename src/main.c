@@ -155,7 +155,7 @@ static void drawBlackBox(Renderer *renderer)
 	
 	mat4_t modelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, 0.0f, -22.0f}), m4_scaling((vec3_t){computeProjectionAspectRatio(renderer), 1.0f, 1.0f}));
 	
-	drawVerticesFromIndices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertexArrayObject, indicesBufferObject, 6, (color4_t){0.0f, 0.0f, 0.0f, 0.7f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA | RENDERER_OPTION_DISABLE_DEPTH_TEST);
+	drawVerticesFromIndices(renderer, modelViewMatrix, RENDERER_TRIANGLE_MODE, vertexArrayObject, indicesBufferObject, 6, (color4_t){0.0f, 0.0f, 0.0f, 0.7f}, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
 }
 
 static void drawTutorialCover(Renderer *renderer)
@@ -1402,7 +1402,7 @@ static void drawScene(Renderer *renderer)
 		
 		// Sky renders at -38.0f
 		pushDebugGroup(renderer, "Sky");
-		drawSky(renderer, RENDERER_OPTION_DISABLE_DEPTH_TEST);
+		drawSky(renderer, RENDERER_OPTION_NONE);
 		popDebugGroup(renderer);
 		
 		// Black box renders at -22.0f
