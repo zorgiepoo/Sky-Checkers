@@ -57,7 +57,7 @@
   <ItemGroup>
     <ClCompile Include="..\src\ai.c" />
     <ClCompile Include="..\src\animation.c" />
-    <ClCompile Include="..\src\app_sdl.c" />
+    <ClCompile Include="..\src\app_win.c" />
     <ClCompile Include="..\src\audio_win.cpp" />
     <ClCompile Include="..\src\characters.c" />
     <ClCompile Include="..\src\collision.c" />
@@ -73,7 +73,7 @@
     <ClCompile Include="..\src\menu_actions.c" />
     <ClCompile Include="..\src\mt_random.c" />
     <ClCompile Include="..\src\network.c" />
-    <ClCompile Include="..\src\quit_sdl.c" />
+    <ClCompile Include="..\src\quit_win.c" />
     <ClCompile Include="..\src\renderer.c" />
     <ClCompile Include="..\src\renderer_d3d11.cpp" />
     <ClCompile Include="..\src\renderer_projection.c" />

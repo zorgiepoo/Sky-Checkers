@@ -229,14 +229,6 @@ static void submitAudio(ZGAudioSource& audioSource, uint8_t sourceIndex)
 
 extern "C" void initAudio(void)
 {
-    // Need to initialize COM library for using xaudio2
-    HRESULT coInitializeResult = CoInitializeEx(NULL, COINIT_MULTITHREADED);
-    if (FAILED(coInitializeResult))
-    {
-        fprintf(stderr, "Error: Failed to CoInitializeEx() with error %d\n", coInitializeResult);
-        return;
-    }
-
     IXAudio2* engine = nullptr;
     HRESULT audioResult = XAudio2Create(&engine, 0, XAUDIO2_DEFAULT_PROCESSOR);
     if (FAILED(audioResult))

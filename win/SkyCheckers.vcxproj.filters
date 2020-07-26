@@ -164,16 +164,10 @@
     <ClCompile Include="..\src\text.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\app_sdl.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\defaults_win.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\mt_random.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\quit_sdl.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\menus_desktop.c">
@@ -210,6 +204,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\keyboard_win.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\app_win.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\quit_win.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
