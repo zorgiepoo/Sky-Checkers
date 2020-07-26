@@ -18,6 +18,8 @@
 */
 
 #import "app.h"
+#import "zgtime.h"
+
 #import <UIKit/UIKit.h>
 
 typedef struct
@@ -45,6 +47,9 @@ static ZGAppCallbacks gAppCallbacks;
 		fprintf(stderr, "Error: failed to change current working directory to: %s\n", resourcePath.fileSystemRepresentation);
 		abort();
 	}
+	
+	// Initialize time
+	(void)ZGGetNanoTicks();
 	
 	if (gAppCallbacks.appHandlers->launchedHandler != NULL)
 	{

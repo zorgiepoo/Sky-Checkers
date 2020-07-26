@@ -18,6 +18,8 @@
 */
 
 #import "app.h"
+#import "zgtime.h"
+
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import <IOKit/pwr_mgt/IOPMLib.h>
@@ -52,6 +54,9 @@
 		fprintf(stderr, "Error: failed to change current working directory to: %s\n", resourcePath.fileSystemRepresentation);
 		abort();
 	}
+	
+	// Initialize time
+	(void)ZGGetNanoTicks();
 	
 	if (_appHandlers->launchedHandler != NULL)
 	{
