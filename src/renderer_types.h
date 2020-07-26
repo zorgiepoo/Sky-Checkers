@@ -26,11 +26,29 @@ extern "C" {
 #include "platforms.h"
 #include "float.h"
 #include "window.h"
+#include "keyboard.h"
 #include <stdbool.h>
 #include <stdint.h>
 
 #define MSAA_PREFERRED_RETINA_SAMPLE_COUNT 2
 #define MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT 4
+
+typedef struct
+{
+	void (*windowEventHandler)(ZGWindowEvent, void*);
+	void* windowEventContext;
+	void (*keyboardEventHandler)(ZGKeyboardEvent, void*);
+	void* keyboardEventContext;
+
+	const char* windowTitle;
+
+	int32_t windowWidth;
+	int32_t windowHeight;
+
+	bool fullscreen;
+	bool vsync;
+	bool fsaa;
+} RendererCreateOptions;
 
 typedef enum
 {

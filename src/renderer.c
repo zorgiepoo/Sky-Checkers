@@ -32,18 +32,20 @@
 #include "renderer_gl.h"
 #endif
 
-void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, bool fullscreen, bool vsync, bool fsaa)
+void createRenderer(Renderer *renderer, RendererCreateOptions options)
 {
 #if !PLATFORM_APPLE
 	const char *windowTitle = "SkyCheckers";
 #else
 	const char *windowTitle = "";
 #endif
+
+	options.windowTitle = windowTitle;
 	
 	char *forceDisablingFSAAEnvironmentVariable = getenv("FORCE_DISABLE_AA");
 	if (forceDisablingFSAAEnvironmentVariable != NULL && strlen(forceDisablingFSAAEnvironmentVariable) > 0 && (tolower(forceDisablingFSAAEnvironmentVariable[0]) == 'y' || forceDisablingFSAAEnvironmentVariable[0] == '1'))
 	{
-		fsaa = false;
+		options.fsaa = false;
 		fprintf(stderr, "NOTICE: Force disabling anti-aliasing usage!!\n");
 	}
 	
@@ -54,7 +56,7 @@ void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeigh
 		abort();
 	}
 #elif PLATFORM_WINDOWS
-	if (!createRenderer_d3d11(renderer, windowTitle, windowWidth, windowHeight, fullscreen, vsync, fsaa))
+	if (!createRenderer_d3d11(renderer, options))
 	{
 		fprintf(stderr, "Failed to create D3D renderer\n");
 		abort();

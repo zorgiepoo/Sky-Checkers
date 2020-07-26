@@ -25,7 +25,7 @@ extern "C" {
 
 #include "renderer_types.h"
 
-bool createRenderer_d3d11(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, bool fullscreen, bool vsync, bool fsaa);
+bool createRenderer_d3d11(Renderer *renderer, RendererCreateOptions options);
 
 #ifdef __cplusplus
 }

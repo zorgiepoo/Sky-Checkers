@@ -42,7 +42,6 @@
     <ClInclude Include="..\src\quit.h" />
     <ClInclude Include="..\src\renderer.h" />
     <ClInclude Include="..\src\renderer_d3d11.h" />
-    <ClInclude Include="..\src\renderer_gl.h" />
     <ClInclude Include="..\src\renderer_projection.h" />
     <ClInclude Include="..\src\renderer_types.h" />
     <ClInclude Include="..\src\scenery.h" />
@@ -68,7 +67,7 @@
     <ClCompile Include="..\src\font_win.cpp" />
     <ClCompile Include="..\src\gamepad_win.c" />
     <ClCompile Include="..\src\input.c" />
-    <ClCompile Include="..\src\keyboard_sdl.c" />
+    <ClCompile Include="..\src\keyboard_win.c" />
     <ClCompile Include="..\src\main.c" />
     <ClCompile Include="..\src\menus_desktop.c" />
     <ClCompile Include="..\src\menu_actions.c" />
@@ -85,7 +84,7 @@
     <ClCompile Include="..\src\thread_win.c" />
     <ClCompile Include="..\src\time_win.c" />
     <ClCompile Include="..\src\weapon.c" />
-    <ClCompile Include="..\src\window_sdl.c" />
+    <ClCompile Include="..\src\window_win.c" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SkyCheckers.rc" />
@@ -222,7 +221,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>d3d11.lib;dxgi.lib;SDL2.lib;SDL2main.lib;Dwrite.lib;Xaudio2.lib;windowscodecs.lib;Xinput.lib;ws2_32.lib;Shlwapi.lib;iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
       <Command>"$(ProjectDir)\copydlls.bat" "$(ProjectDir)" "$(OutDir)"</Command>

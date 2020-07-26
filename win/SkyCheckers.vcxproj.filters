@@ -60,9 +60,6 @@
     <ClInclude Include="..\src\renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\renderer_gl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\renderer_projection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -173,16 +170,10 @@
     <ClCompile Include="..\src\defaults_win.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\keyboard_sdl.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\mt_random.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\quit_sdl.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\window_sdl.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\menus_desktop.c">
@@ -213,6 +204,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\gamepad_win.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\window_win.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\keyboard_win.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

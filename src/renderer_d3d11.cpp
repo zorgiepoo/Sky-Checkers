@@ -24,6 +24,9 @@
 
 #include <stdbool.h>
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
@@ -64,6 +67,12 @@ typedef struct
 	ID3D11Texture2D *texture;
 } D3D11TextureDataObject;
 
+extern "C" void _setFullscreen(Renderer * renderer)
+{
+	IDXGISwapChain* swapChain = (IDXGISwapChain*)renderer->d3d11SwapChain;
+	swapChain->SetFullscreenState(!renderer->fullscreen, NULL);
+}
+
 extern "C" static void updateViewport_d3d11(Renderer *renderer, int32_t windowWidth, int32_t windowHeight)
 {
 	renderer->drawableWidth = windowWidth;
@@ -75,7 +84,7 @@ extern "C" static void updateViewport_d3d11(Renderer *renderer, int32_t windowWi
 		return;
 	}
 
-	IDXGISwapChain *swapChain = (IDXGISwapChain *)renderer->d3d11SwapChain;
+	IDXGISwapChain* swapChain = (IDXGISwapChain*)renderer->d3d11SwapChain;
 
 	BOOL fullscreenState = false;
 	HRESULT fullscreenStateResult = swapChain->GetFullscreenState(&fullscreenState, nullptr);
@@ -412,7 +421,7 @@ static bool createConstantBuffers(Renderer *renderer)
 	return true;
 }
 
-extern "C" bool createRenderer_d3d11(Renderer *renderer, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, bool fullscreen, bool vsync, bool fsaa)
+extern "C" bool createRenderer_d3d11(Renderer *renderer, RendererCreateOptions options)
 {
 	// Need to initialize D3D states here in order to goto INIT_FAILURE on failure
 	ID3D11Device *device = nullptr;
@@ -424,19 +433,19 @@ extern "C" bool createRenderer_d3d11(Renderer *renderer, const char *windowTitle
 	ID3D11BlendState *oneMinusAlphaBlendState = nullptr;
 	ID3D11RasterizerState *rasterState = nullptr;
 
-	renderer->windowWidth = windowWidth > 1 ? windowWidth : 1;
-	renderer->windowHeight = windowHeight > 1 ? windowHeight : 1;
+	renderer->windowWidth = options.windowWidth > 1 ? options.windowWidth : 1;
+	renderer->windowHeight = options.windowHeight > 1 ? options.windowHeight : 1;
 
-	renderer->window = renderer->window = ZGCreateWindow(windowTitle, windowWidth, windowHeight, nullptr);
+	renderer->window = ZGCreateWindow(options.windowTitle, options.windowWidth, options.windowHeight, nullptr);
 	if (renderer->window == NULL)
 	{
 		goto INIT_FAILURE;
 	}
 
+	ZGShowWindow(renderer->window);
+
 	ZGSetWindowMinimumSize(renderer->window, 8, 8);
 	ZGGetWindowSize(renderer->window, &renderer->windowWidth, &renderer->windowHeight);
-
-	renderer->fullscreen = fullscreen;
 
 	// Initialize with default adapter
 	IDXGIAdapter *adapter = nullptr;
@@ -536,7 +545,7 @@ extern "C" bool createRenderer_d3d11(Renderer *renderer, const char *windowTitle
 	}
 	
 	// Determine anti aliasing
-	if (fsaa)
+	if (options.fsaa)
 	{
 		UINT numberOfQualityLevels = 0;
 		HRESULT multisampleResult = device->CheckMultisampleQualityLevels(DEPTH_FORMAT, MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT, &numberOfQualityLevels);
@@ -555,7 +564,7 @@ extern "C" bool createRenderer_d3d11(Renderer *renderer, const char *windowTitle
 		renderer->fsaa = false;
 	}
 
-	renderer->vsync = vsync;
+	renderer->vsync = options.vsync;
 
 	// Retrieve factory from device
 	// See https://docs.microsoft.com/en-us/windows/desktop/api/dxgi/nn-dxgi-idxgifactory remarks
@@ -580,43 +589,6 @@ extern "C" bool createRenderer_d3d11(Renderer *renderer, const char *windowTitle
 	if (FAILED(getParentResult))
 	{
 		fprintf(stderr, "Error: Failed to get parent from device: %d\n", getParentResult);
-		goto INIT_FAILURE;
-	}
-
-	// Create swapchain
-	DXGI_SWAP_CHAIN_DESC swapChainDesc;
-	ZeroMemory(&swapChainDesc, sizeof(swapChainDesc));
-
-	// Infer window width/height from our window
-	swapChainDesc.BufferDesc.Width = 0;
-	swapChainDesc.BufferDesc.Height = 0;
-
-	// Leaving RefreshRate to 0 in swap chain seems to be fine
-	// No need to query for display's refresh rate
-	swapChainDesc.BufferDesc.RefreshRate.Numerator = 0;
-	swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
-
-	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-	swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-
-	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-
-	swapChainDesc.SampleDesc.Count = renderer->fsaa ? MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT : 1;
-	swapChainDesc.SampleDesc.Quality = renderer->fsaa ? D3D11_STANDARD_MULTISAMPLE_PATTERN : 0;
-	
-	swapChainDesc.BufferCount = 1;
-	swapChainDesc.Windowed = !renderer->fullscreen;
-	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-	swapChainDesc.Flags = 0;
-	
-	swapChainDesc.OutputWindow = (HWND)ZGWindowHandle(renderer->window);
-
-	HRESULT swapChainResult = pIDXGIFactory->CreateSwapChain(device, &swapChainDesc, &swapChain);
-	if (FAILED(swapChainResult))
-	{
-		fprintf(stderr, "Error: Failed to create D3D11 swap chain: %d\n", swapChainResult);
-		swapChain = nullptr;
 		goto INIT_FAILURE;
 	}
 
@@ -766,12 +738,11 @@ extern "C" bool createRenderer_d3d11(Renderer *renderer, const char *windowTitle
 	}
 
 	renderer->d3d11Context = context;
-	renderer->d3d11SwapChain = swapChain;
+	renderer->d3d11SwapChain = nullptr;
 
 	renderer->d3d11RenderTargetView = nullptr;
 	renderer->d3d11DepthStencilView = nullptr;
 	renderer->d3d11DepthStencilBuffer = nullptr;
-	updateViewport_d3d11(renderer, renderer->windowWidth, renderer->windowHeight);
 
 	renderer->d3d11DepthStencilState = depthStencilState;
 	renderer->d3d11DisabledDepthStencilState = disabledDepthStencilState;
@@ -793,12 +764,63 @@ extern "C" bool createRenderer_d3d11(Renderer *renderer, const char *windowTitle
 	renderer->pushDebugGroupPtr = pushDebugGroup_d3d11;
 	renderer->popDebugGroupPtr = popDebugGroup_d3d11;
 
+	// Create swapchain
+	DXGI_SWAP_CHAIN_DESC swapChainDesc;
+	ZeroMemory(&swapChainDesc, sizeof(swapChainDesc));
+
+	// Infer window width/height from our window
+	swapChainDesc.BufferDesc.Width = 0;
+	swapChainDesc.BufferDesc.Height = 0;
+
+	// Leaving RefreshRate to 0 in swap chain seems to be fine
+	// No need to query for display's refresh rate
+	swapChainDesc.BufferDesc.RefreshRate.Numerator = 0;
+	swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
+
+	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+	swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+
+	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+
+	swapChainDesc.SampleDesc.Count = renderer->fsaa ? MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT : 1;
+	swapChainDesc.SampleDesc.Quality = renderer->fsaa ? D3D11_STANDARD_MULTISAMPLE_PATTERN : 0;
+
+	swapChainDesc.BufferCount = 1;
+	swapChainDesc.Windowed = TRUE;
+	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+	swapChainDesc.Flags = 0;
+
+	swapChainDesc.OutputWindow = (HWND)ZGWindowHandle(renderer->window);
+
+	renderer->fullscreen = false;
+
+	HRESULT swapChainResult = pIDXGIFactory->CreateSwapChain(device, &swapChainDesc, &swapChain);
+	if (FAILED(swapChainResult))
+	{
+		fprintf(stderr, "Error: Failed to create D3D11 swap chain: %d\n", swapChainResult);
+		swapChain = nullptr;
+		goto INIT_FAILURE;
+	}
+
+	renderer->d3d11SwapChain = swapChain;
+	
+	updateViewport_d3d11(renderer, renderer->windowWidth, renderer->windowHeight);
+
+	ZGSetWindowEventHandler(renderer->window, options.windowEventContext, options.windowEventHandler);
+	ZGSetKeyboardEventHandler(renderer->window, options.keyboardEventContext, options.keyboardEventHandler);
+
+	if (options.fullscreen)
+	{
+		swapChain->SetFullscreenState(TRUE, NULL);
+	}
+
 	return true;
 
 INIT_FAILURE:
 	if (swapChain != nullptr && renderer->fullscreen)
 	{
-		swapChain->SetFullscreenState(false, NULL);
+		swapChain->SetFullscreenState(FALSE, NULL);
 	}
 
 	if (depthStencilState != nullptr)
@@ -855,14 +877,14 @@ extern "C" void renderFrame_d3d11(Renderer *renderer, void(*drawFunc)(Renderer *
 	context->ClearRenderTargetView(renderTargetView, clearColor);
 
 	// Clear depth buffer
-	ID3D11DepthStencilView *depthStencilView = (ID3D11DepthStencilView *)renderer->d3d11DepthStencilView;
+	ID3D11DepthStencilView* depthStencilView = (ID3D11DepthStencilView*)renderer->d3d11DepthStencilView;
 	context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	// Draw scene
 	drawFunc(renderer);
 
 	// Present back buffer to screen
-	IDXGISwapChain *swapChain = (IDXGISwapChain *)renderer->d3d11SwapChain;
+	IDXGISwapChain* swapChain = (IDXGISwapChain*)renderer->d3d11SwapChain;
 	if (renderer->vsync)
 	{
 		// Lock to screen refresh rate
@@ -1049,6 +1071,9 @@ static void encodeRendererAndShaderState(Renderer *renderer, Shader_d3d11 *shade
 		ID3D11DepthStencilState *depthStencilState = (ID3D11DepthStencilState *)renderer->d3d11DepthStencilState;
 		context->OMSetDepthStencilState(depthStencilState, 0);
 	}
+
+	ID3D11DepthStencilState* depthStencilState = (ID3D11DepthStencilState*)renderer->d3d11DepthStencilState;
+	context->OMSetDepthStencilState(depthStencilState, 0);
 
 	if ((options & RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA) != 0)
 	{

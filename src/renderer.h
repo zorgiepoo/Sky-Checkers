@@ -22,7 +22,7 @@
 #include "math_3d.h"
 #include "renderer_types.h"
 
-void createRenderer(Renderer *renderer, int32_t windowWidth, int32_t windowHeight, bool fullscreen, bool vsync, bool fsaa);
+void createRenderer(Renderer *renderer, RendererCreateOptions options);
 
 void updateViewport(Renderer *renderer, int32_t windowWidth, int32_t windowHeight);
 

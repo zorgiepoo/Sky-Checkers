@@ -37,6 +37,11 @@
 #include "defaults.h"
 #include "renderer_projection.h"
 
+// Temporary for Windows. Needs to be included for correct main() linkage
+#if PLATFORM_WINDOWS
+#include "sdl_include.h"
+#endif
+
 #if !PLATFORM_IOS
 #include "console.h"
 #endif
@@ -47,7 +52,7 @@
 #define MATH_3D_IMPLEMENTATION
 #include "math_3d.h"
 
-#define CURRENT_DEFAULT_VERSION 6
+#define CURRENT_DEFAULT_VERSION 7
 
 bool gGameHasStarted;
 bool gGameShouldReset;
@@ -223,13 +228,37 @@ static int readDefaultKeyCode(Defaults defaults, const char *characterName, cons
 	return readDefaultIntKey(defaults, keyBuffer, defaultKeyCode);
 }
 
-static void readCharacterKeyboardDefaults(Defaults defaults, const char *characterName, Input *input, ZGConstantKeyCode rightDefault, ZGConstantKeyCode leftDefault, ZGConstantKeyCode upDefault, ZGConstantKeyCode downDefault, ZGConstantKeyCode weaponDefault)
+static void readCharacterKeyboardDefaults(Defaults defaults, int defaultsVersion, const char *characterName, Input *input, ZGConstantKeyCode rightDefault, ZGConstantKeyCode leftDefault, ZGConstantKeyCode upDefault, ZGConstantKeyCode downDefault, ZGConstantKeyCode weaponDefault)
 {
-	int right = readDefaultKeyCode(defaults, characterName, "key right", rightDefault);
-	int left = readDefaultKeyCode(defaults, characterName, "key left", leftDefault);
-	int up = readDefaultKeyCode(defaults, characterName, "key up", upDefault);
-	int down = readDefaultKeyCode(defaults, characterName, "key down", downDefault);
-	int weapon = readDefaultKeyCode(defaults, characterName, "key weapon", weaponDefault);
+	int right;
+	int left;
+	int up;
+	int down;
+	int weapon;
+
+	// On Windows the virtual keycodes have changed since defaults version 7
+#if PLATFORM_WINDOWS
+	bool resetKeyboardDefaults = (defaultsVersion < 7);
+#else
+	bool resetKeyboardDefaults = false;
+#endif
+
+	if (!resetKeyboardDefaults)
+	{
+		right = readDefaultKeyCode(defaults, characterName, "key right", rightDefault);
+		left = readDefaultKeyCode(defaults, characterName, "key left", leftDefault);
+		up = readDefaultKeyCode(defaults, characterName, "key up", upDefault);
+		down = readDefaultKeyCode(defaults, characterName, "key down", downDefault);
+		weapon = readDefaultKeyCode(defaults, characterName, "key weapon", weaponDefault);
+	}
+	else
+	{
+		right = rightDefault;
+		left = leftDefault;
+		up = upDefault;
+		down = downDefault;
+		weapon = weaponDefault;
+	}
 	
 	initInput(input);
 	setInputKeys(input, right, left, up, down, weapon);
@@ -299,10 +328,12 @@ static void readDefaults(void)
 	}
 	
 #if !PLATFORM_IOS
-	readCharacterKeyboardDefaults(defaults, "Pink Bubblegum", &gPinkBubbleGumInput, ZG_KEYCODE_RIGHT, ZG_KEYCODE_LEFT, ZG_KEYCODE_UP, ZG_KEYCODE_DOWN, ZG_KEYCODE_SPACE);
-	readCharacterKeyboardDefaults(defaults, "Red Rover", &gRedRoverInput, ZG_KEYCODE_B, ZG_KEYCODE_C, ZG_KEYCODE_F, ZG_KEYCODE_V, ZG_KEYCODE_G);
-	readCharacterKeyboardDefaults(defaults, "Green Tree", &gGreenTreeInput, ZG_KEYCODE_L, ZG_KEYCODE_J, ZG_KEYCODE_I, ZG_KEYCODE_K, ZG_KEYCODE_M);
-	readCharacterKeyboardDefaults(defaults, "Blue Lightning", &gBlueLightningInput, ZG_KEYCODE_D, ZG_KEYCODE_A, ZG_KEYCODE_W, ZG_KEYCODE_S, ZG_KEYCODE_Z);
+	int defaultsVersion = readDefaultIntKey(defaults, "Defaults version", CURRENT_DEFAULT_VERSION);
+
+	readCharacterKeyboardDefaults(defaults, defaultsVersion, "Pink Bubblegum", &gPinkBubbleGumInput, ZG_KEYCODE_RIGHT, ZG_KEYCODE_LEFT, ZG_KEYCODE_UP, ZG_KEYCODE_DOWN, ZG_KEYCODE_SPACE);
+	readCharacterKeyboardDefaults(defaults, defaultsVersion, "Red Rover", &gRedRoverInput, ZG_KEYCODE_B, ZG_KEYCODE_C, ZG_KEYCODE_F, ZG_KEYCODE_V, ZG_KEYCODE_G);
+	readCharacterKeyboardDefaults(defaults, defaultsVersion, "Green Tree", &gGreenTreeInput, ZG_KEYCODE_L, ZG_KEYCODE_J, ZG_KEYCODE_I, ZG_KEYCODE_K, ZG_KEYCODE_M);
+	readCharacterKeyboardDefaults(defaults, defaultsVersion, "Blue Lightning", &gBlueLightningInput, ZG_KEYCODE_D, ZG_KEYCODE_A, ZG_KEYCODE_W, ZG_KEYCODE_S, ZG_KEYCODE_Z);
 #endif
 	
 	readDefaultKey(defaults, "Server IP Address", gServerAddressString, sizeof(gServerAddressString));
@@ -1417,6 +1448,9 @@ static void drawScene(Renderer *renderer)
 }
 
 #if !PLATFORM_IOS
+
+extern void _setFullscreen(Renderer* renderer);
+
 static void handleKeyDownEvent(ZGKeyboardEvent *event, Renderer *renderer)
 {
 	ZGWindow *window = renderer->window;
@@ -1424,7 +1458,12 @@ static void handleKeyDownEvent(ZGKeyboardEvent *event, Renderer *renderer)
 	uint16_t keyCode = event->keyCode;
 	uint64_t keyModifier = event->keyModifier;
 	
-	if (gGameState == GAME_STATE_OFF || gGameState == GAME_STATE_PAUSED)
+	if (keyCode == ZG_KEYCODE_B)
+	{
+		_setFullscreen(renderer);
+	}
+
+	else if (gGameState == GAME_STATE_OFF || gGameState == GAME_STATE_PAUSED)
 	{
 		performKeyboardMenuAction(event, &gGameState, renderer->window);
 	}
@@ -1849,7 +1888,18 @@ static void appLaunchedHandler(void *context)
 	
 	Renderer *renderer = &appContext->renderer;
 	
-	createRenderer(renderer, gWindowWidth, gWindowHeight, gFullscreenFlag, vsync, gFsaaFlag);
+	RendererCreateOptions rendererOptions = { 0 };
+	rendererOptions.windowWidth = gWindowWidth;
+	rendererOptions.windowHeight = gWindowHeight;
+	rendererOptions.fullscreen = gFullscreenFlag;
+	rendererOptions.vsync = vsync;
+	rendererOptions.fsaa = gFsaaFlag;
+	rendererOptions.windowEventHandler = handleWindowEvent;
+	rendererOptions.windowEventContext = appContext;
+	rendererOptions.keyboardEventHandler = handleKeyboardEvent;
+	rendererOptions.keyboardEventContext = renderer;
+
+	createRenderer(renderer, rendererOptions);
 	
 	initText(renderer);
 	
@@ -1874,7 +1924,7 @@ static void appLaunchedHandler(void *context)
 	
 #if PLATFORM_IOS
 	ZGSetTouchEventHandler(renderer->window, renderer, handleTouchEvent);
-#else
+#elif !PLATFORM_WINDOWS
 	ZGSetWindowEventHandler(renderer->window, appContext, handleWindowEvent);
 	ZGSetKeyboardEventHandler(renderer->window, renderer, handleKeyboardEvent);
 #endif
@@ -1994,7 +2044,7 @@ static void pollEventHandler(void *context, void *systemEvent)
 	Renderer *renderer = &appContext->renderer;
 	
 	pollGamepads(gGamepadManager, renderer->window, systemEvent);
-#if PLATFORM_WINDOWS || PLATFORM_LINUX
+#if PLATFORM_LINUX
 	ZGPollWindowAndInputEvents(renderer->window, systemEvent);
 #endif
 }

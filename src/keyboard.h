@@ -19,6 +19,10 @@
 
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "platforms.h"
 #include <stdint.h>
 #include <stdbool.h>
@@ -49,6 +53,33 @@ typedef enum
 	ZG_KEYCODE_ESCAPE = 53,
 	ZG_KEYCODE_GRAVE = 50,
 	ZG_KEYCODE_BACKSPACE = 51
+} ZGConstantKeyCode;
+#elif PLATFORM_WINDOWS
+typedef enum
+{
+	ZG_KEYCODE_B = 0x42,
+	ZG_KEYCODE_C = 0x43,
+	ZG_KEYCODE_F = 0x46,
+	ZG_KEYCODE_V = 0x56,
+	ZG_KEYCODE_G = 0x47,
+	ZG_KEYCODE_L = 0x4C,
+	ZG_KEYCODE_J = 0x4A,
+	ZG_KEYCODE_I = 0x49,
+	ZG_KEYCODE_K = 0x4B,
+	ZG_KEYCODE_M = 0x4D,
+	ZG_KEYCODE_D = 0x44,
+	ZG_KEYCODE_A = 0x41,
+	ZG_KEYCODE_W = 0x57,
+	ZG_KEYCODE_S = 0x53,
+	ZG_KEYCODE_Z = 0x5A,
+	ZG_KEYCODE_RIGHT = 0x27,
+	ZG_KEYCODE_LEFT = 0x25,
+	ZG_KEYCODE_UP = 0x26,
+	ZG_KEYCODE_DOWN = 0x28,
+	ZG_KEYCODE_SPACE = 0x20,
+	ZG_KEYCODE_ESCAPE = 0x1B,
+	ZG_KEYCODE_GRAVE = 0xC0,
+	ZG_KEYCODE_BACKSPACE = 0x08
 } ZGConstantKeyCode;
 #else
 #include "sdl_include.h"
@@ -109,3 +140,7 @@ const char *ZGGetKeyCodeName(uint16_t keyCode);
 
 char *ZGGetClipboardText(void);
 void ZGFreeClipboardText(char *clipboardText);
+
+#ifdef __cplusplus
+}
+#endif

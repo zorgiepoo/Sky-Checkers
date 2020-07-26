@@ -56,6 +56,7 @@ bool ZGWindowHasFocus(ZGWindow *window);
 
 #if PLATFORM_WINDOWS
 void ZGSetWindowMinimumSize(ZGWindow *window, int32_t minWidth, int32_t minHeight);
+void ZGShowWindow(ZGWindow* window);
 #endif
 
 void ZGGetWindowSize(ZGWindow *window, int32_t *width, int32_t *height);
@@ -83,7 +84,7 @@ void ZGUninstallTouchGestures(ZGWindow *window);
 void ZGSetKeyboardEventHandler(ZGWindow *window, void *context, void (*keyboardEventHandler)(ZGKeyboardEvent, void *));
 #endif
 
-#if PLATFORM_WINDOWS || PLATFORM_LINUX
+#if PLATFORM_LINUX
 void ZGPollWindowAndInputEvents(ZGWindow *window, const void *systemEvent);
 #endif
 
