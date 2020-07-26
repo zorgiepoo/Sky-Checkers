@@ -19,6 +19,7 @@
 
 #include "app.h"
 #include "quit.h"
+#include "zgtime.h"
 #include "platforms.h"
 
 #include <Windows.h>
@@ -44,6 +45,9 @@ int ZGAppInit(int argc, char* argv[], ZGAppHandlers* appHandlers, void* appConte
 		fprintf(stderr, "Error: Failed to CoInitializeEx() with error %d\n", coInitializeResult);
 		return -1;
 	}
+
+	// Initialize time
+	(void)ZGGetNanoTicks();
 
 	appHandlers->launchedHandler(appContext);
 	
