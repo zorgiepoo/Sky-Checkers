@@ -108,6 +108,10 @@ typedef struct
 	double lastFrameTime;
 	double cyclesLeftOver;
 	uint32_t lastRunloopTime;
+
+#if PLATFORM_WINDOWS
+	GamepadManager* gamepadManager;
+#endif
 } AppContext;
 
 #define MAX_FPS_RATE 120
@@ -1646,6 +1650,14 @@ static void handleWindowEvent(ZGWindowEvent event, void *context)
 			appContext->needsToDrawScene = false;
 			appContext->lastRunloopTime = 0;
 			break;
+#if PLATFORM_WINDOWS
+		case ZGWindowEventDeviceConnected:
+			if (appContext->gamepadManager != NULL)
+			{
+				pollNewGamepads(appContext->gamepadManager);
+			}
+			break;
+#endif
 	}
 }
 #endif
@@ -1907,6 +1919,9 @@ static void appLaunchedHandler(void *context)
 	initScene(renderer);
 	
 	gGamepadManager = initGamepadManager("Data/gamecontrollerdb.txt", gamepadAdded, gamepadRemoved, NULL);
+#if PLATFORM_WINDOWS
+	appContext->gamepadManager = gGamepadManager;
+#endif
 	
 	// Create netcode buffers and mutex's in case we need them later
 	initializeNetworkBuffers();
@@ -2047,6 +2062,8 @@ static void pollEventHandler(void *context, void *systemEvent)
 int main(int argc, char *argv[])
 {
 	AppContext appContext;
+	memset(&appContext, 0, sizeof(appContext));
+
 	ZGAppHandlers appHandlers = {.launchedHandler =  appLaunchedHandler, .terminatedHandler = appTerminatedHandler, .runLoopHandler = runLoopHandler, .pollEventHandler = pollEventHandler, .suspendedHandler = appSuspendedHandler};
 	return ZGAppInit(argc, argv, &appHandlers, &appContext);
 }

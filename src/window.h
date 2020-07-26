@@ -38,7 +38,10 @@ typedef enum
 	ZGWindowEventTypeFocusGained,
 	ZGWindowEventTypeFocusLost,
 	ZGWindowEventTypeShown,
-	ZGWindowEventTypeHidden
+	ZGWindowEventTypeHidden,
+#if PLATFORM_WINDOWS
+	ZGWindowEventDeviceConnected
+#endif
 } ZGWindowEventType;
 
 typedef struct

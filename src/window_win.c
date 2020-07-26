@@ -22,6 +22,7 @@
 #include "quit.h"
 
 #include <Windows.h>
+#include <Dbt.h>
 #include "resource.h"
 
 #define SC_WINDOW_CLASS_NAME "SKYC_WINDOW_CLASS"
@@ -194,6 +195,20 @@ LRESULT CALLBACK windowCallback(HWND handle, UINT message, WPARAM wParam, LPARAM
 			return TRUE;
 		}
 	} break;
+	case WM_DEVICECHANGE: {
+		// Don't care about removals (DBT_DEVICEREMOVECOMPLETE)
+		if (wParam == DBT_DEVICEARRIVAL)
+		{
+			WindowContext* windowContext = (WindowContext*)GetWindowLongPtr(handle, GWLP_USERDATA);
+			if (windowContext != NULL && windowContext->windowEventHandler != NULL)
+			{
+				ZGWindowEvent windowEvent = { 0 };
+				windowEvent.type = ZGWindowEventDeviceConnected;
+
+				windowContext->windowEventHandler(windowEvent, windowContext->windowEventHandlerContext);
+			}
+		}
+	} break;
 	}
 
 	return handledMessage ? 0 : DefWindowProc(handle, message, wParam, lParam);
@@ -252,6 +267,18 @@ ZGWindow* ZGCreateWindow(const char* windowTitle, int32_t windowWidth, int32_t w
 
 	WindowContext* context = calloc(1, sizeof(*context));
 	SetWindowLongPtr(handle, GWLP_USERDATA, (LONG_PTR)context);
+
+	// Register notification for gamepad devices being added
+	DEV_BROADCAST_DEVICEINTERFACE deviceBroadcastInterface = { 0 };
+	deviceBroadcastInterface.dbcc_size = sizeof(deviceBroadcastInterface);
+	deviceBroadcastInterface.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
+	// See class HID guid at https://docs.microsoft.com/en-us/windows-hardware/drivers/install/guid-devinterface-hid
+	deviceBroadcastInterface.dbcc_classguid = (GUID){ 0x4D1E55B2, 0xF16F, 0x11CF, 0x88, 0xCB, 0x00, 0x11, 0x11, 0x00, 0x00, 0x30 };
+
+	if (RegisterDeviceNotification(handle, &deviceBroadcastInterface, DEVICE_NOTIFY_WINDOW_HANDLE) == NULL)
+	{
+		fprintf(stderr, "Error: failed to RegisterDeviceNotification(): %d\n", GetLastError());
+	}
 
 	return handle;
 }

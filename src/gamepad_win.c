@@ -65,6 +65,22 @@ GamepadManager* initGamepadManager(const char* databasePath, GamepadCallback add
 	return gamepadManager;
 }
 
+void pollNewGamepads(GamepadManager* gamepadManager)
+{
+	for (DWORD instanceID = 0; instanceID < sizeof(gamepadManager->gamepads) / sizeof(*gamepadManager->gamepads); instanceID++)
+	{
+		if (!gamepadManager->gamepads[instanceID].connected)
+		{
+			XINPUT_STATE state;
+			if (XInputGetState(instanceID, &state) == ERROR_SUCCESS)
+			{
+				gamepadManager->gamepads[instanceID].connected = true;
+				gamepadManager->addedCallback(instanceID, gamepadManager->context);
+			}
+		}
+	}
+}
+
 static void _addEventIfChanged(DWORD instanceID, bool wasHeldDown, bool isHeldDown, GamepadButton gamepadButton, GamepadElementMappingType elementMappingType, GamepadEvent* events, uint16_t* currentEventIndex)
 {
 	if (wasHeldDown != isHeldDown)
