@@ -29,6 +29,8 @@
 
 typedef struct
 {
+	HDEVNOTIFY deviceNotificationHandle;
+
 	void (*windowEventHandler)(ZGWindowEvent, void*);
 	void* windowEventHandlerContext;
 
@@ -46,10 +48,15 @@ LRESULT CALLBACK windowCallback(HWND handle, UINT message, WPARAM wParam, LPARAM
 	bool handledMessage = false;
 	switch (message)
 	{
-	case WM_DESTROY:
+	case WM_DESTROY: {
+		WindowContext* windowContext = (WindowContext*)GetWindowLongPtr(handle, GWLP_USERDATA);
+		if (windowContext != NULL && windowContext->deviceNotificationHandle != NULL)
+		{
+			UnregisterDeviceNotification(windowContext->deviceNotificationHandle);
+		}
 		ZGSendQuitEvent();
 		handledMessage = true;
-		break;
+	} break;
 	case WM_SIZE: {
 		WindowContext* windowContext = (WindowContext *)GetWindowLongPtr(handle, GWLP_USERDATA);
 
@@ -275,7 +282,8 @@ ZGWindow* ZGCreateWindow(const char* windowTitle, int32_t windowWidth, int32_t w
 	// See class HID guid at https://docs.microsoft.com/en-us/windows-hardware/drivers/install/guid-devinterface-hid
 	deviceBroadcastInterface.dbcc_classguid = (GUID){ 0x4D1E55B2, 0xF16F, 0x11CF, 0x88, 0xCB, 0x00, 0x11, 0x11, 0x00, 0x00, 0x30 };
 
-	if (RegisterDeviceNotification(handle, &deviceBroadcastInterface, DEVICE_NOTIFY_WINDOW_HANDLE) == NULL)
+	context->deviceNotificationHandle = RegisterDeviceNotification(handle, &deviceBroadcastInterface, DEVICE_NOTIFY_WINDOW_HANDLE);
+	if (context->deviceNotificationHandle == NULL)
 	{
 		fprintf(stderr, "Error: failed to RegisterDeviceNotification(): %d\n", GetLastError());
 	}
