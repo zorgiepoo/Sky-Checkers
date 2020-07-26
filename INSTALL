@@ -10,7 +10,7 @@ To compile for linux, the following dependencies are needed:
 * SDL2_mixer
 * glew
 
-On Linux, development libraries for these dependencies may need to first be installed.
+Development libraries for these dependencies may need to first be installed.
 
 Eg: On Ubuntu, I had to execute:
 
