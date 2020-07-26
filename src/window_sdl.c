@@ -17,25 +17,22 @@
 * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <SDL2/SDL.h>
+
 #include "window.h"
-#include "sdl_include.h"
 #include "zgtime.h"
 
-#if PLATFORM_LINUX
 // for setting window icon
 #include <unistd.h>
 #include <assert.h>
 #include "texture.h"
 
 bool _ZGSetWindowFullscreen(ZGWindow *window, bool enabled, const char **errorString);
-#endif
 
 typedef struct
 {
 	SDL_Window *window;
-#if PLATFORM_LINUX
 	bool *fullscreenFlag;
-#endif
 	
 	void (*windowEventHandler)(ZGWindowEvent, void *);
 	void *windowEventHandlerContext;
@@ -46,10 +43,7 @@ typedef struct
 
 ZGWindow *ZGCreateWindow(const char *windowTitle, int32_t windowWidth, int32_t windowHeight, bool *fullscreenFlag)
 {
-	Uint32 videoFlags = SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE;
-#if PLATFORM_LINUX
-	videoFlags |= SDL_WINDOW_OPENGL;
-#endif
+	Uint32 videoFlags = SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL;
 	if (fullscreenFlag != NULL && *fullscreenFlag)
 	{
 		videoFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
@@ -58,12 +52,9 @@ ZGWindow *ZGCreateWindow(const char *windowTitle, int32_t windowWidth, int32_t w
 	SDL_ShowCursor(SDL_DISABLE);
 	
 	WindowController *windowController = calloc(1, sizeof(*windowController));
-#if PLATFORM_LINUX
 	windowController->fullscreenFlag =  fullscreenFlag;
-#endif
 	windowController->window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, videoFlags);
 
-#if PLATFORM_LINUX
 	// Set the window icon if available
 	const char *iconPath = "Data/Textures/sc_icon.bmp";
 	if (access(iconPath, F_OK) != -1)
@@ -79,7 +70,7 @@ ZGWindow *ZGCreateWindow(const char *windowTitle, int32_t windowWidth, int32_t w
 			uint8_t *colorData = &iconData.pixelData[pixelIndex * 4];
 			if (colorData[0] >= iconThresholdFilter && colorData[1] >= iconThresholdFilter && colorData[2] >= iconThresholdFilter)
 			{
-			colorData[3] = 0;
+				colorData[3] = 0;
 			}
 		}
 	
@@ -87,7 +78,6 @@ ZGWindow *ZGCreateWindow(const char *windowTitle, int32_t windowWidth, int32_t w
 	
 		freeTextureData(iconData);
 	}
-#endif
 	return windowController;
 }
 
@@ -182,7 +172,6 @@ void ZGPollWindowAndInputEvents(ZGWindow *windowRef, const void *systemEvent)
 		{
 			if (ZGTestReturnKeyCode(sdlEvent->key.keysym.scancode) && ((sdlEvent->key.keysym.mod & (KMOD_LALT | KMOD_RALT)) != 0))
 			{
-#if PLATFORM_LINUX
 				const char *fullscreenErrorString = NULL;
 				if (!ZGWindowIsFullscreen(windowController))
 				{
@@ -206,7 +195,6 @@ void ZGPollWindowAndInputEvents(ZGWindow *windowRef, const void *systemEvent)
 						*windowController->fullscreenFlag = false;
 					}
 				}
-#endif
 			}
 			else if (windowController->keyboardEventHandler != NULL)
 			{
@@ -249,7 +237,6 @@ void ZGPollWindowAndInputEvents(ZGWindow *windowRef, const void *systemEvent)
 	}
 }
 
-#if PLATFORM_LINUX
 bool ZGWindowIsFullscreen(ZGWindow *windowRef)
 {
 	WindowController *windowController = (WindowController *)windowRef;
@@ -266,15 +253,6 @@ bool _ZGSetWindowFullscreen(ZGWindow *windowRef, bool enabled, const char **erro
 	}
 	return result;
 }
-#endif
-
-#if PLATFORM_WINDOWS
-void ZGSetWindowMinimumSize(ZGWindow *windowRef, int32_t minWidth, int32_t minHeight)
-{
-	WindowController *windowController = (WindowController *)windowRef;
-	SDL_SetWindowMinimumSize(windowController->window, minWidth, minHeight);
-}
-#endif
 
 void ZGGetWindowSize(ZGWindow *windowRef, int32_t *width, int32_t *height)
 {
@@ -285,14 +263,6 @@ void ZGGetWindowSize(ZGWindow *windowRef, int32_t *width, int32_t *height)
 void *ZGWindowHandle(ZGWindow *windowRef)
 {
 	WindowController *windowController = (WindowController *)windowRef;
-#if PLATFORM_LINUX
 	return windowController->window;
-#elif PLATFORM_WINDOWS
-	SDL_SysWMinfo systemInfo;
-	SDL_VERSION(&systemInfo.version);
-	SDL_GetWindowWMInfo(windowController->window, &systemInfo);
-	
-	return systemInfo.info.win.window;
-#endif
 }
 

@@ -17,6 +17,8 @@
 * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <SDL2/SDL.h>
+
 #include "keyboard.h"
 
 bool ZGTestReturnKeyCode(uint16_t keyCode)

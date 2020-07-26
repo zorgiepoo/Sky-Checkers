@@ -17,8 +17,9 @@
 * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <SDL2/SDL.h>
+
 #include "quit.h"
-#include "sdl_include.h"
 #include <stdlib.h>
 
 void ZGQuit(void)

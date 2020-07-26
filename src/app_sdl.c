@@ -17,10 +17,10 @@
 * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <SDL2/SDL.h>
+
 #include "app.h"
-#include "sdl_include.h"
 #include "quit.h"
-#include "platforms.h"
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -100,13 +100,6 @@ int ZGAppInit(int argc, char *argv[], ZGAppHandlers *appHandlers, void *appConte
 					}
 			}
 		}
-
-#if PLATFORM_WINDOWS
-		if (appHandlers->pollEventHandler != NULL)
-		{
-			appHandlers->pollEventHandler(appContext, NULL);
-		}
-#endif
 		
 		if (appHandlers->runLoopHandler != NULL)
 		{

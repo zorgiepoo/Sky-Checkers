@@ -23,9 +23,9 @@
 #include "texture.h"
 #include "quit.h"
 #include "window.h"
-#include "sdl_include.h"
 
 #include <GL/glew.h>
+#include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
 
 #define VERTEX_ATTRIBUTE 0

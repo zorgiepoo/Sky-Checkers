@@ -17,12 +17,13 @@
  * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
+
 #include "audio.h"
 #include "platforms.h"
-#include "sdl_include.h"
 
 #include <stdio.h>
-#include <SDL2/SDL_mixer.h>
 
 static bool gInitializedAudio = SDL_FALSE;
 

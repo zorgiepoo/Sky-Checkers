@@ -82,7 +82,7 @@ typedef enum
 	ZG_KEYCODE_BACKSPACE = 0x08
 } ZGConstantKeyCode;
 #else
-#include "sdl_include.h"
+#include <SDL2/SDL.h>
 typedef enum
 {
 	ZG_KEYCODE_B = SDL_SCANCODE_B,

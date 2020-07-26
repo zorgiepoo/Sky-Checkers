@@ -17,8 +17,9 @@
  * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <SDL2/SDL.h>
+
 #include "texture.h"
-#include "sdl_include.h"
 #include "quit.h"
 
 static void *create8BitPixelDataWithAlpha(SDL_Surface *surface)

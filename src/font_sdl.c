@@ -17,10 +17,11 @@
 * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
+
 #include "font.h"
 #include "platforms.h"
-
-#include <SDL2/SDL_ttf.h>
 
 static TTF_Font *gFont;
 

@@ -17,8 +17,9 @@
 * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <SDL2/SDL.h>
+
 #include "zgtime.h"
-#include "sdl_include.h"
 
 uint32_t ZGGetTicks(void)
 {
