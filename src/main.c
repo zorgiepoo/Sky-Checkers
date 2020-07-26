@@ -1448,8 +1448,6 @@ static void drawScene(Renderer *renderer)
 
 #if !PLATFORM_IOS
 
-extern void _setFullscreen(Renderer* renderer);
-
 static void handleKeyDownEvent(ZGKeyboardEvent *event, Renderer *renderer)
 {
 	ZGWindow *window = renderer->window;
@@ -1457,12 +1455,7 @@ static void handleKeyDownEvent(ZGKeyboardEvent *event, Renderer *renderer)
 	uint16_t keyCode = event->keyCode;
 	uint64_t keyModifier = event->keyModifier;
 	
-	if (keyCode == ZG_KEYCODE_B)
-	{
-		_setFullscreen(renderer);
-	}
-
-	else if (gGameState == GAME_STATE_OFF || gGameState == GAME_STATE_PAUSED)
+	if (gGameState == GAME_STATE_OFF || gGameState == GAME_STATE_PAUSED)
 	{
 		performKeyboardMenuAction(event, &gGameState, renderer->window);
 	}

@@ -67,12 +67,6 @@ typedef struct
 	ID3D11Texture2D *texture;
 } D3D11TextureDataObject;
 
-extern "C" void _setFullscreen(Renderer * renderer)
-{
-	IDXGISwapChain* swapChain = (IDXGISwapChain*)renderer->d3d11SwapChain;
-	swapChain->SetFullscreenState(!renderer->fullscreen, NULL);
-}
-
 extern "C" static void updateViewport_d3d11(Renderer *renderer, int32_t windowWidth, int32_t windowHeight)
 {
 	renderer->drawableWidth = windowWidth;
