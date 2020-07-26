@@ -29,7 +29,9 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 
-#if !PLATFORM_IOS
+#if PLATFORM_IOS
+#include "touch.h"
+#else
 #include "keyboard.h"
 #endif
 
@@ -38,7 +40,10 @@ extern "C" {
 
 typedef struct
 {
-#if !PLATFORM_IOS
+#if PLATFORM_IOS
+	void (*touchEventHandler)(ZGTouchEvent, void *);
+	void *touchEventContext;
+#else
 	void (*windowEventHandler)(ZGWindowEvent, void*);
 	void* windowEventContext;
 	void (*keyboardEventHandler)(ZGKeyboardEvent, void*);

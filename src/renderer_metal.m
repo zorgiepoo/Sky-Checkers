@@ -620,8 +620,10 @@ bool createRenderer_metal(Renderer *renderer, RendererCreateOptions options)
 		renderer->pushDebugGroupPtr = pushDebugGroup_metal;
 		renderer->popDebugGroupPtr = popDebugGroup_metal;
 		
-#if !PLATFORM_IOS
-		// Set window and keyboard handlers
+		// Set window, keyboard, touch handlers
+#if PLATFORM_IOS
+		ZGSetTouchEventHandler(renderer->window, options.touchEventContext, options.touchEventHandler);
+#else
 		ZGSetWindowEventHandler(renderer->window, options.windowEventContext, options.windowEventHandler);
 		ZGSetKeyboardEventHandler(renderer->window, options.keyboardEventContext, options.keyboardEventHandler);
 #endif

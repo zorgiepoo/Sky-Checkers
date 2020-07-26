@@ -1894,7 +1894,10 @@ static void appLaunchedHandler(void *context)
 	rendererOptions.fullscreen = gFullscreenFlag;
 	rendererOptions.vsync = vsync;
 	rendererOptions.fsaa = gFsaaFlag;
-#if !PLATFORM_IOS
+#if PLATFORM_IOS
+	rendererOptions.touchEventHandler = handleTouchEvent;
+	rendererOptions.touchEventContext = renderer;
+#else
 	rendererOptions.windowEventHandler = handleWindowEvent;
 	rendererOptions.windowEventContext = appContext;
 	rendererOptions.keyboardEventHandler = handleKeyboardEvent;
@@ -1927,9 +1930,7 @@ static void appLaunchedHandler(void *context)
 		playMainMenuMusic(!windowFocus);
 	}
 	
-#if PLATFORM_IOS
-	ZGSetTouchEventHandler(renderer->window, renderer, handleTouchEvent);
-#elif PLATFORM_LINUX
+#if PLATFORM_LINUX
 	ZGSetWindowEventHandler(renderer->window, appContext, handleWindowEvent);
 	ZGSetKeyboardEventHandler(renderer->window, renderer, handleKeyboardEvent);
 #endif
