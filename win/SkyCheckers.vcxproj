@@ -45,7 +45,6 @@
     <ClInclude Include="..\src\renderer_projection.h" />
     <ClInclude Include="..\src\renderer_types.h" />
     <ClInclude Include="..\src\scenery.h" />
-    <ClInclude Include="..\src\sdl_include.h" />
     <ClInclude Include="..\src\text.h" />
     <ClInclude Include="..\src\texture.h" />
     <ClInclude Include="..\src\thread.h" />

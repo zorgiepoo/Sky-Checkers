@@ -108,9 +108,6 @@
     <ClInclude Include="..\src\window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\sdl_include.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\menu_actions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
