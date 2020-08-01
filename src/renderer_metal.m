@@ -291,7 +291,11 @@ static void updateRealViewport(Renderer *renderer)
 		multisampleTextureDescriptor.pixelFormat = metalLayer.pixelFormat;
 		multisampleTextureDescriptor.width = (NSUInteger)renderer->drawableWidth;
 		multisampleTextureDescriptor.height = (NSUInteger)renderer->drawableHeight;
+#if PLATFORM_IOS
+		multisampleTextureDescriptor.resourceOptions = MTLResourceStorageModeMemoryless;
+#else
 		multisampleTextureDescriptor.resourceOptions = MTLResourceStorageModePrivate;
+#endif
 		multisampleTextureDescriptor.usage = MTLTextureUsageRenderTarget;
 		multisampleTextureDescriptor.sampleCount = renderer->sampleCount;
 		multisampleTextureDescriptor.textureType = MTLTextureType2DMultisample;
@@ -325,7 +329,11 @@ static void updateRealViewport(Renderer *renderer)
 	depthTextureDescriptor.pixelFormat = DEPTH_STENCIL_PIXEL_FORMAT;
 	depthTextureDescriptor.width = (NSUInteger)renderer->drawableWidth;
 	depthTextureDescriptor.height = (NSUInteger)renderer->drawableHeight;
+#if PLATFORM_IOS
+	depthTextureDescriptor.resourceOptions = MTLResourceStorageModeMemoryless;
+#else
 	depthTextureDescriptor.resourceOptions = MTLResourceStorageModePrivate;
+#endif
 	depthTextureDescriptor.usage = MTLTextureUsageRenderTarget;
 	if (renderer->fsaa)
 	{
