@@ -198,6 +198,8 @@ typedef struct _Renderer
 			void *metalShaderFunctions;
 			void *metalLastRenderPipelineState;
 			void *metalLastFragmentTexture;
+			void *metalLastVertexBuffer;
+			void *metalLastVertexAndTextureBuffer;
 			color4_t metalLastFragmentColor;
 			bool metalWantsFsaa;
 			bool metalCreatedInitialPipelines;

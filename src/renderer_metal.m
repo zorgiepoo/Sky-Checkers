@@ -668,6 +668,8 @@ void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *))
 			renderer->metalCurrentRenderCommandEncoder = (__bridge void *)(renderCommandEncoder);
 			renderer->metalLastRenderPipelineState = NULL;
 			renderer->metalLastFragmentTexture = NULL;
+			renderer->metalLastVertexBuffer = NULL;
+			renderer->metalLastVertexAndTextureBuffer = NULL;
 			memset(&renderer->metalLastFragmentColor, 0, sizeof(renderer->metalLastFragmentColor));
 			
 			drawFunc(renderer);
@@ -814,7 +816,12 @@ static void encodeVertexState(id<MTLRenderCommandEncoder> renderCommandEncoder, 
 		renderer->metalLastRenderPipelineState = (__bridge void *)(pipelineState);
 	}
 	
-	[renderCommandEncoder setVertexBuffer:vertexBuffer offset:0 atIndex:METAL_BUFFER_VERTICES_INDEX];
+	id<MTLBuffer> lastVertexBuffer = (__bridge id<MTLBuffer>)(renderer->metalLastVertexBuffer);
+	if (vertexBuffer != lastVertexBuffer)
+	{
+		[renderCommandEncoder setVertexBuffer:vertexBuffer offset:0 atIndex:METAL_BUFFER_VERTICES_INDEX];
+		renderer->metalLastVertexBuffer = (__bridge void *)(vertexBuffer);
+	}
 }
 
 static void encodeModelViewMatrixAndColor(id<MTLRenderCommandEncoder> renderCommandEncoder, Renderer *renderer, ZGFloat *modelViewProjectionMatrix, color4_t color)
@@ -835,7 +842,14 @@ static void encodeVertexAndTextureState(id<MTLRenderCommandEncoder> renderComman
 	id<MTLBuffer> vertexAndTextureBuffer = (__bridge id<MTLBuffer>)(vertexAndTextureArrayObject.metalObject);
 	encodeVertexState(renderCommandEncoder, renderer, SHADER_FUNCTION_POSITION_TEXTURE_PAIR_INDEX, vertexAndTextureBuffer, options);
 	
-	[renderCommandEncoder setVertexBuffer:vertexAndTextureBuffer offset:vertexAndTextureArrayObject.metalVerticesSize atIndex:METAL_BUFFER_TEXTURE_COORDINATES_INDEX];
+	id<MTLBuffer> lastVertexAndTextureBuffer = (__bridge id<MTLBuffer>)(renderer->metalLastVertexAndTextureBuffer);
+	
+	if (vertexAndTextureBuffer != lastVertexAndTextureBuffer)
+	{
+		[renderCommandEncoder setVertexBuffer:vertexAndTextureBuffer offset:vertexAndTextureArrayObject.metalVerticesSize atIndex:METAL_BUFFER_TEXTURE_COORDINATES_INDEX];
+		
+		renderer->metalLastVertexAndTextureBuffer = (__bridge void *)(vertexAndTextureBuffer);
+	}
 	
 	id<MTLTexture> texture = (__bridge id<MTLTexture>)(textureObject.metalObject);
 	id<MTLTexture> lastTexture = (__bridge id<MTLTexture>)(renderer->metalLastFragmentTexture);

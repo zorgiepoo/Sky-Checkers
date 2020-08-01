@@ -142,7 +142,7 @@
 		721A006B21AA74E90099D093 /* renderer_types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = renderer_types.h; path = ../src/renderer_types.h; sourceTree = "<group>"; };
 		721A006F21AA7B420099D093 /* renderer_metal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = renderer_metal.h; path = ../src/renderer_metal.h; sourceTree = "<group>"; };
 		721A007021AA7B420099D093 /* renderer_metal.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = renderer_metal.m; path = ../src/renderer_metal.m; sourceTree = "<group>"; };
-		721A007621AB11CC0099D093 /* shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; name = shaders.metal; path = ../src/shaders.metal; sourceTree = "<group>"; };
+		721A007621AB11CC0099D093 /* shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; name = shaders.metal; path = ../src/shaders.metal; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.metal; };
 		721A007821AB96C60099D093 /* metal_indices.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = metal_indices.h; path = ../src/metal_indices.h; sourceTree = "<group>"; };
 		7243ACA723C2EB5700A83ADD /* SkyCheckers.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SkyCheckers.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7243ACB223C2EB5900A83ADD /* Assets-tvOS.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Assets-tvOS.xcassets"; sourceTree = "<group>"; };
