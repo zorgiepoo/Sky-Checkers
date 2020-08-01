@@ -196,6 +196,9 @@ typedef struct _Renderer
 			void *metalDepthTestStencilState;
 			void *metalPipelineStates[MAX_PIPELINE_COUNT];
 			void *metalShaderFunctions;
+			void *metalLastRenderPipelineState;
+			void *metalLastFragmentTexture;
+			color4_t metalLastFragmentColor;
 			bool metalWantsFsaa;
 			bool metalCreatedInitialPipelines;
 		};

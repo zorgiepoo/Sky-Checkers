@@ -666,6 +666,9 @@ void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *))
 			[renderCommandEncoder setDepthStencilState:depthStencilState];
 			
 			renderer->metalCurrentRenderCommandEncoder = (__bridge void *)(renderCommandEncoder);
+			renderer->metalLastRenderPipelineState = NULL;
+			renderer->metalLastFragmentTexture = NULL;
+			memset(&renderer->metalLastFragmentColor, 0, sizeof(renderer->metalLastFragmentColor));
 			
 			drawFunc(renderer);
 			
@@ -803,7 +806,13 @@ static void encodeVertexState(id<MTLRenderCommandEncoder> renderCommandEncoder, 
 	
 	id<MTLRenderPipelineState> pipelineState = (__bridge id<MTLRenderPipelineState>)(renderer->metalPipelineStates[pipelineIndex(shaderFunctionPairIndex, pipelineOptionIndex)]);
 	
-	[renderCommandEncoder setRenderPipelineState:pipelineState];
+	id<MTLRenderPipelineState> lastPipelineState = (__bridge id<MTLRenderPipelineState>)(renderer->metalLastRenderPipelineState);
+	
+	if (pipelineState != lastPipelineState)
+	{
+		[renderCommandEncoder setRenderPipelineState:pipelineState];
+		renderer->metalLastRenderPipelineState = (__bridge void *)(pipelineState);
+	}
 	
 	[renderCommandEncoder setVertexBuffer:vertexBuffer offset:0 atIndex:METAL_BUFFER_VERTICES_INDEX];
 }
@@ -812,7 +821,13 @@ static void encodeModelViewMatrixAndColor(id<MTLRenderCommandEncoder> renderComm
 {
 	[renderCommandEncoder setVertexBytes:modelViewProjectionMatrix length:sizeof(*modelViewProjectionMatrix) * 16 atIndex:METAL_BUFFER_MODELVIEW_PROJECTION_INDEX];
 	
-	[renderCommandEncoder setFragmentBytes:&color.red length:sizeof(color) atIndex:METAL_BUFFER_COLOR_INDEX];
+	color4_t lastColor = renderer->metalLastFragmentColor;
+	// Exact comparison is sufficient and we don't need to account for epsilon
+	if (lastColor.red != color.red || lastColor.green != color.green || lastColor.blue != color.blue || lastColor.alpha != color.alpha)
+	{
+		[renderCommandEncoder setFragmentBytes:&color length:sizeof(color) atIndex:METAL_BUFFER_COLOR_INDEX];
+		renderer->metalLastFragmentColor = color;
+	}
 }
 
 static void encodeVertexAndTextureState(id<MTLRenderCommandEncoder> renderCommandEncoder, Renderer *renderer, TextureObject textureObject, BufferArrayObject vertexAndTextureArrayObject, RendererOptions options)
@@ -823,7 +838,13 @@ static void encodeVertexAndTextureState(id<MTLRenderCommandEncoder> renderComman
 	[renderCommandEncoder setVertexBuffer:vertexAndTextureBuffer offset:vertexAndTextureArrayObject.metalVerticesSize atIndex:METAL_BUFFER_TEXTURE_COORDINATES_INDEX];
 	
 	id<MTLTexture> texture = (__bridge id<MTLTexture>)(textureObject.metalObject);
-	[renderCommandEncoder setFragmentTexture:texture atIndex:METAL_TEXTURE_INDEX];
+	id<MTLTexture> lastTexture = (__bridge id<MTLTexture>)(renderer->metalLastFragmentTexture);
+	
+	if (texture != lastTexture)
+	{
+		[renderCommandEncoder setFragmentTexture:texture atIndex:METAL_TEXTURE_INDEX];
+		renderer->metalLastFragmentTexture = (__bridge void *)(texture);
+	}
 }
 
 void drawVertices_metal(Renderer *renderer, ZGFloat *modelViewProjectionMatrix, RendererMode mode, BufferArrayObject vertexArrayObject, uint32_t vertexCount, color4_t color, RendererOptions options)
