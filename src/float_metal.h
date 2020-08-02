@@ -21,7 +21,7 @@
 
 #include "platforms.h"
 
-#if PLATFORM_IOS && !PLATFORM_IOS_SIMULATOR
+#if APPLE_ARM64
 
 #define ZGMatrixFloat4x4 matrix_half4x4
 #define ZGFloat4 half4

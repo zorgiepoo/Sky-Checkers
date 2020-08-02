@@ -21,7 +21,7 @@
 
 #include "platforms.h"
 
-#if PLATFORM_IOS && !PLATFORM_IOS_SIMULATOR
+#if APPLE_ARM64
 #import <arm_neon.h>
 typedef float16_t ZGFloat;
 #else
