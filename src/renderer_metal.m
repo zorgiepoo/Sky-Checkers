@@ -272,6 +272,18 @@ static void createAndStorePipelineState(void **pipelineStates, id<MTLDevice> dev
 	pipelineStates[index] = (void *)CFBridgingRetain(pipelineState);
 }
 
+static MTLResourceOptions gpuReadableResourceOptions(id<MTLDevice> device)
+{
+	if (@available(macOS 11.0, *))
+	{
+		return [device supportsFamily:MTLGPUFamilyApple1] ? MTLResourceStorageModeMemoryless : MTLResourceStorageModePrivate;
+	}
+	else
+	{
+		return MTLResourceStorageModePrivate;
+	}
+}
+
 static void updateRealViewport(Renderer *renderer)
 {
 	CAMetalLayer *metalLayer = (__bridge CAMetalLayer *)(renderer->metalLayer);
@@ -291,11 +303,7 @@ static void updateRealViewport(Renderer *renderer)
 		multisampleTextureDescriptor.pixelFormat = metalLayer.pixelFormat;
 		multisampleTextureDescriptor.width = (NSUInteger)renderer->drawableWidth;
 		multisampleTextureDescriptor.height = (NSUInteger)renderer->drawableHeight;
-#if PLATFORM_IOS
-		multisampleTextureDescriptor.resourceOptions = MTLResourceStorageModeMemoryless;
-#else
-		multisampleTextureDescriptor.resourceOptions = MTLResourceStorageModePrivate;
-#endif
+		multisampleTextureDescriptor.resourceOptions = gpuReadableResourceOptions(device);
 		multisampleTextureDescriptor.usage = MTLTextureUsageRenderTarget;
 		multisampleTextureDescriptor.sampleCount = renderer->sampleCount;
 		multisampleTextureDescriptor.textureType = MTLTextureType2DMultisample;
@@ -329,11 +337,7 @@ static void updateRealViewport(Renderer *renderer)
 	depthTextureDescriptor.pixelFormat = DEPTH_STENCIL_PIXEL_FORMAT;
 	depthTextureDescriptor.width = (NSUInteger)renderer->drawableWidth;
 	depthTextureDescriptor.height = (NSUInteger)renderer->drawableHeight;
-#if PLATFORM_IOS
-	depthTextureDescriptor.resourceOptions = MTLResourceStorageModeMemoryless;
-#else
-	depthTextureDescriptor.resourceOptions = MTLResourceStorageModePrivate;
-#endif
+	depthTextureDescriptor.resourceOptions = gpuReadableResourceOptions(device);
 	depthTextureDescriptor.usage = MTLTextureUsageRenderTarget;
 	if (renderer->fsaa)
 	{
