@@ -446,7 +446,7 @@ static void createPipelines(Renderer *renderer)
 		
 		NSArray<NSString *> *shaderFunctionNames;
 #if APPLE_ARM64
-		shaderFunctionNames = @[@"positionVertexShader", @"positionFragmentShader", @"texturePositionVertexShader", @"texturePositionFragmentShader"];
+		shaderFunctionNames = @[@"positionVertexShaderHalf", @"positionFragmentShaderHalf", @"texturePositionVertexShaderHalf", @"texturePositionFragmentShaderHalf"];
 #else
 		shaderFunctionNames = @[@"positionVertexShaderFull", @"positionFragmentShaderFull", @"texturePositionVertexShaderFull", @"texturePositionFragmentShaderFull"];
 #endif
