@@ -185,7 +185,6 @@
 		72817C9C2393808B00DB7677 /* gamepad_gccontroller.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = gamepad_gccontroller.m; path = ../src/gamepad_gccontroller.m; sourceTree = "<group>"; };
 		72817CA02393827700DB7677 /* app_ios.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = app_ios.m; path = ../src/app_ios.m; sourceTree = "<group>"; };
 		72817CAF23944C0100DB7677 /* float.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = float.h; path = ../src/float.h; sourceTree = "<group>"; };
-		72817CB02394522000DB7677 /* float_metal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = float_metal.h; path = ../src/float_metal.h; sourceTree = "<group>"; };
 		72817CB22394A34D00DB7677 /* touch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = touch.h; path = ../src/touch.h; sourceTree = "<group>"; };
 		7282C624231CEC640063D3CB /* audio_apple.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = audio_apple.m; path = ../src/audio_apple.m; sourceTree = "<group>"; };
 		729630EE240B499E00D9E09A /* zgtime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = zgtime.h; path = ../src/zgtime.h; sourceTree = "<group>"; };
@@ -367,7 +366,6 @@
 				77DC8A500B2FA1DD0080334C /* console.h */,
 				77DC8A510B2FA1DD0080334C /* console.c */,
 				72817CAF23944C0100DB7677 /* float.h */,
-				72817CB02394522000DB7677 /* float_metal.h */,
 				721A006B21AA74E90099D093 /* renderer_types.h */,
 				72A14F3021A71C6800606E14 /* renderer.h */,
 				72A14F2F21A71C6700606E14 /* renderer.c */,

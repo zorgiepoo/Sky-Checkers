@@ -274,11 +274,13 @@ static void createAndStorePipelineState(void **pipelineStates, id<MTLDevice> dev
 
 static MTLResourceOptions gpuReadableResourceOptions(id<MTLDevice> device)
 {
+#if !PLATFORM_SIMULATOR
 	if (@available(macOS 11.0, *))
 	{
 		return [device supportsFamily:MTLGPUFamilyApple1] ? MTLResourceStorageModeMemoryless : MTLResourceStorageModePrivate;
 	}
 	else
+#endif
 	{
 		return MTLResourceStorageModePrivate;
 	}
@@ -442,7 +444,12 @@ static void createPipelines(Renderer *renderer)
 			ZGQuit();
 		}
 		
-		NSArray<NSString *> *shaderFunctionNames = @[@"positionVertexShader", @"positionFragmentShader", @"texturePositionVertexShader", @"texturePositionFragmentShader"];
+		NSArray<NSString *> *shaderFunctionNames;
+#if APPLE_ARM64
+		shaderFunctionNames = @[@"positionVertexShader", @"positionFragmentShader", @"texturePositionVertexShader", @"texturePositionFragmentShader"];
+#else
+		shaderFunctionNames = @[@"positionVertexShaderFull", @"positionFragmentShaderFull", @"texturePositionVertexShaderFull", @"texturePositionFragmentShaderFull"];
+#endif
 		
 		NSMutableArray<id<MTLFunction>> *mutableShaderFunctions = [[NSMutableArray alloc] init];
 		

@@ -20,19 +20,33 @@
 #include <metal_stdlib>
 #include <simd/simd.h>
 #include "metal_indices.h"
-#include "float_metal.h"
+#include "platforms.h"
 
 using namespace metal;
 
-vertex float4 positionVertexShader(const ushort vertexID [[ vertex_id ]], const device ZGFloat4 *vertices [[ buffer(METAL_BUFFER_VERTICES_INDEX) ]], constant ZGMatrixFloat4x4 &modelViewProjection [[ buffer(METAL_BUFFER_MODELVIEW_PROJECTION_INDEX) ]])
+vertex float4 positionVertexShader(const ushort vertexID [[ vertex_id ]], const device half4 *vertices [[ buffer(METAL_BUFFER_VERTICES_INDEX) ]], constant matrix_half4x4 &modelViewProjection [[ buffer(METAL_BUFFER_MODELVIEW_PROJECTION_INDEX) ]])
 {
 	return float4(modelViewProjection * vertices[vertexID]);
 }
 
-fragment ZGFloat4 positionFragmentShader(constant ZGFloat4 &color [[ buffer(METAL_BUFFER_COLOR_INDEX) ]])
+fragment half4 positionFragmentShader(constant half4 &color [[ buffer(METAL_BUFFER_COLOR_INDEX) ]])
 {
 	return color;
 }
+
+#if PLATFORM_OSX
+
+vertex float4 positionVertexShaderFull(const ushort vertexID [[ vertex_id ]], const device float4 *vertices [[ buffer(METAL_BUFFER_VERTICES_INDEX) ]], constant matrix_float4x4 &modelViewProjection [[ buffer(METAL_BUFFER_MODELVIEW_PROJECTION_INDEX) ]])
+{
+	return float4(modelViewProjection * vertices[vertexID]);
+}
+
+fragment float4 positionFragmentShaderFull(constant float4 &color [[ buffer(METAL_BUFFER_COLOR_INDEX) ]])
+{
+	return color;
+}
+
+#endif
 
 typedef struct
 {
@@ -40,7 +54,7 @@ typedef struct
 	float2 textureCoordinate;
 } TextureRasterizerData;
 
-vertex TextureRasterizerData texturePositionVertexShader(const ushort vertexID [[ vertex_id ]], const device ZGFloat4 *vertices [[ buffer(METAL_BUFFER_VERTICES_INDEX) ]], constant ZGMatrixFloat4x4 &modelViewProjection [[ buffer(METAL_BUFFER_MODELVIEW_PROJECTION_INDEX) ]], const device ZGFloat2 *textureCoordinates [[ buffer(METAL_BUFFER_TEXTURE_COORDINATES_INDEX) ]])
+vertex TextureRasterizerData texturePositionVertexShader(const ushort vertexID [[ vertex_id ]], const device half4 *vertices [[ buffer(METAL_BUFFER_VERTICES_INDEX) ]], constant matrix_half4x4 &modelViewProjection [[ buffer(METAL_BUFFER_MODELVIEW_PROJECTION_INDEX) ]], const device half2 *textureCoordinates [[ buffer(METAL_BUFFER_TEXTURE_COORDINATES_INDEX) ]])
 {
 	TextureRasterizerData output;
 	
@@ -50,11 +64,34 @@ vertex TextureRasterizerData texturePositionVertexShader(const ushort vertexID [
 	return output;
 }
 
-fragment ZGFloat4 texturePositionFragmentShader(const TextureRasterizerData input [[stage_in]], const texture2d<half> texture [[ texture(METAL_TEXTURE_INDEX) ]], constant ZGFloat4 &color [[ buffer(METAL_BUFFER_COLOR_INDEX) ]])
+fragment half4 texturePositionFragmentShader(const TextureRasterizerData input [[stage_in]], const texture2d<half> texture [[ texture(METAL_TEXTURE_INDEX) ]], constant half4 &color [[ buffer(METAL_BUFFER_COLOR_INDEX) ]])
 {
 	constexpr sampler textureSampler(mag_filter::linear, min_filter::linear);
 	
 	const half4 colorSample = texture.sample(textureSampler, input.textureCoordinate);
 	
-	return color * ZGFloat4(colorSample);
+	return color * half4(colorSample);
 }
+
+#if PLATFORM_OSX
+
+vertex TextureRasterizerData texturePositionVertexShaderFull(const ushort vertexID [[ vertex_id ]], const device float4 *vertices [[ buffer(METAL_BUFFER_VERTICES_INDEX) ]], constant matrix_float4x4 &modelViewProjection [[ buffer(METAL_BUFFER_MODELVIEW_PROJECTION_INDEX) ]], const device float2 *textureCoordinates [[ buffer(METAL_BUFFER_TEXTURE_COORDINATES_INDEX) ]])
+{
+	TextureRasterizerData output;
+	
+	output.position = float4(modelViewProjection * vertices[vertexID]);
+	output.textureCoordinate = float2(textureCoordinates[vertexID]);
+	
+	return output;
+}
+
+fragment float4 texturePositionFragmentShaderFull(const TextureRasterizerData input [[stage_in]], const texture2d<half> texture [[ texture(METAL_TEXTURE_INDEX) ]], constant float4 &color [[ buffer(METAL_BUFFER_COLOR_INDEX) ]])
+{
+	constexpr sampler textureSampler(mag_filter::linear, min_filter::linear);
+	
+	const half4 colorSample = texture.sample(textureSampler, input.textureCoordinate);
+	
+	return color * float4(colorSample);
+}
+
+#endif
