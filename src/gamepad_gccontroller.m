@@ -42,7 +42,7 @@ extern CFTypeRef IOHIDServiceClientCopyProperty(IOHIDServiceClientRef service, C
 
 @end
 
-bool GC_NAME(availableGamepadProfile)(int32_t vendorID, int32_t productID)
+static bool _availableGamepadProfileLegacy(int32_t vendorID, int32_t productID)
 {
 	BOOL gcXboxOneDualShockSupport;
 	if (@available(macOS 10.15, iOS 13, *))
@@ -64,10 +64,27 @@ bool GC_NAME(availableGamepadProfile)(int32_t vendorID, int32_t productID)
 		(vendorID == 0x0738 && productID == 0x5262)); // Mad Catz Micro C.T.R.L.i, although I'm not too sure
 }
 
-// https://stackoverflow.com/questions/33509296/supporting-both-gccontroller-and-iohiddeviceref
+bool GC_NAME(availableGamepadProfile)(void *deviceRef, int32_t vendorID, int32_t productID)
+{
+	if (@available(macOS 11, *))
+	{
+		return (bool)[GCController supportsHIDDevice:deviceRef];
+	}
+	else
+	{
+		return _availableGamepadProfileLegacy(vendorID, productID);
+	}
+}
+
 static bool _isSupportedController(GCController *controller)
 {
-	if ([controller respondsToSelector:@selector(hidServices)])
+	if (@available(macOS 11, *))
+	{
+		// macOS 11+ should only report GCControllers that are truely supported
+		return true;
+	}
+	// https://stackoverflow.com/questions/33509296/supporting-both-gccontroller-and-iohiddeviceref
+	else if ([controller respondsToSelector:@selector(hidServices)])
 	{
 		NSArray *hidServices = [controller hidServices];
 		for (id hidServiceInfo in hidServices)
@@ -80,7 +97,7 @@ static bool _isSupportedController(GCController *controller)
 					NSNumber *vendorRef = CFBridgingRelease(IOHIDServiceClientCopyProperty(service, CFSTR(kIOHIDVendorIDKey)));
 					NSNumber *productRef = CFBridgingRelease(IOHIDServiceClientCopyProperty(service, CFSTR(kIOHIDProductIDKey)));
 					
-					if (GC_NAME(availableGamepadProfile)(vendorRef.intValue, productRef.intValue))
+					if (_availableGamepadProfileLegacy(vendorRef.intValue, productRef.intValue))
 					{
 						return true;
 					}

@@ -361,7 +361,7 @@ static void _hidDeviceMatchingCallback(void *context, IOReturn result, void *sen
 	
 #if GC_PRODUCT_CHECK
 	// Only handle gamepads that GCController may not support
-	if (GC_NAME(availableGamepadProfile)(vendorID, productID))
+	if (GC_NAME(availableGamepadProfile)(device, vendorID, productID))
 	{
 		return;
 	}

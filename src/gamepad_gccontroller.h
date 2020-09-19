@@ -59,5 +59,5 @@ uint8_t GC_NAME(gamepadRank)(struct GC_NAME(_GamepadManager) *gamepadManager, Ga
 void GC_NAME(setPlayerIndex)(struct GC_NAME(_GamepadManager) *gamepadManager, GamepadIndex index, int64_t playerIndex);
 
 #if GC_PRODUCT_CHECK
-bool GC_NAME(availableGamepadProfile)(int32_t vendorID, int32_t productID);
+bool GC_NAME(availableGamepadProfile)(void *deviceRef, int32_t vendorID, int32_t productID);
 #endif
