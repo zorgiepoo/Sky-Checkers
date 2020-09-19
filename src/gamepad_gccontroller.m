@@ -219,10 +219,13 @@ struct GC_NAME(_GamepadManager) *GC_NAME(initGamepadManager)(const char *databas
 	// Offset our gamepad indexes large enough so that they won't collide realistically
 	gamepadManager->nextGamepadIndex = UINT32_MAX / 2;
 	
-	for (GCController *controller in [GCController controllers])
-	{
-		_addController(gamepadManager, controller);
-	}
+	// Make sure we don't dispatch too early before returning gamepad manager
+	dispatch_async(dispatch_get_main_queue(), ^{
+		for (GCController *controller in [GCController controllers])
+		{
+			_addController(gamepadManager, controller);
+		}
+	});
 	
 	[[NSNotificationCenter defaultCenter] addObserverForName:GCControllerDidConnectNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
 		_addController(gamepadManager, [note object]);

@@ -595,8 +595,8 @@ static void _gcGamepadAdded(GamepadIndex gcIndex, void *context)
 	}
 	
 	nextFreeGamepad->gcController = true;
-	nextFreeGamepad->rank = GC_NAME(gamepadRank)(gamepadManager->gcManager, nextFreeGamepad->index);
 	nextFreeGamepad->index = gcIndex;
+	nextFreeGamepad->rank = GC_NAME(gamepadRank)(gamepadManager->gcManager, nextFreeGamepad->index);
 	
 	const char *gamepadName = GC_NAME(gamepadName)(gamepadManager->gcManager, nextFreeGamepad->index);
 	if (gamepadName != NULL)
@@ -640,13 +640,13 @@ GamepadManager *initGamepadManager(const char *databasePath, GamepadCallback add
 	GamepadManager *gamepadManager = calloc(sizeof(*gamepadManager), 1);
 	assert(gamepadManager != NULL);
 	
-#if GC_PRODUCT_CHECK
-	gamepadManager->gcManager = GC_NAME(initGamepadManager)(databasePath, _gcGamepadAdded, _gcGamepadRemoved, gamepadManager);
-#endif
-	
 	gamepadManager->addedCallback = addedCallback;
 	gamepadManager->removalCallback = removalCallback;
 	gamepadManager->context = context;
+	
+#if GC_PRODUCT_CHECK
+	gamepadManager->gcManager = GC_NAME(initGamepadManager)(databasePath, _gcGamepadAdded, _gcGamepadRemoved, gamepadManager);
+#endif
 	
 	NSError *gamepadDatabaseError = nil;
 	NSString *gamepadDatabase = [NSString stringWithContentsOfFile:@(databasePath) encoding:NSUTF8StringEncoding error:&gamepadDatabaseError];
