@@ -151,7 +151,11 @@ static void _addController(struct GC_NAME(_GamepadManager) *gamepadManager, GCCo
 		{
 			return;
 		}
-		else if (gamepad->controller == nil && availableGamepadIndex == MAX_GAMEPADS)
+		else if (gamepad->controller == nil
+#if GC_KEYBOARD
+				 && gamepad->keyboard == nil
+#endif
+				 && availableGamepadIndex == MAX_GAMEPADS)
 		{
 			availableGamepadIndex = index;
 		}
@@ -167,7 +171,7 @@ static void _addController(struct GC_NAME(_GamepadManager) *gamepadManager, GCCo
 		
 		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[availableGamepadIndex];
 		gamepad->controller = (void *)CFBridgingRetain(controller);
-		gamepad->rank = (microGamepad != nil && controller.extendedGamepad == nil) ? LOWEST_GAMEPAD_RANK : 3;
+		gamepad->rank = (microGamepad != nil && controller.extendedGamepad == nil) ? LOWEST_GAMEPAD_RANK : 4;
 		
 		NSString *vendorName = controller.vendorName;
 		NSString *productDescription;
@@ -208,6 +212,69 @@ static void _addController(struct GC_NAME(_GamepadManager) *gamepadManager, GCCo
 	}
 }
 
+#if GC_KEYBOARD
+static void _removeKeyboard(struct GC_NAME(_GamepadManager) *gamepadManager, GCKeyboard *keyboard) API_AVAILABLE(ios(14.0), tvos(14.0))
+{
+	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
+	{
+		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[index];
+		// Only one keyboard can be available
+		assert(gamepad->keyboard == NULL || gamepad->keyboard == (__bridge void *)(keyboard));
+		if (gamepad->keyboard != NULL)
+		{
+			if (gamepadManager->removalCallback != NULL)
+			{
+				gamepadManager->removalCallback(gamepad->index, gamepadManager->context);
+			}
+			
+			CFRelease(gamepad->keyboard);
+			memset(gamepad, 0, sizeof(*gamepad));
+			break;
+		}
+	}
+}
+
+static void _addKeyboard(struct GC_NAME(_GamepadManager) *gamepadManager, GCKeyboard *keyboard) API_AVAILABLE(ios(14.0), tvos(14.0))
+{
+	GCKeyboardInput *keyboardInput = keyboard.keyboardInput;
+	if (keyboardInput == nil)
+	{
+		return;
+	}
+	
+	uint16_t availableGamepadIndex = MAX_GAMEPADS;
+	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
+	{
+		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[index];
+		// Only one keyboard can be available
+		assert(gamepad->keyboard == NULL || gamepad->keyboard == (__bridge void *)(keyboard));
+		if (gamepad->keyboard != NULL)
+		{
+			return;
+		}
+		else if (gamepad->controller == nil && gamepad->keyboard == nil && availableGamepadIndex == MAX_GAMEPADS)
+		{
+			availableGamepadIndex = index;
+		}
+	}
+	
+	if (availableGamepadIndex < MAX_GAMEPADS)
+	{
+		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[availableGamepadIndex];
+		gamepad->keyboard = (void *)CFBridgingRetain(keyboard);
+		gamepad->rank = 2;
+		strncpy(gamepad->name, "Keyboard", sizeof(gamepad->name) - 1);
+		// There will only ever be one keyboard instance, reserve it for last value
+		gamepad->index = UINT32_MAX - 1;
+		
+		if (gamepadManager->addedCallback != NULL)
+		{
+			gamepadManager->addedCallback(gamepad->index, gamepadManager->context);
+		}
+	}
+}
+#endif
+
 struct GC_NAME(_GamepadManager) *GC_NAME(initGamepadManager)(const char *databasePath, GamepadCallback addedCallback, GamepadCallback removalCallback, void *context)
 {
 	struct GC_NAME(_GamepadManager) *gamepadManager = calloc(1, sizeof(*gamepadManager));
@@ -225,6 +292,17 @@ struct GC_NAME(_GamepadManager) *GC_NAME(initGamepadManager)(const char *databas
 		{
 			_addController(gamepadManager, controller);
 		}
+		
+#if GC_KEYBOARD
+		if (@available(iOS 14, tvOS 14, *))
+		{
+			GCKeyboard *keyboard = GCKeyboard.coalescedKeyboard;
+			if (keyboard != nil)
+			{
+				_addKeyboard(gamepadManager, keyboard);
+			}
+		}
+#endif
 	});
 	
 	[[NSNotificationCenter defaultCenter] addObserverForName:GCControllerDidConnectNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
@@ -234,6 +312,19 @@ struct GC_NAME(_GamepadManager) *GC_NAME(initGamepadManager)(const char *databas
 	[[NSNotificationCenter defaultCenter] addObserverForName:GCControllerDidDisconnectNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
 		_removeController(gamepadManager, [note object]);
 	}];
+	
+#if GC_KEYBOARD
+	if (@available(iOS 14, tvOS 14, *))
+	{
+		[[NSNotificationCenter defaultCenter] addObserverForName:GCKeyboardDidConnectNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+			_addKeyboard(gamepadManager, [note object]);
+		}];
+		
+		[[NSNotificationCenter defaultCenter] addObserverForName:GCKeyboardDidDisconnectNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+			_removeKeyboard(gamepadManager, [note object]);
+		}];
+	}
+#endif
 	
 	return gamepadManager;
 }
@@ -273,6 +364,13 @@ GamepadEvent *GC_NAME(pollGamepadEvents)(struct GC_NAME(_GamepadManager) *gamepa
 	{
 		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[index];
 		GCController *controller = (__bridge GCController *)(gamepad->controller);
+#if GC_KEYBOARD
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability-new"
+		GCKeyboard *keyboard = (__bridge GCKeyboard *)(gamepad->keyboard);
+#pragma clang diagnostic pop
+#endif
+		
 		if (controller != nil)
 		{
 			GCExtendedGamepad *extendedGamepad = controller.extendedGamepad;
@@ -327,6 +425,67 @@ GamepadEvent *GC_NAME(pollGamepadEvents)(struct GC_NAME(_GamepadManager) *gamepa
 				}
 			}
 		}
+#if GC_KEYBOARD
+		else if (keyboard != nil)
+		{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability-new"
+			GCKeyboardInput *keyboardInput = keyboard.keyboardInput;
+			if (keyboardInput != nil)
+			{
+				GCControllerButtonInput *upInput = [keyboardInput buttonForKeyCode:GCKeyCodeUpArrow];
+				GCControllerButtonInput *upInput2 = [keyboardInput buttonForKeyCode:GCKeyCodeKeyW];
+				
+				if (upInput != nil || upInput2 != nil)
+				{
+					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_UP, upInput.pressed || upInput2.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				}
+				
+				GCControllerButtonInput *downInput = [keyboardInput buttonForKeyCode:GCKeyCodeDownArrow];
+				GCControllerButtonInput *downInput2 = [keyboardInput buttonForKeyCode:GCKeyCodeKeyS];
+				
+				if (downInput != nil || downInput2 != nil)
+				{
+					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_DOWN, downInput.pressed || downInput2.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				}
+				
+				GCControllerButtonInput *rightInput = [keyboardInput buttonForKeyCode:GCKeyCodeRightArrow];
+				GCControllerButtonInput *rightInput2 = [keyboardInput buttonForKeyCode:GCKeyCodeKeyD];
+				
+				if (rightInput != nil || rightInput2 != nil)
+				{
+					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_RIGHT, rightInput.pressed || rightInput2.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				}
+				
+				GCControllerButtonInput *leftInput = [keyboardInput buttonForKeyCode:GCKeyCodeLeftArrow];
+				GCControllerButtonInput *leftInput2 = [keyboardInput buttonForKeyCode:GCKeyCodeKeyA];
+				
+				if (leftInput != nil || leftInput2 != nil)
+				{
+					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_LEFT, leftInput.pressed || leftInput2.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				}
+				
+				GCControllerButtonInput *actionInput = [keyboardInput buttonForKeyCode:GCKeyCodeReturnOrEnter];
+				if (actionInput != nil)
+				{
+					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_A, actionInput.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				}
+				
+				GCControllerButtonInput *action2Input = [keyboardInput buttonForKeyCode:GCKeyCodeSpacebar];
+				if (action2Input != nil)
+				{
+					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_X, action2Input.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				}
+				
+				GCControllerButtonInput *startInput = [keyboardInput buttonForKeyCode:GCKeyCodeEscape];
+				if (startInput != nil)
+				{
+					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_START, startInput.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				}
+			}
+#pragma clang diagnostic pop
+		}
+#endif
 	}
 	
 	*eventCount = eventIndex;
@@ -338,7 +497,13 @@ const char *GC_NAME(gamepadName)(struct GC_NAME(_GamepadManager) *gamepadManager
 	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
 	{
 		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[index];
-		if (gamepad->controller != NULL && gamepad->index == gcIndex)
+		if ((
+			 gamepad->controller != NULL
+#if GC_KEYBOARD
+			 || gamepad->keyboard != NULL
+#endif
+			 )
+			&& gamepad->index == gcIndex)
 		{
 			return gamepad->name;
 		}
@@ -351,7 +516,13 @@ uint8_t GC_NAME(gamepadRank)(struct GC_NAME(_GamepadManager) *gamepadManager, Ga
 	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
 	{
 		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[index];
-		if (gamepad->controller != NULL && gamepad->index == gcIndex)
+		if ((
+			 gamepad->controller != NULL
+#if GC_KEYBOARD
+			 || gamepad->keyboard != NULL
+#endif
+			 )
+			&& gamepad->index == gcIndex)
 		{
 			return gamepad->rank;
 		}

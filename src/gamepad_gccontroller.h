@@ -24,14 +24,19 @@
 #if PLATFORM_IOS
 #define GC_NAME(x) x
 #define GC_PRODUCT_CHECK 0
+#define GC_KEYBOARD 1
 #else
 #define GC_NAME(x) GC_##x
 #define GC_PRODUCT_CHECK 1
+#define GC_KEYBOARD 0
 #endif
 
 typedef struct GC_NAME(_Gamepad)
 {
 	void *controller;
+#if GC_KEYBOARD
+	void *keyboard;
+#endif
 	GamepadState lastStates[GAMEPAD_BUTTON_MAX];
 	char name[GAMEPAD_NAME_SIZE];
 	GamepadIndex index;

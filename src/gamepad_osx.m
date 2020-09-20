@@ -424,7 +424,7 @@ static void _hidDeviceMatchingCallback(void *context, IOReturn result, void *sen
 #if GC_PRODUCT_CHECK
 	newGamepad->gcController = false;
 #endif
-	newGamepad->rank = 2;
+	newGamepad->rank = 3;
 	newGamepad->index = gamepadManager->nextGamepadIndex;
 	gamepadManager->nextGamepadIndex++;
 	
