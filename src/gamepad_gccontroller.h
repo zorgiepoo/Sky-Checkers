@@ -24,7 +24,8 @@
 #if PLATFORM_IOS
 #define GC_NAME(x) x
 #define GC_PRODUCT_CHECK 0
-#define GC_KEYBOARD 1
+// tvOS doesn't properly support keyboard events (as of tvOS 14.0)
+#define GC_KEYBOARD !PLATFORM_TVOS
 #else
 #define GC_NAME(x) GC_##x
 #define GC_PRODUCT_CHECK 1
