@@ -20,7 +20,7 @@ win/dinput.pdb
 win/.vs
 *.sdf
 *.suo
-*.vcxproj.user
+#*.vcxproj.user
 *.aps
 *.opensdf
 Data/Shaders
