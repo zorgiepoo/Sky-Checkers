@@ -27,7 +27,9 @@
 
 #import <IOKit/hid/IOHIDKeys.h>
 
-typedef void* IOHIDServiceClientRef;
+#if !defined(MAC_OS_VERSION_12_0)
+typedef void* IOHIDServiceClientRef; // This is exported in macOS 12 SDK
+#endif
 extern CFTypeRef IOHIDServiceClientCopyProperty(IOHIDServiceClientRef service, CFStringRef key);
 
 @interface GCController (Private)

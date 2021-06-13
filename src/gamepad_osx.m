@@ -26,6 +26,7 @@
 #import <IOKit/IOCFPlugIn.h>
 #import <IOKit/hid/IOHIDLib.h>
 #import <IOKit/hid/IOHIDKeys.h>
+#import <CoreGraphics/CoreGraphics.h>
 
 #define AXIS_DEADZONE_THRESHOLD 0.3
 #define AXIS_MIN_SCALE (-1.0)
