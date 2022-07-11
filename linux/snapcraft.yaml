@@ -29,7 +29,7 @@ apps:
 parts:
   skycheckers:
     after: [sdl2, desktop-glib-only]
-    source: https://github.com/zorgiepoo/Sky-Checkers/releases/download/1.3/sc-snap-pak-repo.tgz
+    source: https://github.com/zorgiepoo/Sky-Checkers/releases/download/v1.3/sc-snap-pak-repo.tgz
     source-subdir: linux
     plugin: make
     make-parameters:
@@ -52,7 +52,7 @@ parts:
 
   gamedata:
     after: [skycheckers]
-    source: https://github.com/zorgiepoo/Sky-Checkers/releases/download/1.3/sc-snap-pak-data.tgz
+    source: https://github.com/zorgiepoo/Sky-Checkers/releases/download/v1.3/sc-snap-pak-data.tgz
     plugin: dump
     organize:
       Data : usr/share/skycheckers/Data
