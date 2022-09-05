@@ -157,7 +157,7 @@ void ZGPollWindowAndInputEvents(ZGWindow *windowRef, const void *systemEvent)
 					
 					windowController->windowEventHandler(event, windowController->windowEventHandlerContext);
 				} break;
-				case SDL_WINDOWEVENT_RESIZED:
+				case SDL_WINDOWEVENT_SIZE_CHANGED:
 				{
 					ZGWindowEvent event;
 					event.type = ZGWindowEventTypeResize;
