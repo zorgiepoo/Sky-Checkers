@@ -6,5 +6,5 @@ Exec=skycheckers
 Name=SkyCheckers
 Comment=Blast enemies off a stage
 Icon=net.zgcoder.skycheckers
-Categories=Game;
+Categories=Game;ArcadeGame;
 
