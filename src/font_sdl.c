@@ -46,8 +46,7 @@ TextureData createTextData(const char *string)
 {
 	SDL_Color color = {255, 255, 255, 0};
 
-	// TTF_RenderText_Solid always returns NULL for me, so use TTF_RenderText_Blended.
-	SDL_Surface *fontSurface = TTF_RenderText_Blended(gFont, string, color);
+	SDL_Surface *fontSurface = TTF_RenderUTF8_Blended(gFont, string, color);
 
 	if (fontSurface == NULL)
 	{
@@ -55,5 +54,27 @@ TextureData createTextData(const char *string)
 		SDL_Quit();
 	}
 	
-	return (TextureData){.pixelData = fontSurface->pixels, .context = fontSurface, .width = fontSurface->w, .height = fontSurface->h, .pixelFormat = PIXEL_FORMAT_BGRA32};
+	SDL_Surface *blittedSurface = SDL_CreateRGBSurface(0, fontSurface->w, fontSurface->h, 32,
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+		0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000
+#else
+		0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff
+#endif
+	);
+	
+	if (blittedSurface == NULL)
+	{
+		fprintf(stderr, "failed to create blitted surface: %s\n", SDL_GetError());
+		SDL_Quit();
+	}
+	
+	if (SDL_BlitSurface(fontSurface, NULL, blittedSurface, NULL) != 0)
+	{
+		fprintf(stderr, "font surface failed to blit: %s\n", SDL_GetError());
+		SDL_Quit();
+	}
+	
+	SDL_FreeSurface(fontSurface);
+	
+	return (TextureData){.pixelData = blittedSurface->pixels, .context = blittedSurface, .width = blittedSurface->w, .height = blittedSurface->h, .pixelFormat = PIXEL_FORMAT_RGBA32};
 }
