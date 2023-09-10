@@ -319,7 +319,6 @@ const char *gamepadName(GamepadManager *gamepadManager, GamepadIndex index)
 
 uint8_t gamepadRank(GamepadManager *gamepadManager, GamepadIndex index)
 {
-#if SDL_VERSION_ATLEAST(2, 0, 12)
 	SDL_GameController* controller = SDL_GameControllerFromInstanceID(index);
 
 	switch (SDL_GameControllerGetType(controller))
@@ -327,8 +326,12 @@ uint8_t gamepadRank(GamepadManager *gamepadManager, GamepadIndex index)
 	case SDL_CONTROLLER_TYPE_UNKNOWN:
 		return LOWEST_GAMEPAD_RANK;
 	case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO:
+	case SDL_CONTROLLER_TYPE_VIRTUAL:
+	case SDL_CONTROLLER_TYPE_AMAZON_LUNA:
+	case SDL_CONTROLLER_TYPE_GOOGLE_STADIA:
 	case SDL_CONTROLLER_TYPE_PS3:
 	case SDL_CONTROLLER_TYPE_PS4:
+	case SDL_CONTROLLER_TYPE_PS5:
 		return 2;
 	case SDL_CONTROLLER_TYPE_XBOX360:
 	case SDL_CONTROLLER_TYPE_XBOXONE: {
@@ -345,9 +348,6 @@ uint8_t gamepadRank(GamepadManager *gamepadManager, GamepadIndex index)
 		return 4 + rankIndex;
 	}
 	}
-#else
-#warning Upgrade to SDL 2_0_12 for full controller support
-#endif
 	return 0;
 }
 

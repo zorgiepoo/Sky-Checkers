@@ -60,7 +60,7 @@ parts:
       - -usr/share/skycheckers/Data/Textures/sc_icon.bmp
   
   sdl2:
-    source: https://www.libsdl.org/release/SDL2-2.0.20.tar.gz
+    source: https://www.libsdl.org/release/SDL2-2.28.3.tar.gz
     plugin: autotools
     configflags:
       - --disable-static
