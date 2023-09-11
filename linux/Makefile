@@ -32,7 +32,7 @@ SOURCE=$(addprefix ../src/, $(FILES))
 
 WARNINGS=-Wall -Wextra -Wno-unused-parameter
 
-LIBS=-lm -lX11 -lGL -lpthread -lGLEW `sdl2-config --cflags --libs` -lSDL2_mixer -lSDL2_ttf
+LIBS=-lm -lX11 -lGL -lpthread `pkg-config glew --libs --cflags` `sdl2-config --cflags --libs` -lSDL2_mixer -lSDL2_ttf
 
 CSTD=-std=gnu99
 
@@ -57,6 +57,7 @@ clean:
 
 .PHONY: install
 install:
+	mkdir -p $(DESTDIR)/$(USER_DIRNAME)/bin/
 	cp skycheckers $(DESTDIR)/$(USER_DIRNAME)/bin/skycheckers
 	-$(INSTALL_SC_DATA) && mkdir -p $(DESTDIR)/$(USER_DIRNAME)/share/skycheckers
 	-$(INSTALL_SC_DATA) && cp -R Data $(DESTDIR)/$(USER_DIRNAME)/share/skycheckers/
