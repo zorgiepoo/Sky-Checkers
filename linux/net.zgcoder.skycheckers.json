@@ -54,8 +54,8 @@
 			"sources": [
 				{
 					"type": "archive",
-					"url": "https://github.com/zorgiepoo/Sky-Checkers/releases/download/v1.3/sc-snap-pak-repo.tgz",
-					"sha256": "277ea5968d6859e5f1e18b56facaee690d68189f1d52479c5bba1b6b0354a762"
+					"url": "https://github.com/zorgiepoo/Sky-Checkers/releases/download/1.3.1/sc-snap-pak-repo.tgz",
+					"sha256": "b75d1fc7bc76d4147f57055f965fb1d752222beba4dc90115b388af5532b3c87"
 				}
 			]
 		},
@@ -66,9 +66,9 @@
 				{
 					"type": "extra-data",
 					"filename": "sc-snap-pak-data.tgz",
-					"url": "https://github.com/zorgiepoo/Sky-Checkers/releases/download/v1.3/sc-snap-pak-data.tgz",
-					"sha256": "142e8abfa0179dccbdbf95bfe405d2a5c86ead99ea39e8ac340b1ed4dd79a8a1",
-					"size": 9483044
+					"url": "https://github.com/zorgiepoo/Sky-Checkers/releases/download/1.3.1/sc-snap-pak-data.tgz",
+					"sha256": "aa38596749adbbf9da3f3e57972ef96e048d6f4b30a5a3c68bcd9db0a30d632a",
+					"size": 9483040
 				},
 				{
 					"type": "script",
