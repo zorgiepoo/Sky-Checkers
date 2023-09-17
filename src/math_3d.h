@@ -251,7 +251,7 @@ static inline mat4_t mat4(
 	};
 }
 
-static inline mat4_t m4_identity() {
+static inline mat4_t m4_identity(void) {
 	return mat4(
 				1,  0,  0,  0,
 				0,  1,  0,  0,
