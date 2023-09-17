@@ -537,7 +537,6 @@
 				72970EF1243864C0008ECB13 /* Sources */,
 				72970EF2243864C0008ECB13 /* Frameworks */,
 				72970EF3243864C0008ECB13 /* Resources */,
-				7276B4FD2438889B00CA14DC /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -618,26 +617,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		7276B4FD2438889B00CA14DC /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "cp \"${PROJECT_DIR}/../gamecontrollerdb.txt\" \"${BUILT_PRODUCTS_DIR}/${FULL_PRODUCT_NAME}/Contents/Resources/Data/\"\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		7243ACA323C2EB5700A83ADD /* Sources */ = {
