@@ -23,100 +23,11 @@
 #import <Foundation/Foundation.h>
 #import <GameController/GameController.h>
 
-#if GC_PRODUCT_CHECK
-
-#import <IOKit/hid/IOHIDKeys.h>
-
-#if !defined(MAC_OS_VERSION_12_0)
-typedef void* IOHIDServiceClientRef; // This is exported in macOS 12 SDK
-#endif
-extern CFTypeRef IOHIDServiceClientCopyProperty(IOHIDServiceClientRef service, CFStringRef key);
-
-@interface GCController (Private)
-
-- (NSArray *)hidServices;
-
-@end
-
-@interface NSObject (Private)
-
-- (IOHIDServiceClientRef)service;
-
-@end
-
-static bool _availableGamepadProfileLegacy(int32_t vendorID, int32_t productID)
-{
-	BOOL gcXboxOneDualShockSupport;
-	if (@available(macOS 10.15, iOS 13, *))
-	{
-		gcXboxOneDualShockSupport = YES;
-	}
-	else
-	{
-		gcXboxOneDualShockSupport = NO;
-	}
-	
-	// These are some of the controllers we know GCController supports
-	return ((gcXboxOneDualShockSupport && vendorID == 0x45e && (productID == 0x2e0 || productID == 0x2fd)) || // Xbox One
-		(gcXboxOneDualShockSupport && vendorID == 0x54c && (productID == 0x9cc || productID == 0x5c4)) || // Dual Shock 4
-		(vendorID == 0x1038 && productID == 0x1420) || // SteelSeries Nimbus
-		(vendorID == 0x0111 && productID == 0x1420) || // SteelSeries Nimbus (wireless)
-		(vendorID == 0x1038 && productID == 0x5) || // SteelSeries Stratus (possibly)
-		(vendorID == 0x0F0D && productID == 0x0090) || // HoriPad Ultimate
-		(vendorID == 0x0738 && productID == 0x5262)); // Mad Catz Micro C.T.R.L.i, although I'm not too sure
-}
-
-bool GC_NAME(availableGamepadProfile)(void *deviceRef, int32_t vendorID, int32_t productID)
-{
-	if (@available(macOS 11, *))
-	{
-		return (bool)[GCController supportsHIDDevice:deviceRef];
-	}
-	else
-	{
-		return _availableGamepadProfileLegacy(vendorID, productID);
-	}
-}
-
-static bool _isSupportedController(GCController *controller)
-{
-	if (@available(macOS 11, *))
-	{
-		// macOS 11+ should only report GCControllers that are truely supported
-		return true;
-	}
-	// https://stackoverflow.com/questions/33509296/supporting-both-gccontroller-and-iohiddeviceref
-	else if ([controller respondsToSelector:@selector(hidServices)])
-	{
-		NSArray *hidServices = [controller hidServices];
-		for (id hidServiceInfo in hidServices)
-		{
-			if ([hidServiceInfo respondsToSelector:@selector(service)])
-			{
-				IOHIDServiceClientRef service = [hidServiceInfo service];
-				if (service != NULL)
-				{
-					NSNumber *vendorRef = CFBridgingRelease(IOHIDServiceClientCopyProperty(service, CFSTR(kIOHIDVendorIDKey)));
-					NSNumber *productRef = CFBridgingRelease(IOHIDServiceClientCopyProperty(service, CFSTR(kIOHIDProductIDKey)));
-					
-					if (_availableGamepadProfileLegacy(vendorRef.intValue, productRef.intValue))
-					{
-						return true;
-					}
-				}
-			}
-		}
-	}
-	return false;
-}
-
-#endif
-
-static void _removeController(struct GC_NAME(_GamepadManager) *gamepadManager, GCController *controller)
+static void _removeController(struct _GamepadManager *gamepadManager, GCController *controller)
 {
 	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
 	{
-		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[index];
+		Gamepad *gamepad = &gamepadManager->gamepads[index];
 		if (gamepad->controller == (__bridge void *)(controller))
 		{
 			if (gamepadManager->removalCallback != NULL)
@@ -131,7 +42,7 @@ static void _removeController(struct GC_NAME(_GamepadManager) *gamepadManager, G
 	}
 }
 
-static void _addController(struct GC_NAME(_GamepadManager) *gamepadManager, GCController *controller)
+static void _addController(struct _GamepadManager *gamepadManager, GCController *controller)
 {
 	if (controller.extendedGamepad == nil && controller.microGamepad == nil)
 	{
@@ -157,17 +68,10 @@ static void _addController(struct GC_NAME(_GamepadManager) *gamepadManager, GCCo
 		}
 	}
 	
-#if GC_PRODUCT_CHECK
-	if (!_isSupportedController(controller))
-	{
-		return;
-	}
-#endif
-	
 	uint16_t availableGamepadIndex = MAX_GAMEPADS;
 	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
 	{
-		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[index];
+		Gamepad *gamepad = &gamepadManager->gamepads[index];
 		if (gamepad->controller == (__bridge void *)(controller))
 		{
 			return;
@@ -190,7 +94,7 @@ static void _addController(struct GC_NAME(_GamepadManager) *gamepadManager, GCCo
 			microGamepad.allowsRotation = YES;
 		}
 		
-		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[availableGamepadIndex];
+		Gamepad *gamepad = &gamepadManager->gamepads[availableGamepadIndex];
 		gamepad->controller = (void *)CFBridgingRetain(controller);
 		gamepad->rank = (microGamepad != nil && controller.extendedGamepad == nil) ? LOWEST_GAMEPAD_RANK : 4;
 		
@@ -234,11 +138,11 @@ static void _addController(struct GC_NAME(_GamepadManager) *gamepadManager, GCCo
 }
 
 #if GC_KEYBOARD
-static void _removeKeyboard(struct GC_NAME(_GamepadManager) *gamepadManager, GCKeyboard *keyboard) API_AVAILABLE(ios(14.0), tvos(14.0))
+static void _removeKeyboard(struct _GamepadManager *gamepadManager, GCKeyboard *keyboard) API_AVAILABLE(ios(14.0), tvos(14.0))
 {
 	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
 	{
-		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[index];
+		Gamepad *gamepad = &gamepadManager->gamepads[index];
 		// Only one keyboard can be available
 		assert(gamepad->keyboard == NULL || gamepad->keyboard == (__bridge void *)(keyboard));
 		if (gamepad->keyboard != NULL)
@@ -255,7 +159,7 @@ static void _removeKeyboard(struct GC_NAME(_GamepadManager) *gamepadManager, GCK
 	}
 }
 
-static void _addKeyboard(struct GC_NAME(_GamepadManager) *gamepadManager, GCKeyboard *keyboard) API_AVAILABLE(ios(14.0), tvos(14.0))
+static void _addKeyboard(struct _GamepadManager *gamepadManager, GCKeyboard *keyboard) API_AVAILABLE(ios(14.0), tvos(14.0))
 {
 	GCKeyboardInput *keyboardInput = keyboard.keyboardInput;
 	if (keyboardInput == nil)
@@ -266,7 +170,7 @@ static void _addKeyboard(struct GC_NAME(_GamepadManager) *gamepadManager, GCKeyb
 	uint16_t availableGamepadIndex = MAX_GAMEPADS;
 	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
 	{
-		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[index];
+		Gamepad *gamepad = &gamepadManager->gamepads[index];
 		// Only one keyboard can be available
 		assert(gamepad->keyboard == NULL || gamepad->keyboard == (__bridge void *)(keyboard));
 		if (gamepad->keyboard != NULL)
@@ -281,7 +185,7 @@ static void _addKeyboard(struct GC_NAME(_GamepadManager) *gamepadManager, GCKeyb
 	
 	if (availableGamepadIndex < MAX_GAMEPADS)
 	{
-		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[availableGamepadIndex];
+		Gamepad *gamepad = &gamepadManager->gamepads[availableGamepadIndex];
 		gamepad->keyboard = (void *)CFBridgingRetain(keyboard);
 		gamepad->rank = 2;
 		strncpy(gamepad->name, "Keyboard", sizeof(gamepad->name) - 1);
@@ -296,9 +200,9 @@ static void _addKeyboard(struct GC_NAME(_GamepadManager) *gamepadManager, GCKeyb
 }
 #endif
 
-struct GC_NAME(_GamepadManager) *GC_NAME(initGamepadManager)(const char *databasePath, GamepadCallback addedCallback, GamepadCallback removalCallback, void *context)
+struct _GamepadManager *initGamepadManager(const char *databasePath, GamepadCallback addedCallback, GamepadCallback removalCallback, void *context)
 {
-	struct GC_NAME(_GamepadManager) *gamepadManager = calloc(1, sizeof(*gamepadManager));
+	struct _GamepadManager *gamepadManager = calloc(1, sizeof(*gamepadManager));
 	gamepadManager->addedCallback = addedCallback;
 	gamepadManager->removalCallback = removalCallback;
 	gamepadManager->context = context;
@@ -350,7 +254,7 @@ struct GC_NAME(_GamepadManager) *GC_NAME(initGamepadManager)(const char *databas
 	return gamepadManager;
 }
 
-static void _addButtonEventIfNeeded(GC_NAME(Gamepad) *gamepad, GamepadButton button, BOOL buttonPressed, GamepadEvent *eventsBuffer, uint16_t *eventIndex)
+static void _addButtonEventIfNeeded(Gamepad *gamepad, GamepadButton button, BOOL buttonPressed, GamepadEvent *eventsBuffer, uint16_t *eventIndex)
 {
 	if ((GamepadState)buttonPressed != gamepad->lastStates[button])
 	{
@@ -364,7 +268,7 @@ static void _addButtonEventIfNeeded(GC_NAME(Gamepad) *gamepad, GamepadButton but
 	}
 }
 
-static void _addAxisEventIfNeeded(GC_NAME(Gamepad) *gamepad, GamepadButton positiveButton, GamepadButton negativeButton, GCControllerAxisInput *axisInput, GamepadEvent *eventsBuffer, uint16_t *eventIndex)
+static void _addAxisEventIfNeeded(Gamepad *gamepad, GamepadButton positiveButton, GamepadButton negativeButton, GCControllerAxisInput *axisInput, GamepadEvent *eventsBuffer, uint16_t *eventIndex)
 {
 	float axisValue = axisInput.value;
 	
@@ -372,7 +276,7 @@ static void _addAxisEventIfNeeded(GC_NAME(Gamepad) *gamepad, GamepadButton posit
 	_addButtonEventIfNeeded(gamepad, negativeButton, axisValue <= -AXIS_THRESHOLD_PERCENT, eventsBuffer, eventIndex);
 }
 
-GamepadEvent *GC_NAME(pollGamepadEvents)(struct GC_NAME(_GamepadManager) *gamepadManager, const void *systemEvent, uint16_t *eventCount)
+GamepadEvent *pollGamepadEvents(struct _GamepadManager *gamepadManager, const void *systemEvent, uint16_t *eventCount)
 {
 	if (systemEvent != NULL)
 	{
@@ -383,7 +287,7 @@ GamepadEvent *GC_NAME(pollGamepadEvents)(struct GC_NAME(_GamepadManager) *gamepa
 	uint16_t eventIndex = 0;
 	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
 	{
-		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[index];
+		Gamepad *gamepad = &gamepadManager->gamepads[index];
 		GCController *controller = (__bridge GCController *)(gamepad->controller);
 #if GC_KEYBOARD
 #pragma clang diagnostic push
@@ -596,11 +500,11 @@ GamepadEvent *GC_NAME(pollGamepadEvents)(struct GC_NAME(_GamepadManager) *gamepa
 	return gamepadManager->eventsBuffer;
 }
 
-const char *GC_NAME(gamepadName)(struct GC_NAME(_GamepadManager) *gamepadManager, GamepadIndex gcIndex)
+const char *gamepadName(struct _GamepadManager *gamepadManager, GamepadIndex gcIndex)
 {
 	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
 	{
-		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[index];
+		Gamepad *gamepad = &gamepadManager->gamepads[index];
 		if ((
 			 gamepad->controller != NULL
 #if GC_KEYBOARD
@@ -615,11 +519,11 @@ const char *GC_NAME(gamepadName)(struct GC_NAME(_GamepadManager) *gamepadManager
 	return NULL;
 }
 
-uint8_t GC_NAME(gamepadRank)(struct GC_NAME(_GamepadManager) *gamepadManager, GamepadIndex gcIndex)
+uint8_t gamepadRank(struct _GamepadManager *gamepadManager, GamepadIndex gcIndex)
 {
 	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
 	{
-		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[index];
+		Gamepad *gamepad = &gamepadManager->gamepads[index];
 		if ((
 			 gamepad->controller != NULL
 #if GC_KEYBOARD
@@ -635,11 +539,11 @@ uint8_t GC_NAME(gamepadRank)(struct GC_NAME(_GamepadManager) *gamepadManager, Ga
 	return 0;
 }
 
-void GC_NAME(setPlayerIndex)(struct GC_NAME(_GamepadManager) *gamepadManager, GamepadIndex gcIndex, int64_t playerIndex)
+void setPlayerIndex(struct _GamepadManager *gamepadManager, GamepadIndex gcIndex, int64_t playerIndex)
 {
 	for (uint16_t index = 0; index < MAX_GAMEPADS; index++)
 	{
-		GC_NAME(Gamepad) *gamepad = &gamepadManager->gamepads[index];
+		Gamepad *gamepad = &gamepadManager->gamepads[index];
 		
 		GCController *controller = (__bridge GCController *)(gamepad->controller);
 		if (controller != nil && gamepad->index == gcIndex)

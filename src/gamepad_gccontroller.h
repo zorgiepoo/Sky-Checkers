@@ -22,16 +22,12 @@
 #import <stdbool.h>
 
 #if PLATFORM_IOS
-#define GC_NAME(x) x
-#define GC_PRODUCT_CHECK 0
 #define GC_KEYBOARD 1
 #else
-#define GC_NAME(x) GC_##x
-#define GC_PRODUCT_CHECK 1
 #define GC_KEYBOARD 0
 #endif
 
-typedef struct GC_NAME(_Gamepad)
+typedef struct _Gamepad
 {
 	void *controller;
 #if GC_KEYBOARD
@@ -41,11 +37,11 @@ typedef struct GC_NAME(_Gamepad)
 	char name[GAMEPAD_NAME_SIZE];
 	GamepadIndex index;
 	uint8_t rank;
-} GC_NAME(Gamepad);
+} Gamepad;
 
-struct GC_NAME(_GamepadManager)
+struct _GamepadManager
 {
-	GC_NAME(Gamepad) gamepads[MAX_GAMEPADS];
+	Gamepad gamepads[MAX_GAMEPADS];
 	GamepadEvent eventsBuffer[GAMEPAD_EVENT_BUFFER_CAPACITY];
 	GamepadCallback addedCallback;
 	GamepadCallback removalCallback;
@@ -53,16 +49,12 @@ struct GC_NAME(_GamepadManager)
 	GamepadIndex nextGamepadIndex;
 };
 
-struct GC_NAME(_GamepadManager) *GC_NAME(initGamepadManager)(const char *databasePath, GamepadCallback addedCallback, GamepadCallback removalCallback, void *context);
+struct _GamepadManager *initGamepadManager(const char *databasePath, GamepadCallback addedCallback, GamepadCallback removalCallback, void *context);
 
-GamepadEvent *GC_NAME(pollGamepadEvents)(struct GC_NAME(_GamepadManager) *gamepadManager, const void *systemEvent, uint16_t *eventCount);
+GamepadEvent *pollGamepadEvents(struct _GamepadManager *gamepadManager, const void *systemEvent, uint16_t *eventCount);
 
-const char *GC_NAME(gamepadName)(struct GC_NAME(_GamepadManager) *gamepadManager, GamepadIndex index);
+const char *gamepadName(struct _GamepadManager *gamepadManager, GamepadIndex index);
 
-uint8_t GC_NAME(gamepadRank)(struct GC_NAME(_GamepadManager) *gamepadManager, GamepadIndex index);
+uint8_t gamepadRank(struct _GamepadManager *gamepadManager, GamepadIndex index);
 
-void GC_NAME(setPlayerIndex)(struct GC_NAME(_GamepadManager) *gamepadManager, GamepadIndex index, int64_t playerIndex);
-
-#if GC_PRODUCT_CHECK
-bool GC_NAME(availableGamepadProfile)(void *deviceRef, int32_t vendorID, int32_t productID);
-#endif
+void setPlayerIndex(struct _GamepadManager *gamepadManager, GamepadIndex index, int64_t playerIndex);

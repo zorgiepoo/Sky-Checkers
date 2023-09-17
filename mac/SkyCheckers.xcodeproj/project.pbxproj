@@ -109,7 +109,6 @@
 		72970F3624386A14008ECB13 /* window_osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 72817B6F238ED9D200DB7677 /* window_osx.m */; };
 		72970F3724386A14008ECB13 /* keyboard_osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 72817BCA2390C11D00DB7677 /* keyboard_osx.m */; };
 		72970F3824386A14008ECB13 /* quit_apple.m in Sources */ = {isa = PBXBuildFile; fileRef = 72817BD32392C33800DB7677 /* quit_apple.m */; };
-		72970F3924386A14008ECB13 /* gamepad_osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 729BE4C0236667EE00DC70F7 /* gamepad_osx.m */; };
 		72970F3A24386A14008ECB13 /* gamepad_gccontroller.m in Sources */ = {isa = PBXBuildFile; fileRef = 72817C9C2393808B00DB7677 /* gamepad_gccontroller.m */; };
 		72970F3B24386A14008ECB13 /* time_apple.m in Sources */ = {isa = PBXBuildFile; fileRef = 727DAE27235C1F650030B29D /* time_apple.m */; };
 		72970F3C24386A14008ECB13 /* thread_posix.c in Sources */ = {isa = PBXBuildFile; fileRef = 727DAE50235D5C570030B29D /* thread_posix.c */; };
@@ -207,7 +206,6 @@
 		72970F20243869DA008ECB13 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		72970F4124386D47008ECB13 /* Data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Data; path = ../Data; sourceTree = "<group>"; };
 		729BE4B82364121800DC70F7 /* gamepad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gamepad.h; path = ../src/gamepad.h; sourceTree = "<group>"; };
-		729BE4C0236667EE00DC70F7 /* gamepad_osx.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = gamepad_osx.m; path = ../src/gamepad_osx.m; sourceTree = "<group>"; };
 		72A14F1721A5E26200606E14 /* math_3d.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = math_3d.h; path = ../src/math_3d.h; sourceTree = "<group>"; };
 		72A14F2F21A71C6700606E14 /* renderer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = renderer.c; path = ../src/renderer.c; sourceTree = "<group>"; };
 		72A14F3021A71C6800606E14 /* renderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = renderer.h; path = ../src/renderer.h; sourceTree = "<group>"; };
@@ -390,7 +388,6 @@
 				727DAE24235C10A50030B29D /* quit.h */,
 				72817BD32392C33800DB7677 /* quit_apple.m */,
 				729BE4B82364121800DC70F7 /* gamepad.h */,
-				729BE4C0236667EE00DC70F7 /* gamepad_osx.m */,
 				72EBBBBE239A29EB00DD4470 /* gamepad_gccontroller.h */,
 				72817C9C2393808B00DB7677 /* gamepad_gccontroller.m */,
 				729630EE240B499E00D9E09A /* zgtime.h */,
@@ -741,7 +738,6 @@
 				72970F3624386A14008ECB13 /* window_osx.m in Sources */,
 				72970F3724386A14008ECB13 /* keyboard_osx.m in Sources */,
 				72970F3824386A14008ECB13 /* quit_apple.m in Sources */,
-				72970F3924386A14008ECB13 /* gamepad_osx.m in Sources */,
 				72970F3A24386A14008ECB13 /* gamepad_gccontroller.m in Sources */,
 				72970F3B24386A14008ECB13 /* time_apple.m in Sources */,
 				72970F3C24386A14008ECB13 /* thread_posix.c in Sources */,
