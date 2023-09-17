@@ -445,6 +445,7 @@ GamepadEvent *GC_NAME(pollGamepadEvents)(struct GC_NAME(_GamepadManager) *gamepa
 			else if (@available(iOS 14.0, macOS 11.0, tvOS 14.0, *))
 			{
 				// This path will support more non-traditional controllers
+				// We will prefer extended and micro gamepads (which are more reliable) before using a physical input profile
 				
 				GCPhysicalInputProfile *physicalInputProfile = controller.physicalInputProfile;
 				
@@ -515,34 +516,13 @@ GamepadEvent *GC_NAME(pollGamepadEvents)(struct GC_NAME(_GamepadManager) *gamepa
 					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_BACK, buttonOptions.pressed, gamepadManager->eventsBuffer, &eventIndex);
 				}
 				
-				BOOL upPressed;
-				BOOL downPressed;
-				BOOL leftPressed;
-				BOOL rightPressed;
-				
+				// It's more reliable to only check for presence of dpad or left thumbstick and to use the axis values for the dpad
 				if (dpad != nil)
 				{
-					upPressed = dpad.up.pressed;
-					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_UP, upPressed, gamepadManager->eventsBuffer, &eventIndex);
-					
-					downPressed = dpad.down.pressed;
-					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_DOWN, downPressed, gamepadManager->eventsBuffer, &eventIndex);
-					
-					leftPressed = dpad.left.pressed;
-					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_LEFT, leftPressed, gamepadManager->eventsBuffer, &eventIndex);
-					
-					rightPressed = dpad.right.pressed;
-					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_RIGHT, rightPressed, gamepadManager->eventsBuffer, &eventIndex);
+					_addAxisEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_RIGHT, GAMEPAD_BUTTON_DPAD_LEFT, dpad.xAxis, gamepadManager->eventsBuffer, &eventIndex);
+					_addAxisEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_UP, GAMEPAD_BUTTON_DPAD_DOWN, dpad.yAxis, gamepadManager->eventsBuffer, &eventIndex);
 				}
-				else
-				{
-					upPressed = NO;
-					downPressed = NO;
-					leftPressed = NO;
-					rightPressed = NO;
-				}
-				
-				if (!upPressed && !downPressed && !leftPressed && !rightPressed && leftThumbstick != nil)
+				else if (leftThumbstick != nil)
 				{
 					_addAxisEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_RIGHT, GAMEPAD_BUTTON_DPAD_LEFT, leftThumbstick.xAxis, gamepadManager->eventsBuffer, &eventIndex);
 					_addAxisEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_UP, GAMEPAD_BUTTON_DPAD_DOWN, leftThumbstick.yAxis, gamepadManager->eventsBuffer, &eventIndex);
