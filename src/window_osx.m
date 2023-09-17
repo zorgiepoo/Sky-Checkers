@@ -319,10 +319,7 @@ ZGWindow *ZGCreateWindow(const char *windowTitle, int32_t windowWidth, int32_t w
 	[window setTitle:@(windowTitle)];
 	
 	[window setFrameUsingName:AUTOSAVE_FRAME_NAME];
-	if (@available(macOS 10.12, *))
-	{
-		[window setTabbingMode:NSWindowTabbingModeDisallowed];
-	}
+	[window setTabbingMode:NSWindowTabbingModeDisallowed];
 	
 	ZGGameView *contentView = [[ZGGameView alloc] initWithFrame:window.frame];
 	window.contentView = contentView;

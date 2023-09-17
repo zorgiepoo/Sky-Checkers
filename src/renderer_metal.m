@@ -275,15 +275,9 @@ static void createAndStorePipelineState(void **pipelineStates, id<MTLDevice> dev
 static MTLResourceOptions gpuReadableResourceOptions(id<MTLDevice> device)
 {
 #if !PLATFORM_SIMULATOR
-	if (@available(macOS 11.0, *))
-	{
-		return [device supportsFamily:MTLGPUFamilyApple1] ? MTLResourceStorageModeMemoryless : MTLResourceStorageModePrivate;
-	}
-	else
+	return [device supportsFamily:MTLGPUFamilyApple1] ? MTLResourceStorageModeMemoryless : MTLResourceStorageModePrivate;
 #endif
-	{
-		return MTLResourceStorageModePrivate;
-	}
+	return MTLResourceStorageModePrivate;
 }
 
 static void updateRealViewport(Renderer *renderer)
@@ -488,15 +482,6 @@ bool createRenderer_metal(Renderer *renderer, RendererCreateOptions options)
 {
 	@autoreleasepool
 	{
-		// Check if Metal is available by OS
-		if (@available(macOS 10.11, *))
-		{
-		}
-		else
-		{
-			return false;
-		}
-		
 		renderer->windowWidth = options.windowWidth;
 		renderer->windowHeight = options.windowHeight;
 		
@@ -509,7 +494,6 @@ bool createRenderer_metal(Renderer *renderer, RendererCreateOptions options)
 		
 		id<MTLDevice> preferredDevice = nil;
 #if PLATFORM_OSX
-		if (@available(macOS 10.12, *))
 		{
 			// Find the preffered device for our game which isn't integrated, headless, or external
 			// Maybe one day I will support external/removable GPUs but my game isn't very demanding
@@ -517,31 +501,15 @@ bool createRenderer_metal(Renderer *renderer, RendererCreateOptions options)
 			NSMutableArray<id<MTLDevice>> *preferredDevices = [NSMutableArray array];
 			for (id<MTLDevice> device in devices)
 			{
-				BOOL removable;
-				if (@available(macOS 10.13, *))
-				{
-					removable = device.removable;
-				}
-				else
-				{
-					removable = NO;
-				}
-				
-				if (!device.lowPower && !removable && !device.headless)
+				if (!device.lowPower && !device.removable && !device.headless)
 				{
 					[preferredDevices addObject:device];
 				}
 			}
 			
 			[preferredDevices sortUsingComparator:^NSComparisonResult(id<MTLDevice> _Nonnull device1, id<MTLDevice> _Nonnull device2) {
-				uint64_t device1Score = device1.recommendedMaxWorkingSetSize;
-				uint64_t device2Score = device2.recommendedMaxWorkingSetSize;
-				
-				if (@available(macOS 10.14, *))
-				{
-					device1Score += device1.maxBufferLength;
-					device2Score += device2.maxBufferLength;
-				}
+				uint64_t device1Score = device1.recommendedMaxWorkingSetSize + device1.maxBufferLength;
+				uint64_t device2Score = device2.recommendedMaxWorkingSetSize + device2.maxBufferLength;
 				
 				if (device1Score < device2Score)
 				{
@@ -599,16 +567,11 @@ bool createRenderer_metal(Renderer *renderer, RendererCreateOptions options)
 		// It does that to support an option (at cost of potential performance) that we don't need.
 		
 #if PLATFORM_OSX
-		if (@available(macOS 10.13, *))
-		{
-			metalLayer.displaySyncEnabled = options.vsync;
-			renderer->vsync = options.vsync;
-		}
-		else
+		metalLayer.displaySyncEnabled = options.vsync;
+		renderer->vsync = options.vsync;
+#else
+		renderer->vsync = true;
 #endif
-		{
-			renderer->vsync = true;
-		}
 		
 		// Create pipelines
 		renderer->metalWantsFsaa = options.fsaa;
@@ -773,10 +736,7 @@ BufferObject createIndexBufferObject_metal(Renderer *renderer, const void *data,
 {
 	id<MTLBuffer> buffer = createBuffer(renderer, data, size);
 #if _DEBUG
-	if (@available(macOS 10.12, *))
-	{
-		[buffer addDebugMarker:@"Indices" range:NSMakeRange(0, size)];
-	}
+	[buffer addDebugMarker:@"Indices" range:NSMakeRange(0, size)];
 #endif
 	
 	return (BufferObject){.metalObject = (void *)CFBridgingRetain(buffer)};
@@ -786,10 +746,7 @@ BufferArrayObject createVertexArrayObject_metal(Renderer *renderer, const void *
 {
 	id<MTLBuffer> buffer = createBuffer(renderer, vertices, verticesSize);
 #if _DEBUG
-	if (@available(macOS 10.12, *))
-	{
-		[buffer addDebugMarker:@"Vertices" range:NSMakeRange(0, verticesSize)];
-	}
+	[buffer addDebugMarker:@"Vertices" range:NSMakeRange(0, verticesSize)];
 #endif
 	
 	return (BufferArrayObject){.metalObject = (void *)CFBridgingRetain(buffer), .metalVerticesSize = verticesSize};
@@ -799,11 +756,8 @@ BufferArrayObject createVertexAndTextureCoordinateArrayObject_metal(Renderer *re
 {
 	id<MTLBuffer> buffer = createBuffer(renderer, verticesAndTextureCoordinates, verticesSize + textureCoordinatesSize);
 #if _DEBUG
-	if (@available(macOS 10.12, *))
-	{
-		[buffer addDebugMarker:@"Vertices" range:NSMakeRange(0, verticesSize)];
-		[buffer addDebugMarker:@"Tex Coords" range:NSMakeRange(verticesSize, textureCoordinatesSize)];
-	}
+	[buffer addDebugMarker:@"Vertices" range:NSMakeRange(0, verticesSize)];
+	[buffer addDebugMarker:@"Tex Coords" range:NSMakeRange(verticesSize, textureCoordinatesSize)];
 #endif
 	
 	return (BufferArrayObject){.metalObject = (void *)CFBridgingRetain(buffer), .metalVerticesSize = verticesSize};
