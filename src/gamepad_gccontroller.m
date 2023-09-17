@@ -188,10 +188,7 @@ struct _GamepadManager *initGamepadManager(const char *databasePath, GamepadCall
 	gamepadManager->addedCallback = addedCallback;
 	gamepadManager->removalCallback = removalCallback;
 	gamepadManager->context = context;
-	
-	// On macOS, there is a HID gamepad implementation as well.
-	// Offset our gamepad indexes large enough so that they won't collide realistically
-	gamepadManager->nextGamepadIndex = UINT32_MAX / 2;
+	gamepadManager->nextGamepadIndex = 0;
 	
 	// Make sure we don't dispatch too early before returning gamepad manager
 	dispatch_async(dispatch_get_main_queue(), ^{
