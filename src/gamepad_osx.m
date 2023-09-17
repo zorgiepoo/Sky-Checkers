@@ -571,7 +571,14 @@ static void _hidDeviceRemovalCallback(void *context, IOReturn result, void *send
 
 static NSDictionary<NSString *, NSNumber *> *_matchingCriteriaForUsage(NSInteger usage)
 {
-	return @{@kIOHIDDeviceUsagePageKey : @(kHIDPage_GenericDesktop), @kIOHIDDeviceUsageKey : @(usage)};
+	if (@available(macOS 13, *))
+	{
+		return @{@kIOHIDDeviceUsagePageKey : @(kHIDPage_GenericDesktop), @kIOHIDDeviceUsageKey : @(usage), @"GCSyntheticDevice" : @NO};
+	}
+	else
+	{
+		return @{@kIOHIDDeviceUsagePageKey : @(kHIDPage_GenericDesktop), @kIOHIDDeviceUsageKey : @(usage)};
+	}
 }
 
 #if GC_PRODUCT_CHECK

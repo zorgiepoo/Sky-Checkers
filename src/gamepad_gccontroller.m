@@ -135,7 +135,26 @@ static void _addController(struct GC_NAME(_GamepadManager) *gamepadManager, GCCo
 {
 	if (controller.extendedGamepad == nil && controller.microGamepad == nil)
 	{
-		return;
+		if (@available(iOS 14.0, macOS 11.0, tvOS 14.0, *))
+		{
+			GCPhysicalInputProfile *physicalInputProfile = controller.physicalInputProfile;
+			
+			GCDeviceDirectionPad *leftThumbstickDpad = physicalInputProfile.dpads[GCInputLeftThumbstick];
+			GCDeviceDirectionPad *directionPad = physicalInputProfile.dpads[GCInputDirectionPad];
+			
+			GCDeviceButtonInput *buttonA = physicalInputProfile.buttons[GCInputButtonA];
+			GCDeviceButtonInput *buttonB = physicalInputProfile.buttons[GCInputButtonB];
+			GCDeviceButtonInput *optionsButton = physicalInputProfile.buttons[GCInputButtonOptions];
+			
+			if ((leftThumbstickDpad == nil && directionPad == nil) || (buttonA == nil) || (buttonB == nil && optionsButton == nil))
+			{
+				return;
+			}
+		}
+		else
+		{
+			return;
+		}
 	}
 	
 #if GC_PRODUCT_CHECK
@@ -177,7 +196,7 @@ static void _addController(struct GC_NAME(_GamepadManager) *gamepadManager, GCCo
 		
 		NSString *vendorName = controller.vendorName;
 		NSString *productDescription;
-		if (@available(macOS 10.15, iOS 13, *))
+		if (@available(macOS 10.15, iOS 13, tvOS 13.0, *))
 		{
 			NSString *productCategory = controller.productCategory;
 			if (vendorName != nil)
@@ -376,6 +395,7 @@ GamepadEvent *GC_NAME(pollGamepadEvents)(struct GC_NAME(_GamepadManager) *gamepa
 		if (controller != nil)
 		{
 			GCExtendedGamepad *extendedGamepad = controller.extendedGamepad;
+			GCMicroGamepad *microGamepad;
 			if (extendedGamepad != nil)
 			{
 				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_A, extendedGamepad.buttonA.pressed, gamepadManager->eventsBuffer, &eventIndex);
@@ -386,7 +406,7 @@ GamepadEvent *GC_NAME(pollGamepadEvents)(struct GC_NAME(_GamepadManager) *gamepa
 				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_RIGHTSHOULDER, extendedGamepad.rightShoulder.pressed, gamepadManager->eventsBuffer, &eventIndex);
 				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_LEFTTRIGGER, extendedGamepad.leftTrigger.pressed, gamepadManager->eventsBuffer, &eventIndex);
 				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_RIGHTTRIGGER, extendedGamepad.rightTrigger.pressed, gamepadManager->eventsBuffer, &eventIndex);
-				if (@available(iOS 13.0, macOS 10.15, *))
+				if (@available(iOS 13.0, macOS 10.15, tvOS 13.0, *))
 				{
 					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_START, extendedGamepad.buttonMenu.pressed, gamepadManager->eventsBuffer, &eventIndex);
 					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_BACK, extendedGamepad.buttonOptions.pressed, gamepadManager->eventsBuffer, &eventIndex);
@@ -410,20 +430,102 @@ GamepadEvent *GC_NAME(pollGamepadEvents)(struct GC_NAME(_GamepadManager) *gamepa
 					_addAxisEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_UP, GAMEPAD_BUTTON_DPAD_DOWN, extendedGamepad.leftThumbstick.yAxis, gamepadManager->eventsBuffer, &eventIndex);
 				}
 			}
-			else
+			else if ((microGamepad = controller.microGamepad) != nil)
 			{
-				GCMicroGamepad *microGamepad = controller.microGamepad;
-				if (microGamepad != nil)
+				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_A, microGamepad.buttonA.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_B, microGamepad.buttonX.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				if (@available(iOS 13.0, macOS 10.15, tvOS 13.0, *))
 				{
-					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_A, microGamepad.buttonA.pressed, gamepadManager->eventsBuffer, &eventIndex);
-					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_B, microGamepad.buttonX.pressed, gamepadManager->eventsBuffer, &eventIndex);
-					if (@available(iOS 13.0, macOS 10.15, *))
-					{
-						_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_START, microGamepad.buttonMenu.pressed, gamepadManager->eventsBuffer, &eventIndex);
-					}
-					
-					_addAxisEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_RIGHT, GAMEPAD_BUTTON_DPAD_LEFT, microGamepad.dpad.xAxis, gamepadManager->eventsBuffer, &eventIndex);
-					_addAxisEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_UP, GAMEPAD_BUTTON_DPAD_DOWN, microGamepad.dpad.yAxis, gamepadManager->eventsBuffer, &eventIndex);
+					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_START, microGamepad.buttonMenu.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				}
+				
+				_addAxisEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_RIGHT, GAMEPAD_BUTTON_DPAD_LEFT, microGamepad.dpad.xAxis, gamepadManager->eventsBuffer, &eventIndex);
+				_addAxisEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_UP, GAMEPAD_BUTTON_DPAD_DOWN, microGamepad.dpad.yAxis, gamepadManager->eventsBuffer, &eventIndex);
+			}
+			else if (@available(iOS 14.0, macOS 11.0, tvOS 14.0, *))
+			{
+				// This path will support more non-traditional controllers
+				// We will prefer extended and micro gamepads (which are more reliable) before using a physical input profile
+				
+				GCPhysicalInputProfile *physicalInputProfile = controller.physicalInputProfile;
+				
+				GCDeviceDirectionPad *dpad = physicalInputProfile.dpads[GCInputDirectionPad];
+				GCDeviceDirectionPad *leftThumbstick = physicalInputProfile.dpads[GCInputLeftThumbstick];
+				
+				GCDeviceButtonInput *buttonA = physicalInputProfile.buttons[GCInputButtonA];
+				GCDeviceButtonInput *buttonB = physicalInputProfile.buttons[GCInputButtonB];
+				GCDeviceButtonInput *buttonX = physicalInputProfile.buttons[GCInputButtonX];
+				GCDeviceButtonInput *buttonY = physicalInputProfile.buttons[GCInputButtonY];
+				
+				GCDeviceButtonInput *leftShoulder = physicalInputProfile.buttons[GCInputLeftShoulder];
+				GCDeviceButtonInput *rightShoulder = physicalInputProfile.buttons[GCInputRightShoulder];
+				
+				GCDeviceButtonInput *leftTrigger = physicalInputProfile.buttons[GCInputLeftTrigger];
+				GCDeviceButtonInput *rightTrigger = physicalInputProfile.buttons[GCInputRightTrigger];
+				
+				GCDeviceButtonInput *buttonMenu = physicalInputProfile.buttons[GCInputButtonMenu];
+				GCDeviceButtonInput *buttonOptions = physicalInputProfile.buttons[GCInputButtonOptions];
+				
+				if (buttonA != nil)
+				{
+					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_A, buttonA.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				}
+				
+				if (buttonB != nil)
+				{
+					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_B, buttonB.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				}
+				
+				if (buttonX != nil)
+				{
+					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_X, buttonX.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				}
+				
+				if (buttonY != nil)
+				{
+					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_Y, buttonY.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				}
+				
+				if (leftShoulder != nil)
+				{
+					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_LEFTSHOULDER, leftShoulder.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				}
+				
+				if (rightShoulder != nil)
+				{
+					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_RIGHTSHOULDER, rightShoulder.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				}
+				
+				if (leftTrigger != nil)
+				{
+					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_LEFTTRIGGER, leftTrigger.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				}
+				
+				if (rightTrigger != nil)
+				{
+					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_RIGHTTRIGGER, rightTrigger.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				}
+				
+				if (buttonMenu != nil)
+				{
+					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_START, buttonMenu.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				}
+				
+				if (buttonOptions != nil)
+				{
+					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_BACK, buttonOptions.pressed, gamepadManager->eventsBuffer, &eventIndex);
+				}
+				
+				// It's more reliable to only check for presence of dpad or left thumbstick and to use the axis values for the dpad
+				if (dpad != nil)
+				{
+					_addAxisEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_RIGHT, GAMEPAD_BUTTON_DPAD_LEFT, dpad.xAxis, gamepadManager->eventsBuffer, &eventIndex);
+					_addAxisEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_UP, GAMEPAD_BUTTON_DPAD_DOWN, dpad.yAxis, gamepadManager->eventsBuffer, &eventIndex);
+				}
+				else if (leftThumbstick != nil)
+				{
+					_addAxisEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_RIGHT, GAMEPAD_BUTTON_DPAD_LEFT, leftThumbstick.xAxis, gamepadManager->eventsBuffer, &eventIndex);
+					_addAxisEventIfNeeded(gamepad, GAMEPAD_BUTTON_DPAD_UP, GAMEPAD_BUTTON_DPAD_DOWN, leftThumbstick.yAxis, gamepadManager->eventsBuffer, &eventIndex);
 				}
 			}
 		}
