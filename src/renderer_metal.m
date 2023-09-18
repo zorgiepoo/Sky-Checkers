@@ -438,12 +438,7 @@ static void createPipelines(Renderer *renderer)
 			ZGQuit();
 		}
 		
-		NSArray<NSString *> *shaderFunctionNames;
-#if APPLE_ARM64
-		shaderFunctionNames = @[@"positionVertexShaderHalf", @"positionFragmentShaderHalf", @"texturePositionVertexShaderHalf", @"texturePositionFragmentShaderHalf"];
-#else
-		shaderFunctionNames = @[@"positionVertexShaderFull", @"positionFragmentShaderFull", @"texturePositionVertexShaderFull", @"texturePositionFragmentShaderFull"];
-#endif
+		NSArray<NSString *> *shaderFunctionNames = @[@"positionVertexShader", @"positionFragmentShader", @"texturePositionVertexShader", @"texturePositionFragmentShader"];
 		
 		NSMutableArray<id<MTLFunction>> *mutableShaderFunctions = [[NSMutableArray alloc] init];
 		

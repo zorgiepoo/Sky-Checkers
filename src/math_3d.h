@@ -631,7 +631,7 @@ void m4_fprintp(FILE* stream, mat4_t matrix, int width, int precision) {
 	int w = width, p = precision;
 	for(int r = 0; r < 4; r++) {
 		fprintf(stream, "| %*.*f %*.*f %*.*f %*.*f |\n",
-				w, p, m.m[0][r], w, p, m.m[1][r], w, p, m.m[2][r], w, p, m.m[3][r]
+				w, p, (double)m.m[0][r], w, p, (double)m.m[1][r], w, p, (double)m.m[2][r], w, p, (double)m.m[3][r]
 				);
 	}
 }
