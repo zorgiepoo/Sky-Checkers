@@ -23,6 +23,7 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import <IOKit/pwr_mgt/IOPMLib.h>
+#import <QuartzCore/QuartzCore.h>
 
 @interface ZGAppDelegate : NSObject <NSApplicationDelegate>
 @end
@@ -31,7 +32,7 @@
 {
 	ZGAppHandlers *_appHandlers;
 	void *_appContext;
-	NSTimer *_timer;
+	id _displayTimer;
 }
 
 - (instancetype)initWithAppHandlers:(ZGAppHandlers *)appHandlers context:(void *)appContext
@@ -58,22 +59,40 @@
 	// Initialize time
 	(void)ZGGetNanoTicks();
 	
+	ZGWindow *window;
 	if (_appHandlers->launchedHandler != NULL)
 	{
-		_appHandlers->launchedHandler(_appContext);
+		window = _appHandlers->launchedHandler(_appContext);
+	}
+	else
+	{
+		window = NULL;
+		assert(false);
 	}
 	
 	if (_appHandlers->runLoopHandler != NULL)
 	{
-		_timer = [NSTimer scheduledTimerWithTimeInterval:0.004 target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
-		
 		// Game should animate in common run loop mode
 		// One instance of this mode being used is when the user is navigating through the menu items in the menu bar
-		[[NSRunLoop currentRunLoop] addTimer:_timer forMode:NSRunLoopCommonModes];
+		if (@available(macOS 14, *))
+		{
+			NSWindow *windowHandle = (__bridge NSWindow *)(ZGWindowHandle(window));
+			CADisplayLink *displayLink = [windowHandle.contentView displayLinkWithTarget:self selector:@selector(runLoop:)];
+			
+			[displayLink addToRunLoop:NSRunLoop.currentRunLoop forMode:NSRunLoopCommonModes];
+			
+			_displayTimer = displayLink;
+		}
+		else
+		{
+			_displayTimer = [NSTimer scheduledTimerWithTimeInterval:0.004 target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
+			
+			[[NSRunLoop currentRunLoop] addTimer:_displayTimer forMode:NSRunLoopCommonModes];
+		}
 	}
 }
 
-- (void)runLoop:(NSTimer *)timer
+- (void)runLoop:(id)displayTimer
 {
 	_appHandlers->pollEventHandler(_appContext, NULL);
 	_appHandlers->runLoopHandler(_appContext);
@@ -81,8 +100,8 @@
 
 - (void)applicationWillTerminate:(NSNotification *)notification
 {
-	[_timer invalidate];
-	_timer = nil;
+	[_displayTimer invalidate];
+	_displayTimer = nil;
 	
 	if (_appHandlers->terminatedHandler != NULL)
 	{

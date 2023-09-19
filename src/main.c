@@ -1863,7 +1863,7 @@ static void gamepadRemoved(GamepadIndex gamepadIndex, void *context)
 	}
 }
 
-static void appLaunchedHandler(void *context)
+static ZGWindow *appLaunchedHandler(void *context)
 {
 	AppContext *appContext = context;
 	
@@ -1929,6 +1929,8 @@ static void appLaunchedHandler(void *context)
 		bool windowFocus = ZGWindowHasFocus(renderer->window);
 		playMainMenuMusic(!windowFocus);
 	}
+	
+	return renderer->window;
 }
 
 static void appTerminatedHandler(void *context)
@@ -2055,6 +2057,6 @@ int main(int argc, char *argv[])
 	AppContext appContext;
 	memset(&appContext, 0, sizeof(appContext));
 
-	ZGAppHandlers appHandlers = {.launchedHandler =  appLaunchedHandler, .terminatedHandler = appTerminatedHandler, .runLoopHandler = runLoopHandler, .pollEventHandler = pollEventHandler, .suspendedHandler = appSuspendedHandler};
+	ZGAppHandlers appHandlers = {.launchedHandler = appLaunchedHandler, .terminatedHandler = appTerminatedHandler, .runLoopHandler = runLoopHandler, .pollEventHandler = pollEventHandler, .suspendedHandler = appSuspendedHandler};
 	return ZGAppInit(argc, argv, &appHandlers, &appContext);
 }

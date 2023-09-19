@@ -20,10 +20,11 @@
 #pragma once
 
 #include <stdbool.h>
+#include "window.h"
 
 typedef struct
 {
-	void (*launchedHandler)(void *);
+	ZGWindow *(*launchedHandler)(void *);
 	void (*terminatedHandler)(void *);
 	void (*runLoopHandler)(void *);
 	void (*pollEventHandler)(void *, void *);
