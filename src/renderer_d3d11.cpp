@@ -1,20 +1,25 @@
 /*
- * Copyright 2019 Mayur Pawashe
- * https://zgcoder.net
+ MIT License
 
- * This file is part of skycheckers.
- * skycheckers is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ Copyright (c) 2024 Mayur Pawashe
 
- * skycheckers is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
 
- * You should have received a copy of the GNU General Public License
- * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
  */
 
 #include "renderer_d3d11.h"
@@ -31,13 +36,18 @@
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
 
+#include "position-pixel.h"
+#include "position-vertex.h"
+#include "texture-position-vertex.h"
+#include "texture-position-pixel.h"
+
 #define DEPTH_FORMAT DXGI_FORMAT_D24_UNORM_S8_UINT
 
 using namespace DirectX;
 
 extern "C" static void updateViewport_d3d11(Renderer *renderer, int32_t windowWidth, int32_t windowHeight);
 
-extern "C" void renderFrame_d3d11(Renderer *renderer, void(*drawFunc)(Renderer *));
+extern "C" void renderFrame_d3d11(Renderer *renderer, void(*drawFunc)(Renderer *, void *), void *context);
 
 extern "C" TextureObject textureFromPixelData_d3d11(Renderer *renderer, const void *pixels, int32_t width, int32_t height, PixelFormat pixelFormat);
 
@@ -69,8 +79,7 @@ typedef struct
 
 extern "C" static void updateViewport_d3d11(Renderer *renderer, int32_t windowWidth, int32_t windowHeight)
 {
-	renderer->drawableWidth = windowWidth;
-	renderer->drawableHeight = windowHeight;
+	ZGGetDrawableSize(renderer->window, &renderer->drawableWidth, &renderer->drawableHeight);
 
 	float aspectRatio = computeProjectionAspectRatio(renderer);
 	if (aspectRatio <= 0.001f)
@@ -213,62 +222,16 @@ extern "C" static void updateViewport_d3d11(Renderer *renderer, int32_t windowWi
 	renderer->d3d11DepthStencilBuffer = depthStencilBuffer;
 }
 
-static bool readFileBytes(const char *filename, void **bytesOutput, SIZE_T *lengthOutput)
-{
-	FILE *file = fopen(filename, "rb");
-	if (file == nullptr)
-	{
-		fprintf(stderr, "Error: failed to read file: %s\n", filename);
-		return false;
-	}
-
-	fseek(file, 0, SEEK_END);
-	SIZE_T length = (SIZE_T)ftell(file);
-	fseek(file, 0, SEEK_SET);
-
-	void *bytes = malloc(length);
-	if (bytes == nullptr)
-	{
-		fprintf(stderr, "Error: failed to allocate bytes for malloc in readFileBytes() for %s\n", filename);
-		fclose(file);
-		return false;
-	}
-
-	if (fread(bytes, length, 1, file) < 1)
-	{
-		fprintf(stderr, "Error: failed to fread file in readFileBytes() for %s\n", filename);
-
-		free(bytes);
-		fclose(file);
-		return false;
-	}
-
-	fclose(file);
-
-	*bytesOutput = bytes;
-	*lengthOutput = length;
-
-	return true;
-}
-
-static bool createShader(Renderer *renderer, Shader_d3d11 *shader, const char *vertexShaderName, const char *pixelShaderName, bool textured)
+static bool createShader(Renderer *renderer, Shader_d3d11 *shader, const void *vertexShaderBytes, size_t vertexShaderLength, const void *pixelShaderBytes, size_t pixelShaderLength, bool textured)
 {
 	ID3D11Device *device = (ID3D11Device *)renderer->d3d11Device;
-
-	void *vertexShaderBytes;
-	SIZE_T vertexShaderLength;
-	if (!readFileBytes(vertexShaderName, &vertexShaderBytes, &vertexShaderLength))
-	{
-		return false;
-	}
 
 	ID3D11VertexShader *vertexShader = nullptr;
 	HRESULT vertexShaderResult = device->CreateVertexShader(vertexShaderBytes, vertexShaderLength, nullptr, &vertexShader);
 
 	if (FAILED(vertexShaderResult))
 	{
-		free(vertexShaderBytes);
-		fprintf(stderr, "Error: failed to create vertex shader with error %d from %s\n", vertexShaderResult, vertexShaderName);
+		fprintf(stderr, "Error: failed to create vertex shader with error %d (textured: %d)\n", vertexShaderResult, textured);
 		return false;
 	}
 
@@ -296,21 +259,10 @@ static bool createShader(Renderer *renderer, Shader_d3d11 *shader, const char *v
 
 	ID3D11InputLayout *vertexInputLayout = nullptr;
 	HRESULT createVertexInputLayoutResult = device->CreateInputLayout(vertexInputLayoutDescription, textured ? 2 : 1, vertexShaderBytes, vertexShaderLength, &vertexInputLayout);
-	
-	free(vertexShaderBytes);
 
 	if (FAILED(createVertexInputLayoutResult))
 	{
-		fprintf(stderr, "Failed to create vertex input layout with error %d for %s\n", createVertexInputLayoutResult, vertexShaderName);
-		vertexShader->Release();
-		return false;
-	}
-
-	void *pixelShaderBytes;
-	SIZE_T pixelShaderLength;
-	if (!readFileBytes(pixelShaderName, &pixelShaderBytes, &pixelShaderLength))
-	{
-		vertexInputLayout->Release();
+		fprintf(stderr, "Failed to create vertex input layout with error %d (textured: %d)\n", createVertexInputLayoutResult, textured);
 		vertexShader->Release();
 		return false;
 	}
@@ -318,13 +270,11 @@ static bool createShader(Renderer *renderer, Shader_d3d11 *shader, const char *v
 	ID3D11PixelShader *pixelShader = nullptr;
 	HRESULT pixelShaderResult = device->CreatePixelShader(pixelShaderBytes, pixelShaderLength, nullptr, &pixelShader);
 
-	free(pixelShaderBytes);
-
 	if (FAILED(pixelShaderResult))
 	{
 		vertexInputLayout->Release();
 		vertexShader->Release();
-		fprintf(stderr, "Error: failed to create pixel shader with error %d from %s\n", pixelShaderResult, pixelShaderName);
+		fprintf(stderr, "Error: failed to create pixel shader with error %d (textured: %d)\n", pixelShaderResult, textured);
 		return false;
 	}
 	
@@ -425,6 +375,8 @@ extern "C" bool createRenderer_d3d11(Renderer *renderer, RendererCreateOptions o
 	ID3D11BlendState *alphaBlendState = nullptr;
 	ID3D11BlendState *oneMinusAlphaBlendState = nullptr;
 	ID3D11RasterizerState *rasterState = nullptr;
+
+	renderer->clearColor = options.clearColor;
 
 	renderer->windowWidth = options.windowWidth > 1 ? options.windowWidth : 1;
 	renderer->windowHeight = options.windowHeight > 1 ? options.windowHeight : 1;
@@ -694,13 +646,13 @@ extern "C" bool createRenderer_d3d11(Renderer *renderer, RendererCreateOptions o
 		goto INIT_FAILURE;
 	}
 
-	if (!createShader(renderer, &renderer->d3d11PositionShader, "Data\\Shaders\\position-vertex.cso", "Data\\Shaders\\position-pixel.cso", false))
+	if (!createShader(renderer, &renderer->d3d11PositionShader, (const void *)&gPositionVertexShaderBytes, sizeof(gPositionVertexShaderBytes), (const void *)&gPositionPixelShaderBytes, sizeof(gPositionPixelShaderBytes), false))
 	{
 		fprintf(stderr, "Error: Failed to create position shader\n");
 		goto INIT_FAILURE;
 	}
 
-	if (!createShader(renderer, &renderer->d3d11TexturePositionShader, "Data\\Shaders\\texture-position-vertex.cso", "Data\\Shaders\\texture-position-pixel.cso", true))
+	if (!createShader(renderer, &renderer->d3d11TexturePositionShader, (const void *)&gTexturePositionVertexShaderBytes, sizeof(gTexturePositionVertexShaderBytes), (const void *)&gTexturePositionPixelShaderBytes, sizeof(gTexturePositionPixelShaderBytes), true))
 	{
 		fprintf(stderr, "Error: Failed to create texture position shader\n");
 		goto INIT_FAILURE;
@@ -828,13 +780,14 @@ INIT_FAILURE:
 	return false;
 }
 
-extern "C" void renderFrame_d3d11(Renderer *renderer, void(*drawFunc)(Renderer *))
+extern "C" void renderFrame_d3d11(Renderer *renderer, void(*drawFunc)(Renderer *, void *), void *renderContext)
 {
 	// Clear back buffer
 	ID3D11DeviceContext *context = (ID3D11DeviceContext *)renderer->d3d11Context;
 	ID3D11RenderTargetView *renderTargetView = (ID3D11RenderTargetView *)renderer->d3d11RenderTargetView;
 
-	float clearColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	color4_t inputClearColor = renderer->clearColor;
+	float clearColor[] = { inputClearColor.red, inputClearColor.green, inputClearColor.blue, inputClearColor.alpha };
 	context->ClearRenderTargetView(renderTargetView, clearColor);
 
 	// Clear depth buffer
@@ -842,7 +795,7 @@ extern "C" void renderFrame_d3d11(Renderer *renderer, void(*drawFunc)(Renderer *
 	context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	// Draw scene
-	drawFunc(renderer);
+	drawFunc(renderer, renderContext);
 
 	// Present back buffer to screen
 	IDXGISwapChain* swapChain = (IDXGISwapChain*)renderer->d3d11SwapChain;
@@ -996,6 +949,8 @@ static D3D11_PRIMITIVE_TOPOLOGY primitiveTopologyFromRendererMode(RendererMode m
 		return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	case RENDERER_TRIANGLE_STRIP_MODE:
 		return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+	case RENDERER_LINE_MODE:
+		return D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
 	}
 	return D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
 }

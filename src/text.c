@@ -1,20 +1,25 @@
 /*
- * Copyright 2010 Mayur Pawashe
- * https://zgcoder.net
- 
- * This file is part of skycheckers.
- * skycheckers is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- 
- * skycheckers is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ MIT License
 
- * You should have received a copy of the GNU General Public License
- * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
+ Copyright (c) 2024 Mayur Pawashe
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
  */
 
 #include "text.h"
@@ -32,20 +37,18 @@ typedef struct
 	int height;
 } TextRendering;
 
-#define MAX_TEXT_RENDERING_COUNT 256
-
 static int gTextRenderingCount = 0;
+static int gTextRenderingCacheMaxCount;
 static TextRendering *gTextRenderings;
 
 static BufferArrayObject gFontVertexAndTextureBufferObject;
 static BufferObject gFontIndicesBufferObject;
 
-void initText(Renderer *renderer)
+void initText(Renderer *renderer, int textRenderingCacheCount)
 {
-	initFont();
-	
-	gTextRenderings = calloc(MAX_TEXT_RENDERING_COUNT, sizeof(*gTextRenderings));
-	
+	gTextRenderings = calloc(textRenderingCacheCount, sizeof(*gTextRenderings));
+    gTextRenderingCacheMaxCount = textRenderingCacheCount;
+    
 	const ZGFloat verticesAndTextureCoordinates[] =
 	{
 		// vertices
@@ -66,6 +69,7 @@ void initText(Renderer *renderer)
 	gFontIndicesBufferObject = rectangleIndexBufferObject(renderer);
 }
 
+#if SUPPORT_DEPRECATED_DRAW_STRING_APIS
 void drawStringf(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, ZGFloat width, ZGFloat height, const char *format, ...)
 {
 	va_list ap;
@@ -142,12 +146,13 @@ void drawStringf(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, ZGF
 	
 	drawString(renderer, modelViewMatrix, color, width, height, buffer);
 }
+#endif
 
 #define MAX_TEXT_LENGTH 256
 int cacheString(Renderer *renderer, const char *string)
 {
 	int cachedIndex = -1;
-	int renderingCount = gTextRenderingCount < MAX_TEXT_RENDERING_COUNT ? gTextRenderingCount : MAX_TEXT_RENDERING_COUNT;
+	int renderingCount = gTextRenderingCount < gTextRenderingCacheMaxCount ? gTextRenderingCount : gTextRenderingCacheMaxCount;
 	for (int i = 0; i < renderingCount; i++)
 	{
 		if (strncmp(string, gTextRenderings[i].text, 256) == 0)
@@ -162,9 +167,9 @@ int cacheString(Renderer *renderer, const char *string)
 		char *newText = calloc(MAX_TEXT_LENGTH, 1);
 		if (newText != NULL)
 		{
-			// If we run past MAX_TEXT_RENDERING_COUNT, re-cycle through our old text renderings
+			// If we run past gTextRenderingCacheMaxCount, re-cycle through our old text renderings
 			// and replace those
-			int insertionIndex = gTextRenderingCount % MAX_TEXT_RENDERING_COUNT;
+			int insertionIndex = gTextRenderingCount % gTextRenderingCacheMaxCount;
 			
 			if (gTextRenderings[insertionIndex].text != NULL)
 			{
@@ -190,6 +195,7 @@ int cacheString(Renderer *renderer, const char *string)
 	return cachedIndex;
 }
 
+#if SUPPORT_DEPRECATED_DRAW_STRING_APIS
 void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, ZGFloat width, ZGFloat height, const char *string)
 {
 	int index = cacheString(renderer, string);
@@ -200,6 +206,7 @@ void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, ZGFl
 	
 	drawTextureWithVerticesFromIndices(renderer, transformMatrix, gTextRenderings[index].texture, RENDERER_TRIANGLE_MODE, gFontVertexAndTextureBufferObject, gFontIndicesBufferObject, 6, color, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
 }
+#endif
 
 void drawStringScaled(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, ZGFloat scale, const char *string)
 {

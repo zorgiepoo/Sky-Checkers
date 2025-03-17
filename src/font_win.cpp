@@ -1,20 +1,25 @@
 /*
- * Copyright 2020 Mayur Pawashe
- * https://zgcoder.net
+ MIT License
 
- * This file is part of skycheckers.
- * skycheckers is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ Copyright (c) 2024 Mayur Pawashe
 
- * skycheckers is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
 
- * You should have received a copy of the GNU General Public License
- * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
  */
 
 #include "font.h"
@@ -26,15 +31,13 @@ static IDWriteFactory3* gWriteFactory;
 static RECT gMaxBoundingRect;
 static size_t gSpaceWidth;
 
+static int gPointSize;
+
 const DWRITE_RENDERING_MODE1 RENDERING_MODE = DWRITE_RENDERING_MODE1_NATURAL;
 const DWRITE_MEASURING_MODE MEASURING_MODE = DWRITE_MEASURING_MODE_NATURAL;
 const DWRITE_GRID_FIT_MODE GRID_FIT_MODE = DWRITE_GRID_FIT_MODE_ENABLED;
 const DWRITE_TEXT_ANTIALIAS_MODE ANTIALIAS_MODE = DWRITE_TEXT_ANTIALIAS_MODE_GRAYSCALE;
 const DWRITE_TEXTURE_TYPE TEXTURE_TYPE = DWRITE_TEXTURE_ALIASED_1x1;
-
-#define _WIN_WIDEN(x) L ## x
-#define WIN_WIDEN(x) _WIN_WIDEN(x)
-#define WIN_FONT_PATH WIN_WIDEN(FONT_PATH)
 
 typedef struct
 {
@@ -43,11 +46,11 @@ typedef struct
     size_t height;
 } GlyphData;
 
-static RECT getTextureBoundsWithGlyphIndices(IDWriteFontFace3* fontFace, IDWriteFactory3* writeFactory, UINT16 *glyphIndices, UINT32 glyphCount, IDWriteGlyphRunAnalysis** outGlyphRunAnalysis)
+static RECT getTextureBoundsWithGlyphIndices(IDWriteFontFace3* fontFace, int pointSize, IDWriteFactory3* writeFactory, UINT16 *glyphIndices, UINT32 glyphCount, IDWriteGlyphRunAnalysis** outGlyphRunAnalysis)
 {
     DWRITE_GLYPH_RUN glyphRun;
     glyphRun.fontFace = fontFace;
-    glyphRun.fontEmSize = (float)FONT_POINT_SIZE;
+    glyphRun.fontEmSize = (float)pointSize;
     glyphRun.glyphCount = glyphCount;
     glyphRun.glyphIndices = glyphIndices;
     glyphRun.glyphAdvances = nullptr;
@@ -82,7 +85,7 @@ static RECT getTextureBoundsWithGlyphIndices(IDWriteFontFace3* fontFace, IDWrite
     return textureBounds;
 }
 
-static RECT getTextureBounds(IDWriteFontFace3 *fontFace, IDWriteFactory3 *writeFactory, UINT32* codePoints, UINT32 codePointCount, IDWriteGlyphRunAnalysis** outGlyphRunAnalysis)
+static RECT getTextureBounds(IDWriteFontFace3 *fontFace, int pointSize, IDWriteFactory3 *writeFactory, UINT32* codePoints, UINT32 codePointCount, IDWriteGlyphRunAnalysis** outGlyphRunAnalysis)
 {
     UINT16* glyphIndices = (UINT16*)calloc(codePointCount, sizeof(*glyphIndices));
 
@@ -93,13 +96,13 @@ static RECT getTextureBounds(IDWriteFontFace3 *fontFace, IDWriteFactory3 *writeF
         abort();
     }
 
-    RECT textureBounds = getTextureBoundsWithGlyphIndices(fontFace, writeFactory, glyphIndices, codePointCount, outGlyphRunAnalysis);
+    RECT textureBounds = getTextureBoundsWithGlyphIndices(fontFace, pointSize, writeFactory, glyphIndices, codePointCount, outGlyphRunAnalysis);
     free(glyphIndices);
 
     return textureBounds;
 }
 
-extern "C" void initFont(void)
+static IDWriteFactory3* _createWriteFactory(void)
 {
     IDWriteFactory3* writeFactory = nullptr;
     HRESULT factoryResult = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory3), reinterpret_cast<IUnknown**>(&writeFactory));
@@ -109,14 +112,11 @@ extern "C" void initFont(void)
         abort();
     }
 
-    IDWriteFontFaceReference* fontFaceReference = nullptr;
-    HRESULT fontFaceReferenceResult = writeFactory->CreateFontFaceReference(WIN_FONT_PATH, nullptr, 0, DWRITE_FONT_SIMULATIONS_NONE, &fontFaceReference);
-    if (FAILED(fontFaceReferenceResult))
-    {
-        fprintf(stderr, "Error: failed to create font face reference: %d\n", fontFaceReferenceResult);
-        abort();
-    }
+    return writeFactory;
+}
 
+static void _initFontWithFontFaceReference(IDWriteFontFaceReference* fontFaceReference, IDWriteFactory3 *writeFactory, int pointSize)
+{
     IDWriteFontFace3* fontFace = nullptr;
     HRESULT fontFaceResult = fontFaceReference->CreateFontFace(&fontFace);
     if (FAILED(fontFaceResult))
@@ -129,8 +129,8 @@ extern "C" void initFont(void)
     UINT16 glyphCount = fontFace->GetGlyphCount();
     for (UINT16 glyphIndex = 0; glyphIndex < glyphCount; glyphIndex++)
     {
-        RECT textureBounds = getTextureBoundsWithGlyphIndices(fontFace, writeFactory, &glyphIndex, 1, nullptr);
-        
+        RECT textureBounds = getTextureBoundsWithGlyphIndices(fontFace, pointSize, writeFactory, &glyphIndex, 1, nullptr);
+
         if (textureBounds.bottom > gMaxBoundingRect.bottom)
         {
             gMaxBoundingRect.bottom = textureBounds.bottom;
@@ -146,21 +146,86 @@ extern "C" void initFont(void)
     // DirectWrite doesn't allow us to render or get the texture bounds of a space glyph just by itself
 
     UINT32 spacedCodePoints[] = { 'a', ' ', 'a' };
-    RECT spacedRect = getTextureBounds(fontFace, writeFactory, spacedCodePoints, sizeof(spacedCodePoints) / sizeof(*spacedCodePoints), nullptr);
+    RECT spacedRect = getTextureBounds(fontFace, pointSize, writeFactory, spacedCodePoints, sizeof(spacedCodePoints) / sizeof(*spacedCodePoints), nullptr);
 
     UINT32 nonSpacedCodePoints[] = { 'a', 'a' };
-    RECT nonSpacedRect = getTextureBounds(fontFace, writeFactory, nonSpacedCodePoints, sizeof(nonSpacedCodePoints) / sizeof(*nonSpacedCodePoints), nullptr);
+    RECT nonSpacedRect = getTextureBounds(fontFace, pointSize, writeFactory, nonSpacedCodePoints, sizeof(nonSpacedCodePoints) / sizeof(*nonSpacedCodePoints), nullptr);
 
     gSpaceWidth = (size_t)abs(spacedRect.right - spacedRect.left) - (size_t)abs(nonSpacedRect.right - nonSpacedRect.left);
 
     gFontFace = fontFace;
     gWriteFactory = writeFactory;
+    gPointSize = pointSize;
 }
 
-static GlyphData createGlyphTexture(UINT32 codePoint)
+extern "C" void initFontFromFile(const char *charFilePath, int pointSize)
+{
+    IDWriteFactory3* writeFactory = _createWriteFactory();
+
+    size_t filePathLength = strlen(charFilePath);
+    wchar_t* filePath = (wchar_t *)calloc(filePathLength + 1, sizeof(*filePath));
+    mbstowcs(filePath, charFilePath, filePathLength);
+
+    IDWriteFontFaceReference* fontFaceReference = nullptr;
+    HRESULT fontFaceReferenceResult = writeFactory->CreateFontFaceReference(filePath, nullptr, 0, DWRITE_FONT_SIMULATIONS_NONE, &fontFaceReference);
+
+    free(filePath);
+
+    if (FAILED(fontFaceReferenceResult))
+    {
+        fprintf(stderr, "Error: failed to create font face reference: %d\n", fontFaceReferenceResult);
+        abort();
+    }
+
+    _initFontWithFontFaceReference(fontFaceReference, writeFactory, pointSize);
+}
+
+extern "C" void initFontWithName(const char* name, int pointSize)
+{
+    IDWriteFactory3* writeFactory = _createWriteFactory();
+
+    IDWriteFontSet* fontSet = nullptr;
+    HRESULT getSystemFontResult = writeFactory->GetSystemFontSet(&fontSet);
+    if (FAILED(getSystemFontResult))
+    {
+        fprintf(stderr, "Error: failed to get system font set: %d\n", getSystemFontResult);
+        abort();
+    }
+
+    IDWriteFontSet* filteredFontSet = nullptr;
+    WCHAR fontName[MAX_PATH] = { 0 };
+    mbstowcs(fontName, name, strlen(name));
+
+    HRESULT matchingFontsError = fontSet->GetMatchingFonts(fontName, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STRETCH_NORMAL, DWRITE_FONT_STYLE_NORMAL, &filteredFontSet);
+    if (FAILED(matchingFontsError))
+    {
+        fprintf(stderr, "Error: failed to get matching system font to %s: %d\n", name, matchingFontsError);
+        abort();
+    }
+
+    if (filteredFontSet->GetFontCount() == 0)
+    {
+        fprintf(stderr, "Error: failed to get any fonts from font set with name %s\n", name);
+        abort();
+    }
+
+    IDWriteFontFaceReference* fontFaceReference = nullptr;
+    HRESULT getFontFaceReferenceResult = filteredFontSet->GetFontFaceReference(0, &fontFaceReference);
+    if (FAILED(getFontFaceReferenceResult))
+    {
+        fprintf(stderr, "Error: failed to get font face reference from system font: %s: %d\n", name, getFontFaceReferenceResult);
+        abort();
+    }
+
+    filteredFontSet->Release();
+
+    _initFontWithFontFaceReference(fontFaceReference, writeFactory, pointSize);
+}
+
+static GlyphData createGlyphTexture(UINT32 codePoint, int pointSize)
 {
     IDWriteGlyphRunAnalysis* glyphRunAnalysis = nullptr;
-    RECT initialTextureBounds = getTextureBounds(gFontFace, gWriteFactory, &codePoint, 1, &glyphRunAnalysis);
+    RECT initialTextureBounds = getTextureBounds(gFontFace, pointSize, gWriteFactory, &codePoint, 1, &glyphRunAnalysis);
 
     RECT textureBounds = initialTextureBounds;
     textureBounds.top = gMaxBoundingRect.top;
@@ -215,7 +280,7 @@ extern "C" TextureData createTextData(const char* string)
         }
         else
         {
-            glyphsData[stringIndex] = createGlyphTexture(codePoint);
+            glyphsData[stringIndex] = createGlyphTexture(codePoint, gPointSize);
         }
         totalWidth += glyphsData[stringIndex].width;
     }

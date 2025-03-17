@@ -1,20 +1,25 @@
 /*
- * Copyright 2018 Mayur Pawashe
- * https://zgcoder.net
- 
- * This file is part of skycheckers.
- * skycheckers is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- 
- * skycheckers is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- 
- * You should have received a copy of the GNU General Public License
- * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
+ MIT License
+
+ Copyright (c) 2024 Mayur Pawashe
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
  */
 
 #pragma once
@@ -40,6 +45,14 @@ extern "C" {
 
 typedef struct
 {
+    ZGFloat red;
+    ZGFloat green;
+    ZGFloat blue;
+    ZGFloat alpha;
+} color4_t;
+
+typedef struct
+{
 #if PLATFORM_IOS
 	void (*touchEventHandler)(ZGTouchEvent, void *);
 	void *touchEventContext;
@@ -51,6 +64,8 @@ typedef struct
 #endif
 
 	const char* windowTitle;
+    
+    color4_t clearColor;
 
 	int32_t windowWidth;
 	int32_t windowHeight;
@@ -70,16 +85,9 @@ typedef enum
 typedef enum
 {
 	RENDERER_TRIANGLE_MODE = 1,
-	RENDERER_TRIANGLE_STRIP_MODE = 2
+	RENDERER_TRIANGLE_STRIP_MODE = 2,
+    RENDERER_LINE_MODE = 3
 } RendererMode;
-
-typedef struct
-{
-	ZGFloat red;
-	ZGFloat green;
-	ZGFloat blue;
-	ZGFloat alpha;
-} color4_t;
 
 typedef struct
 {
@@ -162,6 +170,8 @@ typedef struct _Renderer
 	ZGWindow *window;
 	ZGFloat projectionMatrix[16];
 
+    color4_t clearColor;
+    
 	// Width and height of drawable in pixels
 	int32_t drawableWidth;
 	int32_t drawableHeight;
@@ -229,7 +239,7 @@ typedef struct _Renderer
 	// Note mat4_t is not passed in these function pointers or included in this file
 	// because the matrix library is not very C++ friendly, and the d3d renderer is C++
 	void(*updateViewportPtr)(struct _Renderer *, int32_t, int32_t);
-	void(*renderFramePtr)(struct _Renderer *, void(*)(struct _Renderer *));
+	void(*renderFramePtr)(struct _Renderer *, void(*)(struct _Renderer *, void *), void *);
 	TextureObject(*textureFromPixelDataPtr)(struct _Renderer *, const void *, int32_t, int32_t, PixelFormat);
 	void(*deleteTexturePtr)(struct _Renderer *, TextureObject);
 	BufferObject(*createIndexBufferObjectPtr)(struct _Renderer *, const void *data, uint32_t size);

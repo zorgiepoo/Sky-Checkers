@@ -1,20 +1,25 @@
 /*
- * Copyright 2018 Mayur Pawashe
- * https://zgcoder.net
- 
- * This file is part of skycheckers.
- * skycheckers is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- 
- * skycheckers is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- 
- * You should have received a copy of the GNU General Public License
- * along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
+ MIT License
+
+ Copyright (c) 2024 Mayur Pawashe
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
  */
 
 #import "renderer_metal.h"
@@ -44,7 +49,7 @@ static void createPipelines(Renderer *renderer);
 void updateViewport_metal(Renderer *renderer, int32_t windowWidth, int32_t windowHeight);
 static void updateRealViewport(Renderer *renderer);
 
-void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *));
+void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *, void *), void *context);
 
 TextureObject textureFromPixelData_metal(Renderer *renderer, const void *pixels, int32_t width, int32_t height, PixelFormat pixelFormat);
 
@@ -252,7 +257,7 @@ static void createAndStorePipelineState(void **pipelineStates, id<MTLDevice> dev
 	pipelineStateDescriptor.depthAttachmentPixelFormat = DEPTH_STENCIL_PIXEL_FORMAT;
 	if (fsaaSampleCount)
 	{
-		pipelineStateDescriptor.sampleCount = fsaaSampleCount;
+        pipelineStateDescriptor.rasterSampleCount = fsaaSampleCount;
 	}
 	
 	NSError *pipelineError = nil;
@@ -350,7 +355,8 @@ static void updateRealViewport(Renderer *renderer)
 		CFRelease(renderer->metalRenderPassDescriptor);
 	}
 	
-	MTLClearColor clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 1.0);
+    color4_t inputClearColor = renderer->clearColor;
+	MTLClearColor clearColor = MTLClearColorMake(inputClearColor.red, inputClearColor.green, inputClearColor.blue, inputClearColor.alpha);
 	
 	MTLRenderPassDescriptor *renderPassDescriptor = [MTLRenderPassDescriptor renderPassDescriptor];
 	
@@ -477,6 +483,8 @@ bool createRenderer_metal(Renderer *renderer, RendererCreateOptions options)
 {
 	@autoreleasepool
 	{
+        renderer->clearColor = options.clearColor;
+        
 		renderer->windowWidth = options.windowWidth;
 		renderer->windowHeight = options.windowHeight;
 		
@@ -609,7 +617,7 @@ bool createRenderer_metal(Renderer *renderer, RendererCreateOptions options)
 	return true;
 }
 
-void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *))
+void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *, void *), void *context)
 {
 	@autoreleasepool
 	{
@@ -649,7 +657,7 @@ void renderFrame_metal(Renderer *renderer, void (*drawFunc)(Renderer *))
 			renderer->metalLastVertexAndTextureBuffer = NULL;
 			memset(&renderer->metalLastFragmentColor, 0, sizeof(renderer->metalLastFragmentColor));
 			
-			drawFunc(renderer);
+			drawFunc(renderer, context);
 			
 			renderer->metalCurrentRenderCommandEncoder = NULL;
 			
@@ -766,6 +774,8 @@ static MTLPrimitiveType metalTypeFromRendererMode(RendererMode mode)
 			return MTLPrimitiveTypeTriangle;
 		case RENDERER_TRIANGLE_STRIP_MODE:
 			return MTLPrimitiveTypeTriangleStrip;
+        case RENDERER_LINE_MODE:
+            return MTLPrimitiveTypeLine;
 	}
 	return 0;
 }
