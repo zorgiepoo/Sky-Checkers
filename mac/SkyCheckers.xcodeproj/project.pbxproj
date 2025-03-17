@@ -158,7 +158,6 @@
 		7243ACE923C2EDAE00A83ADD /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS13.2.sdk/System/Library/Frameworks/GameController.framework; sourceTree = DEVELOPER_DIR; };
 		7272B29C21E5CBEB00C305D3 /* renderer_projection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = renderer_projection.h; path = ../src/renderer_projection.h; sourceTree = "<group>"; };
 		7272B29D21E5CBEB00C305D3 /* renderer_projection.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = renderer_projection.c; path = ../src/renderer_projection.c; sourceTree = "<group>"; };
-		7276B4FB2438881800CA14DC /* gamecontrollerdb.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = gamecontrollerdb.txt; path = ../../gamecontrollerdb.txt; sourceTree = "<group>"; };
 		727DAE21235BFFBB0030B29D /* mt_random.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = mt_random.h; path = ../src/mt_random.h; sourceTree = "<group>"; };
 		727DAE22235BFFBB0030B29D /* mt_random.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = mt_random.c; path = ../src/mt_random.c; sourceTree = "<group>"; };
 		727DAE24235C10A50030B29D /* quit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = quit.h; path = ../src/quit.h; sourceTree = "<group>"; };
@@ -450,7 +449,6 @@
 				72970EFC243864C3008ECB13 /* MainMenu.xib */,
 				72970EFF243864C3008ECB13 /* Info.plist */,
 				72970F082438680A008ECB13 /* macOS.entitlements */,
-				7276B4FB2438881800CA14DC /* gamecontrollerdb.txt */,
 				72970F09243869A7008ECB13 /* Frameworks */,
 			);
 			path = macOS;
