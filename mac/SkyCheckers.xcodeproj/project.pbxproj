@@ -135,6 +135,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		721756B72D93B7F50076ECE7 /* globals.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = globals.h; path = ../src/globals.h; sourceTree = SOURCE_ROOT; };
 		7243ACA723C2EB5700A83ADD /* SkyCheckers.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SkyCheckers.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7243ACB223C2EB5900A83ADD /* Assets-tvOS.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Assets-tvOS.xcassets"; sourceTree = "<group>"; };
 		7243ACB523C2EB5900A83ADD /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -172,7 +173,6 @@
 		7268B7E12D90F78800FC3BC7 /* gamepad_gccontroller.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = gamepad_gccontroller.m; sourceTree = "<group>"; };
 		7268B7E22D90F78800FC3BC7 /* gamepad_sdl.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = gamepad_sdl.c; sourceTree = "<group>"; };
 		7268B7E32D90F78800FC3BC7 /* gamepad_win.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = gamepad_win.c; sourceTree = "<group>"; };
-		7268B7E42D90F78800FC3BC7 /* globals.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = globals.h; sourceTree = "<group>"; };
 		7268B7E52D90F78800FC3BC7 /* keyboard.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = keyboard.h; sourceTree = "<group>"; };
 		7268B7E62D90F78800FC3BC7 /* keyboard_osx.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = keyboard_osx.m; sourceTree = "<group>"; };
 		7268B7E72D90F78800FC3BC7 /* keyboard_sdl.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = keyboard_sdl.c; sourceTree = "<group>"; };
@@ -358,6 +358,7 @@
 		29B97315FDCFA39411CA2CEA /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				721756B72D93B7F50076ECE7 /* globals.h */,
 				774A441E0B2BEA57000C04D9 /* main.c */,
 				77C7A4FA0CFD292600295420 /* menus.h */,
 				77C7A4FB0CFD292600295420 /* menus_desktop.c */,
@@ -441,7 +442,6 @@
 				7268B7E12D90F78800FC3BC7 /* gamepad_gccontroller.m */,
 				7268B7E22D90F78800FC3BC7 /* gamepad_sdl.c */,
 				7268B7E32D90F78800FC3BC7 /* gamepad_win.c */,
-				7268B7E42D90F78800FC3BC7 /* globals.h */,
 				7268B7E52D90F78800FC3BC7 /* keyboard.h */,
 				7268B7E62D90F78800FC3BC7 /* keyboard_osx.m */,
 				7268B7E72D90F78800FC3BC7 /* keyboard_sdl.c */,
