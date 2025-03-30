@@ -16,6 +16,7 @@ linux/sc-snap-pak-repo.tgz
 win/Debug
 win/Release
 win/x64
+win/SkyCheckers
 win/dinput.pdb
 win/.vs
 *.sdf

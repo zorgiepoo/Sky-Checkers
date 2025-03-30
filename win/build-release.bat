@@ -1,4 +1,4 @@
-"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild" /t:Rebuild /p:Configuration=Release
+"C:\Program Files\Microsoft Visual Studio\2022\Preview\MSBuild\Current\Bin\MSBuild" /t:Rebuild /p:Configuration=Release
 if exist x64\SkyCheckers rmdir /s/q x64\SkyCheckers
 mkdir x64\SkyCheckers
 robocopy ..\Data x64\SkyCheckers\Data\ /e /NFL /NDL /NJH /NJS

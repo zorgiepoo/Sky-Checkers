@@ -24,6 +24,7 @@
 #include "input.h"
 #include "animation.h"
 #include "weapon.h"
+#include "font.h"
 #include "text.h"
 #include "audio.h"
 #include "menus.h"
@@ -48,6 +49,18 @@
 #include "math_3d.h"
 
 #define CURRENT_DEFAULT_VERSION 7
+
+#if PLATFORM_LINUX
+#define DEFAULTS_NAME "skycheckers"
+#else
+#define DEFAULTS_NAME "SkyCheckers"
+#endif
+
+#define MAX_TEXT_RENDERING_CACHE_COUNT 256
+#define FONT_POINT_SIZE 144
+// This font is "goodfish.ttf" and is intentionally obfuscated in source by author's request
+// A license to embed the font was acquired (for me, Mayur, only) from http://typodermicfonts.com/goodfish/
+#define FONT_PATH "Data/Fonts/typelib.dat"
 
 bool gGameHasStarted;
 bool gGameShouldReset;
@@ -275,7 +288,7 @@ static void readDefaultCharacterState(Defaults defaults, const char *defaultKey,
 
 static void readDefaults(void)
 {
-	Defaults defaults = userDefaultsForReading();
+	Defaults defaults = userDefaultsForReading(DEFAULTS_NAME);
 
 	// conole flag default
 	gConsoleFlag = readDefaultBoolKey(defaults, "Console flag", false);
@@ -396,7 +409,7 @@ static void writeCharacterInput(Defaults defaults, const char *characterName, In
 
 static void writeDefaults(Renderer *renderer)
 {
-	Defaults defaults = userDefaultsForWriting();
+	Defaults defaults = userDefaultsForWriting(DEFAULTS_NAME);
 	
 	writeDefaultIntKey(defaults, "Defaults version", CURRENT_DEFAULT_VERSION);
 	
@@ -918,7 +931,7 @@ static void drawScoreboardForCharacters(Renderer *renderer)
 	drawScoreboardTextForCharacter(renderer, &gBlueLightning, iconModelViewMatrices[3]);
 }
 
-static void drawScene(Renderer *renderer)
+static void drawScene(Renderer *renderer, void *context)
 {
 	if (gGameState == GAME_STATE_ON || gGameState == GAME_STATE_TUTORIAL || gGameState == GAME_STATE_PAUSED)
 	{
@@ -1903,10 +1916,13 @@ static ZGWindow *appLaunchedHandler(void *context)
 	rendererOptions.keyboardEventHandler = handleKeyboardEvent;
 	rendererOptions.keyboardEventContext = renderer;
 #endif
+	
+	rendererOptions.windowTitle = "SkyCheckers";
 
 	createRenderer(renderer, rendererOptions);
 	
-	initText(renderer);
+	initFontFromFile(FONT_PATH, FONT_POINT_SIZE);
+	initText(renderer, MAX_TEXT_RENDERING_CACHE_COUNT);
 	
 	// Initialize game related things
 	
@@ -2018,7 +2034,7 @@ static void runLoopHandler(void *context)
 	
 	if (appContext->needsToDrawScene)
 	{
-		renderFrame(renderer, drawScene);
+		renderFrame(renderer, drawScene, NULL);
 	}
 	
 	bool shouldCapFPS = !appContext->needsToDrawScene || !renderer->vsync;

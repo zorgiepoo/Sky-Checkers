@@ -19,71 +19,70 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\scengine\app.h" />
+    <ClInclude Include="..\scengine\float.h" />
+    <ClInclude Include="..\scengine\font.h" />
+    <ClInclude Include="..\scengine\gamepad.h" />
+    <ClInclude Include="..\scengine\keyboard.h" />
+    <ClInclude Include="..\scengine\math_3d.h" />
+    <ClInclude Include="..\scengine\mt_random.h" />
+    <ClInclude Include="..\scengine\platforms.h" />
+    <ClInclude Include="..\scengine\quit.h" />
+    <ClInclude Include="..\scengine\renderer.h" />
+    <ClInclude Include="..\scengine\renderer_d3d11.h" />
+    <ClInclude Include="..\scengine\renderer_projection.h" />
+    <ClInclude Include="..\scengine\renderer_types.h" />
+    <ClInclude Include="..\scengine\text.h" />
+    <ClInclude Include="..\scengine\texture.h" />
+    <ClInclude Include="..\scengine\thread.h" />
+    <ClInclude Include="..\scengine\window.h" />
+    <ClInclude Include="..\scengine\zgtime.h" />
     <ClInclude Include="..\src\ai.h" />
     <ClInclude Include="..\src\animation.h" />
-    <ClInclude Include="..\src\app.h" />
     <ClInclude Include="..\src\audio.h" />
     <ClInclude Include="..\src\characters.h" />
     <ClInclude Include="..\src\collision.h" />
     <ClInclude Include="..\src\console.h" />
-    <ClInclude Include="..\src\defaults.h" />
-    <ClInclude Include="..\src\float.h" />
-    <ClInclude Include="..\src\font.h" />
-    <ClInclude Include="..\src\gamepad.h" />
     <ClInclude Include="..\src\globals.h" />
     <ClInclude Include="..\src\input.h" />
-    <ClInclude Include="..\src\keyboard.h" />
-    <ClInclude Include="..\src\math_3d.h" />
     <ClInclude Include="..\src\menus.h" />
     <ClInclude Include="..\src\menu_actions.h" />
-    <ClInclude Include="..\src\metal_indices.h" />
     <ClInclude Include="..\src\network.h" />
-    <ClInclude Include="..\src\platforms.h" />
-    <ClInclude Include="..\src\quit.h" />
-    <ClInclude Include="..\src\renderer.h" />
-    <ClInclude Include="..\src\renderer_d3d11.h" />
-    <ClInclude Include="..\src\renderer_projection.h" />
-    <ClInclude Include="..\src\renderer_types.h" />
     <ClInclude Include="..\src\scenery.h" />
-    <ClInclude Include="..\src\text.h" />
-    <ClInclude Include="..\src\texture.h" />
-    <ClInclude Include="..\src\thread.h" />
-    <ClInclude Include="..\src\zgtime.h" />
     <ClInclude Include="..\src\weapon.h" />
-    <ClInclude Include="..\src\window.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\scengine\app_win.c" />
+    <ClCompile Include="..\scengine\defaults_file.c" />
+    <ClCompile Include="..\scengine\defaults_win.c" />
+    <ClCompile Include="..\scengine\font_win.cpp" />
+    <ClCompile Include="..\scengine\gamepad_win.c" />
+    <ClCompile Include="..\scengine\keyboard_win.c" />
+    <ClCompile Include="..\scengine\mt_random.c" />
+    <ClCompile Include="..\scengine\quit_win.c" />
+    <ClCompile Include="..\scengine\renderer.c" />
+    <ClCompile Include="..\scengine\renderer_d3d11.cpp" />
+    <ClCompile Include="..\scengine\renderer_projection.c" />
+    <ClCompile Include="..\scengine\text.c" />
+    <ClCompile Include="..\scengine\texture.c" />
+    <ClCompile Include="..\scengine\texture_win.cpp" />
+    <ClCompile Include="..\scengine\thread_win.c" />
+    <ClCompile Include="..\scengine\time_win.c" />
+    <ClCompile Include="..\scengine\window_win.c" />
     <ClCompile Include="..\src\ai.c" />
     <ClCompile Include="..\src\animation.c" />
-    <ClCompile Include="..\src\app_win.c" />
     <ClCompile Include="..\src\audio_win.cpp" />
     <ClCompile Include="..\src\characters.c" />
     <ClCompile Include="..\src\collision.c" />
     <ClCompile Include="..\src\console.c" />
-    <ClCompile Include="..\src\defaults_file.c" />
-    <ClCompile Include="..\src\defaults_win.c" />
-    <ClCompile Include="..\src\font_win.cpp" />
-    <ClCompile Include="..\src\gamepad_win.c" />
     <ClCompile Include="..\src\input.c" />
-    <ClCompile Include="..\src\keyboard_win.c" />
     <ClCompile Include="..\src\main.c" />
     <ClCompile Include="..\src\menus_desktop.c" />
     <ClCompile Include="..\src\menu_actions.c" />
-    <ClCompile Include="..\src\mt_random.c" />
     <ClCompile Include="..\src\network.c" />
-    <ClCompile Include="..\src\quit_win.c" />
-    <ClCompile Include="..\src\renderer.c" />
-    <ClCompile Include="..\src\renderer_d3d11.cpp" />
-    <ClCompile Include="..\src\renderer_projection.c" />
     <ClCompile Include="..\src\scenery.c" />
-    <ClCompile Include="..\src\text.c" />
-    <ClCompile Include="..\src\texture.c" />
-    <ClCompile Include="..\src\texture_win.cpp" />
-    <ClCompile Include="..\src\thread_win.c" />
-    <ClCompile Include="..\src\time_win.c" />
     <ClCompile Include="..\src\weapon.c" />
-    <ClCompile Include="..\src\window_win.c" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SkyCheckers.rc" />
@@ -92,37 +91,61 @@
     <Image Include="cube.ico" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\position-pixel.hlsl">
+    <FxCompile Include="..\scengine\position-pixel.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\..\..\..\Data\Shaders\%(Filename).cso</ObjectFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\..\..\..\Data\Shaders\%(Filename).cso</ObjectFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">gPositionPixelShaderBytes</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(PROJECTDIR)\..\scengine\position-pixel.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ObjectFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">gPositionPixelShaderBytes</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(PROJECTDIR)\..\scengine\position-pixel.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ObjectFileOutput>
     </FxCompile>
-    <FxCompile Include="Shaders\position-vertex.hlsl">
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\..\..\..\Data\Shaders\%(Filename).cso</ObjectFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\..\..\..\Data\Shaders\%(Filename).cso</ObjectFileOutput>
+    <FxCompile Include="..\scengine\position-vertex.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">gPositionVertexShaderBytes</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(PROJECTDIR)\..\scengine\position-vertex.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ObjectFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">gPositionVertexShaderBytes</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(PROJECTDIR)\..\scengine\position-vertex.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ObjectFileOutput>
     </FxCompile>
-    <FxCompile Include="Shaders\texture-position-pixel.hlsl">
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\..\..\..\Data\Shaders\%(Filename).cso</ObjectFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\..\..\..\Data\Shaders\%(Filename).cso</ObjectFileOutput>
+    <FxCompile Include="..\scengine\texture-position-pixel.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">gTexturePositionPixelShaderBytes</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(PROJECTDIR)\..\scengine\texture-position-pixel.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ObjectFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">gTexturePositionPixelShaderBytes</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(PROJECTDIR)\..\scengine\texture-position-pixel.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ObjectFileOutput>
     </FxCompile>
-    <FxCompile Include="Shaders\texture-position-vertex.hlsl">
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)\..\..\..\Data\Shaders\%(Filename).cso</ObjectFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)\..\..\..\Data\Shaders\%(Filename).cso</ObjectFileOutput>
+    <FxCompile Include="..\scengine\texture-position-vertex.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">gTexturePositionVertexShaderBytes</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(PROJECTDIR)\..\scengine\texture-position-vertex.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ObjectFileOutput>
+      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">gTexturePositionVertexShaderBytes</VariableName>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(PROJECTDIR)\..\scengine\texture-position-vertex.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ObjectFileOutput>
     </FxCompile>
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -178,7 +201,7 @@
     <LibraryPath>$(ProjectDir)glew-2.1.0\lib\Release\x64;$(ProjectDir)SDL2-2.0.9\lib\x64;$(ProjectDir)SDL2_ttf-2.0.14\lib\x64;$(ProjectDir)SDL2_mixer-2.0.4\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)..\scengine;$(IncludePath)</IncludePath>
     <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -186,7 +209,7 @@
     <LibraryPath>$(ProjectDir)glew-2.1.0\lib\Release\x64;$(ProjectDir)SDL2-2.0.9\lib\x64;$(ProjectDir)SDL2_ttf-2.0.14\lib\x64;$(ProjectDir)SDL2_mixer-2.0.4\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)..\scengine;$(IncludePath)</IncludePath>
     <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -219,7 +242,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;dxgi.lib;Dwrite.lib;Xaudio2.lib;windowscodecs.lib;Xinput.lib;ws2_32.lib;Shlwapi.lib;iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;Dwrite.lib;Xaudio2.lib;windowscodecs.lib;Xinput.lib;ws2_32.lib;Shlwapi.lib;iphlpapi.lib;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
@@ -227,7 +250,8 @@
       </Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>"$(ProjectDir)prebuild.bat" "$(ProjectDir)"</Command>
+      <Command>
+      </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -267,7 +291,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>d3d11.lib;dxgi.lib;Dwrite.lib;Xaudio2.lib;windowscodecs.lib;Xinput.lib;ws2_32.lib;Shlwapi.lib;iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;Dwrite.lib;Xaudio2.lib;windowscodecs.lib;Xinput.lib;ws2_32.lib;Shlwapi.lib;iphlpapi.lib;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
@@ -275,7 +299,8 @@
       </Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>"$(ProjectDir)prebuild.bat" "$(ProjectDir)"</Command>
+      <Command>
+      </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

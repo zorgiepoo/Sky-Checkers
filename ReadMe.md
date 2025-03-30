@@ -24,7 +24,9 @@ Other aspects expected in a game are present such as a tutorial, AI, and multipl
 
 ## Licensing
 
-The source code (including OpenGL shaders) is licensed under the GPL version 3. In the unanticipated event contributions are made, I may need to extend the license. I plan to put some parts of the code under a more permissive license eventually.
+The source code of the engine (scengine) including the shaders is licensed under the MIT license.
+
+The source code for the rest of the game is licensed under the GPL version 3. In the unanticipated event contributions are made, I may need to extend the license.
 
 The assets are licensed differently. I acquired [an embedded app license](http://typodermicfonts.com/goodfish/) for the goodfish font that only I can use. Sound assets except for main_menu.wav and dieing_stone.wav are freely distributed from [Freesound](https://freesound.org) and [PacDV](http://www.pacdv.com/sounds/). The cracked texture tile effect is acquired from [Pixabay](https://pixabay.com/illustrations/cracked-texture-overlay-distressed-1975573/). I acquired game controller mappings from [SDL_GameControllerDB](https://github.com/gabomdq/SDL_GameControllerDB) with some of my own alterations.
 

@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Shaders">
-      <UniqueIdentifier>{043a39ef-86af-4eb0-a4c1-52a9834f834c}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\ai.h">
@@ -36,9 +33,6 @@
     <ClInclude Include="..\src\collision.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\font.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -54,58 +48,7 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\math_3d.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\renderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\renderer_projection.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\renderer_d3d11.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\renderer_types.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\defaults.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\app.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\float.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\gamepad.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\globals.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\keyboard.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\metal_indices.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\platforms.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\quit.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\text.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\texture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\thread.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\menu_actions.h">
@@ -114,7 +57,58 @@
     <ClInclude Include="..\src\menus.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\zgtime.h">
+    <ClInclude Include="..\scengine\app.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\scengine\float.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\scengine\font.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\scengine\gamepad.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\scengine\keyboard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\scengine\math_3d.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\scengine\mt_random.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\scengine\platforms.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\scengine\quit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\scengine\renderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\scengine\renderer_d3d11.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\scengine\renderer_projection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\scengine\renderer_types.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\scengine\text.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\scengine\texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\scengine\thread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\scengine\window.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\scengine\zgtime.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -149,64 +143,64 @@
     <ClCompile Include="..\src\characters.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\renderer.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\renderer_projection.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\renderer_d3d11.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\text.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\defaults_win.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\mt_random.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\menus_desktop.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\menu_actions.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\texture.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\defaults_file.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\audio_win.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\font_win.cpp">
+    <ClCompile Include="..\scengine\app_win.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\texture_win.cpp">
+    <ClCompile Include="..\scengine\defaults_file.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\time_win.c">
+    <ClCompile Include="..\scengine\defaults_win.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\thread_win.c">
+    <ClCompile Include="..\scengine\font_win.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\gamepad_win.c">
+    <ClCompile Include="..\scengine\gamepad_win.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\window_win.c">
+    <ClCompile Include="..\scengine\keyboard_win.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\keyboard_win.c">
+    <ClCompile Include="..\scengine\mt_random.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\app_win.c">
+    <ClCompile Include="..\scengine\quit_win.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\quit_win.c">
+    <ClCompile Include="..\scengine\renderer.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\scengine\renderer_d3d11.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\scengine\renderer_projection.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\scengine\text.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\scengine\texture.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\scengine\texture_win.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\scengine\thread_win.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\scengine\time_win.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\scengine\window_win.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -221,17 +215,17 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\position-pixel.hlsl">
-      <Filter>Shaders</Filter>
+    <FxCompile Include="..\scengine\position-pixel.hlsl">
+      <Filter>Source Files</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\position-vertex.hlsl">
-      <Filter>Shaders</Filter>
+    <FxCompile Include="..\scengine\texture-position-vertex.hlsl">
+      <Filter>Source Files</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\texture-position-pixel.hlsl">
-      <Filter>Shaders</Filter>
+    <FxCompile Include="..\scengine\texture-position-pixel.hlsl">
+      <Filter>Source Files</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\texture-position-vertex.hlsl">
-      <Filter>Shaders</Filter>
+    <FxCompile Include="..\scengine\position-vertex.hlsl">
+      <Filter>Source Files</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>
