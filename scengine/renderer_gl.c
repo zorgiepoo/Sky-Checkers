@@ -37,7 +37,7 @@
 
 static void updateViewport_gl(Renderer *renderer, int32_t windowWidth, int32_t windowHeight);
 
-void renderFrame_gl(Renderer *renderer, void (*drawFunc)(Renderer *));
+void renderFrame_gl(Renderer *renderer, void (*drawFunc)(Renderer *, void *), void *);
 
 TextureObject textureFromPixelData_gl(Renderer *renderer, const void *pixels, int32_t width, int32_t height, PixelFormat pixelFormat);
 
@@ -411,7 +411,7 @@ void createRenderer_gl(Renderer *renderer, RendererCreateOptions options)
 	ZGSetKeyboardEventHandler(renderer->window, options.keyboardEventContext, options.keyboardEventHandler);
 }
 
-void renderFrame_gl(Renderer *renderer, void (*drawFunc)(Renderer *))
+void renderFrame_gl(Renderer *renderer, void (*drawFunc)(Renderer *, void *), void *context)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
