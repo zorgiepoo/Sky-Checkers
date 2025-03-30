@@ -415,7 +415,7 @@ void renderFrame_gl(Renderer *renderer, void (*drawFunc)(Renderer *, void *), vo
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-	drawFunc(renderer);
+	drawFunc(renderer, context);
 	
 	SDL_GL_SwapWindow(ZGWindowHandle(renderer->window));
 	
