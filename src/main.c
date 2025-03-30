@@ -49,7 +49,12 @@
 #include "math_3d.h"
 
 #define CURRENT_DEFAULT_VERSION 7
+
+#if PLATFORM_LINUX
+#define DEFAULTS_NAME "skycheckers"
+#else
 #define DEFAULTS_NAME "SkyCheckers"
+#endif
 
 #define MAX_TEXT_RENDERING_CACHE_COUNT 256
 #define FONT_POINT_SIZE 144

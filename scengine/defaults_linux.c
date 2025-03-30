@@ -26,7 +26,7 @@
  #include <ctype.h>
  #include <limits.h>
  
- FILE *getUserDataFile(const char *mode)
+ FILE *getUserDataFile(const char *defaultsName, const char *mode)
  {
 	char dataDirectory[PATH_MAX + 1] = {0};
 
@@ -38,7 +38,7 @@
 		{
 			return NULL;
 		}
-		snprintf(dataDirectory, sizeof(dataDirectory) - 1, "%s/skycheckers", xdgConfigHome);
+		snprintf(dataDirectory, sizeof(dataDirectory) - 1, "%s/%s", xdgConfigHome, defaultsName);
 	}
 	else
 	{
@@ -57,7 +57,7 @@
 			return NULL;
 		}
 
-		snprintf(dataDirectory, sizeof(dataDirectory) - 1, "%s/skycheckers", configDirectory);
+		snprintf(dataDirectory, sizeof(dataDirectory) - 1, "%s/%s", configDirectory, defaultsName);
 	}
 	
 	int success = mkdir(dataDirectory, 0777);
