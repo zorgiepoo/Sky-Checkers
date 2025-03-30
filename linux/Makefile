@@ -36,13 +36,15 @@ WARNINGS=-Wall -Wextra -Wno-unused-parameter
 
 LIBS=-lm -lX11 -lGL -lpthread `pkg-config glew --libs --cflags` `sdl2-config --cflags --libs` -lSDL2_mixer -lSDL2_ttf
 
+INCLUDE_SEARCH=-I ../src -I ../scengine
+
 CSTD=-std=gnu99
 
 skycheckers: precopy
-	cc $(CSTD) -O2 $(RELEASEOPTS) $(WARNINGS) $(SOURCE) $(LIBS) -o skycheckers
+	cc $(CSTD) -O2 $(RELEASEOPTS) $(WARNINGS) $(SOURCE) $(INCLUDE_SEARCH) $(LIBS) -o skycheckers
 
 scdev: precopy
-	cc $(CSTD) -g -D_DEBUG $(WARNINGS) $(SOURCE) $(LIBS) -o scdev
+	cc $(CSTD) -g -D_DEBUG $(WARNINGS) $(SOURCE) $(INCLUDE_SEARCH) $(LIBS) -o scdev
 
 .PHONY: precopy
 precopy: clean
