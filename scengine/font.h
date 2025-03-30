@@ -28,10 +28,14 @@
 extern "C" {
 #endif
 
+#include "platforms.h"
 #include "texture.h"
 
 void initFontFromFile(const char *filePath, int pointSize);
+
+#if !PLATFORM_LINUX
 void initFontWithName(const char *name, int pointSize);
+#endif
 
 TextureData createTextData(const char* string);
 
