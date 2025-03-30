@@ -478,6 +478,8 @@ static GLenum glModeFromMode(RendererMode mode)
 			return GL_TRIANGLES;
 		case RENDERER_TRIANGLE_STRIP_MODE:
 			return GL_TRIANGLE_STRIP;
+		case RENDERER_LINE_MODE:
+			return GL_LINES;
 	}
 	return 0;
 }
