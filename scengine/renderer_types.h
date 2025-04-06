@@ -53,12 +53,13 @@ typedef struct
 
 typedef struct
 {
+	void (*windowEventHandler)(ZGWindowEvent, void*);
+	void* windowEventContext;
+	
 #if PLATFORM_IOS
 	void (*touchEventHandler)(ZGTouchEvent, void *);
 	void *touchEventContext;
 #else
-	void (*windowEventHandler)(ZGWindowEvent, void*);
-	void* windowEventContext;
 	void (*keyboardEventHandler)(ZGKeyboardEvent, void*);
 	void* keyboardEventContext;
 #endif

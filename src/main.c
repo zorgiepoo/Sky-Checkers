@@ -1623,7 +1623,6 @@ static void pollGamepads(GamepadManager *gamepadManager, ZGWindow *window, const
 	}
 }
 
-#if !PLATFORM_IOS
 static void handleWindowEvent(ZGWindowEvent event, void *context)
 {
 	AppContext *appContext = context;
@@ -1655,6 +1654,10 @@ static void handleWindowEvent(ZGWindowEvent event, void *context)
 		case ZGWindowEventTypeHidden:
 			appContext->needsToDrawScene = false;
 			appContext->lastRunloopTime = 0;
+			
+#if PLATFORM_IOS
+			writeDefaults(&appContext->renderer);
+#endif
 			break;
 #if PLATFORM_WINDOWS
 		case ZGWindowEventDeviceConnected:
@@ -1666,7 +1669,6 @@ static void handleWindowEvent(ZGWindowEvent event, void *context)
 #endif
 	}
 }
-#endif
 
 #if PLATFORM_IOS
 #define TUTORIAL_BOUNDARY_PERCENT_X 0.3f
@@ -1907,12 +1909,12 @@ static ZGWindow *appLaunchedHandler(void *context)
 	rendererOptions.fullscreen = gFullscreenFlag;
 	rendererOptions.vsync = vsync;
 	rendererOptions.fsaa = gFsaaFlag;
+	rendererOptions.windowEventHandler = handleWindowEvent;
+	rendererOptions.windowEventContext = appContext;
 #if PLATFORM_IOS
 	rendererOptions.touchEventHandler = handleTouchEvent;
 	rendererOptions.touchEventContext = renderer;
 #else
-	rendererOptions.windowEventHandler = handleWindowEvent;
-	rendererOptions.windowEventContext = appContext;
 	rendererOptions.keyboardEventHandler = handleKeyboardEvent;
 	rendererOptions.keyboardEventContext = renderer;
 #endif
@@ -1979,19 +1981,6 @@ static void appTerminatedHandler(void *context)
 			ZGDelay(10);
 		}
 	}
-}
-
-static void appSuspendedHandler(void *context)
-{
-	AppContext *appContext = context;
-	Renderer *renderer = &appContext->renderer;
-	
-	if (gGameState == GAME_STATE_ON || gGameState == GAME_STATE_TUTORIAL)
-	{
-		showPauseMenu(renderer->window, &gGameState);
-	}
-	
-	writeDefaults(renderer);
 }
 
 static void runLoopHandler(void *context)
@@ -2073,6 +2062,6 @@ int main(int argc, char *argv[])
 	AppContext appContext;
 	memset(&appContext, 0, sizeof(appContext));
 
-	ZGAppHandlers appHandlers = {.launchedHandler = appLaunchedHandler, .terminatedHandler = appTerminatedHandler, .runLoopHandler = runLoopHandler, .pollEventHandler = pollEventHandler, .suspendedHandler = appSuspendedHandler};
+	ZGAppHandlers appHandlers = {.launchedHandler = appLaunchedHandler, .terminatedHandler = appTerminatedHandler, .runLoopHandler = runLoopHandler, .pollEventHandler = pollEventHandler};
 	return ZGAppInit(argc, argv, &appHandlers, &appContext);
 }

@@ -558,8 +558,6 @@ bool createRenderer_metal(Renderer *renderer, RendererCreateOptions options)
 		NSView *contentView = window.contentView;
 		
 		// Add our metal view ourselves
-		// Don't create metal layer/view by creating a SDL_Renderer
-		// because it does a bunch of stuff we don't need for SDL's own renderer
 		ZGMetalView *metalView = [[ZGMetalView alloc] initWithFrame:contentView.frame renderer:renderer];
 		[contentView addSubview:metalView];
 #endif
@@ -606,10 +604,10 @@ bool createRenderer_metal(Renderer *renderer, RendererCreateOptions options)
 		renderer->popDebugGroupPtr = popDebugGroup_metal;
 		
 		// Set window, keyboard, touch handlers
+		ZGSetWindowEventHandler(renderer->window, options.windowEventContext, options.windowEventHandler);
 #if PLATFORM_IOS
 		ZGSetTouchEventHandler(renderer->window, options.touchEventContext, options.touchEventHandler);
 #else
-		ZGSetWindowEventHandler(renderer->window, options.windowEventContext, options.windowEventHandler);
 		ZGSetKeyboardEventHandler(renderer->window, options.keyboardEventContext, options.keyboardEventHandler);
 #endif
 	}

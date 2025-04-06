@@ -18,6 +18,8 @@
 */
 
 #import "app.h"
+#import "window.h"
+#import "window_scene_ios.h"
 #import "zgtime.h"
 
 #import <UIKit/UIKit.h>
@@ -51,6 +53,12 @@ static ZGAppCallbacks gAppCallbacks;
 	// Initialize time
 	(void)ZGGetNanoTicks();
 	
+	return YES;
+}
+
+// Later called by ZGGameSceneDelegate
+- (void)startLaunch
+{
 	if (gAppCallbacks.appHandlers->launchedHandler != NULL)
 	{
 		gAppCallbacks.appHandlers->launchedHandler(gAppCallbacks.context);
@@ -61,8 +69,6 @@ static ZGAppCallbacks gAppCallbacks;
 		_displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(runLoop:)];
 		[_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
 	}
-	
-	return YES;
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application
@@ -76,19 +82,129 @@ static ZGAppCallbacks gAppCallbacks;
 	}
 }
 
-- (void)applicationDidEnterBackground:(UIApplication *)application
-{
-	if (gAppCallbacks.appHandlers->suspendedHandler != NULL)
-	{
-		gAppCallbacks.appHandlers->suspendedHandler(gAppCallbacks.context);
-	}
-}
-
 - (void)runLoop:(CADisplayLink *)displayLink
 {
 	gAppCallbacks.appHandlers->pollEventHandler(gAppCallbacks.context, NULL);
 	gAppCallbacks.appHandlers->runLoopHandler(gAppCallbacks.context);
 }
+
+@end
+
+@implementation ZGGameSceneDelegate
+
+- (void)scene:(UIScene *)scene willConnectToSession:(UISceneSession *)session options:(UISceneConnectionOptions *)connectionOptions
+{
+	if (![scene isKindOfClass:UIWindowScene.class])
+	{
+		NSLog(@"Error: Encountered unexpected scene type: %@", scene);
+		return;
+	}
+	
+	if (![session.role isEqualToString:UIWindowSceneSessionRoleApplication])
+	{
+		return;
+	}
+	
+	UIWindowScene *windowScene = (UIWindowScene *)scene;
+	
+	// We just have some defensive checks here if the _window already exists
+	// I doubt a new window scene will be connected but just in case try to handle that
+	if (_window == nil)
+	{
+		// Handle first window session connection
+		UIWindow *window = [[UIWindow alloc] initWithWindowScene:windowScene];
+		window.rootViewController = [[ZGViewController alloc] initWithFrame:window.bounds];
+		
+		_window = window;
+		
+		[window makeKeyAndVisible];
+		
+		// Window is ready for the app to begin launching and using it now
+		[(ZGAppDelegate *)UIApplication.sharedApplication.delegate startLaunch];
+	}
+	else if (_window.windowScene == windowScene)
+	{
+		[_window makeKeyAndVisible];
+	}
+	else
+	{
+		_window.windowScene = windowScene;
+		[_window makeKeyAndVisible];
+	}
+}
+
+- (void)sceneDidBecomeActive:(UIScene *)scene
+{
+	if (_windowEventHandler != nil)
+	{
+		ZGWindowEvent windowEvent = { 0 };
+		windowEvent.type = ZGWindowEventTypeFocusGained;
+		_windowEventHandler(windowEvent, _windowEventHandlerContext);
+	}
+}
+
+- (void)sceneWillResignActive:(UIScene *)scene
+{
+	if (_windowEventHandler != nil)
+	{
+		ZGWindowEvent windowEvent = { 0 };
+		windowEvent.type = ZGWindowEventTypeFocusLost;
+		_windowEventHandler(windowEvent, _windowEventHandlerContext);
+	}
+}
+
+- (void)sceneWillEnterForeground:(UIScene *)scene
+{
+	if (_windowEventHandler != nil)
+	{
+		ZGWindowEvent windowEvent = { 0 };
+		windowEvent.type = ZGWindowEventTypeShown;
+		_windowEventHandler(windowEvent, _windowEventHandlerContext);
+	}
+}
+
+- (void)sceneDidEnterBackground:(UIScene *)scene
+{
+	if (_windowEventHandler != nil)
+	{
+		ZGWindowEvent windowEvent = { 0 };
+		windowEvent.type = ZGWindowEventTypeHidden;
+		_windowEventHandler(windowEvent, _windowEventHandlerContext);
+	}
+}
+
+#if !PLATFORM_TVOS
+- (void)windowScene:(UIWindowScene *)windowScene didUpdateCoordinateSpace:(id<UICoordinateSpace>)previousCoordinateSpace interfaceOrientation:(UIInterfaceOrientation)previousInterfaceOrientation traitCollection:(UITraitCollection *)previousTraitCollection
+{
+	if (windowScene.activationState == UISceneActivationStateUnattached)
+	{
+		return;
+	}
+	
+	if (_windowEventHandler == nil)
+	{
+		return;
+	}
+	
+	UIWindow *currentWindow = self.window;
+	for (UIWindow *sceneWindow in windowScene.windows)
+	{
+		if (sceneWindow == currentWindow)
+		{
+			CGRect frame = currentWindow.frame;
+			
+			ZGWindowEvent windowEvent = { 0 };
+			windowEvent.width = (int32_t)frame.size.width;
+			windowEvent.height = (int32_t)frame.size.height;
+			windowEvent.type = ZGWindowEventTypeResize;
+			
+			_windowEventHandler(windowEvent, _windowEventHandlerContext);
+			
+			break;
+		}
+	}
+}
+#endif
 
 @end
 

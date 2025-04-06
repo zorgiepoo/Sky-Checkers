@@ -18,8 +18,8 @@
 */
 
 #import "window.h"
+#import "window_scene_ios.h"
 #include "zgtime.h"
-#import <UIKit/UIKit.h>
 
 #if PLATFORM_TVOS
 #define ZGMenuTapRecognizerName @"ZGMenuTapRecognizerName"
@@ -28,7 +28,7 @@
 #define ZGPannedRecognizerName @"ZGPannedRecognizerName"
 #endif
 
-@interface ZGViewController : UIViewController <UIGestureRecognizerDelegate>
+@interface ZGViewController ()
 
 @property (nonatomic) void (*touchEventHandler)(ZGTouchEvent, void *);
 @property (nonatomic) void *touchEventContext;
@@ -225,12 +225,24 @@
 
 ZGWindow *ZGCreateWindow(const char *windowTitle, int32_t windowWidth, int32_t windowHeight, bool *fullscreenFlag)
 {
-	CGRect screenBounds = [[UIScreen mainScreen] bounds];
-	UIWindow *window = [[UIWindow alloc] initWithFrame:screenBounds];
-	window.rootViewController = [[ZGViewController alloc] initWithFrame:screenBounds];
-	[window makeKeyAndVisible];
+	for (UIScene *scene in UIApplication.sharedApplication.connectedScenes)
+	{
+		ZGGameSceneDelegate *sceneDelegate = (ZGGameSceneDelegate *)scene.delegate;
+		if (![sceneDelegate isKindOfClass:ZGGameSceneDelegate.class])
+		{
+			continue;
+		}
+		
+		assert([scene isKindOfClass:UIWindowScene.class]);
+		
+		UIWindow *window = sceneDelegate.window;
+		assert(window != nil);
+		
+		return (ZGWindow *)CFBridgingRetain(window);
+	}
 	
-	return (ZGWindow *)CFBridgingRetain(window);
+	NSLog(@"Error: failed to find key window from connected scene!");
+	return nil;
 }
 
 void ZGDestroyWindow(ZGWindow *window)
@@ -242,6 +254,35 @@ bool ZGWindowHasFocus(ZGWindow *windowRef)
 {
 	UIWindow *window = (__bridge UIWindow *)(windowRef);
 	return [window isKeyWindow];
+}
+
+void ZGSetWindowEventHandler(ZGWindow *window, void *context, void (*windowEventHandler)(ZGWindowEvent, void *))
+{
+	for (UIScene *scene in UIApplication.sharedApplication.connectedScenes)
+	{
+		ZGGameSceneDelegate *sceneDelegate = (ZGGameSceneDelegate *)scene.delegate;
+		if (![sceneDelegate isKindOfClass:ZGGameSceneDelegate.class])
+		{
+			continue;
+		}
+		
+		assert([scene isKindOfClass:UIWindowScene.class]);
+		
+		UIWindowScene *windowScene = (UIWindowScene *)scene;
+		
+		for (UIWindow *uiWindow in windowScene.windows)
+		{
+			if ((__bridge UIWindow *)window != uiWindow)
+			{
+				continue;
+			}
+			
+			sceneDelegate.windowEventHandler = windowEventHandler;
+			sceneDelegate.windowEventHandlerContext = context;
+			
+			return;
+		}
+	}
 }
 
 void ZGSetTouchEventHandler(ZGWindow *windowRef, void *context, void (*touchEventHandler)(ZGTouchEvent, void *))
