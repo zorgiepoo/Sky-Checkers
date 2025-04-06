@@ -1,24 +1,29 @@
 /*
-* Copyright 2019 Mayur Pawashe
-* https://zgcoder.net
+ MIT License
 
-* This file is part of skycheckers.
-* skycheckers is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
+ Copyright (c) 2019 Mayur Pawashe
 
-* skycheckers is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
 
-* You should have received a copy of the GNU General Public License
-* along with skycheckers.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+ */
 
 #import "window.h"
-#import "window_scene_ios.h"
+#import "app_delegate_ios.h"
 #include "zgtime.h"
 
 #if PLATFORM_TVOS
@@ -28,7 +33,7 @@
 #define ZGPannedRecognizerName @"ZGPannedRecognizerName"
 #endif
 
-@interface ZGViewController ()
+@interface ZGViewController : UIViewController <UIGestureRecognizerDelegate>
 
 @property (nonatomic) void (*touchEventHandler)(ZGTouchEvent, void *);
 @property (nonatomic) void *touchEventContext;
@@ -220,6 +225,136 @@
 {
 	return YES;
 }
+
+@end
+
+@interface ZGGameSceneDelegate : UIResponder <UIWindowSceneDelegate>
+
+@property (nonatomic, nullable) UIWindow *window;
+
+@property (nonatomic, nullable) void (*windowEventHandler)(ZGWindowEvent, void *);
+@property (nonatomic, nullable) void *windowEventHandlerContext;
+
+@end
+
+@implementation ZGGameSceneDelegate
+
+- (void)scene:(UIScene *)scene willConnectToSession:(UISceneSession *)session options:(UISceneConnectionOptions *)connectionOptions
+{
+	if (![scene isKindOfClass:UIWindowScene.class])
+	{
+		NSLog(@"Error: Encountered unexpected scene type to connect: %@", scene);
+		return;
+	}
+	
+	if (![session.role isEqualToString:UIWindowSceneSessionRoleApplication])
+	{
+		return;
+	}
+	
+	UIWindowScene *windowScene = (UIWindowScene *)scene;
+	
+	// We just have some defensive checks here if the _window already exists
+	// I doubt a new window scene will be connected but just in case try to handle that
+	if (_window == nil)
+	{
+		// Handle first window session connection
+		UIWindow *window = [[UIWindow alloc] initWithWindowScene:windowScene];
+		window.rootViewController = [[ZGViewController alloc] initWithFrame:window.bounds];
+		
+		_window = window;
+		
+		[window makeKeyAndVisible];
+		
+		// Window is ready for the app to begin launching and using it now
+		ZGAppDelegate *appDelegate = (ZGAppDelegate * _Nonnull)UIApplication.sharedApplication.delegate;
+		assert([appDelegate isKindOfClass:ZGAppDelegate.class]);
+		
+		[appDelegate applicationDidShowMainWindowScene];
+	}
+	else if (_window.windowScene == windowScene)
+	{
+		[_window makeKeyAndVisible];
+	}
+	else
+	{
+		_window.windowScene = windowScene;
+		[_window makeKeyAndVisible];
+	}
+}
+
+- (void)sceneDidBecomeActive:(UIScene *)scene
+{
+	if (_windowEventHandler != nil)
+	{
+		ZGWindowEvent windowEvent = { 0 };
+		windowEvent.type = ZGWindowEventTypeFocusGained;
+		_windowEventHandler(windowEvent, _windowEventHandlerContext);
+	}
+}
+
+- (void)sceneWillResignActive:(UIScene *)scene
+{
+	if (_windowEventHandler != nil)
+	{
+		ZGWindowEvent windowEvent = { 0 };
+		windowEvent.type = ZGWindowEventTypeFocusLost;
+		_windowEventHandler(windowEvent, _windowEventHandlerContext);
+	}
+}
+
+- (void)sceneWillEnterForeground:(UIScene *)scene
+{
+	if (_windowEventHandler != nil)
+	{
+		ZGWindowEvent windowEvent = { 0 };
+		windowEvent.type = ZGWindowEventTypeShown;
+		_windowEventHandler(windowEvent, _windowEventHandlerContext);
+	}
+}
+
+- (void)sceneDidEnterBackground:(UIScene *)scene
+{
+	if (_windowEventHandler != nil)
+	{
+		ZGWindowEvent windowEvent = { 0 };
+		windowEvent.type = ZGWindowEventTypeHidden;
+		_windowEventHandler(windowEvent, _windowEventHandlerContext);
+	}
+}
+
+#if !PLATFORM_TVOS
+- (void)windowScene:(UIWindowScene *)windowScene didUpdateCoordinateSpace:(id<UICoordinateSpace>)previousCoordinateSpace interfaceOrientation:(UIInterfaceOrientation)previousInterfaceOrientation traitCollection:(UITraitCollection *)previousTraitCollection
+{
+	if (windowScene.activationState == UISceneActivationStateUnattached)
+	{
+		return;
+	}
+	
+	if (_windowEventHandler == nil)
+	{
+		return;
+	}
+	
+	UIWindow *currentWindow = self.window;
+	for (UIWindow *sceneWindow in windowScene.windows)
+	{
+		if (sceneWindow == currentWindow)
+		{
+			CGRect frame = currentWindow.frame;
+			
+			ZGWindowEvent windowEvent = { 0 };
+			windowEvent.width = (int32_t)frame.size.width;
+			windowEvent.height = (int32_t)frame.size.height;
+			windowEvent.type = ZGWindowEventTypeResize;
+			
+			_windowEventHandler(windowEvent, _windowEventHandlerContext);
+			
+			break;
+		}
+	}
+}
+#endif
 
 @end
 
