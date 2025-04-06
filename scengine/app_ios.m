@@ -23,7 +23,6 @@
  */
 
 #import "app.h"
-#import "window.h"
 #import "app_delegate_ios.h"
 #import "zgtime.h"
 
