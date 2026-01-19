@@ -107,11 +107,15 @@ void popDebugGroup_metal(Renderer *renderer);
 	
 	CGSize drawableSize = [self updateDrawableSize];
 	
+#if !PLATFORM_TVOS
 	if (_renderer->drawableWidth != (int32_t)drawableSize.width || _renderer->drawableHeight != (int32_t)drawableSize.height)
 	{
 		updateRealViewport(_renderer);
 		[[NSNotificationCenter defaultCenter] postNotificationName:ZGMetalViewportChangedNotification object:nil];
 	}
+#else
+	(void)drawableSize;
+#endif
 }
 
 - (CGSize)updateDrawableSize

@@ -1685,6 +1685,7 @@ void initMenus(ZGWindow *windowRef, GameState *gameState, void (*exitGame)(ZGWin
 
 	gCurrentMenuView = gMainMenuView;
 	
+#if !PLATFORM_TVOS
 	UIView *(^restoreMenuView)(UIView *, UIView *(*)(UIView *)) = ^(UIView *oldTargetMenuView, UIView *(*makeMenuFunc)(UIView *)) {
 		BOOL currentMenuWasTargetMenu = (gCurrentMenuView == oldTargetMenuView);
 		BOOL targetMenuWasActive = (oldTargetMenuView.superview != nil);
@@ -1718,6 +1719,7 @@ void initMenus(ZGWindow *windowRef, GameState *gameState, void (*exitGame)(ZGWin
 		gJoinGameMenuView = restoreMenuView(gJoinGameMenuView, makeJoinGameMenu);
 		gOptionsView = restoreMenuView(gOptionsView, makeOptionsMenu);
 	}];
+#endif
 }
 
 void showGameMenus(ZGWindow *windowRef)
