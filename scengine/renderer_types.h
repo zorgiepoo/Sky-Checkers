@@ -43,6 +43,10 @@ extern "C" {
 #define MSAA_PREFERRED_RETINA_SAMPLE_COUNT 2
 #define MSAA_PREFERRED_NONRETINA_SAMPLE_COUNT 4
 
+#if PLATFORM_IOS
+#define ZGMetalViewportChangedNotification @"ZGMetalViewportChangedNotification"
+#endif
+
 typedef struct
 {
     ZGFloat red;

@@ -53,8 +53,6 @@
 	<array>
 		<string>arm64</string>
 	</array>
-	<key>UIRequiresFullScreen</key>
-	<true/>
 	<key>UIUserInterfaceStyle</key>
 	<string>Automatic</string>
 </dict>

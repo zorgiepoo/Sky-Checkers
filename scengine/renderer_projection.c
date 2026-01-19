@@ -29,7 +29,10 @@
 ZGFloat computeProjectionAspectRatio(Renderer *renderer)
 {
 	// Some history is this used to be width / height (where both width and height were integers), resulting in 1 most of the time.
-	ZGFloat sizeRatio = (ZGFloat)renderer->drawableWidth / (ZGFloat)renderer->drawableHeight;
+	ZGFloat drawableWidth = (ZGFloat)renderer->drawableWidth;
+	ZGFloat drawableHeight = (ZGFloat)renderer->drawableHeight;
+	
+	ZGFloat sizeRatio = fmaxf(drawableWidth, drawableHeight) / fminf(drawableWidth, drawableHeight);
 	
 	// If size is 4:3 or 4.3:1 just use 1.0
 	if (fabsf(sizeRatio - (4.0f / 3.0f)) <= 0.01f || fabsf(sizeRatio - (4.3f / 3.0f)) <= 0.01f)

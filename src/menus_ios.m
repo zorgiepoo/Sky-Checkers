@@ -1684,6 +1684,40 @@ void initMenus(ZGWindow *windowRef, GameState *gameState, void (*exitGame)(ZGWin
 	gOptionsView = makeOptionsMenu(metalView);
 
 	gCurrentMenuView = gMainMenuView;
+	
+	UIView *(^restoreMenuView)(UIView *, UIView *(*)(UIView *)) = ^(UIView *oldTargetMenuView, UIView *(*makeMenuFunc)(UIView *)) {
+		BOOL currentMenuWasTargetMenu = (gCurrentMenuView == oldTargetMenuView);
+		BOOL targetMenuWasActive = (oldTargetMenuView.superview != nil);
+		
+		if (targetMenuWasActive)
+		{
+			[oldTargetMenuView removeFromSuperview];
+		}
+		
+		UIView *newTargetMenuView = makeMenuFunc(metalView);
+		
+		if (currentMenuWasTargetMenu)
+		{
+			gCurrentMenuView = newTargetMenuView;
+		}
+		
+		if (targetMenuWasActive)
+		{
+			[metalView addSubview:newTargetMenuView];
+		}
+		
+		return newTargetMenuView;
+	};
+	
+	// Re-create menu items when viewport changes so they reflect the new size
+	[[NSNotificationCenter defaultCenter] addObserverForName:ZGMetalViewportChangedNotification object:nil queue:NSOperationQueue.mainQueue usingBlock:^(NSNotification * _Nonnull __unused notification) {
+		gMainMenuView = restoreMenuView(gMainMenuView, makeMainMenu);
+		gPauseMenuView = restoreMenuView(gPauseMenuView, makePauseMenu);
+		gOnlineView = restoreMenuView(gOnlineView, makeOnlineMenu);
+		gHostGameMenuView = restoreMenuView(gHostGameMenuView, makeHostGameMenu);
+		gJoinGameMenuView = restoreMenuView(gJoinGameMenuView, makeJoinGameMenu);
+		gOptionsView = restoreMenuView(gOptionsView, makeOptionsMenu);
+	}];
 }
 
 void showGameMenus(ZGWindow *windowRef)
