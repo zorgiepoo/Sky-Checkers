@@ -744,12 +744,12 @@ void endGame(ZGWindow *window, bool lastGame)
 		
 		if (gGameState != GAME_STATE_PAUSED)
 		{
-	#if PLATFORM_TVOS
+#if PLATFORM_IOS
+#if PLATFORM_TVOS
 			ZGUninstallMenuGesture(window);
-	#elif PLATFORM_IOS
-			ZGUninstallTouchGestures(window);
+#endif
 			showGameMenus(window);
-	#endif
+#endif
 		}
 	}
 }

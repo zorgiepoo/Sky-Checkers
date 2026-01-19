@@ -10,6 +10,8 @@
 		7217571B2D9891990076ECE7 /* audio_apple.m in Sources */ = {isa = PBXBuildFile; fileRef = 7217571A2D9891990076ECE7 /* audio_apple.m */; };
 		7217571C2D9891990076ECE7 /* audio_apple.m in Sources */ = {isa = PBXBuildFile; fileRef = 7217571A2D9891990076ECE7 /* audio_apple.m */; };
 		7217571D2D9891990076ECE7 /* audio_apple.m in Sources */ = {isa = PBXBuildFile; fileRef = 7217571A2D9891990076ECE7 /* audio_apple.m */; };
+		721757242D9A07180076ECE7 /* menu_views_ios.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721757222D9A07180076ECE7 /* menu_views_ios.swift */; };
+		721757252D9A07180076ECE7 /* menu_views_ios.swift in Sources */ = {isa = PBXBuildFile; fileRef = 721757222D9A07180076ECE7 /* menu_views_ios.swift */; };
 		7243ACB323C2EB5900A83ADD /* Assets-tvOS.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7243ACB223C2EB5900A83ADD /* Assets-tvOS.xcassets */; };
 		7243ACB623C2EB5900A83ADD /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7243ACB423C2EB5900A83ADD /* LaunchScreen.storyboard */; };
 		7243ACBF23C2ED7300A83ADD /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 774A441E0B2BEA57000C04D9 /* main.c */; };
@@ -140,6 +142,9 @@
 		7217571A2D9891990076ECE7 /* audio_apple.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = audio_apple.m; path = ../src/audio_apple.m; sourceTree = SOURCE_ROOT; };
 		7217571E2D9891A90076ECE7 /* audio_sdl.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = audio_sdl.c; path = ../src/audio_sdl.c; sourceTree = SOURCE_ROOT; };
 		7217571F2D9891A90076ECE7 /* audio_win.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = audio_win.cpp; path = ../src/audio_win.cpp; sourceTree = SOURCE_ROOT; };
+		721757202D9A07180076ECE7 /* SkyCheckers-iOS-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SkyCheckers-iOS-Bridging-Header.h"; sourceTree = "<group>"; };
+		721757212D9A07180076ECE7 /* SkyCheckers-tvOS-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SkyCheckers-tvOS-Bridging-Header.h"; sourceTree = "<group>"; };
+		721757222D9A07180076ECE7 /* menu_views_ios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = menu_views_ios.swift; path = ../src/menu_views_ios.swift; sourceTree = SOURCE_ROOT; };
 		7243ACA723C2EB5700A83ADD /* SkyCheckers.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SkyCheckers.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7243ACB223C2EB5900A83ADD /* Assets-tvOS.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Assets-tvOS.xcassets"; sourceTree = "<group>"; };
 		7243ACB523C2EB5900A83ADD /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -364,6 +369,7 @@
 				77C7A4FA0CFD292600295420 /* menus.h */,
 				77C7A4FB0CFD292600295420 /* menus_desktop.c */,
 				72A5D134239C1725004C12D6 /* menus_ios.m */,
+				721757222D9A07180076ECE7 /* menu_views_ios.swift */,
 				72FC11FE239D870B00E97E45 /* menu_actions.h */,
 				72FC11FF239D870C00E97E45 /* menu_actions.c */,
 				774A445E0B2BEB46000C04D9 /* scenery.h */,
@@ -388,6 +394,8 @@
 				772B6A840D15CBA000A216BD /* network.c */,
 				77DC8A500B2FA1DD0080334C /* console.h */,
 				77DC8A510B2FA1DD0080334C /* console.c */,
+				721757202D9A07180076ECE7 /* SkyCheckers-iOS-Bridging-Header.h */,
+				721757212D9A07180076ECE7 /* SkyCheckers-tvOS-Bridging-Header.h */,
 			);
 			name = Sources;
 			sourceTree = "<group>";
@@ -618,9 +626,11 @@
 				TargetAttributes = {
 					7243ACA623C2EB5700A83ADD = {
 						CreatedOnToolsVersion = 11.3;
+						LastSwiftMigration = 1630;
 					};
 					72817C5E23934C3E00DB7677 = {
 						CreatedOnToolsVersion = 11.1;
+						LastSwiftMigration = 1630;
 					};
 					72970EF4243864C0008ECB13 = {
 						CreatedOnToolsVersion = 11.4;
@@ -711,6 +721,7 @@
 				7243ACC623C2ED7300A83ADD /* input.c in Sources */,
 				7243ACC723C2ED7300A83ADD /* animation.c in Sources */,
 				7243ACC823C2ED7300A83ADD /* ai.c in Sources */,
+				721757252D9A07180076ECE7 /* menu_views_ios.swift in Sources */,
 				7243ACCA23C2ED7300A83ADD /* network.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -746,6 +757,7 @@
 				72817CA4239385E800DB7677 /* scenery.c in Sources */,
 				72817CA2239385DC00DB7677 /* main.c in Sources */,
 				72A5D135239C1725004C12D6 /* menus_ios.m in Sources */,
+				721757242D9A07180076ECE7 /* menu_views_ios.swift in Sources */,
 				72FC1201239D870C00E97E45 /* menu_actions.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -825,6 +837,7 @@
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_MODULES_AUTOLINK = NO;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
@@ -851,8 +864,11 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = appletvos;
+				SWIFT_OBJC_BRIDGING_HEADER = "SkyCheckers-tvOS-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 15.6;
+				TVOS_DEPLOYMENT_TARGET = 17.6;
 			};
 			name = Debug;
 		};
@@ -864,6 +880,7 @@
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_MODULES_AUTOLINK = NO;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
@@ -887,8 +904,10 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = appletvos;
+				SWIFT_OBJC_BRIDGING_HEADER = "SkyCheckers-tvOS-Bridging-Header.h";
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 15.6;
+				TVOS_DEPLOYMENT_TARGET = 17.6;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -901,6 +920,7 @@
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_MODULES_AUTOLINK = NO;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
@@ -924,8 +944,10 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = appletvos;
+				SWIFT_OBJC_BRIDGING_HEADER = "SkyCheckers-tvOS-Bridging-Header.h";
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 15.6;
+				TVOS_DEPLOYMENT_TARGET = 17.6;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = "Profiling-Release";
@@ -938,6 +960,7 @@
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_MODULES_AUTOLINK = NO;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
@@ -955,7 +978,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = iOS/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -965,6 +988,9 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				SWIFT_OBJC_BRIDGING_HEADER = "SkyCheckers-iOS-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -977,6 +1003,7 @@
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_MODULES_AUTOLINK = NO;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
@@ -992,7 +1019,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = iOS/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1001,6 +1028,8 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				SWIFT_OBJC_BRIDGING_HEADER = "SkyCheckers-iOS-Bridging-Header.h";
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};
@@ -1014,6 +1043,7 @@
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_MODULES_AUTOLINK = NO;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
@@ -1029,7 +1059,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = iOS/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1038,6 +1068,8 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				SWIFT_OBJC_BRIDGING_HEADER = "SkyCheckers-iOS-Bridging-Header.h";
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};
@@ -1085,6 +1117,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.zgcoder.SkyCheckers;
 				PRODUCT_NAME = SkyCheckers;
 				SECTORDER_FLAGS = "";
+				SWIFT_VERSION = 6.0;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wextra",
@@ -1098,6 +1131,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				AUTOMATION_APPLE_EVENTS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_ENABLE_OBJC_WEAK = YES;
@@ -1114,6 +1148,12 @@
 				CURRENT_PROJECT_VERSION = 14;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
 				ENABLE_TESTABILITY = YES;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -1128,6 +1168,12 @@
 				MARKETING_VERSION = 1.3;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
+				RUNTIME_EXCEPTION_ALLOW_DYLD_ENVIRONMENT_VARIABLES = NO;
+				RUNTIME_EXCEPTION_ALLOW_JIT = NO;
+				RUNTIME_EXCEPTION_ALLOW_UNSIGNED_EXECUTABLE_MEMORY = YES;
+				RUNTIME_EXCEPTION_DEBUGGING_TOOL = NO;
+				RUNTIME_EXCEPTION_DISABLE_EXECUTABLE_PAGE_PROTECTION = NO;
+				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = NO;
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -1136,6 +1182,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				AUTOMATION_APPLE_EVENTS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_ENABLE_OBJC_WEAK = YES;
@@ -1153,6 +1200,12 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = macOS/Info.plist;
@@ -1164,6 +1217,12 @@
 				MARKETING_VERSION = 1.3;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				RUNTIME_EXCEPTION_ALLOW_DYLD_ENVIRONMENT_VARIABLES = NO;
+				RUNTIME_EXCEPTION_ALLOW_JIT = NO;
+				RUNTIME_EXCEPTION_ALLOW_UNSIGNED_EXECUTABLE_MEMORY = YES;
+				RUNTIME_EXCEPTION_DEBUGGING_TOOL = NO;
+				RUNTIME_EXCEPTION_DISABLE_EXECUTABLE_PAGE_PROTECTION = NO;
+				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = NO;
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -1172,6 +1231,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				AUTOMATION_APPLE_EVENTS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_ENABLE_OBJC_WEAK = YES;
@@ -1189,6 +1249,12 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = macOS/Info.plist;
@@ -1200,6 +1266,12 @@
 				MARKETING_VERSION = 1.3;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				RUNTIME_EXCEPTION_ALLOW_DYLD_ENVIRONMENT_VARIABLES = NO;
+				RUNTIME_EXCEPTION_ALLOW_JIT = NO;
+				RUNTIME_EXCEPTION_ALLOW_UNSIGNED_EXECUTABLE_MEMORY = YES;
+				RUNTIME_EXCEPTION_DEBUGGING_TOOL = NO;
+				RUNTIME_EXCEPTION_DISABLE_EXECUTABLE_PAGE_PROTECTION = NO;
+				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = NO;
 				SDKROOT = macosx;
 			};
 			name = "Profiling-Release";
@@ -1245,6 +1317,7 @@
 				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.zgcoder.SkyCheckers;
 				PRODUCT_NAME = SkyCheckers;
+				SWIFT_VERSION = 6.0;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wextra",
@@ -1295,6 +1368,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.zgcoder.SkyCheckers;
 				PRODUCT_NAME = SkyCheckers;
 				SECTORDER_FLAGS = "";
+				SWIFT_VERSION = 6.0;
 				WARNING_CFLAGS = (
 					"-Wall",
 					"-Wextra",
