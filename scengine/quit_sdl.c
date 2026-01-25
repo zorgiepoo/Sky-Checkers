@@ -22,7 +22,7 @@
  SOFTWARE.
  */
 
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 
 #include "quit.h"
 #include <stdlib.h>
@@ -35,7 +35,7 @@ void ZGQuit(void)
 
 void ZGSendQuitEvent(void)
 {
-	SDL_Event event;
-	event.type = SDL_QUIT;
+	SDL_Event event = { 0 };
+	event.type = SDL_EVENT_QUIT;
 	SDL_PushEvent(&event);
 }

@@ -390,6 +390,11 @@ void drawNetworkUserNameFieldMenu(Renderer *renderer, color4_t preferredColor)
 void networkUserNameFieldMenuAction(void *context)
 {
 	gNetworkUserNameFieldIsActive = !gNetworkUserNameFieldIsActive;
+
+#if PLATFORM_LINUX
+	GameMenuContext *menuContext = context;
+	ZGSetAcceptingTextInput(menuContext->window, gNetworkUserNameFieldIsActive);
+#endif
 }
 
 void writeNetworkUserNameText(uint8_t text)
@@ -498,6 +503,11 @@ void drawNetworkAddressFieldMenu(Renderer *renderer, color4_t preferredColor)
 void networkAddressFieldMenuAction(void *context)
 {
 	gNetworkAddressFieldIsActive = !gNetworkAddressFieldIsActive;
+
+#if PLATFORM_LINUX
+	GameMenuContext *menuContext = context;
+	ZGSetAcceptingTextInput(menuContext->window, gNetworkAddressFieldIsActive);
+#endif
 }
 
 void writeNetworkAddressText(uint8_t text)
@@ -1475,7 +1485,7 @@ static void performMenuUpAction(void)
 	}
 }
 
-static void performMenuBackAction(GameState *gameState)
+static void performMenuBackAction(GameState *gameState, ZGWindow *window)
 {
 	if (*gameState == GAME_STATE_PAUSED)
 	{
@@ -1484,10 +1494,18 @@ static void performMenuBackAction(GameState *gameState)
 	else if (gNetworkAddressFieldIsActive)
 	{
 		gNetworkAddressFieldIsActive = false;
+		
+#if PLATFORM_LINUX
+		ZGSetAcceptingTextInput(window, false);
+#endif
 	}
 	else if (gNetworkUserNameFieldIsActive)
 	{
 		gNetworkUserNameFieldIsActive = false;
+
+#if PLATFORM_LINUX
+		ZGSetAcceptingTextInput(window, false);
+#endif
 	}
 	else if (gDrawArrowsForCharacterLivesFlag)
 	{
@@ -1539,7 +1557,7 @@ void performKeyboardMenuAction(ZGKeyboardEvent *event, GameState *gameState, ZGW
 	}
 	else if (keyCode == ZG_KEYCODE_ESCAPE)
 	{
-		performMenuBackAction(gameState);
+		performMenuBackAction(gameState, window);
 	}
 	else if (keyCode == ZG_KEYCODE_BACKSPACE)
 	{
@@ -1574,7 +1592,7 @@ void performGamepadMenuAction(GamepadEvent *event, GameState *gameState, ZGWindo
 			break;
 		case GAMEPAD_BUTTON_B:
 		case GAMEPAD_BUTTON_BACK:
-			performMenuBackAction(gameState);
+			performMenuBackAction(gameState, window);
 			break;
 		case GAMEPAD_BUTTON_DPAD_UP:
 			performMenuUpAction();

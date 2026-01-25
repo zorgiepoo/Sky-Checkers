@@ -22,7 +22,7 @@
  SOFTWARE.
  */
 
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 
 #include "app.h"
 #include "quit.h"
@@ -41,7 +41,7 @@ int ZGAppInit(int argc, char *argv[], ZGAppHandlers *appHandlers, void *appConte
 {
 	SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
 
-	if (SDL_Init(SDL_INIT_VIDEO) < 0)
+	if (!SDL_Init(SDL_INIT_VIDEO))
 	{
 		fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
 		ZGQuit();
@@ -95,7 +95,7 @@ int ZGAppInit(int argc, char *argv[], ZGAppHandlers *appHandlers, void *appConte
 		{
 			switch (event.type)
 			{
-				case SDL_QUIT:
+				case SDL_EVENT_QUIT:
 					done = true;
 					break;
 				default:
@@ -125,14 +125,14 @@ void ZGAppSetAllowsScreenIdling(bool allowsScreenIdling)
 {
 	if (!allowsScreenIdling)
 	{
-		if (SDL_IsScreenSaverEnabled())
+		if (SDL_ScreenSaverEnabled())
 		{
 			SDL_DisableScreenSaver();
 		}
 	}
 	else
 	{
-		if (!SDL_IsScreenSaverEnabled())
+		if (!SDL_ScreenSaverEnabled())
 		{
 			SDL_EnableScreenSaver();
 		}

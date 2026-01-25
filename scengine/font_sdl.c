@@ -22,8 +22,8 @@
  SOFTWARE.
  */
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
+#include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
 
 #include "font.h"
 #include "platforms.h"
@@ -32,9 +32,9 @@ static TTF_Font *gFont;
 
 void initFontFromFile(const char *filePath, int pointSize)
 {
-	if (TTF_Init() == -1)
+	if (!TTF_Init())
 	{
-		fprintf(stderr, "TTF_Init: %s or %s\n", TTF_GetError(), SDL_GetError());
+		fprintf(stderr, "TTF_Init: %s\n", SDL_GetError());
 		SDL_Quit();
 	}
 	
@@ -42,24 +42,30 @@ void initFontFromFile(const char *filePath, int pointSize)
 	
 	if (gFont == NULL)
 	{
-		fprintf(stderr, "loading font error! %s\n", TTF_GetError());
+		fprintf(stderr, "loading font error! %s\n", SDL_GetError());
 		SDL_Quit();
 	}
+}
+
+// This is how createRGBSurface() used to work
+static SDL_Surface *createRGBSurface(Uint32 flags, int width, int height, int depth, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
+{
+    return SDL_CreateSurface(width, height, SDL_GetPixelFormatForMasks(depth, Rmask, Gmask, Bmask, Amask));
 }
 
 TextureData createTextData(const char *string)
 {
 	SDL_Color color = {255, 255, 255, 0};
 
-	SDL_Surface *fontSurface = TTF_RenderUTF8_Blended(gFont, string, color);
+	SDL_Surface *fontSurface = TTF_RenderText_Blended(gFont, string, strlen(string), color);
 
 	if (fontSurface == NULL)
 	{
-		fprintf(stderr, "font surface is null: %s", TTF_GetError());
+		fprintf(stderr, "font surface is null: %s", SDL_GetError());
 		SDL_Quit();
 	}
 	
-	SDL_Surface *blittedSurface = SDL_CreateRGBSurface(0, fontSurface->w, fontSurface->h, 32,
+	SDL_Surface *blittedSurface = createRGBSurface(0, fontSurface->w, fontSurface->h, 32,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 		0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000
 #else
@@ -73,13 +79,13 @@ TextureData createTextData(const char *string)
 		SDL_Quit();
 	}
 	
-	if (SDL_BlitSurface(fontSurface, NULL, blittedSurface, NULL) != 0)
+	if (!SDL_BlitSurface(fontSurface, NULL, blittedSurface, NULL))
 	{
 		fprintf(stderr, "font surface failed to blit: %s\n", SDL_GetError());
 		SDL_Quit();
 	}
 	
-	SDL_FreeSurface(fontSurface);
+	SDL_DestroySurface(fontSurface);
 	
 	return (TextureData){.pixelData = blittedSurface->pixels, .context = blittedSurface, .width = blittedSurface->w, .height = blittedSurface->h, .pixelFormat = PIXEL_FORMAT_RGBA32};
 }

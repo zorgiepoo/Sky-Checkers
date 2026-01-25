@@ -1,8 +1,3 @@
-#if __VERSION__ < 130
-#define in attribute
-#define out varying
-#endif
-
 in vec4 position;
 in vec2 textureCoordIn;
 

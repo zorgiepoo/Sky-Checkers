@@ -3,30 +3,21 @@ This document is for building Sky Checkers from source. Available binaries are a
 To compile under macOS or iOS, build and run the Xcode project in mac/ using the appropriate scheme
 To compile under Windows, build and run the Visual Studio project in win/ using the appropriate configuration
 
-To compile for linux, the following dependencies are needed:
+To compile for linux, the following dependencies are needed to be installed:
 
-* SDL2
-* SDL2_ttf
-* SDL2_mixer
-* glew
+* SDL3 (3.4.0)
+* SDL3_ttf (3.3.2)
+* SDL3_mixer (dbadac0d8aef1eb1de3cf1eff9ffccea8d65f21c)
 
-Development libraries for these dependencies may need to first be installed.
+These releases are obtained from GitHub repositories with following cmake steps:
 
-Eg: On Ubuntu, I had to execute:
-
-apt-get install libsdl2-dev
-apt-get install libsdl2-mixer-dev
-apt-get install libsdl2-ttf-dev
-apt-get install libglew-dev
-
-On CentOS 7, I executed:
-
-yum groupinstall 'Development Tools'
-yum install epel-release
-yum install SDL2-devel.x86_64
-yum install SDL2_mixer-devel.x86_64
-yum install SDL2_ttf-devel.x86_64
-yum install glew-devel.x86_64.
+```
+cd $SDL_PROJ_DIR
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
+cmake --build . --parallel
+sudo cmake --install .
+```
 
 Then to compile under Linux, cd into linux/ and:
   1. If you want to build and install a production build run:

@@ -30,13 +30,13 @@ FILES=main.c ai.c animation.c audio_sdl.c characters.c collision.c console.c men
 
 FILES_ENGINE=text.c font_sdl.c gamepad_sdl.c defaults_linux.c defaults_file.c texture.c texture_sdl.c thread_posix.c quit_sdl.c time_sdl.c window_sdl.c keyboard_sdl.c app_sdl.c mt_random.c renderer.c renderer_gl.c renderer_projection.c
 
-SOURCE=$(addprefix ../src/, $(FILES)) $(addprefix ../scengine/, $(FILES_ENGINE))
+SOURCE=$(addprefix ../src/, $(FILES)) $(addprefix ../scengine/, $(FILES_ENGINE)) ../vendor/glad/src/gl.c
 
-WARNINGS=-Wall -Wextra -Wno-unused-parameter
+WARNINGS=-Wall -Wextra -Wno-unused-parameter -Wno-format-truncation -Wno-calloc-transposed-args
 
-LIBS=-lm -lX11 -lGL -lpthread `pkg-config glew --libs --cflags` `sdl2-config --cflags --libs` -lSDL2_mixer -lSDL2_ttf
+LIBS=-lm -lX11 -lGL -lpthread `pkg-config sdl3 --cflags --libs` -lSDL3_mixer -lSDL3_ttf
 
-INCLUDE_SEARCH=-I ../src -I ../scengine
+INCLUDE_SEARCH=-I ../src -I ../scengine -I ../vendor/glad/include
 
 CSTD=-std=gnu99
 

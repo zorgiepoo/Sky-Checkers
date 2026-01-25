@@ -22,15 +22,16 @@
  SOFTWARE.
  */
 
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 
 #include "gamepad.h"
 #include "zgtime.h"
 
 #include <stdbool.h>
 #include <string.h>
+#include <stdlib.h>
 
-#define INVALID_JOYSTICK_INSTANCE_ID -1
+#define INVALID_JOYSTICK_INSTANCE_ID 0
 
 #define AXIS_THRESHOLD (Sint16)(32767 * AXIS_THRESHOLD_PERCENT)
 
@@ -55,20 +56,20 @@ struct _GamepadManager
 	Gamepad gamepads[MAX_GAMEPADS];
 };
 
-static void _notifyGamepadAdded(GamepadManager *gamepadManager, Sint32 joystickIndex)
+static void _notifyGamepadAdded(GamepadManager *gamepadManager, SDL_JoystickID joystickInstanceID)
 {
-	if (SDL_IsGameController(joystickIndex))
+	if (SDL_IsGamepad(joystickInstanceID))
 	{
-		SDL_GameController *controller = SDL_GameControllerOpen(joystickIndex);
+		// Should we close the gamepad if we fail to find an available slot?
+		SDL_Gamepad *controller = SDL_OpenGamepad(joystickInstanceID);
 		if (controller == NULL)
 		{
-			fprintf(stderr, "Failed to open gamecontroller %d: %s\n", joystickIndex, SDL_GetError());
+			fprintf(stderr, "Failed to open gamepad %d: %s\n", joystickInstanceID, SDL_GetError());
 		}
 		else
 		{
 			bool foundExistingGamepad = false;
-			SDL_JoystickID joystickInstanceID = SDL_JoystickGetDeviceInstanceID(joystickIndex);
-			for (SDL_JoystickID gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
+			for (uint32_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
 			{
 				if (gamepadManager->gamepads[gamepadIndex].joystickInstanceID == joystickInstanceID)
 				{
@@ -79,14 +80,14 @@ static void _notifyGamepadAdded(GamepadManager *gamepadManager, Sint32 joystickI
 
 			if (!foundExistingGamepad)
 			{
-				for (SDL_JoystickID gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
+				for (uint32_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
 				{
 					if (gamepadManager->gamepads[gamepadIndex].joystickInstanceID == INVALID_JOYSTICK_INSTANCE_ID)
 					{
 						gamepadManager->gamepads[gamepadIndex].joystickInstanceID = joystickInstanceID;
 						gamepadManager->gamepads[gamepadIndex].dpadAxis = false;
 
-						char* controllerMapping = SDL_GameControllerMapping(controller);
+						char* controllerMapping = SDL_GetGamepadMapping(controller);
 						if (controllerMapping != NULL)
 						{
 							const char* prefixString = "dpdown:";
@@ -118,19 +119,19 @@ static void _notifyGamepadAdded(GamepadManager *gamepadManager, Sint32 joystickI
 
 GamepadManager *initGamepadManager(const char *databasePath, GamepadCallback addedCallback, GamepadCallback removalCallback, void *context)
 {
-	if (SDL_Init(SDL_INIT_GAMECONTROLLER) != 0)
+	if (!SDL_Init(SDL_INIT_GAMEPAD))
 	{
-		fprintf(stderr, "Failed to initialize SDL gamecontroller: %s\n", SDL_GetError());
+		fprintf(stderr, "Failed to initialize SDL gamepad: %s\n", SDL_GetError());
 		return NULL;
 	}
 	
-	if (SDL_GameControllerAddMappingsFromFile(databasePath) == -1)
+	if (SDL_AddGamepadMappingsFromFile(databasePath) == -1)
 	{
-		fprintf(stderr, "Failed to add SDL game controller mappings: %s\n", SDL_GetError());
+		fprintf(stderr, "Failed to add SDL gamepad mappings: %s\n", SDL_GetError());
 	}
 	
 	GamepadManager *gamepadManager = calloc(1, sizeof(*gamepadManager));
-	for (SDL_JoystickID gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
+	for (uint32_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
 	{
 		gamepadManager->gamepads[gamepadIndex].joystickInstanceID = INVALID_JOYSTICK_INSTANCE_ID;
 	}
@@ -140,9 +141,13 @@ GamepadManager *initGamepadManager(const char *databasePath, GamepadCallback add
 	gamepadManager->context = context;
 	
 	// Scan already connected devices
-	for (Sint32 joystickIndex = 0; joystickIndex < SDL_NumJoysticks(); joystickIndex++)
+	int numberOfConnectedJoysticks = 0;
+	SDL_JoystickID *joystickIDs = SDL_GetJoysticks(&numberOfConnectedJoysticks);
+
+	for (int joystickIndex = 0; joystickIndex < numberOfConnectedJoysticks; joystickIndex++)
 	{
-		_notifyGamepadAdded(gamepadManager, joystickIndex);
+		SDL_JoystickID joystickInstanceID = joystickIDs[joystickIndex];
+		_notifyGamepadAdded(gamepadManager, joystickInstanceID);
 	}
 	
 	return gamepadManager;
@@ -152,35 +157,35 @@ GamepadButton _gamepadButtonForSDLButton(Uint8 sdlButton)
 {
 	switch (sdlButton)
 	{
-		case SDL_CONTROLLER_BUTTON_A:
+		case SDL_GAMEPAD_BUTTON_SOUTH:
 			return GAMEPAD_BUTTON_A;
-		case SDL_CONTROLLER_BUTTON_B:
+		case SDL_GAMEPAD_BUTTON_EAST:
 			return GAMEPAD_BUTTON_B;
-		case SDL_CONTROLLER_BUTTON_X:
+		case SDL_GAMEPAD_BUTTON_WEST:
 			return GAMEPAD_BUTTON_X;
-		case SDL_CONTROLLER_BUTTON_Y:
+		case SDL_GAMEPAD_BUTTON_NORTH:
 			return GAMEPAD_BUTTON_Y;
-		case SDL_CONTROLLER_BUTTON_BACK:
+		case SDL_GAMEPAD_BUTTON_BACK:
 			return GAMEPAD_BUTTON_BACK;
-		case SDL_CONTROLLER_BUTTON_START:
+		case SDL_GAMEPAD_BUTTON_START:
 			return GAMEPAD_BUTTON_START;
-		case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:
+		case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER:
 			return GAMEPAD_BUTTON_LEFTSHOULDER;
-		case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:
+		case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER:
 			return GAMEPAD_BUTTON_RIGHTSHOULDER;
-		case SDL_CONTROLLER_BUTTON_DPAD_UP:
+		case SDL_GAMEPAD_BUTTON_DPAD_UP:
 			return GAMEPAD_BUTTON_DPAD_UP;
-		case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+		case SDL_GAMEPAD_BUTTON_DPAD_DOWN:
 			return GAMEPAD_BUTTON_DPAD_DOWN;
-		case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+		case SDL_GAMEPAD_BUTTON_DPAD_LEFT:
 			return GAMEPAD_BUTTON_DPAD_LEFT;
-		case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+		case SDL_GAMEPAD_BUTTON_DPAD_RIGHT:
 			return GAMEPAD_BUTTON_DPAD_RIGHT;
-		case SDL_CONTROLLER_BUTTON_RIGHTSTICK:
-		case SDL_CONTROLLER_BUTTON_LEFTSTICK:
-		case SDL_CONTROLLER_BUTTON_GUIDE:
-		case (Uint8)SDL_CONTROLLER_BUTTON_INVALID:
-		case SDL_CONTROLLER_BUTTON_MAX:
+		case SDL_GAMEPAD_BUTTON_RIGHT_STICK:
+		case SDL_GAMEPAD_BUTTON_LEFT_STICK:
+		case SDL_GAMEPAD_BUTTON_GUIDE:
+		case (Uint8)SDL_GAMEPAD_BUTTON_INVALID:
+		case SDL_GAMEPAD_BUTTON_COUNT:
 		default:
 			return GAMEPAD_BUTTON_MAX;
 	}
@@ -223,20 +228,20 @@ GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *syst
 	
 	switch (sdlEvent->type)
 	{
-		case SDL_CONTROLLERDEVICEADDED:
-			_notifyGamepadAdded(gamepadManager, sdlEvent->cdevice.which);
+		case SDL_EVENT_GAMEPAD_ADDED:
+			_notifyGamepadAdded(gamepadManager, sdlEvent->gdevice.which);
 			break;
-		case SDL_CONTROLLERDEVICEREMOVED:
+		case SDL_EVENT_GAMEPAD_REMOVED:
 		{
-			SDL_GameController *controller = SDL_GameControllerFromInstanceID(sdlEvent->cdevice.which);
+			SDL_JoystickID joystickInstanceID = sdlEvent->gdevice.which;
+			SDL_Gamepad *controller = SDL_GetGamepadFromID(joystickInstanceID);
 
 			if (controller != NULL)
 			{
-				SDL_GameControllerClose(controller);
+				SDL_CloseGamepad(controller);
 			}
 			
-			SDL_JoystickID joystickInstanceID = sdlEvent->cdevice.which;
-			for (SDL_JoystickID gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
+			for (uint32_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
 			{
 				if (gamepadManager->gamepads[gamepadIndex].joystickInstanceID == joystickInstanceID)
 				{
@@ -251,15 +256,15 @@ GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *syst
 			}
 			break;
 		}
-		case SDL_CONTROLLERBUTTONDOWN:
-		case SDL_CONTROLLERBUTTONUP:
+		case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+		case SDL_EVENT_GAMEPAD_BUTTON_UP:
 		{
-			SDL_JoystickID joystickInstanceID = sdlEvent->cbutton.which;
-			GamepadButton button = _gamepadButtonForSDLButton(sdlEvent->cbutton.button);
+			SDL_JoystickID joystickInstanceID = sdlEvent->gbutton.which;
+			GamepadButton button = _gamepadButtonForSDLButton(sdlEvent->gbutton.button);
 			bool axisType = false;
 			if (button == GAMEPAD_BUTTON_DPAD_UP || button == GAMEPAD_BUTTON_DPAD_DOWN || button == GAMEPAD_BUTTON_DPAD_LEFT || button == GAMEPAD_BUTTON_DPAD_RIGHT)
 			{
-				for (SDL_JoystickID gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
+				for (uint32_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
 				{
 					if (gamepadManager->gamepads[gamepadIndex].joystickInstanceID == joystickInstanceID)
 					{
@@ -269,34 +274,34 @@ GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *syst
 				}
 			}
 
-			_addButtonEventIfNeeded((GamepadIndex)joystickInstanceID, button, axisType ? GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS : GAMEPAD_ELEMENT_MAPPING_TYPE_BUTTON, CONVERT_MS_TO_NS(sdlEvent->common.timestamp), (sdlEvent->type == SDL_CONTROLLERBUTTONDOWN), NULL, eventsBuffer, eventCount);
+			_addButtonEventIfNeeded((GamepadIndex)joystickInstanceID, button, axisType ? GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS : GAMEPAD_ELEMENT_MAPPING_TYPE_BUTTON, sdlEvent->common.timestamp, (sdlEvent->type == SDL_EVENT_GAMEPAD_BUTTON_DOWN), NULL, eventsBuffer, eventCount);
 			
 			break;
 		}
-		case SDL_CONTROLLERAXISMOTION:
+		case SDL_EVENT_GAMEPAD_AXIS_MOTION:
 		{
-			Uint8 sdlAxis = sdlEvent->caxis.axis;
-			if (sdlAxis == SDL_CONTROLLER_AXIS_LEFTX || sdlAxis == SDL_CONTROLLER_AXIS_LEFTY)
+			Uint8 sdlAxis = sdlEvent->gaxis.axis;
+			if (sdlAxis == SDL_GAMEPAD_AXIS_LEFTX || sdlAxis == SDL_GAMEPAD_AXIS_LEFTY)
 			{
-				SDL_JoystickID joystickInstanceID = sdlEvent->cbutton.which;
-				for (SDL_JoystickID gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
+				SDL_JoystickID joystickInstanceID = sdlEvent->gbutton.which;
+				for (uint32_t gamepadIndex = 0; gamepadIndex < MAX_GAMEPADS; gamepadIndex++)
 				{
 					Gamepad* gamepad = &gamepadManager->gamepads[gamepadIndex];
 					if (gamepad->joystickInstanceID == joystickInstanceID)
 					{
-						Sint16 sdlAxisValue = sdlEvent->caxis.value;
+						Sint16 sdlAxisValue = sdlEvent->gaxis.value;
 
-						if (sdlAxis == SDL_CONTROLLER_AXIS_LEFTX)
+						if (sdlAxis == SDL_GAMEPAD_AXIS_LEFTX)
 						{
-							uint64_t timestamp = CONVERT_MS_TO_NS(sdlEvent->common.timestamp);
+							uint64_t timestamp = sdlEvent->common.timestamp;
 
 							_addButtonEventIfNeeded((GamepadIndex)gamepad->joystickInstanceID, GAMEPAD_BUTTON_DPAD_RIGHT, GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS, timestamp, (sdlAxisValue >= AXIS_THRESHOLD), &gamepad->lastRightAxisState, eventsBuffer, eventCount);
 
 							_addButtonEventIfNeeded((GamepadIndex)gamepad->joystickInstanceID, GAMEPAD_BUTTON_DPAD_LEFT, GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS, timestamp, (sdlAxisValue <= -AXIS_THRESHOLD), &gamepad->lastLeftAxisState, eventsBuffer, eventCount);
 						}
-						else if (sdlAxis == SDL_CONTROLLER_AXIS_LEFTY)
+						else if (sdlAxis == SDL_GAMEPAD_AXIS_LEFTY)
 						{
-							uint64_t timestamp = CONVERT_MS_TO_NS(sdlEvent->common.timestamp);
+							uint64_t timestamp = sdlEvent->common.timestamp;
 
 							_addButtonEventIfNeeded((GamepadIndex)gamepad->joystickInstanceID, GAMEPAD_BUTTON_DPAD_DOWN, GAMEPAD_ELEMENT_MAPPING_TYPE_AXIS, timestamp, (sdlAxisValue >= AXIS_THRESHOLD), &gamepad->lastDownAxisState, eventsBuffer, eventCount);
 
@@ -318,29 +323,32 @@ GamepadEvent *pollGamepadEvents(GamepadManager *gamepadManager, const void *syst
 
 const char *gamepadName(GamepadManager *gamepadManager, GamepadIndex index)
 {
-	SDL_GameController *controller = SDL_GameControllerFromInstanceID(index);
-	return SDL_GameControllerName(controller);
+	SDL_Gamepad *controller = SDL_GetGamepadFromID(index);
+	return SDL_GetGamepadName(controller);
 }
 
 uint8_t gamepadRank(GamepadManager *gamepadManager, GamepadIndex index)
 {
-	SDL_GameController* controller = SDL_GameControllerFromInstanceID(index);
+	SDL_Gamepad* controller = SDL_GetGamepadFromID(index);
 
-	switch (SDL_GameControllerGetType(controller))
+	switch (SDL_GetGamepadType(controller))
 	{
-	case SDL_CONTROLLER_TYPE_UNKNOWN:
+	case SDL_GAMEPAD_TYPE_STANDARD:
+	case SDL_GAMEPAD_TYPE_UNKNOWN:
+	case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
+	case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
+	case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
+	case SDL_GAMEPAD_TYPE_COUNT:
 		return LOWEST_GAMEPAD_RANK;
-	case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO:
-	case SDL_CONTROLLER_TYPE_VIRTUAL:
-	case SDL_CONTROLLER_TYPE_AMAZON_LUNA:
-	case SDL_CONTROLLER_TYPE_GOOGLE_STADIA:
-	case SDL_CONTROLLER_TYPE_PS3:
-	case SDL_CONTROLLER_TYPE_PS4:
-	case SDL_CONTROLLER_TYPE_PS5:
+	case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
+	case SDL_GAMEPAD_TYPE_PS3:
+	case SDL_GAMEPAD_TYPE_PS4:
+	case SDL_GAMEPAD_TYPE_PS5:
+	case SDL_GAMEPAD_TYPE_GAMECUBE:
 		return 2;
-	case SDL_CONTROLLER_TYPE_XBOX360:
-	case SDL_CONTROLLER_TYPE_XBOXONE: {
-		int playerIndex = SDL_GameControllerGetPlayerIndex(controller);
+	case SDL_GAMEPAD_TYPE_XBOX360:
+	case SDL_GAMEPAD_TYPE_XBOXONE: {
+		int playerIndex = SDL_GetGamepadPlayerIndex(controller);
 		int rankIndex;
 		if (playerIndex >= 0 && playerIndex < 4)
 		{

@@ -95,6 +95,8 @@ void ZGSetKeyboardEventHandler(ZGWindow *window, void *context, void (*keyboardE
 
 #if PLATFORM_LINUX
 void ZGPollWindowAndInputEvents(ZGWindow *window, const void *systemEvent);
+
+void ZGSetAcceptingTextInput(ZGWindow *window, bool acceptTextInput);
 #endif
 
 void *ZGWindowHandle(ZGWindow *window);

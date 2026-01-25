@@ -1504,14 +1504,11 @@ static void handleKeyDownEvent(ZGKeyboardEvent *event, Renderer *renderer)
 	{
 		if (gConsoleFlag)
 		{
-			if (gConsoleActivated)
-			{
-				gConsoleActivated = false;
-			}
-			else
-			{
-				gConsoleActivated = true;
-			}
+			gConsoleActivated = !gConsoleActivated;
+			
+#if PLATFORM_LINUX
+			ZGSetAcceptingTextInput(window, gConsoleActivated);
+#endif
 		}
 	}
 	else if (keyCode == ZG_KEYCODE_BACKSPACE && gGameState == GAME_STATE_ON)
@@ -1919,7 +1916,7 @@ static ZGWindow *appLaunchedHandler(void *context)
 	rendererOptions.keyboardEventContext = renderer;
 #endif
 	
-	rendererOptions.windowTitle = "SkyCheckers";
+	rendererOptions.windowTitle = "Sky Checkers";
 
 	createRenderer(renderer, rendererOptions);
 	

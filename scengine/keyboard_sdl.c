@@ -22,7 +22,7 @@
  SOFTWARE.
  */
 
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 
 #include "keyboard.h"
 
@@ -33,7 +33,7 @@ bool ZGTestReturnKeyCode(uint16_t keyCode)
 
 bool ZGTestMetaModifier(uint64_t modifier)
 {
-	SDL_Keymod metaModifier = (KMOD_LCTRL | KMOD_RCTRL);
+	SDL_Keymod metaModifier = (SDL_KMOD_LCTRL | SDL_KMOD_RCTRL);
 	return (metaModifier & modifier) != 0;
 }
 

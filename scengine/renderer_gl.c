@@ -29,16 +29,16 @@
 #include "quit.h"
 #include "window.h"
 
-#include <GL/glew.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
+#include "glad/gl.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_opengl.h>
+#include <stdlib.h>
+#include <math.h>
 
 #define VERTEX_ATTRIBUTE 0
 #define TEXTURE_ATTRIBUTE 1
 
 #define GLSL_VERSION_410 410
-#define GLSL_VERSION_330 330
-#define GLSL_VERSION_120 120
 
 static void updateViewport_gl(Renderer *renderer, int32_t windowWidth, int32_t windowHeight);
 
@@ -182,10 +182,7 @@ static void compileAndLinkShader(Shader_gl *shader, uint16_t glslVersion, const 
 		glBindAttribLocation(shaderProgram, TEXTURE_ATTRIBUTE, "textureCoordIn");
 	}
 	
-	if (glslVersion >= 130)
-	{
-		glBindFragDataLocation(shaderProgram, 0, "fragColor");
-	}
+	glBindFragDataLocation(shaderProgram, 0, "fragColor");
 	
 	if (!linkProgram(shaderProgram))
 	{
@@ -231,21 +228,12 @@ static void compileAndLinkShader(Shader_gl *shader, uint16_t glslVersion, const 
 
 static bool createOpenGLContext(ZGWindow **window, SDL_GLContext *glContext, uint16_t glslVersion, const char *windowTitle, int32_t windowWidth, int32_t windowHeight, bool *fullscreenFlag, bool fsaa)
 {
+	// This used to support older GLSL versions as fallback
 	switch (glslVersion)
 	{
 		case GLSL_VERSION_410:
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-			break;
-		case GLSL_VERSION_330:
-			SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-			break;
-		case GLSL_VERSION_120:
-			SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
-			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 			break;
 		default:
@@ -312,7 +300,7 @@ static void updateViewport_gl(Renderer *renderer, int32_t windowWidth, int32_t w
 		renderer->windowHeight = windowHeight;
 	}
 
-	SDL_GL_GetDrawableSize(ZGWindowHandle(renderer->window), &renderer->drawableWidth, &renderer->drawableHeight);
+	SDL_GetWindowSizeInPixels(ZGWindowHandle(renderer->window), &renderer->drawableWidth, &renderer->drawableHeight);
 	
 	glViewport(0, 0, renderer->drawableWidth, renderer->drawableHeight);
 	
@@ -327,38 +315,46 @@ void createRenderer_gl(Renderer *renderer, RendererCreateOptions options)
 	
 	// Buffer sizes
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	
 	uint16_t glslVersion = GLSL_VERSION_410;
 	SDL_GLContext glContext = NULL;
 	if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, options.windowTitle, options.windowWidth, options.windowHeight, &renderer->fullscreen, options.fsaa))
 	{
-		glslVersion = GLSL_VERSION_330;
-		if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, options.windowTitle, options.windowWidth, options.windowHeight, &renderer->fullscreen, options.fsaa))
-		{
-			glslVersion = GLSL_VERSION_120;
-			if (!createOpenGLContext(&renderer->window, &glContext, glslVersion, options.windowTitle, options.windowWidth, options.windowHeight, &renderer->fullscreen, options.fsaa))
-			{
-				fprintf(stderr, "Failed to create OpenGL context with even glsl version %d\n", glslVersion);
-				ZGQuit();
-			}
-		}
+		fprintf(stderr, "Failed to create OpenGL context with glsl version %d\n", glslVersion);
+		ZGQuit();
 	}
-	
-	if (SDL_GL_MakeCurrent(ZGWindowHandle(renderer->window), glContext) != 0)
+
+	if (!SDL_GL_MakeCurrent(ZGWindowHandle(renderer->window), glContext))
 	{
-		fprintf(stderr, "Couldn't make OpenGL context current: %s\n", SDL_GetError());
+		fprintf(stderr, "Failed to make OpenGL context current: %s\n", SDL_GetError());
 		ZGQuit();
 	}
 	
 	// VSYNC
-	SDL_GL_SetSwapInterval(!!options.vsync);
-	
-	glewExperimental = GL_TRUE;
-	GLenum glewError = glewInit();
-	if (glewError != GLEW_OK)
+	if (options.vsync)
 	{
-		fprintf(stderr, "Failed to initialize GLEW: %s\n", glewGetErrorString(glewError));
+		// Try adaptive vsync first, then re-try with regular vsync
+		if (!SDL_GL_SetSwapInterval(-1))
+		{
+			if (!SDL_GL_SetSwapInterval(1))
+			{
+				fprintf(stderr, "Failed to enable vsync swap interval with error: %s\n", SDL_GetError());
+			}
+		}
+	}
+	else
+	{
+		if (!SDL_GL_SetSwapInterval(0))
+		{
+			fprintf(stderr, "Failed to disable vsync swap interval: %s\n", SDL_GetError());
+		}
+	}
+	
+	if (!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress))
+	{
+		fprintf(stderr, "Failed to load glad\n");
 		ZGQuit();
 	}
 	
@@ -376,8 +372,13 @@ void createRenderer_gl(Renderer *renderer, RendererCreateOptions options)
 		renderer->sampleCount = 0;
 	}
 	
-	value = SDL_GL_GetSwapInterval();
-	renderer->vsync = (value != 0);
+	bool retrievedSwapInterval = SDL_GL_GetSwapInterval(&value);
+	if (!retrievedSwapInterval)
+	{
+		fprintf(stderr, "Error: failed to retrieve GL swap interval: %s\n", SDL_GetError());
+	}
+
+	renderer->vsync = (retrievedSwapInterval && value != 0);
 	
 	updateViewport_gl(renderer, renderer->windowWidth, renderer->windowHeight);
 	

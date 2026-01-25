@@ -22,14 +22,15 @@
  SOFTWARE.
  */
 
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
+#include <stdlib.h>
 
 #include "texture.h"
 #include "quit.h"
 
-static void *create8BitPixelDataWithAlpha(SDL_Surface *surface)
+static void *create8BitPixelDataWithAlpha(SDL_Surface *surface, const SDL_PixelFormatDetails *pixelFormatDetails)
 {
-	uint8_t bytesPerPixel = surface->format->BytesPerPixel;
+	uint8_t bytesPerPixel = pixelFormatDetails->bytes_per_pixel;
 	const uint8_t newBytesPerPixel = 4;
 	
 	uint8_t *pixelData = calloc(surface->h, newBytesPerPixel * sizeof(uint8_t) * surface->w);
@@ -54,15 +55,23 @@ TextureData loadTextureData(const char *filePath)
 	SDL_Surface *surface = SDL_LoadBMP(filePath);
 	if (surface == NULL)
 	{
-		fprintf(stderr, "Couldn't load texture: %s\n", filePath);
+		fprintf(stderr, "Couldn't load texture: %s (error %s)\n", filePath, SDL_GetError());
 		ZGQuit();
 	}
 
 	void *pixelData = NULL;
-	bool sourceMissingAlpha = (surface->format->BytesPerPixel == 3);
+
+	const SDL_PixelFormatDetails *pixelFormatDetails = SDL_GetPixelFormatDetails(surface->format);
+	if (pixelFormatDetails == NULL)
+	{
+		fprintf(stderr, "Couldn't load pixel format details: %s (error %s)\n", filePath, SDL_GetError());
+		ZGQuit();
+	}
+
+	bool sourceMissingAlpha = (pixelFormatDetails->bytes_per_pixel == 3);
 	if (sourceMissingAlpha)
 	{
-		pixelData = create8BitPixelDataWithAlpha(surface);
+		pixelData = create8BitPixelDataWithAlpha(surface, pixelFormatDetails);
 	}
 	else
 	{
@@ -72,7 +81,7 @@ TextureData loadTextureData(const char *filePath)
 	TextureData textureData = {.pixelData = pixelData, .width = surface->w, .height = surface->h, .pixelFormat = PIXEL_FORMAT_BGRA32};
 	if (sourceMissingAlpha)
 	{
-		SDL_FreeSurface(surface);
+		SDL_DestroySurface(surface);
 	}
 	else
 	{
@@ -86,7 +95,7 @@ void freeTextureData(TextureData textureData)
 {
 	if (textureData.context != NULL)
 	{
-		SDL_FreeSurface(textureData.context);
+		SDL_DestroySurface(textureData.context);
 	}
 	else
 	{
