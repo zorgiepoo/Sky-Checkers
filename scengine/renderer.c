@@ -45,6 +45,8 @@ void createRenderer(Renderer *renderer, RendererCreateOptions options)
 		options.fsaa = false;
 		fprintf(stderr, "NOTICE: Force disabling anti-aliasing usage!!\n");
 	}
+    
+    renderer->legacyAspectRatio = options.legacyAspectRatio;
 	
 #if PLATFORM_APPLE
 	if (!createRenderer_metal(renderer, options))
