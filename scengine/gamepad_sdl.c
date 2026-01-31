@@ -366,4 +366,6 @@ uint8_t gamepadRank(GamepadManager *gamepadManager, GamepadIndex index)
 
 void setPlayerIndex(GamepadManager *gamepadManager, GamepadIndex index, int64_t playerIndex)
 {
+	SDL_Gamepad* gamepad = SDL_GetGamepadFromID(index);
+	SDL_SetGamepadPlayerIndex(gamepad, (int)playerIndex);
 }
