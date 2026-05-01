@@ -26,7 +26,7 @@
 #import "platforms.h"
 #import <stdbool.h>
 
-#if PLATFORM_IOS
+#if PLATFORM_IOS || PLATFORM_TVOS
 #define GC_KEYBOARD 1
 #else
 #define GC_KEYBOARD 0
