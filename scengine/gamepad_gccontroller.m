@@ -268,10 +268,7 @@ GamepadEvent *pollGamepadEvents(struct _GamepadManager *gamepadManager, const vo
 		Gamepad *gamepad = &gamepadManager->gamepads[index];
 		GCController *controller = (__bridge GCController *)(gamepad->controller);
 #if GC_KEYBOARD
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability-new"
 		GCKeyboard *keyboard = (__bridge GCKeyboard *)(gamepad->keyboard);
-#pragma clang diagnostic pop
 #endif
 		
 		if (controller != nil)
@@ -408,8 +405,6 @@ GamepadEvent *pollGamepadEvents(struct _GamepadManager *gamepadManager, const vo
 #if GC_KEYBOARD
 		else if (keyboard != nil)
 		{
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability-new"
 			GCKeyboardInput *keyboardInput = keyboard.keyboardInput;
 			if (keyboardInput != nil)
 			{
@@ -463,7 +458,6 @@ GamepadEvent *pollGamepadEvents(struct _GamepadManager *gamepadManager, const vo
 					_addButtonEventIfNeeded(gamepad, GAMEPAD_BUTTON_START, startInput.pressed, gamepadManager->eventsBuffer, &eventIndex);
 				}
 			}
-#pragma clang diagnostic pop
 		}
 #endif
 	}

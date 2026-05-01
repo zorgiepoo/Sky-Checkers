@@ -37,7 +37,7 @@
 {
 	ZGAppHandlers *_appHandlers;
 	void *_appContext;
-	id _displayTimer;
+	CADisplayLink *_displayTimer;
 }
 
 - (instancetype)initWithAppHandlers:(ZGAppHandlers *)appHandlers context:(void *)appContext
@@ -79,21 +79,12 @@
 	{
 		// Game should animate in common run loop mode
 		// One instance of this mode being used is when the user is navigating through the menu items in the menu bar
-		if (@available(macOS 14, *))
-		{
-			NSWindow *windowHandle = (__bridge NSWindow *)(ZGWindowHandle(window));
-			CADisplayLink *displayLink = [windowHandle.contentView displayLinkWithTarget:self selector:@selector(runLoop:)];
-			
-			[displayLink addToRunLoop:NSRunLoop.currentRunLoop forMode:NSRunLoopCommonModes];
-			
-			_displayTimer = displayLink;
-		}
-		else
-		{
-			_displayTimer = [NSTimer scheduledTimerWithTimeInterval:0.004 target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
-			
-			[[NSRunLoop currentRunLoop] addTimer:_displayTimer forMode:NSRunLoopCommonModes];
-		}
+		NSWindow *windowHandle = (__bridge NSWindow *)(ZGWindowHandle(window));
+		CADisplayLink *displayLink = [windowHandle.contentView displayLinkWithTarget:self selector:@selector(runLoop:)];
+		
+		[displayLink addToRunLoop:NSRunLoop.currentRunLoop forMode:NSRunLoopCommonModes];
+		
+		_displayTimer = displayLink;
 	}
 }
 
