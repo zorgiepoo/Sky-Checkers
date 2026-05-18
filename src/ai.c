@@ -146,9 +146,33 @@ static void setNewDirection(Character *character, bool allowFiring, float curren
 			}
 			else
 			{
-				character->direction = (mt_random() % 2) + 1;
+				// Bias toward horizontal center when near the live board's column boundary.
+				// Walk inward from each side to find the first alive column so the
+				// threshold adjusts automatically as outer rings are permanently destroyed.
+				int leftEdge = 0;
+				while (leftEdge < 4 && gTiles[4 * 8 + leftEdge].isDead)
+					leftEdge++;
+				int rightEdge = 7;
+				while (rightEdge > 3 && gTiles[4 * 8 + rightEdge].isDead)
+					rightEdge--;
+				int towardCenterDirection = (column <= 3) ? RIGHT : LEFT;
+				bool nearEdge = (column <= leftEdge + 1 || column >= rightEdge - 1);
+				unsigned int centerWeight = 5;
+				if (nearEdge)
+				{
+					switch (gAIMode)
+					{
+						case AI_HARD_MODE:
+							centerWeight = 7;
+							break;
+						case AI_MEDIUM_MODE:
+							centerWeight = 6;
+							break;
+					}
+				}
+				character->direction = ((mt_random() % 10) < centerWeight) ? towardCenterDirection : (towardCenterDirection == RIGHT ? LEFT : RIGHT);
 			}
-			
+
 			if (canFireWeapon(allowFiring))
 			{
 				fireCharacterWeaponAfterTurn(character, currentTime);
@@ -167,7 +191,31 @@ static void setNewDirection(Character *character, bool allowFiring, float curren
 			}
 			else
 			{
-				character->direction = (mt_random() % 2) + 3;
+				// Bias toward vertical center when near the live board's row boundary.
+				// Walk inward from each side to find the first alive row so the
+				// threshold adjusts automatically as outer rings are permanently destroyed.
+				int bottomEdge = 0;
+				while (bottomEdge < 4 && gTiles[bottomEdge * 8 + 4].isDead)
+					bottomEdge++;
+				int topEdge = 7;
+				while (topEdge > 3 && gTiles[topEdge * 8 + 4].isDead)
+					topEdge--;
+				int towardCenterDirection = (row <= 3) ? UP : DOWN;
+				bool nearEdge = (row <= bottomEdge + 1 || row >= topEdge - 1);
+				unsigned int centerWeight = 5;
+				if (nearEdge)
+				{
+					switch (gAIMode)
+					{
+						case AI_HARD_MODE:
+							centerWeight = 7;
+							break;
+						case AI_MEDIUM_MODE:
+							centerWeight = 6;
+							break;
+					}
+				}
+				character->direction = ((mt_random() % 10) < centerWeight) ? towardCenterDirection : (towardCenterDirection == UP ? DOWN : UP);
 			}
 			
 			if (canFireWeapon(allowFiring))
