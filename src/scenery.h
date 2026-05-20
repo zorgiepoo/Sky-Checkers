@@ -32,6 +32,7 @@ typedef struct
 	float x;
 	float y;
 	float z;
+	float prev_z;
 	float red, green, blue;
 	
 	// ID of character that colored tile or DIEING_STONE_ID
@@ -73,4 +74,6 @@ bool availableTileIndex(int tileIndex);
 void loadSceneryTextures(Renderer *renderer);
 
 void drawSky(Renderer *renderer, RendererOptions options);
-void drawTiles(Renderer *renderer);
+void drawTiles(Renderer *renderer, float renderAlpha);
+
+void saveRenderTilesState(void);

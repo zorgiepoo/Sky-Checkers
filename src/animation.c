@@ -743,6 +743,7 @@ void recoverDestroyedTile(int tileIndex)
 	gTiles[tileIndex].cracked = false;
 	gTiles[tileIndex].crackedTime = 0.0f;
 	gTiles[tileIndex].z = TILE_ALIVE_Z;
+	gTiles[tileIndex].prev_z = TILE_ALIVE_Z;
 	gTiles[tileIndex].state = true;
 	gTiles[tileIndex].recovery_timer = 0.0;
 }

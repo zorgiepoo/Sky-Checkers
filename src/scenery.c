@@ -68,7 +68,8 @@ void loadTiles(void)
 		gTiles[tileIndex].x = -7.0f + 2.0f * columnIndex;
 		gTiles[tileIndex].y = 12.5f + 2.0f * rowIndex;
 		gTiles[tileIndex].z = TILE_ALIVE_Z;
-		
+		gTiles[tileIndex].prev_z = TILE_ALIVE_Z;
+
 		if ((((tileIndex / 8) % 2) ^ (tileIndex % 2)) != 0)
 		{
 			gTiles[tileIndex].red = TILE_TEXTURE1_RED;
@@ -284,7 +285,7 @@ void drawSky(Renderer *renderer, RendererOptions options)
 	drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, gSkyTex, RENDERER_TRIANGLE_MODE, vertexAndTextureArrayObject, indicesBufferObject, 6, (color4_t){1.0f, 1.0f, 1.0f, 0.75f}, options);
 }
 
-void drawTiles(Renderer *renderer)
+void drawTiles(Renderer *renderer, float renderAlpha)
 {
 	static BufferArrayObject vertexAndTextureCoordinateArrayObject;
 	static BufferObject indicesBufferObject;
@@ -378,7 +379,8 @@ void drawTiles(Renderer *renderer)
 	{
 		if (gTiles[i].z > TILE_TERMINATING_Z)
 		{
-			mat4_t modelTranslationMatrix = m4_translation((vec3_t){gTiles[i].x , gTiles[i].y, gTiles[i].z});
+			float interpolatedZ = gTiles[i].prev_z + (gTiles[i].z - gTiles[i].prev_z) * renderAlpha;
+			mat4_t modelTranslationMatrix = m4_translation((vec3_t){gTiles[i].x, gTiles[i].y, interpolatedZ});
 			mat4_t modelViewMatrix = m4_mul(worldRotationMatrix, modelTranslationMatrix);
 			
 			bool cracked = gTiles[i].cracked;
@@ -387,5 +389,13 @@ void drawTiles(Renderer *renderer)
 			
 			drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, texture, RENDERER_TRIANGLE_MODE, vertexAndTextureCoordinateArrayObject, indicesBufferObject, 24, (color4_t){gTiles[i].red, gTiles[i].green, gTiles[i].blue, 1.0f}, RENDERER_OPTION_NONE);
 		}
+	}
+}
+
+void saveRenderTilesState(void)
+{
+	for (int i = 0; i < NUMBER_OF_TILES; i++)
+	{
+		gTiles[i].prev_z = gTiles[i].z;
 	}
 }

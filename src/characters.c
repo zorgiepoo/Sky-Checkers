@@ -96,13 +96,17 @@ static void initCharacter(Character *character, float red, float green, float bl
 	character->x = 0.0f;
 	character->y = 0.0f;
 	character->z = 0.0f;
-	
+	character->prev_x = 0.0f;
+	character->prev_y = 0.0f;
+	character->prev_z = 0.0f;
+
 	character->red = red;
 	character->green = green;
 	character->blue = blue;
 	
 	loadCharacter(character);
-	
+	character->prev_alpha = character->alpha;
+
 	character->weap = malloc(sizeof(Weapon));
 	initWeapon(character->weap);
 	
@@ -418,11 +422,14 @@ static ZGFloat zRotationForCharacter(Character *character)
 	return 0.0f;
 }
 
-static mat4_t modelViewMatrixForCharacter(Character *character, mat4_t worldMatrix)
+static mat4_t modelViewMatrixForCharacter(Character *character, mat4_t worldMatrix, float renderAlpha)
 {
-	mat4_t modelTranslationMatrix = m4_translation((vec3_t){character->x, character->y, character->z});
+	float rx = character->prev_x + (character->x - character->prev_x) * renderAlpha;
+	float ry = character->prev_y + (character->y - character->prev_y) * renderAlpha;
+	float rz = character->prev_z + (character->z - character->prev_z) * renderAlpha;
+	mat4_t modelTranslationMatrix = m4_translation((vec3_t){rx, ry, rz});
 	mat4_t modelRotationMatrix = m4_rotation_z(zRotationForCharacter(character));
-	
+
 	return m4_mul(m4_mul(worldMatrix, modelTranslationMatrix), modelRotationMatrix);
 }
 
@@ -431,35 +438,35 @@ static bool characterIsBlended(Character *character)
 	return (fabsf(1.0f - character->alpha) > 0.001f);
 }
 
-static void drawCharacter(Renderer *renderer, Character *character, mat4_t worldMatrix, RendererOptions options)
+static void drawCharacter(Renderer *renderer, Character *character, mat4_t worldMatrix, RendererOptions options, float renderAlpha)
 {
 	// don't draw the character if they're not in the scene
 	if (character->z > CHARACTER_TERMINATING_Z)
 	{
-		mat4_t modelViewMatrix = modelViewMatrixForCharacter(character, worldMatrix);
-		
-		drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, character->texture, RENDERER_TRIANGLE_MODE, gCharacterVertexAndTextureCoordinateArrayObject, gCharacterIndicesBufferObject, 5220, (color4_t){1.0f, 1.0f, 1.0f, character->alpha}, options);
+		mat4_t modelViewMatrix = modelViewMatrixForCharacter(character, worldMatrix, renderAlpha);
+		float interpolatedAlpha = character->prev_alpha + (character->alpha - character->prev_alpha) * renderAlpha;
+		drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, character->texture, RENDERER_TRIANGLE_MODE, gCharacterVertexAndTextureCoordinateArrayObject, gCharacterIndicesBufferObject, 5220, (color4_t){1.0f, 1.0f, 1.0f, interpolatedAlpha}, options);
 	}
 }
 
-static void testAndDrawCharacterIfNeeded(Renderer *renderer, Character *character, mat4_t worldMatrix, RendererOptions options)
+static void testAndDrawCharacterIfNeeded(Renderer *renderer, Character *character, mat4_t worldMatrix, RendererOptions options, float renderAlpha)
 {
 	if (((options & RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA) != 0) == characterIsBlended(character))
 	{
-		drawCharacter(renderer, character, worldMatrix, options);
+		drawCharacter(renderer, character, worldMatrix, options, renderAlpha);
 	}
 }
 
-void drawCharacters(Renderer *renderer, RendererOptions options)
+void drawCharacters(Renderer *renderer, RendererOptions options, float renderAlpha)
 {
 	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((ZGFloat)M_PI / 180.0f));
 	mat4_t worldTranslationMatrix = m4_translation((vec3_t){-7.0f, 12.5f, -25.0f});
 	mat4_t worldMatrix = m4_mul(worldRotationMatrix, worldTranslationMatrix);
-	
-	testAndDrawCharacterIfNeeded(renderer, &gRedRover, worldMatrix, options);
-	testAndDrawCharacterIfNeeded(renderer, &gGreenTree, worldMatrix, options);
-	testAndDrawCharacterIfNeeded(renderer, &gPinkBubbleGum, worldMatrix, options);
-	testAndDrawCharacterIfNeeded(renderer, &gBlueLightning, worldMatrix, options);
+
+	testAndDrawCharacterIfNeeded(renderer, &gRedRover, worldMatrix, options, renderAlpha);
+	testAndDrawCharacterIfNeeded(renderer, &gGreenTree, worldMatrix, options, renderAlpha);
+	testAndDrawCharacterIfNeeded(renderer, &gPinkBubbleGum, worldMatrix, options, renderAlpha);
+	testAndDrawCharacterIfNeeded(renderer, &gBlueLightning, worldMatrix, options, renderAlpha);
 }
 
 static mat4_t characterIconModelViewMatrix(mat4_t modelViewMatrix)
@@ -708,6 +715,9 @@ void spawnCharacter(Character *character)
 	character->x = (availableTileIndexes[randomIndex] % 8) * 2.0f;
 	character->y = (availableTileIndexes[randomIndex] / 8) * 2.0f;
 	character->z = CHARACTER_ALIVE_Z;
+	character->prev_x = character->x;
+	character->prev_y = character->y;
+	character->prev_z = character->z;
 	character->active = true;
 	character->direction = NO_DIRECTION;
 }
@@ -897,4 +907,14 @@ void prepareFiringCharacterWeapon(Character *character, float x, float y, int di
 		
 		character->weap->fired = true;
 	}
+}
+
+void saveRenderCharacterState(Character *character)
+{
+	character->prev_x = character->x;
+	character->prev_y = character->y;
+	character->prev_z = character->z;
+	character->prev_alpha = character->alpha;
+	
+	saveRenderWeaponState(character->weap);
 }

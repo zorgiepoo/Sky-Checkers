@@ -933,42 +933,44 @@ static void drawScoreboardForCharacters(Renderer *renderer)
 
 static void drawScene(Renderer *renderer, void *context)
 {
+	float renderAlpha = *(float *)context;
+
 	if (gGameState == GAME_STATE_ON || gGameState == GAME_STATE_TUTORIAL || gGameState == GAME_STATE_PAUSED)
 	{
 		// Render opaque objects first
-		
+
 		// Characters renders at z = -25.3 to -24.7 after a world rotation when not fallen
 		// When falling, will reach to around -195
 		pushDebugGroup(renderer, "Characters");
-		drawCharacters(renderer, RENDERER_OPTION_NONE);
+		drawCharacters(renderer, RENDERER_OPTION_NONE, renderAlpha);
 		popDebugGroup(renderer);
 
 		// Tiles renders at z = -25.0f to -26.0f after a world rotation when not fallen
 		pushDebugGroup(renderer, "Tiles");
-		drawTiles(renderer);
+		drawTiles(renderer, renderAlpha);
 		popDebugGroup(renderer);
-		
+
 		// Render transparent objects from zFar to zNear
-		
+
 		// Sky renders at z = -38.0f
 		pushDebugGroup(renderer, "Sky");
 		drawSky(renderer, RENDERER_OPTION_BLENDING_ALPHA);
 		popDebugGroup(renderer);
-		
+
 		// Weapons renders at z = -24.0f to -25.0f after a world rotation
 		pushDebugGroup(renderer, "Weapons");
-		
-		drawWeapon(renderer, gRedRover.weap);
-		drawWeapon(renderer, gGreenTree.weap);
-		drawWeapon(renderer, gPinkBubbleGum.weap);
-		drawWeapon(renderer, gBlueLightning.weap);
-		
+
+		drawWeapon(renderer, gRedRover.weap, renderAlpha);
+		drawWeapon(renderer, gGreenTree.weap, renderAlpha);
+		drawWeapon(renderer, gPinkBubbleGum.weap, renderAlpha);
+		drawWeapon(renderer, gBlueLightning.weap, renderAlpha);
+
 		popDebugGroup(renderer);
-		
+
 		// Characters renders at z = -25.3 to -24.7 after a world rotation when not fallen
 		// When falling, will reach to around -195
 		pushDebugGroup(renderer, "Characters");
-		drawCharacters(renderer, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
+		drawCharacters(renderer, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA, renderAlpha);
 		popDebugGroup(renderer);
 		
 		// Character icons at the bottom of the screen at z = -25.0f
@@ -1981,6 +1983,16 @@ static void appTerminatedHandler(void *context)
 	}
 }
 
+static void saveRenderState(void)
+{
+	saveRenderCharacterState(&gRedRover);
+	saveRenderCharacterState(&gGreenTree);
+	saveRenderCharacterState(&gPinkBubbleGum);
+	saveRenderCharacterState(&gBlueLightning);
+	
+	saveRenderTilesState();
+}
+
 static void runLoopHandler(void *context)
 {
 	AppContext *appContext = context;
@@ -1988,6 +2000,7 @@ static void runLoopHandler(void *context)
 	
 	// Update game state
 	// http://ludobloom.com/tutorials/timestep.html
+	// https://gafferongames.com/post/fix_your_timestep/
 	
 	double currentTime = (double)ZGGetTicks() / 1000.0;
 	
@@ -2001,6 +2014,8 @@ static void runLoopHandler(void *context)
 	while (updateIterations > ANIMATION_TIMER_INTERVAL)
 	{
 		updateIterations -= ANIMATION_TIMER_INTERVAL;
+		
+		saveRenderState();
 		
 		syncNetworkState(renderer->window, (float)ANIMATION_TIMER_INTERVAL, gGameState);
 		
@@ -2019,9 +2034,11 @@ static void runLoopHandler(void *context)
 	appContext->cyclesLeftOver = updateIterations;
 	appContext->lastFrameTime = currentTime;
 	
+	float renderAlpha = (float)(appContext->cyclesLeftOver / ANIMATION_TIMER_INTERVAL);
+	
 	if (appContext->needsToDrawScene)
 	{
-		renderFrame(renderer, drawScene, NULL);
+		renderFrame(renderer, drawScene, &renderAlpha);
 	}
 	
 	bool shouldCapFPS = !appContext->needsToDrawScene || !renderer->vsync;

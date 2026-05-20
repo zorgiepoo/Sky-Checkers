@@ -69,7 +69,8 @@ typedef struct _Character
 {
 	/* x, y, z translate values for character */
 	float x, y, z;
-	
+	float prev_x, prev_y, prev_z, prev_alpha;
+
 	/* Distance traveled, used for tutorial */
 	float distance;
 	
@@ -174,7 +175,7 @@ void buildCharacterModels(Renderer *renderer);
 
 void drawCharacterIcons(Renderer *renderer, const mat4_t *translations);
 
-void drawCharacters(Renderer *renderer, RendererOptions options);
+void drawCharacters(Renderer *renderer, RendererOptions options, float renderAlpha);
 
 void drawAllCharacterInfo(Renderer *renderer, const mat4_t *iconTranslations, bool displayControllerName);
 
@@ -191,3 +192,5 @@ void turnCharacter(Character *character, int direction);
 
 void fireCharacterWeapon(Character *character);
 void prepareFiringCharacterWeapon(Character *character, float x, float y, int direction, float compensation);
+
+void saveRenderCharacterState(Character *character);

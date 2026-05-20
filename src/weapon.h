@@ -26,6 +26,7 @@
 typedef struct
 {
 	float x, y, z;
+	float prev_x, prev_y, prev_z;
 	ZGFloat red, green, blue;
 	float initialX, initialY;
 	float compensation;
@@ -40,4 +41,6 @@ typedef struct
 
 void initWeapon(Weapon *weap);
 
-void drawWeapon(Renderer *renderer, Weapon *weap);
+void drawWeapon(Renderer *renderer, Weapon *weap, float renderAlpha);
+
+void saveRenderWeaponState(Weapon *weap);
