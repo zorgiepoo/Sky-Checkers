@@ -374,14 +374,15 @@ void drawTiles(Renderer *renderer, float renderAlpha)
 	}
 	
 	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((ZGFloat)M_PI / 180.0f));
-	
+	mat4_t worldScaleMatrix = m4_scaling((vec3_t){1.6f, 1.0f, 1.0f});
+
 	for (int i = 0; i < NUMBER_OF_TILES; i++)
 	{
 		if (gTiles[i].z > TILE_TERMINATING_Z)
 		{
 			float interpolatedZ = gTiles[i].prev_z + (gTiles[i].z - gTiles[i].prev_z) * renderAlpha;
 			mat4_t modelTranslationMatrix = m4_translation((vec3_t){gTiles[i].x, gTiles[i].y, interpolatedZ});
-			mat4_t modelViewMatrix = m4_mul(worldRotationMatrix, modelTranslationMatrix);
+			mat4_t modelViewMatrix = m4_mul(worldRotationMatrix, m4_mul(worldScaleMatrix, modelTranslationMatrix));
 			
 			bool cracked = gTiles[i].cracked;
 			

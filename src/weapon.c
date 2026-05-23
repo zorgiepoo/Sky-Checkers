@@ -86,13 +86,14 @@ void drawWeapon(Renderer *renderer, Weapon *weap, float renderAlpha)
 	}
 	
 	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((ZGFloat)M_PI / 180.0f));
+	mat4_t worldScaleMatrix = m4_scaling((vec3_t){1.6f, 1.0f, 1.0f});
 	mat4_t worldTranslationMatrix = m4_translation((vec3_t){-7.0f, 12.5f, -23.0f});
 	float interpolatedX = weap->prev_x + (weap->x - weap->prev_x) * renderAlpha;
 	float interpolatedY = weap->prev_y + (weap->y - weap->prev_y) * renderAlpha;
 	float interpolatedZ = weap->prev_z + (weap->z - weap->prev_z) * renderAlpha;
 	mat4_t modelTranslationMatrix = m4_translation((vec3_t){interpolatedX, interpolatedY, interpolatedZ});
-	
-	mat4_t weaponMatrix = m4_mul(m4_mul(worldRotationMatrix, worldTranslationMatrix), modelTranslationMatrix);
+
+	mat4_t weaponMatrix = m4_mul(m4_mul(worldRotationMatrix, m4_mul(worldScaleMatrix, worldTranslationMatrix)), modelTranslationMatrix);
 	
 	ZGFloat weaponRotationAngle = 0.0f;
 	int direction = weap->direction;

@@ -194,9 +194,10 @@ static void drawTutorialCover(Renderer *renderer)
 	}
 	
 	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((ZGFloat)M_PI / 180.0f));
+	mat4_t worldScaleMatrix = m4_scaling((vec3_t){1.6f, 1.0f, 1.0f});
 	mat4_t worldTranslationMatrix = m4_translation((vec3_t){-7.0f, 12.5f, -25.0f});
-	mat4_t worldMatrix = m4_mul(worldRotationMatrix, worldTranslationMatrix);
-	
+	mat4_t worldMatrix = m4_mul(worldRotationMatrix, m4_mul(worldScaleMatrix, worldTranslationMatrix));
+
 	mat4_t modelTranslationMatrix = m4_translation((vec3_t){7.0f, -14.0f, 4.0f});
 	mat4_t finalMatrix = m4_mul(worldMatrix, modelTranslationMatrix);
 	
@@ -821,7 +822,7 @@ void drawFramesPerSecond(Renderer *renderer)
 	if (length > 0)
 	{
 		mat4_t modelViewMatrix = m4_translation((vec3_t){6.48f, 6.48f, -18.0f});
-		drawString(renderer, modelViewMatrix, (color4_t){0.0f, 0.5f, 0.8f, 1.0f}, 0.16f * length, 0.5f, fpsString);
+		drawString(renderer, modelViewMatrix, (color4_t){0.0f, 0.5f, 0.8f, 1.0f}, 0.16f * length * 1.6f, 0.5f, fpsString);
 	}
 }
 
@@ -852,7 +853,7 @@ static void drawPings(Renderer *renderer)
 				size_t length = strlen(pingString);
 				if (length > 0)
 				{
-					drawString(renderer, modelViewMatrix, (color4_t){character->red, character->green, character->blue, 1.0f}, 0.16f * length, 0.5f, pingString);
+					drawString(renderer, modelViewMatrix, (color4_t){character->red, character->green, character->blue, 1.0f}, 0.16f * length * 1.6f, 0.5f, pingString);
 				}
 			}
 		}
@@ -880,7 +881,7 @@ static void drawPings(Renderer *renderer)
 					size_t length = strlen(pingStrings[pingAddressIndex]);
 					if (length > 0)
 					{
-						drawString(renderer, modelViewMatrix, (color4_t){character->red, character->green, character->blue, 1.0f}, 0.16f * length, 0.5f, pingStrings[pingAddressIndex]);
+						drawString(renderer, modelViewMatrix, (color4_t){character->red, character->green, character->blue, 1.0f}, 0.16f * length * 1.6f, 0.5f, pingStrings[pingAddressIndex]);
 					}
 				}
 			}
@@ -894,33 +895,32 @@ static void drawScoreboardTextForCharacter(Renderer *renderer, Character *charac
 
 	char buffer[256] = {0};
 
-	mat4_t winsLabelModelViewMatrix = m4_mul(iconModelViewMatrix, m4_translation((vec3_t){0.225f, -1.6f, 0.0f}));
+	const mat4_t xScale = m4_scaling((vec3_t){1.6f, 1.0f, 1.0f});
 
-	drawStringScaled(renderer, winsLabelModelViewMatrix, characterColor, 0.0024f, "Wins:");
+	mat4_t winsRow = m4_mul(iconModelViewMatrix, m4_translation((vec3_t){0.225f, -1.6f, 0.0f}));
+	drawStringScaled(renderer, m4_mul(winsRow, xScale), characterColor, 0.0017f, "Wins:");
 
-	mat4_t winsModelViewMatrix = m4_mul(winsLabelModelViewMatrix, m4_translation((vec3_t){0.87f, 0.0f, 0.0f}));
-
+	mat4_t winsNumRow = m4_mul(winsRow, m4_translation((vec3_t){1.2f, 0.0f, 0.0f}));
 	snprintf(buffer, sizeof(buffer) - 1, "%d", character->wins);
-	drawStringScaled(renderer, winsModelViewMatrix, characterColor, 0.0024f, buffer);
+	drawStringScaled(renderer, m4_mul(winsNumRow, xScale), characterColor, 0.0017f, buffer);
 
-	mat4_t killsLabelModelViewMatrix = m4_mul(winsLabelModelViewMatrix, m4_translation((vec3_t){0.0f, -1.6f, 0.0f}));
+	mat4_t killsRow = m4_mul(winsRow, m4_translation((vec3_t){0.0f, -1.6f, 0.0f}));
+	drawStringScaled(renderer, m4_mul(killsRow, xScale), characterColor, 0.0017f, "Kills:");
 
-	drawStringScaled(renderer, killsLabelModelViewMatrix, characterColor, 0.0024f, "Kills:");
-
-	mat4_t killsModelViewMatrix = m4_mul(winsModelViewMatrix, m4_translation((vec3_t){0.0f, -1.6f, 0.0f}));
-
+	mat4_t killsNumRow = m4_mul(winsNumRow, m4_translation((vec3_t){0.0f, -1.6f, 0.0f}));
 	snprintf(buffer, sizeof(buffer) - 1, "%d", character->kills);
-	drawStringScaled(renderer, killsModelViewMatrix, characterColor, 0.0024f, buffer);
+	drawStringScaled(renderer, m4_mul(killsNumRow, xScale), characterColor, 0.0017f, buffer);
 }
 
 static void drawScoreboardForCharacters(Renderer *renderer)
 {
+	mat4_t xScale = m4_scaling((vec3_t){1.6f, 1.0f, 1.0f});
 	mat4_t iconModelViewMatrices[] =
 	{
-		m4_translation((vec3_t){-6.0f / 1.25f, 7.0f / 1.25f, -25.0f / 1.25f}),
-		m4_translation((vec3_t){-2.0f / 1.25f, 7.0f / 1.25f, -25.0f / 1.25f}),
-		m4_translation((vec3_t){2.0f / 1.25f, 7.0f / 1.25f, -25.0f / 1.25f}),
-		m4_translation((vec3_t){6.0f / 1.25f, 7.0f / 1.25f, -25.0f / 1.25f})
+		m4_mul(xScale, m4_translation((vec3_t){-6.0f / 1.25f, 7.0f / 1.25f, -25.0f / 1.25f})),
+		m4_mul(xScale, m4_translation((vec3_t){-2.0f / 1.25f, 7.0f / 1.25f, -25.0f / 1.25f})),
+		m4_mul(xScale, m4_translation((vec3_t){2.0f / 1.25f, 7.0f / 1.25f, -25.0f / 1.25f})),
+		m4_mul(xScale, m4_translation((vec3_t){6.0f / 1.25f, 7.0f / 1.25f, -25.0f / 1.25f}))
 	};
 	
 	drawCharacterIcons(renderer, iconModelViewMatrices);
@@ -974,12 +974,13 @@ static void drawScene(Renderer *renderer, void *context)
 		popDebugGroup(renderer);
 		
 		// Character icons at the bottom of the screen at z = -25.0f
+		mat4_t iconXScale = m4_scaling((vec3_t){1.6f, 1.0f, 1.0f});
 		const mat4_t characterIconTranslations[] =
 		{
-			m4_translation((vec3_t){CHARACTER_ICON_OFFSET, -9.2f, -25.0f}),
-			m4_translation((vec3_t){CHARACTER_ICON_OFFSET + CHARACTER_ICON_DISPLACEMENT, -9.2f, -25.0f}),
-			m4_translation((vec3_t){CHARACTER_ICON_OFFSET + CHARACTER_ICON_DISPLACEMENT * 2, -9.2f, -25.0f}),
-			m4_translation((vec3_t){CHARACTER_ICON_OFFSET + CHARACTER_ICON_DISPLACEMENT * 3, -9.2f, -25.0f})
+			m4_mul(iconXScale, m4_translation((vec3_t){CHARACTER_ICON_OFFSET, -9.2f, -25.0f})),
+			m4_mul(iconXScale, m4_translation((vec3_t){CHARACTER_ICON_OFFSET + CHARACTER_ICON_DISPLACEMENT, -9.2f, -25.0f})),
+			m4_mul(iconXScale, m4_translation((vec3_t){CHARACTER_ICON_OFFSET + CHARACTER_ICON_DISPLACEMENT * 2, -9.2f, -25.0f})),
+			m4_mul(iconXScale, m4_translation((vec3_t){CHARACTER_ICON_OFFSET + CHARACTER_ICON_DISPLACEMENT * 3, -9.2f, -25.0f}))
 		};
 		pushDebugGroup(renderer, "Icons");
 		drawCharacterIcons(renderer, characterIconTranslations);
@@ -1026,16 +1027,16 @@ static void drawScene(Renderer *renderer, void *context)
 			ZGFloat touchInputX = (ZGFloat)(scaleX * 2 * 0.11f + -scaleX);
 			ZGFloat touchInputY = -1.0f;
 			
-			mat4_t upwardMatrix = m4_translation((vec3_t){touchInputX, touchInputY + arrowOffset, -25.0f});
+			mat4_t upwardMatrix = m4_mul(m4_translation((vec3_t){touchInputX, touchInputY + arrowOffset, -25.0f}), m4_scaling((vec3_t){1.6f, 1.0f, 1.0f}));
 			drawStringScaled(renderer, upwardMatrix, (humanCharacter->direction == UP ? activeArrowColor : defaultArrowColor), arrowScale, "↑");
-			
-			mat4_t downwardMatrix = m4_translation((vec3_t){touchInputX, touchInputY - arrowOffset, -25.0f});
+
+			mat4_t downwardMatrix = m4_mul(m4_translation((vec3_t){touchInputX, touchInputY - arrowOffset, -25.0f}), m4_scaling((vec3_t){1.6f, 1.0f, 1.0f}));
 			drawStringScaled(renderer, downwardMatrix, (humanCharacter->direction == DOWN ? activeArrowColor : defaultArrowColor), arrowScale, "↓");
-			
-			mat4_t rightwardMatrix = m4_translation((vec3_t){touchInputX + arrowOffset, touchInputY, -25.0f});
+
+			mat4_t rightwardMatrix = m4_mul(m4_translation((vec3_t){touchInputX + arrowOffset, touchInputY, -25.0f}), m4_scaling((vec3_t){1.6f, 1.0f, 1.0f}));
 			drawStringScaled(renderer, rightwardMatrix, (humanCharacter->direction == RIGHT ? activeArrowColor : defaultArrowColor), arrowScale, "→");
-			
-			mat4_t leftwardMatrix = m4_translation((vec3_t){touchInputX - arrowOffset, touchInputY, -25.0f});
+
+			mat4_t leftwardMatrix = m4_mul(m4_translation((vec3_t){touchInputX - arrowOffset, touchInputY, -25.0f}), m4_scaling((vec3_t){1.6f, 1.0f, 1.0f}));
 			drawStringScaled(renderer, leftwardMatrix, (humanCharacter->direction == LEFT ? activeArrowColor : defaultArrowColor), arrowScale, "←");
 
 			popDebugGroup(renderer);
@@ -1067,7 +1068,7 @@ static void drawScene(Renderer *renderer, void *context)
 				humanCharacter = &gBlueLightning;
 			}
 			
-			mat4_t tapMatrix = m4_translation((vec3_t){tapInputX, tapInputY, -25.0f});
+			mat4_t tapMatrix = m4_mul(m4_translation((vec3_t){tapInputX, tapInputY, -25.0f}), m4_scaling((vec3_t){1.6f, 1.0f, 1.0f}));
 			drawStringScaled(renderer, tapMatrix, (color4_t){0.0f, 0.0f, 1.0f, humanCharacter->weap->animationState ? 0.5f : 1.0f}, 0.006f, "🔘");
 		}
 #endif
@@ -1076,8 +1077,8 @@ static void drawScene(Renderer *renderer, void *context)
 		// Render game instruction at -25.0f
 		pushDebugGroup(renderer, "Instructional Text");
 		{
-			mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f / 11.2f, 80.0f / 11.2f, -280.0f / 11.2f});
-			
+			mat4_t modelViewMatrix = m4_mul(m4_translation((vec3_t){-1.0f / 11.2f, 80.0f / 11.2f, -280.0f / 11.2f}), m4_scaling((vec3_t){1.6f, 1.0f, 1.0f}));
+
 			if (gGameState == GAME_STATE_TUTORIAL)
 			{
 #if PLATFORM_IOS
@@ -1086,7 +1087,7 @@ static void drawScene(Renderer *renderer, void *context)
 				ZGFloat scale = 0.004f;
 #endif
 				color4_t textColor = (color4_t){gPinkBubbleGum.red, gPinkBubbleGum.green, gPinkBubbleGum.blue, 1.0f};
-				
+
 				mat4_t tutorialModelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, 0.0f, 0.0f}), modelViewMatrix);
 				
 				if (gTutorialStage == 0)
@@ -1248,8 +1249,7 @@ static void drawScene(Renderer *renderer, void *context)
 						char buffer[256] = {0};
 						snprintf(buffer, sizeof(buffer) - 1, "Game begins in %d", gGameStartNumber);
 						
-						mat4_t leftAlignedModelViewMatrix = m4_mul(m4_translation((vec3_t){-3.8f, 0.0f, 0.0f}), modelViewMatrix);
-						drawStringLeftAligned(renderer, leftAlignedModelViewMatrix, textColor, scale, buffer);
+						drawStringScaled(renderer, modelViewMatrix, textColor, scale, buffer);
 					}
 				}
 				
@@ -1279,7 +1279,7 @@ static void drawScene(Renderer *renderer, void *context)
 			drawBlackBox(renderer);
 			
 			// Paused title renders at -20.0f
-			mat4_t gameTitleModelViewMatrix = m4_translation((vec3_t){0.0f, 5.4f, -20.0f});
+			mat4_t gameTitleModelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, 5.4f, -20.0f}), m4_scaling((vec3_t){1.6f, 1.0f, 1.0f}));
 			drawStringScaled(renderer, gameTitleModelViewMatrix, (color4_t){0.3f, 0.2f, 1.0f, 0.7f}, 0.00592f, "Paused");
 			
 #if !PLATFORM_IOS
@@ -1309,7 +1309,7 @@ static void drawScene(Renderer *renderer, void *context)
 			popDebugGroup(renderer);
 			
 			// Renders winning/losing text at z = -20.0f
-			mat4_t winLoseModelViewMatrix = m4_translation((vec3_t){0.0f / 1.25f, 100.0f / 14.0f, -25.0f / 1.25f});
+			mat4_t winLoseModelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f / 1.25f, 100.0f / 14.0f, -25.0f / 1.25f}), m4_scaling((vec3_t){1.6f, 1.0f, 1.0f}));
 			
 			pushDebugGroup(renderer, "Winner Text");
 			if (gGameWinner == RED_ROVER)
@@ -1349,8 +1349,8 @@ static void drawScene(Renderer *renderer, void *context)
 			
 			// Play again or exit text at z = -20.0f
 			{
-				mat4_t modelViewMatrix = m4_translation((vec3_t){0.0f / 1.25f, -7.0f / 1.25f, -25.0f / 1.25f});
-				
+				mat4_t modelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f / 1.25f, -7.0f / 1.25f, -25.0f / 1.25f}), m4_scaling((vec3_t){1.6f, 1.0f, 1.0f}));
+
 				if (gNetworkConnection == NULL || gNetworkConnection->type == NETWORK_SERVER_TYPE)
 				{
 					// Draw a "Press ENTER to play again" notice
@@ -1385,8 +1385,8 @@ static void drawScene(Renderer *renderer, void *context)
 		// Pause button renders at z = -20.0f
 		if (gGameState == GAME_STATE_ON || gGameState == GAME_STATE_TUTORIAL)
 		{
-			mat4_t gameTitleModelViewMatrix = m4_translation((vec3_t){7.5f * computeProjectionAspectRatio(renderer), 7.5f, -20.0f});
-			
+			mat4_t gameTitleModelViewMatrix = m4_mul(m4_translation((vec3_t){7.5f * computeProjectionAspectRatio(renderer), 7.5f, -20.0f}), m4_scaling((vec3_t){1.6f, 1.0f, 1.0f}));
+
 			pushDebugGroup(renderer, "Pause Button");
 			drawStringScaled(renderer, gameTitleModelViewMatrix, (color4_t){1.0f, 1.0f, 1.0f, 0.4f}, 0.003f, "⏸️");
 			popDebugGroup(renderer);
@@ -1427,7 +1427,7 @@ static void drawScene(Renderer *renderer, void *context)
 		
 		// Title renders at -20.0f
 		pushDebugGroup(renderer, "Game Title");
-		mat4_t gameTitleModelViewMatrix = m4_translation((vec3_t){0.0f, 5.4f, -20.0f});
+		mat4_t gameTitleModelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, 5.4f, -20.0f}), m4_scaling((vec3_t){1.6f, 1.0f, 1.0f}));
 		drawStringScaled(renderer, gameTitleModelViewMatrix, (color4_t){0.3f, 0.2f, 1.0f, 0.7f}, 0.00592f, "Sky Checkers");
 		popDebugGroup(renderer);
 		
@@ -1438,7 +1438,7 @@ static void drawScene(Renderer *renderer, void *context)
 			color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 1.0f};
 			
 			pushDebugGroup(renderer, "Connecting Text");
-			drawString(renderer, translationMatrix, textColor, 50.0f / 14.0f, 5.0f / 14.0f, "Connecting to server...");
+			drawString(renderer, translationMatrix, textColor, 50.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Connecting to server...");
 			popDebugGroup(renderer);
 		}
 		else /* if (gGameState == GAME_STATE_OFF) */
@@ -1908,7 +1908,7 @@ static ZGWindow *appLaunchedHandler(void *context)
 	rendererOptions.fullscreen = gFullscreenFlag;
 	rendererOptions.vsync = vsync;
 	rendererOptions.fsaa = gFsaaFlag;
-	rendererOptions.legacyAspectRatio = true;
+	rendererOptions.legacyAspectRatio = false;
 	rendererOptions.windowEventHandler = handleWindowEvent;
 	rendererOptions.windowEventContext = appContext;
 #if PLATFORM_IOS

@@ -203,7 +203,7 @@ void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, ZGFl
 	
 	mat4_t scaleMatrix = m4_scaling((vec3_t){width, height, 0.0f});
 	mat4_t transformMatrix = m4_mul(modelViewMatrix, scaleMatrix);
-	
+
 	drawTextureWithVerticesFromIndices(renderer, transformMatrix, gTextRenderings[index].texture, RENDERER_TRIANGLE_MODE, gFontVertexAndTextureBufferObject, gFontIndicesBufferObject, 6, color, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
 }
 #endif
@@ -212,10 +212,10 @@ void drawStringScaled(Renderer *renderer, mat4_t modelViewMatrix, color4_t color
 {
 	int index = cacheString(renderer, string);
 	if (index == -1) return;
-	
+
 	int width = gTextRenderings[index].width;
 	int height = gTextRenderings[index].height;
-	
+
 	mat4_t scaleMatrix = m4_scaling((vec3_t){width * scale, height * scale, 0.0f});
 	mat4_t transformMatrix = m4_mul(modelViewMatrix, scaleMatrix);
 	
@@ -226,10 +226,10 @@ void drawStringLeftAligned(Renderer *renderer, mat4_t modelViewMatrix, color4_t 
 {
 	int index = cacheString(renderer, string);
 	if (index == -1) return;
-	
+
 	int width = gTextRenderings[index].width;
 	int height = gTextRenderings[index].height;
-	
+
 	mat4_t scaleMatrix = m4_scaling((vec3_t){width * scale, height * scale, 0.0f});
 	mat4_t translationMatrix = m4_translation((vec3_t){width * scale, 0.0f, 0.0f});
 	

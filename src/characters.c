@@ -460,8 +460,9 @@ static void testAndDrawCharacterIfNeeded(Renderer *renderer, Character *characte
 void drawCharacters(Renderer *renderer, RendererOptions options, float renderAlpha)
 {
 	mat4_t worldRotationMatrix = m4_rotation_x(-40.0f * ((ZGFloat)M_PI / 180.0f));
+	mat4_t worldScaleMatrix = m4_scaling((vec3_t){1.6f, 1.0f, 1.0f});
 	mat4_t worldTranslationMatrix = m4_translation((vec3_t){-7.0f, 12.5f, -25.0f});
-	mat4_t worldMatrix = m4_mul(worldRotationMatrix, worldTranslationMatrix);
+	mat4_t worldMatrix = m4_mul(worldRotationMatrix, m4_mul(worldScaleMatrix, worldTranslationMatrix));
 
 	testAndDrawCharacterIfNeeded(renderer, &gRedRover, worldMatrix, options, renderAlpha);
 	testAndDrawCharacterIfNeeded(renderer, &gGreenTree, worldMatrix, options, renderAlpha);
@@ -523,22 +524,24 @@ static mat4_t playerLabelModelViewMatrix(mat4_t modelViewMatrix)
 
 static void drawCharacterLives(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, Character *character, ZGFloat livesWidth, ZGFloat livesHeight, const char *playerNumberString, ZGFloat playerLabelWidth, ZGFloat playerLabelHeight)
 {
+	mat4_t scaledModelViewMatrix = m4_mul(modelViewMatrix, m4_scaling((vec3_t){1.6f, 1.0f, 1.0f}));
 	if (character->lives != 0)
 	{
 		char buffer[256] = {0};
 		snprintf(buffer, sizeof(buffer) - 1, "%d", character->lives);
-		drawStringScaled(renderer, modelViewMatrix, color, 0.0035f, buffer);
+		drawStringScaled(renderer, scaledModelViewMatrix, color, 0.0027f, buffer);
 	}
-	
+
 	const char *playerLabel = labelForCharacter(character, playerNumberString);
-	drawStringLeftAligned(renderer, playerLabelModelViewMatrix(modelViewMatrix), color, 0.0027f, playerLabel);
+	drawStringLeftAligned(renderer, m4_mul(playerLabelModelViewMatrix(modelViewMatrix), m4_scaling((vec3_t){1.6f, 1.0f, 1.0f})), color, 0.002f, playerLabel);
 }
 
 static void drawCharacterNote(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, const char *controllerName)
 {
 	if (strlen(controllerName) > 0)
 	{
-		drawStringLeftAligned(renderer, m4_mul(modelViewMatrix, m4_translation((vec3_t){-1.2f, 1.0f, 0.0f})), color, 0.002f, controllerName);
+		mat4_t noteMatrix = m4_mul(m4_mul(modelViewMatrix, m4_translation((vec3_t){-1.2f, 1.0f, 0.0f})), m4_scaling((vec3_t){1.6f, 1.0f, 1.0f}));
+		drawStringLeftAligned(renderer, noteMatrix, color, 0.002f, controllerName);
 	}
 }
 
