@@ -24,9 +24,7 @@
 
 #include "text.h"
 #include "font.h"
-#include "platforms.h"
 #include <stdlib.h>
-#include <stdarg.h>
 #include <string.h>
 
 typedef struct
@@ -68,85 +66,6 @@ void initText(Renderer *renderer, int textRenderingCacheCount)
 	
 	gFontIndicesBufferObject = rectangleIndexBufferObject(renderer);
 }
-
-#if SUPPORT_DEPRECATED_DRAW_STRING_APIS
-void drawStringf(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, ZGFloat width, ZGFloat height, const char *format, ...)
-{
-	va_list ap;
-	char buffer[256];
-	int formatIndex;
-	int bufferIndex = 0;
-	int stringIndex;
-	char *string;
-	
-	va_start(ap, format);
-	
-	for (formatIndex = 0; format[formatIndex] != '\0'; formatIndex++)
-	{
-		if (format[formatIndex] != '%')
-		{
-			buffer[bufferIndex] = format[formatIndex];
-			bufferIndex++;
-			continue;
-		}
-		
-		formatIndex++;
-		
-		int buffer_length;
-		int spaces;
-		
-		switch (format[formatIndex])
-		{
-			case 'c':
-				buffer[bufferIndex] = va_arg(ap, int);
-				break;
-			case 'd':
-				bufferIndex += sprintf(&buffer[bufferIndex], "%i", va_arg(ap, int)) - 1;
-				break;
-			case 'i':
-				bufferIndex += sprintf(&buffer[bufferIndex], "%i", va_arg(ap, int)) - 1;
-				break;
-			case '%':
-				buffer[bufferIndex] = '%';
-				break;
-			case 'f':
-				bufferIndex += sprintf(&buffer[bufferIndex], "%f", va_arg(ap, double)) - 1;
-				break;
-			case 's':
-				string = va_arg(ap, char *);
-				
-				for (stringIndex = 0; string[stringIndex] != '\0'; stringIndex++)
-				{
-					buffer[bufferIndex++] = string[stringIndex];
-				}
-					
-				bufferIndex--;
-				break;
-			case 'z':
-				buffer_length = bufferIndex + 1;
-				spaces = 4 - (buffer_length % 4);
-				
-				while (spaces != 0)
-				{
-					buffer[bufferIndex] = ' ';
-					spaces--;
-					bufferIndex++;
-				}
-				
-				bufferIndex--;
-				break;
-		}
-		
-		bufferIndex++;
-	}
-	
-	va_end(ap);
-	
-	buffer[bufferIndex] = '\0';
-	
-	drawString(renderer, modelViewMatrix, color, width, height, buffer);
-}
-#endif
 
 #define MAX_TEXT_LENGTH 256
 int cacheString(Renderer *renderer, const char *string)
@@ -194,19 +113,6 @@ int cacheString(Renderer *renderer, const char *string)
 	
 	return cachedIndex;
 }
-
-#if SUPPORT_DEPRECATED_DRAW_STRING_APIS
-void drawString(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, ZGFloat width, ZGFloat height, const char *string)
-{
-	int index = cacheString(renderer, string);
-	if (index == -1) return;
-	
-	mat4_t scaleMatrix = m4_scaling((vec3_t){width, height, 0.0f});
-	mat4_t transformMatrix = m4_mul(modelViewMatrix, scaleMatrix);
-
-	drawTextureWithVerticesFromIndices(renderer, transformMatrix, gTextRenderings[index].texture, RENDERER_TRIANGLE_MODE, gFontVertexAndTextureBufferObject, gFontIndicesBufferObject, 6, color, RENDERER_OPTION_BLENDING_ONE_MINUS_ALPHA);
-}
-#endif
 
 void drawStringScaled(Renderer *renderer, mat4_t modelViewMatrix, color4_t color, ZGFloat scale, const char *string)
 {

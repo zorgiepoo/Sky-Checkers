@@ -822,7 +822,7 @@ void drawFramesPerSecond(Renderer *renderer)
 	if (length > 0)
 	{
 		mat4_t modelViewMatrix = m4_translation((vec3_t){6.48f, 6.48f, -18.0f});
-		drawString(renderer, modelViewMatrix, (color4_t){0.0f, 0.5f, 0.8f, 1.0f}, 0.16f * length * 1.6f, 0.5f, fpsString);
+		drawStringScaled(renderer, m4_mul(modelViewMatrix, m4_scaling((vec3_t){1.6f, 1.0f, 1.0f})), (color4_t){0.0f, 0.5f, 0.8f, 1.0f}, 0.0034f, fpsString);
 	}
 }
 
@@ -853,7 +853,7 @@ static void drawPings(Renderer *renderer)
 				size_t length = strlen(pingString);
 				if (length > 0)
 				{
-					drawString(renderer, modelViewMatrix, (color4_t){character->red, character->green, character->blue, 1.0f}, 0.16f * length * 1.6f, 0.5f, pingString);
+					drawStringScaled(renderer, m4_mul(modelViewMatrix, m4_scaling((vec3_t){1.6f, 1.0f, 1.0f})), (color4_t){character->red, character->green, character->blue, 1.0f}, 0.0034f, pingString);
 				}
 			}
 		}
@@ -881,7 +881,7 @@ static void drawPings(Renderer *renderer)
 					size_t length = strlen(pingStrings[pingAddressIndex]);
 					if (length > 0)
 					{
-						drawString(renderer, modelViewMatrix, (color4_t){character->red, character->green, character->blue, 1.0f}, 0.16f * length * 1.6f, 0.5f, pingStrings[pingAddressIndex]);
+						drawStringScaled(renderer, m4_mul(modelViewMatrix, m4_scaling((vec3_t){1.6f, 1.0f, 1.0f})), (color4_t){character->red, character->green, character->blue, 1.0f}, 0.0034f, pingStrings[pingAddressIndex]);
 					}
 				}
 			}
@@ -1438,7 +1438,7 @@ static void drawScene(Renderer *renderer, void *context)
 			color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 1.0f};
 			
 			pushDebugGroup(renderer, "Connecting Text");
-			drawString(renderer, translationMatrix, textColor, 50.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Connecting to server...");
+			drawStringScaled(renderer, m4_mul(translationMatrix, m4_scaling((vec3_t){1.6f, 1.0f, 1.0f})), textColor, 0.0024f, "Connecting to server...");
 			popDebugGroup(renderer);
 		}
 		else /* if (gGameState == GAME_STATE_OFF) */

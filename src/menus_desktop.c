@@ -32,6 +32,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 typedef struct _Menu
 {
@@ -315,11 +316,14 @@ static void drawUpAndDownArrowTriangles(Renderer *renderer, mat4_t modelViewMatr
 
 /* A bunch of menu drawing and action functions! */
 
+#define MENU_TEXT_SCALE 0.0024f
+#define MENU_WIDE_SCALE ((vec3_t){1.6f, 1.0f, 1.0f})
+
 void drawPlayMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f / 14.0f, 15.0f / 14.0f, -20.0f});
+	mat4_t modelViewMatrix = m4_mul(m4_translation((vec3_t){-1.0f / 14.0f, 15.0f / 14.0f, -20.0f}), m4_scaling(MENU_WIDE_SCALE));
 
-	drawString(renderer, modelViewMatrix, preferredColor, 10.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Play");
+	drawStringScaled(renderer, modelViewMatrix, preferredColor, MENU_TEXT_SCALE, "Play");
 }
 
 void playGameAction(void *context)
@@ -333,9 +337,9 @@ void playGameAction(void *context)
 
 void drawPauseResumeMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-1.0f / 14.0f, 15.0f / 14.0f, -20.0f});
+	mat4_t modelViewMatrix = m4_mul(m4_translation((vec3_t){-1.0f / 14.0f, 15.0f / 14.0f, -20.0f}), m4_scaling(MENU_WIDE_SCALE));
 
-	drawString(renderer, modelViewMatrix, preferredColor, 12.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Resume");
+	drawStringScaled(renderer, modelViewMatrix, preferredColor, MENU_TEXT_SCALE, "Resume");
 }
 
 void pauseResumeMenuAction(void *context)
@@ -349,8 +353,8 @@ void pauseResumeMenuAction(void *context)
 
 void drawPauseExitMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.00f, -20.00f});
-	drawString(renderer, modelViewMatrix, preferredColor, 8.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Exit");
+	mat4_t modelViewMatrix = m4_mul(m4_translation((vec3_t){-0.07f, 0.00f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringScaled(renderer, modelViewMatrix, preferredColor, MENU_TEXT_SCALE, "Exit");
 }
 
 void pauseExitMenuAction(void *context)
@@ -363,8 +367,8 @@ void pauseExitMenuAction(void *context)
 
 void drawNetworkPlayMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.0f, -20.00f});
-	drawString(renderer, modelViewMatrix, preferredColor, 14.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Online");
+	mat4_t modelViewMatrix = m4_mul(m4_translation((vec3_t){-0.07f, 0.0f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringScaled(renderer, modelViewMatrix, preferredColor, MENU_TEXT_SCALE, "Online");
 }
 
 void networkPlayMenuAction(void *context)
@@ -374,14 +378,14 @@ void networkPlayMenuAction(void *context)
 
 void drawNetworkUserNameFieldMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t nameLabelModelViewMatrix = m4_translation((vec3_t){-0.984f, -1.07f, -20.00f});
-	drawString(renderer, nameLabelModelViewMatrix, preferredColor, 10.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Name:");
+	mat4_t nameLabelModelViewMatrix = m4_translation((vec3_t){-3.0f, -1.07f, -20.00f});
+	drawStringLeftAligned(renderer, m4_mul(nameLabelModelViewMatrix, m4_scaling(MENU_WIDE_SCALE)), preferredColor, MENU_TEXT_SCALE, "Name:");
 
 	color4_t color  =  gNetworkUserNameFieldIsActive ? (color4_t){0.0f, 0.7f, 1.0f, 1.0f} : preferredColor;
 
 	if (strlen(gUserNameString) > 0)
 	{
-		mat4_t nameModelViewMatrix = m4_mul(m4_mul(nameLabelModelViewMatrix, m4_translation((vec3_t){1.3f, 0.0f, 0.0f})), m4_scaling((vec3_t){1.6f, 1.0f, 1.0f}));
+		mat4_t nameModelViewMatrix = m4_mul(m4_mul(nameLabelModelViewMatrix, m4_translation((vec3_t){2.7f, 0.0f, 0.0f})), m4_scaling((vec3_t){1.6f, 1.0f, 1.0f}));
 
 		drawStringLeftAligned(renderer, nameModelViewMatrix, color, 0.0024f, gUserNameString);
 	}
@@ -419,8 +423,8 @@ void performNetworkUserNameBackspace(void)
 
 void drawNetworkServerMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 1.07f, -20.00f});
-	drawString(renderer, modelViewMatrix, preferredColor, 18.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Make Game");
+	mat4_t modelViewMatrix = m4_mul(m4_translation((vec3_t){-3.0f, 1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, modelViewMatrix, preferredColor, MENU_TEXT_SCALE, "Make Game");
 }
 
 void networkServerMenuAction(void *context)
@@ -430,12 +434,14 @@ void networkServerMenuAction(void *context)
 
 void drawNetworkServerNumberOfPlayersMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t numberPlayersModelViewMatrix = m4_translation((vec3_t){-0.07f, 1.07f, -20.00f});
-	drawStringf(renderer, numberPlayersModelViewMatrix, preferredColor, 20.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Friends Joining: %d", gNumberOfNetHumans);
+	mat4_t numberPlayersModelViewMatrix = m4_translation((vec3_t){-3.0f, 1.07f, -20.00f});
+	char friendsBuffer[64];
+	snprintf(friendsBuffer, sizeof(friendsBuffer), "Friends Joining: %d", gNumberOfNetHumans);
+	drawStringLeftAligned(renderer, m4_mul(numberPlayersModelViewMatrix, m4_scaling(MENU_WIDE_SCALE)), preferredColor, MENU_TEXT_SCALE, friendsBuffer);
 
 	if (gDrawArrowsForNumberOfNetHumansFlag)
 	{
-		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){2.59f, 1.3f / 1.25f, -25.0f / 1.25f}));
+		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){4.0, 1.3f / 1.25f, -25.0f / 1.25f}));
 	}
 }
 
@@ -448,13 +454,13 @@ void networkServerNumberOfPlayersMenuAction(void *context)
 void drawNetworkServerPlayMenu(Renderer *renderer, color4_t preferredColor)
 {
 	{
-		mat4_t translationMatrix = m4_translation((vec3_t){-1.0f / 14.0f, 50.0f / 14.0f, -280.0f / 14.0f});
+		mat4_t translationMatrix = m4_mul(m4_translation((vec3_t){-1.0f / 14.0f, 50.0f / 14.0f, -280.0f / 14.0f}), m4_scaling(MENU_WIDE_SCALE));
 		color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 1.0f};
-		drawString(renderer, translationMatrix, textColor, 30.0f / 14.0f * 1.6f, 5.0f / 14.0f, "(UDP port used is "NETWORK_PORT")");
+		drawStringScaled(renderer, translationMatrix, textColor, MENU_TEXT_SCALE, "(UDP port used is "NETWORK_PORT")");
 	}
 
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.0f, -20.00f});
-	drawString(renderer, modelViewMatrix, preferredColor, 20.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Start Game");
+	mat4_t modelViewMatrix = m4_mul(m4_translation((vec3_t){-3.0f, 0.0f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, modelViewMatrix, preferredColor, MENU_TEXT_SCALE, "Start Game");
 }
 
 void networkServerPlayMenuAction(void *context)
@@ -468,8 +474,8 @@ void networkServerPlayMenuAction(void *context)
 
 void drawNetworkClientMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.00f, -20.00f});
-	drawString(renderer, modelViewMatrix, preferredColor, 18.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Join Game");
+	mat4_t modelViewMatrix = m4_mul(m4_translation((vec3_t){-3.0f, 0.00f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, modelViewMatrix, preferredColor, MENU_TEXT_SCALE, "Join Game");
 }
 
 void networkClientMenuAction(void *context)
@@ -479,14 +485,14 @@ void networkClientMenuAction(void *context)
 
 void drawNetworkAddressFieldMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t hostLabelModelViewMatrix = m4_translation((vec3_t){-3.64f, 0.00f, -20.00f});
-	drawString(renderer, hostLabelModelViewMatrix, preferredColor, 20.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Host Address:");
+	mat4_t hostLabelModelViewMatrix = m4_translation((vec3_t){-4.0f, 0.00f, -20.00f});
+	drawStringLeftAligned(renderer, m4_mul(hostLabelModelViewMatrix, m4_scaling(MENU_WIDE_SCALE)), preferredColor, MENU_TEXT_SCALE, "Host Address:");
 
 	color4_t color = gNetworkAddressFieldIsActive ? (color4_t){0.0f, 0.7f, 1.0f, 1.0f} : preferredColor;
 
 	if (strlen(gServerAddressString) > 0)
 	{
-		mat4_t hostModelViewMatrix = m4_mul(m4_mul(hostLabelModelViewMatrix, m4_translation((vec3_t){2.5f, 0.0f, 0.0f})), m4_scaling((vec3_t){1.6f, 1.0f, 1.0f}));
+		mat4_t hostModelViewMatrix = m4_mul(m4_mul(hostLabelModelViewMatrix, m4_translation((vec3_t){5.4f, 0.0f, 0.0f})), m4_scaling((vec3_t){1.6f, 1.0f, 1.0f}));
 
 		drawStringLeftAligned(renderer, hostModelViewMatrix, color, 0.0024f, gServerAddressString);
 	}
@@ -496,7 +502,7 @@ void drawNetworkAddressFieldMenu(Renderer *renderer, color4_t preferredColor)
 
 		color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 1.0f};
 
-		drawString(renderer, translationMatrix, textColor, 60.0f / 14.0f * 1.6f, 5.0f / 14.0f, "(Feel free to paste in the host address!)");
+		drawStringScaled(renderer, m4_mul(translationMatrix, m4_scaling(MENU_WIDE_SCALE)), textColor, MENU_TEXT_SCALE, "(Feel free to paste in the host address!)");
 	}
 }
 
@@ -532,8 +538,8 @@ void performNetworkAddressBackspace(void)
 
 void drawConnectToNetworkGameMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-4.21f, -1.07f, -20.00f});
-	drawString(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Connect");
+	mat4_t modelViewMatrix = m4_mul(m4_translation((vec3_t){-4.0f, -1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, modelViewMatrix, preferredColor, MENU_TEXT_SCALE, "Connect");
 }
 
 void connectToNetworkGameMenuAction(void *context)
@@ -547,8 +553,8 @@ void connectToNetworkGameMenuAction(void *context)
 
 void drawTutorialMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -1.07f, -20.00f});
-	drawString(renderer, modelViewMatrix, preferredColor, 14.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Tutorial");
+	mat4_t modelViewMatrix = m4_mul(m4_translation((vec3_t){-0.07f, -1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringScaled(renderer, modelViewMatrix, preferredColor, MENU_TEXT_SCALE, "Tutorial");
 }
 
 void tutorialMenuAction(void *context)
@@ -562,8 +568,8 @@ void tutorialMenuAction(void *context)
 
 void drawGameOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -2.14f, -20.00f});
-	drawString(renderer, modelViewMatrix, preferredColor, 14.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Options");
+	mat4_t modelViewMatrix = m4_mul(m4_translation((vec3_t){-0.07f, -2.14f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringScaled(renderer, modelViewMatrix, preferredColor, MENU_TEXT_SCALE, "Options");
 }
 
 void gameOptionsMenuAction(void *context)
@@ -573,8 +579,8 @@ void gameOptionsMenuAction(void *context)
 
 void drawPlayerOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 1.07f, -20.00f});
-	drawString(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Players");
+	mat4_t modelViewMatrix = m4_mul(m4_translation((vec3_t){-2.0f, 1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, modelViewMatrix, preferredColor, MENU_TEXT_SCALE, "Players");
 }
 
 void playerOptionsMenuAction(void *context)
@@ -584,8 +590,8 @@ void playerOptionsMenuAction(void *context)
 
 void drawConfigureKeysMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.00f, -20.00f});
-	drawString(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Keyboard");
+	mat4_t modelViewMatrix = m4_mul(m4_translation((vec3_t){-2.0f, 0.00f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, modelViewMatrix, preferredColor, MENU_TEXT_SCALE, "Keyboard");
 }
 
 void configureKeysMenuAction(void *context)
@@ -595,11 +601,13 @@ void configureKeysMenuAction(void *context)
 
 void drawPinkBubbleGumPlayerOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 1.07f, -20.00f});
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-4.8f, 1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Pink Bubblegum:");
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){1.6f, 1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
 	if (gPinkBubbleGum.state == CHARACTER_HUMAN_STATE)
-		drawString(renderer, modelViewMatrix, preferredColor, 24.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Pink Bubblegum: Human");
+		drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, "Human");
 	else if (gPinkBubbleGum.state == CHARACTER_AI_STATE)
-		drawString(renderer, modelViewMatrix, preferredColor, 24.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Pink Bubblegum: Bot");
+		drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, "Bot");
 }
 
 void pinkBubbleGumPlayerOptionsMenuAction(void *context)
@@ -616,16 +624,13 @@ void pinkBubbleGumPlayerOptionsMenuAction(void *context)
 
 void drawRedRoverPlayerOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.00f, -20.00f});
-
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-4.8f, 0.00f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Red Rover:");
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){1.6f, 0.00f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
 	if (gRedRover.state == CHARACTER_HUMAN_STATE)
-	{
-		drawString(renderer, modelViewMatrix, preferredColor, 24.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Red Rover: Human");
-	}
+		drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, "Human");
 	else
-	{
-		drawString(renderer, modelViewMatrix, preferredColor, 24.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Red Rover: Bot");
-	}
+		drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, "Bot");
 }
 
 void redRoverPlayerOptionsMenuAction(void *context)
@@ -642,16 +647,13 @@ void redRoverPlayerOptionsMenuAction(void *context)
 
 void drawGreenTreePlayerOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -1.07f, -20.00f});
-
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-4.8f, -1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Green Tree:");
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){1.6f, -1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
 	if (gGreenTree.state == CHARACTER_HUMAN_STATE)
-	{
-		drawString(renderer, modelViewMatrix, preferredColor, 24.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Green Tree: Human");
-	}
+		drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, "Human");
 	else if (gGreenTree.state == CHARACTER_AI_STATE)
-	{
-		drawString(renderer, modelViewMatrix, preferredColor, 24.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Green Tree: Bot");
-	}
+		drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, "Bot");
 }
 
 void greenTreePlayerOptionsMenuAction(void *context)
@@ -668,16 +670,13 @@ void greenTreePlayerOptionsMenuAction(void *context)
 
 void drawBlueLightningPlayerOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -2.14f, -20.00f});
-
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-4.8f, -2.14f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Blue Lightning:");
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){1.6f, -2.14f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
 	if (gBlueLightning.state == CHARACTER_HUMAN_STATE)
-	{
-		drawString(renderer, modelViewMatrix, preferredColor, 24.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Blue Lightning: Human");
-	}
+		drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, "Human");
 	else if (gBlueLightning.state == CHARACTER_AI_STATE)
-	{
-		drawString(renderer, modelViewMatrix, preferredColor, 24.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Blue Lightning: Bot");
-	}
+		drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, "Bot");
 }
 
 void blueLightningPlayerOptionsMenuAction(void *context)
@@ -694,37 +693,41 @@ void blueLightningPlayerOptionsMenuAction(void *context)
 
 void drawAIModeOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modeModelViewMatrix = m4_translation((vec3_t){-0.07f, -3.8f, -20.00f});
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-4.8f, -3.8f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Bot Mode:");
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){1.6f, -3.8f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
 	if (gAIMode == AI_EASY_MODE)
-		drawString(renderer, modeModelViewMatrix, preferredColor, 24.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Bot Mode: Easy");
-
+		drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, "Easy");
 	else if (gAIMode == AI_MEDIUM_MODE)
-		drawString(renderer, modeModelViewMatrix, preferredColor, 24.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Bot Mode: Medium");
-
+		drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, "Medium");
 	else if (gAIMode == AI_HARD_MODE)
-		drawString(renderer, modeModelViewMatrix, preferredColor, 24.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Bot Mode: Hard");
-	
+		drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, "Hard");
+
 	if (gDrawArrowsForAIModeFlag)
 	{
-		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){3.0f, -4.1f / 1.25f - 0.59f, -25.0f / 1.25f}));
+		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){5.0f, -4.1f / 1.25f - 0.59f, -25.0f / 1.25f}));
 	}
 }
 
 void drawConfigureLivesMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t livesModelViewMatrix = m4_translation((vec3_t){-0.07f, -4.87f, -20.00f});
-	drawStringf(renderer, livesModelViewMatrix, preferredColor, 24.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Player Lives: %i", gCharacterLives);
-	
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-4.8f, -4.87f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Player Lives:");
+	char livesBuffer[64];
+	snprintf(livesBuffer, sizeof(livesBuffer), "%d", gCharacterLives);
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){1.6f, -4.87f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, livesBuffer);
+
 	if (gDrawArrowsForCharacterLivesFlag)
 	{
-		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){3.0f, -5.4f / 1.25f - 0.59f, -25.0f / 1.25f}));
+		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){2.6f, -5.4f / 1.25f - 0.59f, -25.0f / 1.25f}));
 	}
 }
 
 void drawPinkBubbleGumConfigKey(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 1.07f, -20.00f});
-	drawString(renderer, modelViewMatrix, preferredColor, 18.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Pink Bubblegum");
+	mat4_t modelViewMatrix = m4_mul(m4_translation((vec3_t){-2.8f, 1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, modelViewMatrix, preferredColor, MENU_TEXT_SCALE, "Pink Bubblegum");
 }
 
 void pinkBubbleGumKeyMenuAction(void *context)
@@ -734,8 +737,8 @@ void pinkBubbleGumKeyMenuAction(void *context)
 
 void drawRedRoverConfigKey(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.00f, -20.00f});
-	drawString(renderer, modelViewMatrix, preferredColor, 18.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Red Rover");
+	mat4_t modelViewMatrix = m4_mul(m4_translation((vec3_t){-2.8f, 0.00f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, modelViewMatrix, preferredColor, MENU_TEXT_SCALE, "Red Rover");
 }
 
 void redRoverKeyMenuAction(void *context)
@@ -745,8 +748,8 @@ void redRoverKeyMenuAction(void *context)
 
 void drawGreenTreeConfigKey(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -1.07f, -20.00f});
-	drawString(renderer, modelViewMatrix, preferredColor, 18.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Green Tree");
+	mat4_t modelViewMatrix = m4_mul(m4_translation((vec3_t){-2.8f, -1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, modelViewMatrix, preferredColor, MENU_TEXT_SCALE, "Green Tree");
 }
 
 void greenTreeKeyMenuAction(void *context)
@@ -756,8 +759,8 @@ void greenTreeKeyMenuAction(void *context)
 
 void drawBlueLightningConfigKey(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -2.14f, -20.00f});
-	drawString(renderer, modelViewMatrix, preferredColor, 18.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Blue Lightning");
+	mat4_t modelViewMatrix = m4_mul(m4_translation((vec3_t){-2.8f, -2.14f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, modelViewMatrix, preferredColor, MENU_TEXT_SCALE, "Blue Lightning");
 }
 
 void blueLightningKeyMenuAction(void *context)
@@ -773,26 +776,30 @@ static void drawKeyboardConfigurationInstructions(Renderer *renderer)
 
 	color4_t textColor = (color4_t){0.3f, 0.2f, 1.0f, 1.0f};
 
-	drawString(renderer, translationMatrix, textColor, 100.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Enter: map keyboard input; Escape: cancel");
+	drawStringScaled(renderer, m4_mul(translationMatrix, m4_scaling(MENU_WIDE_SCALE)), textColor, MENU_TEXT_SCALE, "Enter: map keyboard input; Escape: cancel");
 }
 
 void drawPinkBubbleGumConfigRightKey(Renderer *renderer, color4_t preferredColor)
 {
 	drawKeyboardConfigurationInstructions(renderer);
-	
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 1.07f, -20.00f});	
-	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f,"Right: %s", convertKeyCodeToString(gPinkBubbleGumInput.r_id));
+
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-2.8f, 1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Right:");
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){0.6f, 1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, convertKeyCodeToString(gPinkBubbleGumInput.r_id));
 }
 
 void pinkBubbleGumRightKeyMenuAction(void *context)
-{	
+{
 	configureKey(&gPinkBubbleGumInput.r_id);
 }
 
 void drawPinkBubbleGumConfigLeftKey(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.00f, -20.00f});	
-	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f,"Left: %s", convertKeyCodeToString(gPinkBubbleGumInput.l_id));
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-2.8f, 0.00f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Left:");
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){0.6f, 0.00f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, convertKeyCodeToString(gPinkBubbleGumInput.l_id));
 }
 
 void pinkBubbleGumLeftKeyMenuAction(void *context)
@@ -802,8 +809,10 @@ void pinkBubbleGumLeftKeyMenuAction(void *context)
 
 void drawPinkBubbleGumConfigUpKey(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -1.07f, -20.00f});	
-	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f,"Up: %s", convertKeyCodeToString(gPinkBubbleGumInput.u_id));
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-2.8f, -1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Up:");
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){0.6f, -1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, convertKeyCodeToString(gPinkBubbleGumInput.u_id));
 }
 
 void pinkBubbleGumUpKeyMenuAction(void *context)
@@ -813,8 +822,10 @@ void pinkBubbleGumUpKeyMenuAction(void *context)
 
 void drawPinkBubbleGumConfigDownKey(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -2.14f, -20.00f});	
-	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f,"Down: %s", convertKeyCodeToString(gPinkBubbleGumInput.d_id));
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-2.8f, -2.14f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Down:");
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){0.6f, -2.14f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, convertKeyCodeToString(gPinkBubbleGumInput.d_id));
 }
 
 void pinkBubbleGumDownKeyMenuAction(void *context)
@@ -824,8 +835,10 @@ void pinkBubbleGumDownKeyMenuAction(void *context)
 
 void drawPinkBubbleGumConfigFireKey(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -3.21f, -20.00f});	
-	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f,"Fire: %s", convertKeyCodeToString(gPinkBubbleGumInput.weap_id));
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-2.8f, -3.21f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Fire:");
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){0.6f, -3.21f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, convertKeyCodeToString(gPinkBubbleGumInput.weap_id));
 }
 
 void pinkBubbleGumFireKeyMenuAction(void *context)
@@ -836,9 +849,11 @@ void pinkBubbleGumFireKeyMenuAction(void *context)
 void drawRedRoverConfigRightKey(Renderer *renderer, color4_t preferredColor)
 {
 	drawKeyboardConfigurationInstructions(renderer);
-	
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 1.07f, -20.00f});	
-	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f,"Right: %s", convertKeyCodeToString(gRedRoverInput.r_id));
+
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-2.8f, 1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Right:");
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){0.6f, 1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, convertKeyCodeToString(gRedRoverInput.r_id));
 }
 
 void redRoverRightKeyMenuAction(void *context)
@@ -848,8 +863,10 @@ void redRoverRightKeyMenuAction(void *context)
 
 void drawRedRoverConfigLeftKey(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.00f, -20.00f});	
-	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f,"Left: %s", convertKeyCodeToString(gRedRoverInput.l_id));
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-2.8f, 0.00f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Left:");
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){0.6f, 0.00f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, convertKeyCodeToString(gRedRoverInput.l_id));
 }
 
 void redRoverLeftKeyMenuAction(void *context)
@@ -859,8 +876,10 @@ void redRoverLeftKeyMenuAction(void *context)
 
 void drawRedRoverConfigUpKey(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -1.07f, -20.00f});	
-	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f,"Up: %s", convertKeyCodeToString(gRedRoverInput.u_id));
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-2.8f, -1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Up:");
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){0.6f, -1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, convertKeyCodeToString(gRedRoverInput.u_id));
 }
 
 void redRoverUpKeyMenuAction(void *context)
@@ -870,8 +889,10 @@ void redRoverUpKeyMenuAction(void *context)
 
 void drawRedRoverConfigDownKey(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -2.14f, -20.00f});	
-	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f,"Down: %s", convertKeyCodeToString(gRedRoverInput.d_id));
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-2.8f, -2.14f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Down:");
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){0.6f, -2.14f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, convertKeyCodeToString(gRedRoverInput.d_id));
 }
 
 void redRoverDownKeyMenuAction(void *context)
@@ -881,8 +902,10 @@ void redRoverDownKeyMenuAction(void *context)
 
 void drawRedRoverConfigFireKey(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -3.21f, -20.00f});	
-	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f,"Fire: %s", convertKeyCodeToString(gRedRoverInput.weap_id));
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-2.8f, -3.21f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Fire:");
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){0.6f, -3.21f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, convertKeyCodeToString(gRedRoverInput.weap_id));
 }
 
 void redRoverFireKeyMenuAction(void *context)
@@ -893,9 +916,11 @@ void redRoverFireKeyMenuAction(void *context)
 void drawGreenTreeConfigRightKey(Renderer *renderer, color4_t preferredColor)
 {
 	drawKeyboardConfigurationInstructions(renderer);
-	
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 1.07f, -20.00f});	
-	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f,"Right: %s", convertKeyCodeToString(gGreenTreeInput.r_id));
+
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-2.8f, 1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Right:");
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){0.6f, 1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, convertKeyCodeToString(gGreenTreeInput.r_id));
 }
 
 void greenTreeRightKeyMenuAction(void *context)
@@ -905,8 +930,10 @@ void greenTreeRightKeyMenuAction(void *context)
 
 void drawGreenTreeConfigLeftKey(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.00f, -20.00f});	
-	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f,"Left: %s", convertKeyCodeToString(gGreenTreeInput.l_id));
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-2.8f, 0.00f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Left:");
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){0.6f, 0.00f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, convertKeyCodeToString(gGreenTreeInput.l_id));
 }
 
 void greenTreeLeftKeyMenuAction(void *context)
@@ -916,8 +943,10 @@ void greenTreeLeftKeyMenuAction(void *context)
 
 void drawGreenTreeConfigUpKey(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -1.07f, -20.00f});	
-	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f,"Up: %s", convertKeyCodeToString(gGreenTreeInput.u_id));
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-2.8f, -1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Up:");
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){0.6f, -1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, convertKeyCodeToString(gGreenTreeInput.u_id));
 }
 
 void greenTreeUpKeyMenuAction(void *context)
@@ -927,8 +956,10 @@ void greenTreeUpKeyMenuAction(void *context)
 
 void drawGreenTreeConfigDownKey(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -2.14f, -20.00f});	
-	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f,"Down: %s", convertKeyCodeToString(gGreenTreeInput.d_id));
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-2.8f, -2.14f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Down:");
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){0.6f, -2.14f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, convertKeyCodeToString(gGreenTreeInput.d_id));
 }
 
 void greenTreeDownKeyMenuAction(void *context)
@@ -938,8 +969,10 @@ void greenTreeDownKeyMenuAction(void *context)
 
 void drawGreenTreeConfigFireKey(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -3.21f, -20.00f});	
-	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f,"Fire: %s", convertKeyCodeToString(gGreenTreeInput.weap_id));
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-2.8f, -3.21f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Fire:");
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){0.6f, -3.21f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, convertKeyCodeToString(gGreenTreeInput.weap_id));
 }
 
 void greenTreeFireKeyMenuAction(void *context)
@@ -950,9 +983,11 @@ void greenTreeFireKeyMenuAction(void *context)
 void drawBlueLightningConfigRightKey(Renderer *renderer, color4_t preferredColor)
 {
 	drawKeyboardConfigurationInstructions(renderer);
-	
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 1.07f, -20.00f});	
-	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f,"Right: %s", convertKeyCodeToString(gBlueLightningInput.r_id));
+
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-2.8f, 1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Right:");
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){0.6f, 1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, convertKeyCodeToString(gBlueLightningInput.r_id));
 }
 
 void blueLightningRightKeyMenuAction(void *context)
@@ -962,8 +997,10 @@ void blueLightningRightKeyMenuAction(void *context)
 
 void drawBlueLightningConfigLeftKey(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.00f, -20.00f});	
-	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f,"Left: %s", convertKeyCodeToString(gBlueLightningInput.l_id));
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-2.8f, 0.00f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Left:");
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){0.6f, 0.00f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, convertKeyCodeToString(gBlueLightningInput.l_id));
 }
 
 void blueLightningLeftKeyMenuAction(void *context)
@@ -973,8 +1010,10 @@ void blueLightningLeftKeyMenuAction(void *context)
 
 void drawBlueLightningConfigUpKey(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -1.07f, -20.00f});	
-	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f,"Up: %s", convertKeyCodeToString(gBlueLightningInput.u_id));
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-2.8f, -1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Up:");
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){0.6f, -1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, convertKeyCodeToString(gBlueLightningInput.u_id));
 }
 
 void blueLightningUpKeyMenuAction(void *context)
@@ -984,8 +1023,10 @@ void blueLightningUpKeyMenuAction(void *context)
 
 void drawBlueLightningConfigDownKey(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -2.14f, -20.00f});	
-	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f,"Down: %s", convertKeyCodeToString(gBlueLightningInput.d_id));
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-2.8f, -2.14f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Down:");
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){0.6f, -2.14f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, convertKeyCodeToString(gBlueLightningInput.d_id));
 }
 
 void blueLightningDownKeyMenuAction(void *context)
@@ -995,8 +1036,10 @@ void blueLightningDownKeyMenuAction(void *context)
 
 void drawBlueLightningConfigFireKey(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -3.21f, -20.00f});	
-	drawStringf(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f,"Fire: %s", convertKeyCodeToString(gBlueLightningInput.weap_id));
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-2.8f, -3.21f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Fire:");
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){0.6f, -3.21f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, convertKeyCodeToString(gBlueLightningInput.weap_id));
 }
 
 void blueLightningFireKeyMenuAction(void *context)
@@ -1007,8 +1050,8 @@ void blueLightningFireKeyMenuAction(void *context)
 // Audio options
 void drawAudioOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -1.07f, -20.00f});
-	drawString(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Sounds");
+	mat4_t modelViewMatrix = m4_mul(m4_translation((vec3_t){-2.0f, -1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, modelViewMatrix, preferredColor, MENU_TEXT_SCALE, "Sounds");
 }
 
 void audioOptionsMenuAction(void *context)
@@ -1018,14 +1061,16 @@ void audioOptionsMenuAction(void *context)
 
 void drawAudioEffectsOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 1.07f, -20.00f});
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-2.8f, 1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Effects:");
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){0.2f, 1.07f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
 	if (gAudioEffectsFlag)
 	{
-		drawString(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Effects: On");
+		drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, "On");
 	}
 	else
 	{
-		drawString(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Effects: Off");
+		drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, "Off");
 	}
 }
 
@@ -1036,14 +1081,16 @@ void audioEffectsOptionsMenuAction(void *context)
 
 void drawAudioMusicOptionsMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, 0.00f, -20.00f});
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-2.8f, 0.00f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Music:");
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){0.2f, 0.00f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
 	if (gAudioMusicFlag)
 	{
-		drawString(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Music: On");
+		drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, "On");
 	}
 	else
 	{
-		drawString(renderer, modelViewMatrix, preferredColor, 15.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Music: Off");
+		drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, "Off");
 	}
 }
 
@@ -1056,8 +1103,8 @@ void audioMusicOptionsMenuAction(void *context)
 
 void drawQuitMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t modelViewMatrix = m4_translation((vec3_t){-0.07f, -3.21f, -20.00f});
-	drawString(renderer, modelViewMatrix, preferredColor, 10.0f / 14.0f * 1.6f, 5.0f / 14.0f, "Quit");
+	mat4_t modelViewMatrix = m4_mul(m4_translation((vec3_t){-0.07f, -3.21f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	drawStringScaled(renderer, modelViewMatrix, preferredColor, MENU_TEXT_SCALE, "Quit");
 }
 
 void quitMenuAction(void *context)
