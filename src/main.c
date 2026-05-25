@@ -1909,7 +1909,6 @@ static ZGWindow *appLaunchedHandler(void *context)
 	rendererOptions.fullscreen = gFullscreenFlag;
 	rendererOptions.vsync = vsync;
 	rendererOptions.fsaa = gFsaaFlag;
-	rendererOptions.legacyAspectRatio = false;
 	rendererOptions.windowEventHandler = handleWindowEvent;
 	rendererOptions.windowEventContext = appContext;
 #if PLATFORM_IOS

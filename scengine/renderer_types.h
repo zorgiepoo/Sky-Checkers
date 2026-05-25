@@ -78,7 +78,6 @@ typedef struct
 	bool fullscreen;
 	bool vsync;
 	bool fsaa;
-	bool legacyAspectRatio;
 } RendererCreateOptions;
 
 typedef enum
@@ -191,7 +190,6 @@ typedef struct _Renderer
 	bool fullscreen;
 	bool vsync;
 	bool fsaa;
-	bool legacyAspectRatio;
 
 	union
 	{
