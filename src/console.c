@@ -364,11 +364,6 @@ static float getConsoleValue(void)
 	else if (strcmp(gConsoleString, "scc~: get blueLightning.time_alive") == 0)
 		value = (float)gBlueLightning.time_alive;
 	
-	else if (strcmp(gConsoleString, "scc~: get ai_mode") == 0)
-	{
-		value = (float)gAIMode;
-	}
-	
 	// write text for precision up to 1 digit past the decimal point.
 	// note that we return the real value with all of its digits.
 	sprintf(result, "%0.2f", value);
@@ -762,10 +757,6 @@ static float setConsoleValue(bool *errorFlag)
 		{
 			gBlueLightning.weap->blue = value;
 		}
-		else if (strcmp(input, "scc~: ai_mode") == 0)
-		{
-			gAIMode = (int)value;
-		}
 		else if (strcmp(input, "scc~: game_reset") == 0)
 		{
 			if (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE)
@@ -785,6 +776,7 @@ static float setConsoleValue(bool *errorFlag)
 				{
 					GameMessage message;
 					message.type = GAME_RESET_MESSAGE_TYPE;
+					message.gameResetUpdate.gameAdvancementStep = gGameAdvancementStep;
 					sendToClients(0, &message);
 				}
 			}

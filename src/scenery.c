@@ -22,6 +22,7 @@
 #include "math_3d.h"
 #include "texture.h"
 #include "renderer_projection.h"
+#include "globals.h"
 
 #define TILE_TEXTURE1_RED 0.8f
 #define TILE_TEXTURE1_GREEN 0.8f
@@ -39,16 +40,19 @@
 #define DIEING_STONE2_COLOR_GREEN 0.23f
 #define DIEING_STONE2_COLOR_BLUE 0.26f
 
+#define MAX_SKY_ALPHA 1.0f
+#define MIN_SKY_ALPHA 0.55f
+
 Tile gTiles[NUMBER_OF_TILES];
 
-static TextureObject gSkyTex;
+static TextureObject gSkyTextures[3];
 
 static TextureObject gTileTexture1;
 static TextureObject gTileCrackedTexture1;
 static TextureObject gTileTexture2;
 static TextureObject gTileCrackedTexture2;
 
-void loadTiles(void)
+void loadTiles(uint8_t gameLevel)
 {
 	for (int tileIndex = 0; tileIndex < NUMBER_OF_TILES; tileIndex++)
 	{
@@ -61,10 +65,10 @@ void loadTiles(void)
 		gTiles[tileIndex].colorTime = 0;
 		gTiles[tileIndex].predictedColorID = NO_CHARACTER;
 		gTiles[tileIndex].predictedColorTime = 0;
-		
+
 		int rowIndex = tileIndex / 8;
 		int columnIndex = tileIndex % 8;
-		
+
 		gTiles[tileIndex].x = -7.0f + 2.0f * columnIndex;
 		gTiles[tileIndex].y = 12.5f + 2.0f * rowIndex;
 		gTiles[tileIndex].z = TILE_ALIVE_Z;
@@ -243,7 +247,9 @@ bool availableTileIndex(int tileIndex)
 
 void loadSceneryTextures(Renderer *renderer)
 {
-	gSkyTex = loadTexture(renderer, "Data/Textures/sky.bmp");
+	gSkyTextures[0] = loadTexture(renderer, "Data/Textures/sky.bmp");
+	gSkyTextures[1] = loadTexture(renderer, "Data/Textures/sky2.bmp");
+	gSkyTextures[2] = loadTexture(renderer, "Data/Textures/sky3.bmp");
 	
 	gTileTexture1 = loadTexture(renderer, "Data/Textures/tiletex.bmp");
 	gTileCrackedTexture1 = loadTexture(renderer, "Data/Textures/tiletex_cracked.bmp");
@@ -251,7 +257,7 @@ void loadSceneryTextures(Renderer *renderer)
 	gTileCrackedTexture2 = loadTexture(renderer, "Data/Textures/tiletex2_cracked.bmp");
 }
 
-void drawSky(Renderer *renderer, RendererOptions options)
+void drawSky(Renderer *renderer, RendererOptions options, uint8_t gameLevel)
 {
 	static BufferArrayObject vertexAndTextureArrayObject;
 	static BufferObject indicesBufferObject;
@@ -282,7 +288,17 @@ void drawSky(Renderer *renderer, RendererOptions options)
 	
 	mat4_t modelViewMatrix = m4_mul(m4_translation((vec3_t){0.0f, 0.0f, -38.0f}), m4_scaling((vec3_t){computeProjectionAspectRatio(renderer), 1.0f, 1.0f}));
 	
-	drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, gSkyTex, RENDERER_TRIANGLE_MODE, vertexAndTextureArrayObject, indicesBufferObject, 6, (color4_t){1.0f, 1.0f, 1.0f, 0.75f}, options);
+	ZGFloat brightness;
+	if (gameLevel == 0)
+	{
+		brightness = MAX_SKY_ALPHA - currentGameDifficulty() / (1.0f / 3.0f) * (MAX_SKY_ALPHA - MIN_SKY_ALPHA);
+	}
+	else
+	{
+		brightness = MAX_SKY_ALPHA;
+	}
+	
+	drawTextureWithVerticesFromIndices(renderer, modelViewMatrix, gSkyTextures[gameLevel], RENDERER_TRIANGLE_MODE, vertexAndTextureArrayObject, indicesBufferObject, 6, (color4_t){1.0f, 1.0f, 1.0f, brightness}, options);
 }
 
 void drawTiles(Renderer *renderer, float renderAlpha)

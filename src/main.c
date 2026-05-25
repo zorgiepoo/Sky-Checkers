@@ -62,12 +62,20 @@
 // A license to embed the font was acquired (for me, Mayur, only) from http://typodermicfonts.com/goodfish/
 #define FONT_PATH "Data/Fonts/typelib.dat"
 
+// This should be divisible by 3 because we have 3 level stages
+#define MAX_GAME_ADVANCEMENT_STEPS 12
+
 bool gGameHasStarted;
 bool gGameShouldReset;
 int32_t gGameStartNumber;
 uint8_t gTutorialStage;
+uint8_t gGameLevel;
+uint8_t gGameAdvancementStep;
+static uint8_t gPrevGameLevel;
 float gTutorialCoverTimer;
 int gGameWinner;
+
+static float gGameCharacterSpeed = INITIAL_CHARACTER_SPEED;
 
 GamepadManager *gGamepadManager;
 static GamepadIndex gGamepads[12] = {INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX, INVALID_GAMEPAD_INDEX};
@@ -208,7 +216,7 @@ static void initScene(Renderer *renderer)
 {
 	loadSceneryTextures(renderer);
 
-	loadTiles();
+	loadTiles(gGameLevel);
 
 	initCharacters();
 
@@ -312,14 +320,14 @@ static void readDefaults(void)
 	gFsaaFlag = readDefaultBoolKey(defaults, "FSAA flag", true);
 	gFullscreenFlag = readDefaultBoolKey(defaults, "Fullscreen flag", false);
 
-	gCharacterLives = readDefaultIntKey(defaults, "Number of lives", MAX_CHARACTER_LIVES / 2);
+	gCharacterLives = readDefaultIntKey(defaults, "Number of lives", MAX_CHARACTER_LIVES);
 	if (gCharacterLives > MAX_CHARACTER_LIVES)
 	{
 		gCharacterLives = MAX_CHARACTER_LIVES;
 	}
 	else if (gCharacterLives < 0)
 	{
-		gCharacterLives = MAX_CHARACTER_LIVES / 2;
+		gCharacterLives = MAX_CHARACTER_LIVES;
 	}
 
 	// character states
@@ -327,12 +335,6 @@ static void readDefaults(void)
 	readDefaultCharacterState(defaults, "Red Rover state", &gRedRover, CHARACTER_AI_STATE);
 	readDefaultCharacterState(defaults, "Green Tree state", &gGreenTree, CHARACTER_AI_STATE);
 	readDefaultCharacterState(defaults, "Blue Lightning state", &gBlueLightning, CHARACTER_AI_STATE);
-	
-	gAIMode = readDefaultIntKey(defaults, "AI Mode", AI_EASY_MODE);
-	if (gAIMode != AI_EASY_MODE && gAIMode != AI_MEDIUM_MODE && gAIMode != AI_HARD_MODE)
-	{
-		gAIMode = AI_EASY_MODE;
-	}
 	
 	gNumberOfNetHumans = readDefaultIntKey(defaults, "Number of Net Humans", 1);
 	if (gNumberOfNetHumans < 0 || gNumberOfNetHumans > 3)
@@ -431,8 +433,6 @@ static void writeDefaults(Renderer *renderer)
 	writeDefaultIntKey(defaults, "Green Tree state", offlineCharacterState(&gGreenTree));
 	writeDefaultIntKey(defaults, "Blue Lightning state", offlineCharacterState(&gBlueLightning));
 	
-	
-	writeDefaultIntKey(defaults, "AI Mode", gAIMode);
 	writeDefaultIntKey(defaults, "Number of Net Humans", gNumberOfNetHumans);
 
 	// Character defaults
@@ -499,12 +499,27 @@ bool willUseSiriRemote(void)
 
 void initGame(ZGWindow *window, bool firstGame, bool tutorial)
 {
-	loadTiles();
+	if (gGameAdvancementStep >= 2 * MAX_GAME_ADVANCEMENT_STEPS / 3)
+	{
+		gGameLevel = 2;
+	}
+	else if (gGameAdvancementStep >= MAX_GAME_ADVANCEMENT_STEPS / 3)
+	{
+		gGameLevel = 1;
+	}
+	else
+	{
+		gGameLevel = 0;
+	}
+	
+	loadTiles(gGameLevel);
 
-	loadCharacter(&gRedRover);
-	loadCharacter(&gGreenTree);
-	loadCharacter(&gPinkBubbleGum);
-	loadCharacter(&gBlueLightning);
+	gGameCharacterSpeed = INITIAL_CHARACTER_SPEED + (TERMINAL_CHARACTER_SPEED - INITIAL_CHARACTER_SPEED) * currentGameDifficulty();
+	
+	loadCharacter(&gRedRover, gGameCharacterSpeed);
+	loadCharacter(&gGreenTree, gGameCharacterSpeed);
+	loadCharacter(&gPinkBubbleGum, gGameCharacterSpeed);
+	loadCharacter(&gBlueLightning, gGameCharacterSpeed);
 	
 	if (tutorial)
 	{
@@ -716,6 +731,11 @@ void endGame(ZGWindow *window, bool lastGame)
 	
 	if (lastGame)
 	{
+		gGameLevel = 0;
+		gPrevGameLevel = 0;
+		gGameCharacterSpeed = INITIAL_CHARACTER_SPEED;
+		gGameAdvancementStep = 0;
+		
 		setPlayerIndex(gGamepadManager, gPinkBubbleGumInput.gamepadIndex, UNSET_PLAYER_INDEX);
 		gPinkBubbleGumInput.gamepadIndex = INVALID_GAMEPAD_INDEX;
 		
@@ -732,6 +752,11 @@ void endGame(ZGWindow *window, bool lastGame)
 		memset(gRedRover.controllerName, 0, MAX_CONTROLLER_NAME_SIZE);
 		memset(gGreenTree.controllerName, 0, MAX_CONTROLLER_NAME_SIZE);
 		memset(gBlueLightning.controllerName, 0, MAX_CONTROLLER_NAME_SIZE);
+		
+		gPinkBubbleGum.kills = 0;
+		gRedRover.kills = 0;
+		gGreenTree.kills = 0;
+		gBlueLightning.kills = 0;
 		
 		restoreAllBackupStates();
 		
@@ -905,7 +930,7 @@ static void drawScoreboardTextForCharacter(Renderer *renderer, Character *charac
 	drawStringScaled(renderer, m4_mul(winsNumRow, xScale), characterColor, 0.0017f, buffer);
 
 	mat4_t killsRow = m4_mul(winsRow, m4_translation((vec3_t){0.0f, -1.6f, 0.0f}));
-	drawStringScaled(renderer, m4_mul(killsRow, xScale), characterColor, 0.0017f, "Kills:");
+	drawStringScaled(renderer, m4_mul(killsRow, xScale), characterColor, 0.0017f, "KOs:");
 
 	mat4_t killsNumRow = m4_mul(winsNumRow, m4_translation((vec3_t){0.0f, -1.6f, 0.0f}));
 	snprintf(buffer, sizeof(buffer) - 1, "%d", character->kills);
@@ -954,7 +979,7 @@ static void drawScene(Renderer *renderer, void *context)
 
 		// Sky renders at z = -38.0f
 		pushDebugGroup(renderer, "Sky");
-		drawSky(renderer, RENDERER_OPTION_BLENDING_ALPHA);
+		drawSky(renderer, RENDERER_OPTION_BLENDING_ALPHA, gGameLevel);
 		popDebugGroup(renderer);
 
 		// Weapons renders at z = -24.0f to -25.0f after a world rotation
@@ -1418,7 +1443,7 @@ static void drawScene(Renderer *renderer, void *context)
 		
 		// Sky renders at -38.0f
 		pushDebugGroup(renderer, "Sky");
-		drawSky(renderer, RENDERER_OPTION_NONE);
+		drawSky(renderer, RENDERER_OPTION_NONE, gGameLevel);
 		popDebugGroup(renderer);
 		
 		// Black box renders at -22.0f
@@ -1576,15 +1601,56 @@ static void handleTextInputEvent(ZGKeyboardEvent *event)
 
 #define MAX_ITERATIONS (25 * ANIMATION_TIMER_INTERVAL)
 
+float currentGameDifficulty(void)
+{
+	return ((float)gGameAdvancementStep / (float)MAX_GAME_ADVANCEMENT_STEPS);
+}
+
+static bool characterCanAdvanceLevel(Character *character, Character *humanWinnerCharacter)
+{
+	if (character->state == CHARACTER_AI_STATE)
+	{
+		return true;
+	}
+	
+	if (humanWinnerCharacter == character)
+	{
+		return true;
+	}
+	
+	if (character->kills >= (gGameAdvancementStep + 1) * gCharacterLives)
+	{
+		return true;
+	}
+	
+	return false;
+}
+
 static void resetGame(void)
 {
+	if (gGameAdvancementStep < MAX_GAME_ADVANCEMENT_STEPS)
+	{
+		bool humansArePlaying = (gPinkBubbleGum.state == CHARACTER_HUMAN_STATE || gRedRover.state == CHARACTER_HUMAN_STATE || gGreenTree.state == CHARACTER_HUMAN_STATE || gBlueLightning.state == CHARACTER_HUMAN_STATE);
+		
+		Character *winnerCharacter = getCharacter(gGameWinner);
+		if (winnerCharacter != NULL && (winnerCharacter->state == CHARACTER_HUMAN_STATE || !humansArePlaying))
+		{
+			if (characterCanAdvanceLevel(&gPinkBubbleGum, winnerCharacter) && characterCanAdvanceLevel(&gRedRover, winnerCharacter) && characterCanAdvanceLevel(&gBlueLightning, winnerCharacter) && characterCanAdvanceLevel(&gGreenTree, winnerCharacter))
+			{
+				gGameAdvancementStep++;
+			}
+		}
+	}
+	
 	if (gNetworkConnection)
 	{
 		GameMessage message;
 		message.type = GAME_RESET_MESSAGE_TYPE;
+		message.gameResetUpdate.gameAdvancementStep = gGameAdvancementStep;
 		sendToClients(0, &message);
 	}
 	gGameShouldReset = true;
+	gGameWinner = NO_CHARACTER;
 }
 
 static void pollGamepads(GamepadManager *gamepadManager, ZGWindow *window, const void *systemEvent)

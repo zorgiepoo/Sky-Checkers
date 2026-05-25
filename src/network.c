@@ -476,6 +476,8 @@ void syncNetworkState(ZGWindow *window, float timeDelta, GameState gameState)
 					break;
 				}
 				case GAME_RESET_MESSAGE_TYPE:
+					gGameAdvancementStep = message.gameResetUpdate.gameAdvancementStep;
+					
 					gGameShouldReset = true;
 					
 					memset(gNetworkConnection->characterMovements, 0, sizeof(gNetworkConnection->characterMovements));
@@ -685,11 +687,11 @@ void syncNetworkState(ZGWindow *window, float timeDelta, GameState gameState)
 			float displacementAdjustment;
 			if (character->direction == NO_DIRECTION)
 			{
-				displacementAdjustment = timeDelta * INITIAL_CHARACTER_SPEED / 64.0f;
+				displacementAdjustment = timeDelta * character->speed / 64.0f;
 			}
 			else
 			{
-				displacementAdjustment = timeDelta * INITIAL_CHARACTER_SPEED / 16.0f;
+				displacementAdjustment = timeDelta * character->speed / 16.0f;
 			}
 			
 			if (fabsf(character->xDiscrepancy) < displacementAdjustment)
@@ -1131,6 +1133,8 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 					{
 						advanceSendBufferForInitialMessage(&sendBufferPtrs[addressIndex], NEW_GAME_MESSAGE_TAG, message.packetNumber);
 						
+						ADVANCE_SEND_BUFFER(&sendBufferPtrs[addressIndex], message.gameResetUpdate.gameAdvancementStep);
+						
 						sendAndResetBufferIfNeeded(sendBuffers[addressIndex], sizeof(sendBuffers[addressIndex]), &sendBufferPtrs[addressIndex], address);
 						
 						break;
@@ -1239,6 +1243,8 @@ int serverNetworkThread(void *initialNumberOfPlayersToWaitForPtr)
 							// tell all other clients the game has started
 							GameMessage startedMessage;
 							startedMessage.type = START_GAME_MESSAGE_TYPE;
+							pushNetworkMessage(&gGameMessagesFromNet, startedMessage);
+							
 							sendToClients(0, &startedMessage);
 						}
 						else
@@ -2284,9 +2290,11 @@ int clientNetworkThread(void *context)
 						{
 							// new game
 							uint32_t packetNumber = 0;
-							if (buffer + sizeof(packetNumber) <= packetBuffer + numberOfBytes)
+							uint8_t gameAdvancementStep = 0;
+							if (buffer + sizeof(packetNumber) + sizeof(gameAdvancementStep) <= packetBuffer + numberOfBytes)
 							{
 								ADVANCE_RECEIVE_BUFFER(&buffer, packetNumber);
+								ADVANCE_RECEIVE_BUFFER(&buffer, gameAdvancementStep);
 								
 								if (packetNumber == triggerIncomingPacketNumber + 1)
 								{
@@ -2294,6 +2302,7 @@ int clientNetworkThread(void *context)
 									
 									GameMessage message;
 									message.type = GAME_RESET_MESSAGE_TYPE;
+									message.gameResetUpdate.gameAdvancementStep = gameAdvancementStep;
 									
 									pushNetworkMessage(&gGameMessagesFromNet, message);
 								}

@@ -24,7 +24,7 @@
 #include <stdint.h>
 #include "platforms.h"
 
-#define MAX_CHARACTER_LIVES 10
+#define MAX_CHARACTER_LIVES 5
 
 typedef enum
 {
@@ -52,6 +52,8 @@ extern bool gGameHasStarted;
 extern bool gGameShouldReset;
 extern int gGameWinner;
 extern int32_t gGameStartNumber;
+extern uint8_t gGameAdvancementStep;
+extern uint8_t gGameLevel;
 extern uint8_t gTutorialStage;
 extern float gTutorialCoverTimer;
 extern bool gDrawFPS;
@@ -75,3 +77,5 @@ extern int gUserNameStringIndex;
 #if PLATFORM_TVOS
 bool willUseSiriRemote(void);
 #endif
+
+float currentGameDifficulty(void);

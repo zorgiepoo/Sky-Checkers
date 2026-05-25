@@ -54,7 +54,7 @@ typedef struct
 
 extern Tile gTiles[NUMBER_OF_TILES];
 
-void loadTiles(void);
+void loadTiles(uint8_t gameLevel);
 
 void restoreDefaultTileColor(int tileIndex);
 void setDieingTileColor(int tileIndex);
@@ -73,7 +73,7 @@ bool availableTileIndex(int tileIndex);
 
 void loadSceneryTextures(Renderer *renderer);
 
-void drawSky(Renderer *renderer, RendererOptions options);
+void drawSky(Renderer *renderer, RendererOptions options, uint8_t gameLevel);
 void drawTiles(Renderer *renderer, float renderAlpha);
 
 void saveRenderTilesState(void);

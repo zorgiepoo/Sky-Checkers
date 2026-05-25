@@ -202,27 +202,6 @@ static uint8_t numberOfHumanPlayers(void)
 	return numberOfHumans;
 }
 
-static uint8_t currentAIModeIndex(void)
-{
-	if (gAIMode == AI_EASY_MODE)
-	{
-		return 0;
-	}
-	else if (gAIMode == AI_MEDIUM_MODE)
-	{
-		return 1;
-	}
-	else if (gAIMode == AI_HARD_MODE)
-	{
-		return 2;
-	}
-	else
-	{
-		gAIMode = AI_EASY_MODE;
-	}
-	return 0;
-}
-
 static MainMenuHandler *gMainMenuHandler;
 static PauseMenuHandler *gPauseMenuHandler;
 
@@ -278,10 +257,6 @@ static UIViewController *makeMainMenuController(UIView *metalView, GameState *ga
 		gBlueLightning.state = count >= 4 ? CHARACTER_HUMAN_STATE : CHARACTER_AI_STATE;
 	} initialPlayerLives:gCharacterLives onPlayerLivesChange:^(NSInteger lives) {
 		gCharacterLives = (int)lives;
-	} initialAIDifficulty:currentAIModeIndex() onAIDifficultyChange:^(NSInteger index) {
-		if (index == 0) gAIMode = AI_EASY_MODE;
-		else if (index == 1) gAIMode = AI_MEDIUM_MODE;
-		else gAIMode = AI_HARD_MODE;
 	} initialEffectsEnabled:gAudioEffectsFlag onEffectsChange:^(BOOL enabled) {
 		gAudioEffectsFlag = enabled;
 	} initialMusicEnabled:gAudioMusicFlag onMusicChange:^(BOOL enabled) {

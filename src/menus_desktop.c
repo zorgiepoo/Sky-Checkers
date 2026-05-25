@@ -75,8 +75,6 @@ static Menu *gPauseExitMenu;
 
 static Menu *gConfigureLivesMenu;
 
-static Menu *gAIModeOptionsMenu;
-
 static Menu *gRedRoverPlayerOptionsMenu;
 static Menu *gGreenTreePlayerOptionsMenu;
 static Menu *gBlueLightningPlayerOptionsMenu;
@@ -690,41 +688,18 @@ void blueLightningPlayerOptionsMenuAction(void *context)
 	}
 }
 
-void drawAIModeOptionsMenu(Renderer *renderer, color4_t preferredColor)
-{
-	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-4.8f, -3.8f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
-	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Bot Mode:");
-	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){1.6f, -3.8f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
-	if (gAIMode == AI_EASY_MODE)
-		drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, "Easy");
-	else if (gAIMode == AI_MEDIUM_MODE)
-		drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, "Medium");
-	else if (gAIMode == AI_HARD_MODE)
-		drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, "Hard");
-}
-
-void aiModeOptionsMenuAction(void *context)
-{
-	if (gAIMode == AI_EASY_MODE)
-		gAIMode = AI_MEDIUM_MODE;
-	else if (gAIMode == AI_MEDIUM_MODE)
-		gAIMode = AI_HARD_MODE;
-	else
-		gAIMode = AI_EASY_MODE;
-}
-
 void drawConfigureLivesMenu(Renderer *renderer, color4_t preferredColor)
 {
-	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-4.8f, -4.87f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-4.8f, -3.21f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
 	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Player Lives:");
 	char livesBuffer[64] = {0};
 	snprintf(livesBuffer, sizeof(livesBuffer), "%d", gCharacterLives);
-	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){1.6f, -4.87f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
+	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){1.6f, -3.21f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
 	drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, livesBuffer);
 
 	if (gDrawArrowsForCharacterLivesFlag)
 	{
-		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){2.6f, -5.4f / 1.25f - 0.59f, -25.0f / 1.25f}));
+		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){2.6f, -5.4f / 1.25f + 1.07f, -25.0f / 1.25f}));
 	}
 }
 
@@ -1138,7 +1113,6 @@ void initMenus(ZGWindow *window, GameState *gameState, void (*exitGame)(ZGWindow
 	gRedRoverPlayerOptionsMenu	=				calloc(1, sizeof(Menu));
 	gGreenTreePlayerOptionsMenu =				calloc(1, sizeof(Menu));
 	gBlueLightningPlayerOptionsMenu =			calloc(1, sizeof(Menu));
-	gAIModeOptionsMenu =						calloc(1, sizeof(Menu));
 	gConfigureLivesMenu =						calloc(1, sizeof(Menu));
 	Menu *configureKeysMenu =					calloc(1, sizeof(Menu));
 	// Four characters that each have their own menu + five configured menu actions (right, up, left, down, fire)
@@ -1204,9 +1178,6 @@ void initMenus(ZGWindow *window, GameState *gameState, void (*exitGame)(ZGWindow
 	
 	gBlueLightningPlayerOptionsMenu->draw = drawBlueLightningPlayerOptionsMenu;
 	gBlueLightningPlayerOptionsMenu->action = blueLightningPlayerOptionsMenuAction;
-	
-	gAIModeOptionsMenu->draw = drawAIModeOptionsMenu;
-	gAIModeOptionsMenu->action = aiModeOptionsMenuAction;
 	
 	gConfigureLivesMenu->draw = drawConfigureLivesMenu;
 	gConfigureLivesMenu->action = NULL;
@@ -1326,7 +1297,6 @@ void initMenus(ZGWindow *window, GameState *gameState, void (*exitGame)(ZGWindow
 	addSubMenu(playerOptionsMenu, gRedRoverPlayerOptionsMenu);
 	addSubMenu(playerOptionsMenu, gGreenTreePlayerOptionsMenu);
 	addSubMenu(playerOptionsMenu, gBlueLightningPlayerOptionsMenu);
-	addSubMenu(playerOptionsMenu, gAIModeOptionsMenu);
 	addSubMenu(playerOptionsMenu, gConfigureLivesMenu);
 	
 	addSubMenu(gameOptionsMenu, configureKeysMenu);
@@ -1487,7 +1457,7 @@ static void performMenuUpAction(void)
 
 	if (gDrawArrowsForCharacterLivesFlag)
 	{
-		if (gCharacterLives == 10)
+		if (gCharacterLives == MAX_CHARACTER_LIVES)
 		{
 			gCharacterLives = 1;
 		}

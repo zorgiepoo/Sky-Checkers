@@ -190,6 +190,11 @@ typedef struct
 
 typedef struct
 {
+	uint8_t gameAdvancementStep;
+} GameResetMessage;
+
+typedef struct
+{
 	MessageType type;
 	uint32_t packetNumber;
 	int addressIndex;
@@ -212,6 +217,7 @@ typedef struct
 		FallingTileMessage fallingTile;
 		RecoverTileMessage recoverTile;
 		LaggedOutMessage laggedUpdate;
+		GameResetMessage gameResetUpdate;
 		uint32_t pingTimestamp;
 		uint32_t pongTimestamp;
 		

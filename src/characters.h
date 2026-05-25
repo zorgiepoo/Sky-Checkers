@@ -53,15 +53,12 @@
 
 #define MAX_CONTROLLER_NAME_SIZE 20
 
-// If you were to use a stop watch, the time it takes for a character to go from one end
-// of the checkerboard to the other end (vertically) is ~3.50-3.60 seconds
-#define INITIAL_CHARACTER_SPEED	4.51977f
+#define INITIAL_CHARACTER_SPEED	4.5f
+#define TERMINAL_CHARACTER_SPEED 9.0f
 #define INITIAL_RECOVERY_TIME_DELAY (71 * 0.0177)
 
 #define CHARACTER_ALIVE_Z 2.0f
 #define CHARACTER_IS_ALIVE(character) (fabsf((character)->z - CHARACTER_ALIVE_Z) < 0.001f)
-
-extern int gAIMode;
 
 extern int gNumberOfNetHumans;
 
@@ -164,7 +161,7 @@ extern Character gBlueLightning;
 
 void initCharacters(void);
 void resetCharacterWins(void);
-void loadCharacter(Character *character);
+void loadCharacter(Character *character, float speed);
 
 void restoreAllBackupStates(void);
 int offlineCharacterState(Character *character);

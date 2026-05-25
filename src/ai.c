@@ -1,13 +1,13 @@
 /*
  * Copyright 2010 Mayur Pawashe
  * https://zgcoder.net
- 
+
  * This file is part of skycheckers.
  * skycheckers is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- 
+
  * skycheckers is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -28,45 +28,29 @@
 
 #include <stdlib.h>
 
-static void setNewDirection(Character *character, bool allowFiring, float currentTime);
-static void directCharacterBasedOnCollisions(Character *character, bool allowFiring, float currentTime);
+static void setNewDirection(Character *character, float difficulty, bool allowFiring, float currentTime);
+static void directCharacterBasedOnCollisions(Character *character, float difficulty, bool allowFiring, float currentTime);
 
-static void shootWeaponToNearingCharacter(Character *character, float currentTime);
+static void shootWeaponToNearingCharacter(Character *character, float difficulty, float currentTime);
 
 static void fireAIWeapon(Character *character);
 
-static void attackCharacterOnRow(Character *character, Character *characterB, float currentTime);
-static void attackCharacterOnColumn(Character *character, Character *characterB, float currentTime);
+static void attackCharacterOnRow(Character *character, Character *characterB, float difficulty, float currentTime);
+static void attackCharacterOnColumn(Character *character, Character *characterB, float difficulty, float currentTime);
 
-static void avoidCharacter(Character *character, Character *characterB, bool allowFiring, float currentTime);
+static void avoidCharacter(Character *character, Character *characterB, float difficulty, bool allowFiring, float currentTime);
 
-static void updateMoveTimer(Character *character, float currentTime)
+static void updateMoveTimer(Character *character, float difficulty, float currentTime)
 {
-	character->move_timer = currentTime + (float)(mt_random() % 5) * 0.5f + 1.0f;
+	// Interval scales from [1.0, 3.5]s at easy down to [0.5, 1.75]s at hard.
+	float interval = ((float)(mt_random() % 5) * 0.5f + 1.0f) * (1.0f - 0.5f * difficulty);
+	character->move_timer = currentTime + interval;
 }
 
-static float timeAliveThresholdForAIMode(int AIMode)
+static void updateDirectionAndMoveTimer(Character *character, float difficulty, bool allowFiring, float currentTime)
 {
-	float timeAliveThreshold;
-	if (AIMode == AI_HARD_MODE)
-	{
-		timeAliveThreshold = 1.0f;
-	}
-	else if (AIMode == AI_MEDIUM_MODE)
-	{
-		timeAliveThreshold = 2.0f;
-	}
-	else
-	{
-		timeAliveThreshold = 3.0f;
-	}
-	return timeAliveThreshold;
-}
-
-static void updateDirectionAndMoveTimer(Character *character, bool allowFiring, float currentTime)
-{
-	setNewDirection(character, allowFiring, currentTime);
-	updateMoveTimer(character, currentTime);
+	setNewDirection(character, difficulty, allowFiring, currentTime);
+	updateMoveTimer(character, difficulty, currentTime);
 }
 
 static bool canFireWeapon(bool allowFiring)
@@ -74,50 +58,50 @@ static bool canFireWeapon(bool allowFiring)
 	return allowFiring && gGameWinner == NO_CHARACTER && (!gNetworkConnection || (gRedRover.netState == NETWORK_PLAYING_STATE && gGreenTree.netState == NETWORK_PLAYING_STATE && gBlueLightning.netState == NETWORK_PLAYING_STATE));
 }
 
-void updateAI(Character *character, float currentTime, bool allowFiring, double timeDelta)
+void updateAI(Character *character, float currentTime, float difficulty, bool allowFiring, double timeDelta)
 {
 	if (!CHARACTER_IS_ALIVE(character) || character->state != CHARACTER_AI_STATE || !character->active || !character->lives || (gNetworkConnection && gNetworkConnection->type == NETWORK_CLIENT_TYPE))
 		return;
-	
+
 	bool canFire = canFireWeapon(allowFiring);
-	
+
 	if (canFire)
 	{
 		character->fire_timer += (float)timeDelta;
 	}
-	
+
 	if (currentTime > character->move_timer)
 	{
-		updateDirectionAndMoveTimer(character, allowFiring, currentTime);
+		updateDirectionAndMoveTimer(character, difficulty, allowFiring, currentTime);
 	}
-	
-	directCharacterBasedOnCollisions(character, allowFiring, currentTime);
-	
+
+	directCharacterBasedOnCollisions(character, difficulty, allowFiring, currentTime);
+
 	if (canFire)
 	{
-		shootWeaponToNearingCharacter(character, currentTime);
+		shootWeaponToNearingCharacter(character, difficulty, currentTime);
 	}
 }
 
-static void fireCharacterWeaponAfterTurn(Character *character, float currentTime)
+static void fireCharacterWeaponAfterTurn(Character *character, float difficulty, float currentTime)
 {
 	if (mt_random() % 20 != 0)
 	{
 		return;
 	}
-	
+
 	if (character->time_alive >= 0.75f && !character->weap->animationState && gGameHasStarted)
 	{
 		turnCharacter(character, character->direction);
-		
+
 		character->fire_timer = 0.0;
 		fireAIWeapon(character);
-		
-		updateMoveTimer(character, currentTime);
+
+		updateMoveTimer(character, difficulty, currentTime);
 	}
 }
 
-static void setNewDirection(Character *character, bool allowFiring, float currentTime)
+static void setNewDirection(Character *character, float difficulty, bool allowFiring, float currentTime)
 {
 	int column = columnOfCharacter(character);
 	int row = rowOfCharacter(character);
@@ -157,25 +141,14 @@ static void setNewDirection(Character *character, bool allowFiring, float curren
 					rightEdge--;
 				int towardCenterDirection = (column <= 3) ? RIGHT : LEFT;
 				bool nearEdge = (column <= leftEdge + 1 || column >= rightEdge - 1);
-				unsigned int centerWeight = 5;
-				if (nearEdge)
-				{
-					switch (gAIMode)
-					{
-						case AI_HARD_MODE:
-							centerWeight = 7;
-							break;
-						case AI_MEDIUM_MODE:
-							centerWeight = 6;
-							break;
-					}
-				}
-				character->direction = ((mt_random() % 10) < centerWeight) ? towardCenterDirection : (towardCenterDirection == RIGHT ? LEFT : RIGHT);
+				// Center weight scales from 5 (easy) to 7 (hard) when near the edge.
+				float centerWeight = nearEdge ? 5.0f + 2.0f * difficulty : 5.0f;
+				character->direction = ((float)(mt_random() % 10) < centerWeight) ? towardCenterDirection : (towardCenterDirection == RIGHT ? LEFT : RIGHT);
 			}
 
 			if (canFireWeapon(allowFiring))
 			{
-				fireCharacterWeaponAfterTurn(character, currentTime);
+				fireCharacterWeaponAfterTurn(character, difficulty, currentTime);
 			}
 		}
 		else /* if (*direction == RIGHT || *direction == LEFT || *direction == NO_DIRECTION) */
@@ -202,31 +175,20 @@ static void setNewDirection(Character *character, bool allowFiring, float curren
 					topEdge--;
 				int towardCenterDirection = (row <= 3) ? UP : DOWN;
 				bool nearEdge = (row <= bottomEdge + 1 || row >= topEdge - 1);
-				unsigned int centerWeight = 5;
-				if (nearEdge)
-				{
-					switch (gAIMode)
-					{
-						case AI_HARD_MODE:
-							centerWeight = 7;
-							break;
-						case AI_MEDIUM_MODE:
-							centerWeight = 6;
-							break;
-					}
-				}
-				character->direction = ((mt_random() % 10) < centerWeight) ? towardCenterDirection : (towardCenterDirection == UP ? DOWN : UP);
+				// Center weight scales from 5 (easy) to 7 (hard) when near the edge.
+				float centerWeight = nearEdge ? 5.0f + 2.0f * difficulty : 5.0f;
+				character->direction = ((float)(mt_random() % 10) < centerWeight) ? towardCenterDirection : (towardCenterDirection == UP ? DOWN : UP);
 			}
-			
+
 			if (canFireWeapon(allowFiring))
 			{
-				fireCharacterWeaponAfterTurn(character, currentTime);
+				fireCharacterWeaponAfterTurn(character, difficulty, currentTime);
 			}
 		}
 	}
 }
 
-static void avoidCharacter(Character *character, Character *characterB, bool allowFiring, float currentTime)
+static void avoidCharacter(Character *character, Character *characterB, float difficulty, bool allowFiring, float currentTime)
 {
 	if (!checkCharacterColl(character, characterB, character->direction)									&&
 		(characterB->state != CHARACTER_AI_STATE															||
@@ -239,29 +201,29 @@ static void avoidCharacter(Character *character, Character *characterB, bool all
 		 (character->direction == LEFT && characterB->direction == LEFT) /* character is on right side */
 		)))
 	{
-		updateDirectionAndMoveTimer(character, allowFiring, currentTime);
+		updateDirectionAndMoveTimer(character, difficulty, allowFiring, currentTime);
 	}
 }
 
-static void directCharacterBasedOnCollisions(Character *character, bool allowFiring, float currentTime)
+static void directCharacterBasedOnCollisions(Character *character, float difficulty, bool allowFiring, float currentTime)
 {
 	Character *characterB;
 	Character *characterC;
 	Character *characterD;
-	
+
 	getOtherCharacters(character, &characterB, &characterC, &characterD);
-	
+
 	if (!characterCanMove(character->direction, character))
 	{
-		updateDirectionAndMoveTimer(character, allowFiring, currentTime);
+		updateDirectionAndMoveTimer(character, difficulty, allowFiring, currentTime);
 	}
-	
-	avoidCharacter(character, characterB, allowFiring, currentTime);
-	avoidCharacter(character, characterC, allowFiring, currentTime);
-	avoidCharacter(character, characterD, allowFiring, currentTime);
-	
+
+	avoidCharacter(character, characterB, difficulty, allowFiring, currentTime);
+	avoidCharacter(character, characterC, difficulty, allowFiring, currentTime);
+	avoidCharacter(character, characterD, difficulty, allowFiring, currentTime);
+
 	/* The AI should avoid dieing from the dieing stones */
-	
+
 	int tileLocation = getTileIndexLocation((int)character->x, (int)character->y);
 	if (tileLocation >= 0 && tileLocation < NUMBER_OF_TILES)
 	{
@@ -269,7 +231,7 @@ static void directCharacterBasedOnCollisions(Character *character, bool allowFir
 		{
 			int row = rowOfCharacter(character);
 			int column = columnOfCharacter(character);
-			
+
 			if (row == 0 || row == 1)
 			{
 				int upTileLocation = upTileIndex(tileLocation);
@@ -298,31 +260,31 @@ static void directCharacterBasedOnCollisions(Character *character, bool allowFir
 	}
 }
 
-static void shootWeaponToNearingCharacter(Character *character, float currentTime)
+static void shootWeaponToNearingCharacter(Character *character, float difficulty, float currentTime)
 {
-	int AIMode = gAIMode;
-	float timeAliveThreshold = timeAliveThresholdForAIMode(AIMode);
-	
+	// Time alive threshold scales from 3s (easy) down to 1s (hard).
+	float threshold = 3.0f - 2.0f * difficulty;
+
 	if (character->fire_timer < 0.25f || character->time_alive < 0.75f || character->weap->animationState || !gGameHasStarted)
 	{
 		return;
 	}
-	
+
 	character->fire_timer = 0.0f;
-	
+
 	Character *characterB;
 	Character *characterC;
 	Character *characterD;
-	
+
 	getOtherCharacters(character, &characterB, &characterC, &characterD);
-	
+
 	int tileIndex = getTileIndexLocation((int)character->x, (int)character->y);
-	
+
 	if (tileIndex < 0 || tileIndex >= NUMBER_OF_TILES)
 	{
 		return;
 	}
-	
+
 	// AI should be worrying about not colliding into another character
 	if (tileIndex == getTileIndexLocation((int)characterB->x, (int)characterB->y) ||
 		tileIndex == getTileIndexLocation((int)characterC->x, (int)characterC->y) ||
@@ -330,90 +292,76 @@ static void shootWeaponToNearingCharacter(Character *character, float currentTim
 	{
 		return;
 	}
-	
+
 	// AI should be worrying about escaping from the falling dieing stones
 	if (gTiles[tileIndex].coloredID == DIEING_STONE_ID)
 	{
 		return;
 	}
-	
+
 	// If the tile the AI is on has been colored for a while, don't let them react fast enough to fire back
 	uint32_t ticks = ZGGetTicks();
 	if (gTiles[tileIndex].colorTime > 0 && ticks >= gTiles[tileIndex].colorTime + 0.35f)
 	{
 		return;
 	}
-	
-	unsigned int exitOutValue;
-	if (AIMode == AI_HARD_MODE)
-	{
-		exitOutValue = 1;
-	}
-	else if (AIMode == AI_MEDIUM_MODE)
-	{
-		exitOutValue = 5;
-	}
-	else
-	{
-		exitOutValue = 9;
-	}
-	
-	// Exit out of function randomly depending on AI difficulty.
-	// An AIMode of AI_EASY_MODE will exit out more than AI_HARD_MODE
-	if ((mt_random() % 10) < exitOutValue)
+
+	// Exit chance scales from 9/10 (easy) down to 1/10 (hard).
+	float exitOutValue = 9.0f - 8.0f * difficulty;
+	if ((float)(mt_random() % 10) < exitOutValue)
 	{
 		return;
 	}
-	
-	if (characterB->time_alive >= timeAliveThreshold && rowOfCharacter(character) == rowOfCharacter(characterB))
+
+	if (characterB->time_alive >= threshold && rowOfCharacter(character) == rowOfCharacter(characterB))
 	{
-		attackCharacterOnRow(character, characterB, currentTime);
+		attackCharacterOnRow(character, characterB, difficulty, currentTime);
 	}
-	else if (characterC->time_alive >= timeAliveThreshold && rowOfCharacter(character) == rowOfCharacter(characterC))
+	else if (characterC->time_alive >= threshold && rowOfCharacter(character) == rowOfCharacter(characterC))
 	{
-		attackCharacterOnRow(character, characterC, currentTime);
+		attackCharacterOnRow(character, characterC, difficulty, currentTime);
 	}
-	else if (characterD->time_alive >= timeAliveThreshold && rowOfCharacter(character) == rowOfCharacter(characterD))
+	else if (characterD->time_alive >= threshold && rowOfCharacter(character) == rowOfCharacter(characterD))
 	{
-		attackCharacterOnRow(character, characterD, currentTime);
+		attackCharacterOnRow(character, characterD, difficulty, currentTime);
 	}
-	else if (characterB->time_alive >= timeAliveThreshold && columnOfCharacter(character) == columnOfCharacter(characterB))
+	else if (characterB->time_alive >= threshold && columnOfCharacter(character) == columnOfCharacter(characterB))
 	{
-		attackCharacterOnColumn(character, characterB, currentTime);
+		attackCharacterOnColumn(character, characterB, difficulty, currentTime);
 	}
-	else if (characterC->time_alive >= timeAliveThreshold && columnOfCharacter(character) == columnOfCharacter(characterC))
+	else if (characterC->time_alive >= threshold && columnOfCharacter(character) == columnOfCharacter(characterC))
 	{
-		attackCharacterOnColumn(character, characterC, currentTime);
+		attackCharacterOnColumn(character, characterC, difficulty, currentTime);
 	}
-	else if (characterD->time_alive >= timeAliveThreshold && columnOfCharacter(character) == columnOfCharacter(characterD))
+	else if (characterD->time_alive >= threshold && columnOfCharacter(character) == columnOfCharacter(characterD))
 	{
-		attackCharacterOnColumn(character, characterD, currentTime);
+		attackCharacterOnColumn(character, characterD, difficulty, currentTime);
 	}
 	else if ((mt_random() % 2) == 0)
 	{
-		if (characterB->time_alive >= timeAliveThreshold && abs(rowOfCharacter(character) - rowOfCharacter(characterB)) <= 1)
+		if (characterB->time_alive >= threshold && abs(rowOfCharacter(character) - rowOfCharacter(characterB)) <= 1)
 		{
-			attackCharacterOnRow(character, characterB, currentTime);
+			attackCharacterOnRow(character, characterB, difficulty, currentTime);
 		}
-		else if (characterC->time_alive >= timeAliveThreshold && abs(rowOfCharacter(character) - rowOfCharacter(characterC)) <= 1)
+		else if (characterC->time_alive >= threshold && abs(rowOfCharacter(character) - rowOfCharacter(characterC)) <= 1)
 		{
-			attackCharacterOnRow(character, characterC, currentTime);
+			attackCharacterOnRow(character, characterC, difficulty, currentTime);
 		}
-		else if (characterD->time_alive >= timeAliveThreshold && abs(rowOfCharacter(character) - rowOfCharacter(characterD)) <= 1)
+		else if (characterD->time_alive >= threshold && abs(rowOfCharacter(character) - rowOfCharacter(characterD)) <= 1)
 		{
-			attackCharacterOnRow(character, characterD, currentTime);
+			attackCharacterOnRow(character, characterD, difficulty, currentTime);
 		}
-		else if (characterB->time_alive >= timeAliveThreshold && abs(columnOfCharacter(character) - columnOfCharacter(characterB)) <= 1)
+		else if (characterB->time_alive >= threshold && abs(columnOfCharacter(character) - columnOfCharacter(characterB)) <= 1)
 		{
-			attackCharacterOnColumn(character, characterB, currentTime);
+			attackCharacterOnColumn(character, characterB, difficulty, currentTime);
 		}
-		else if (characterC->time_alive >= timeAliveThreshold && abs(columnOfCharacter(character) - columnOfCharacter(characterC)) <= 1)
+		else if (characterC->time_alive >= threshold && abs(columnOfCharacter(character) - columnOfCharacter(characterC)) <= 1)
 		{
-			attackCharacterOnColumn(character, characterC, currentTime);
+			attackCharacterOnColumn(character, characterC, difficulty, currentTime);
 		}
-		else if (characterD->time_alive >= timeAliveThreshold && abs(columnOfCharacter(character) - columnOfCharacter(characterD)) <= 1)
+		else if (characterD->time_alive >= threshold && abs(columnOfCharacter(character) - columnOfCharacter(characterD)) <= 1)
 		{
-			attackCharacterOnColumn(character, characterD, currentTime);
+			attackCharacterOnColumn(character, characterD, difficulty, currentTime);
 		}
 	}
 }
@@ -423,42 +371,42 @@ static void fireAIWeapon(Character *character)
 	prepareFiringCharacterWeapon(character, character->x, character->y, character->pointing_direction, 0.0f);
 }
 
-static void attackCharacterOnRow(Character *character, Character *characterB, float currentTime)
+static void attackCharacterOnRow(Character *character, Character *characterB, float difficulty, float currentTime)
 {
 	if (character->x > characterB->x)
 	{
 		turnCharacter(character, LEFT);
 		character->direction = LEFT;
 		fireAIWeapon(character);
-		
-		updateDirectionAndMoveTimer(character, true, currentTime);
+
+		updateDirectionAndMoveTimer(character, difficulty, true, currentTime);
 	}
 	else if (character->x < characterB->x)
 	{
 		turnCharacter(character, RIGHT);
 		character->direction = RIGHT;
 		fireAIWeapon(character);
-		
-		updateDirectionAndMoveTimer(character, true, currentTime);
+
+		updateDirectionAndMoveTimer(character, difficulty, true, currentTime);
 	}
 }
 
-static void attackCharacterOnColumn(Character *character, Character *characterB, float currentTime)
+static void attackCharacterOnColumn(Character *character, Character *characterB, float difficulty, float currentTime)
 {
 	if (character->y > characterB->y)
 	{
 		turnCharacter(character, DOWN);
 		character->direction = DOWN;
 		fireAIWeapon(character);
-		
-		updateDirectionAndMoveTimer(character, true, currentTime);
+
+		updateDirectionAndMoveTimer(character, difficulty, true, currentTime);
 	}
 	else if (character->y < characterB->y)
 	{
 		turnCharacter(character, UP);
 		character->direction = UP;
 		fireAIWeapon(character);
-		
-		updateDirectionAndMoveTimer(character, true, currentTime);
+
+		updateDirectionAndMoveTimer(character, difficulty, true, currentTime);
 	}
 }

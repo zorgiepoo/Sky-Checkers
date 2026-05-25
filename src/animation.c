@@ -260,6 +260,12 @@ void animate(ZGWindow *window, double timeDelta, GameState gameState)
 	updateAI(&gGreenTree, gSecondTimer, !tutorialState, timeDelta);
 	updateAI(&gPinkBubbleGum, gSecondTimer, !tutorialState, timeDelta);
 	updateAI(&gBlueLightning, gSecondTimer, !tutorialState, timeDelta);
+	float difficulty = currentGameDifficulty();
+	
+	updateAI(&gRedRover, gSecondTimer, difficulty, !tutorialState, timeDelta);
+	updateAI(&gGreenTree, gSecondTimer, difficulty, !tutorialState, timeDelta);
+	updateAI(&gPinkBubbleGum, gSecondTimer, difficulty, !tutorialState, timeDelta);
+	updateAI(&gBlueLightning, gSecondTimer, difficulty, !tutorialState, timeDelta);
 	
 	// Weapons must have possibility of being updated before moving characters,
 	// which could change their look direction
@@ -278,11 +284,6 @@ void animate(ZGWindow *window, double timeDelta, GameState gameState)
 	moveWeapon(gPinkBubbleGum.weap, timeDelta);
 	moveWeapon(gBlueLightning.weap, timeDelta);
 	
-	killCharacter(&gRedRoverInput, tutorialState, timeDelta);
-	killCharacter(&gGreenTreeInput, tutorialState, timeDelta);
-	killCharacter(&gPinkBubbleGumInput, tutorialState, timeDelta);
-	killCharacter(&gBlueLightningInput, tutorialState, timeDelta);
-	
 	clearPredictedColors(gSecondTimer);
 	
 	collapseTiles(timeDelta);
@@ -292,6 +293,11 @@ void animate(ZGWindow *window, double timeDelta, GameState gameState)
 	animateTilesAndPlayerRecovery(timeDelta, window, &gPinkBubbleGum, gSecondTimer, gameState);
 	animateTilesAndPlayerRecovery(timeDelta, window, &gBlueLightning, gSecondTimer, gameState);
 	crackTiles(gSecondTimer);
+	
+	killCharacter(&gRedRoverInput, tutorialState, timeDelta);
+	killCharacter(&gGreenTreeInput, tutorialState, timeDelta);
+	killCharacter(&gPinkBubbleGumInput, tutorialState, timeDelta);
+	killCharacter(&gBlueLightningInput, tutorialState, timeDelta);
 	
 	recoverDestroyedTiles(timeDelta);
 	
@@ -826,6 +832,7 @@ void decideWhetherToMakeAPlayerAWinner(Character *player)
 		}
 		else if (numPlayersAlive == 1)
 		{
+			/*
 			// check if the winner is really about to die, in that case, we'll need to see who is the highest up to determine the winner
 			int winnerTileIndex = getTileIndexLocation((int)winnerCharacter->x, (int)winnerCharacter->y);
 			bool winnerIsReadyForDeath = (winnerTileIndex >= 0 && winnerTileIndex < NUMBER_OF_TILES && gTiles[winnerTileIndex].z < TILE_ALIVE_Z && winnerCharacter->z > CHARACTER_TERMINATING_Z && winnerCharacter->lives == 1);
@@ -848,6 +855,7 @@ void decideWhetherToMakeAPlayerAWinner(Character *player)
 					winnerCharacter = &gPinkBubbleGum;
 				}
 			}
+			 */
 			// Make sure a winner doesn't exist yet
 			if (gGameWinner == NO_CHARACTER && IDOfCharacter(winnerCharacter) != NO_CHARACTER)
 			{
@@ -881,7 +889,6 @@ static void killCharacter(Input *characterInput, bool tutorial, double timeDelta
 		player->time_alive = 0.0f;
 		
 		player->lives--;
-		player->active = false;
 		
 		if (gNetworkConnection && gNetworkConnection->type == NETWORK_SERVER_TYPE)
 		{

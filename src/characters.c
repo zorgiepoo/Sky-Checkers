@@ -28,8 +28,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-int gAIMode = AI_EASY_MODE;
-
 int gNumberOfNetHumans = 1;
 
 Character gRedRover;
@@ -45,7 +43,7 @@ static BufferArrayObject gIconVertexAndTextureCoordinateArrayObject;
 static void randomizeCharacterDirection(Character *character);
 
 /* Note: Does not initialize the character's weapon */
-void loadCharacter(Character *character)
+void loadCharacter(Character *character, float speed)
 {
 	if (!gNetworkConnection || gNetworkConnection->type == NETWORK_SERVER_TYPE)
 	{
@@ -61,7 +59,7 @@ void loadCharacter(Character *character)
 	character->nonstopDistance = 0.0f;
 	character->numberOfFires = 0;
 	character->alpha = 1.0f;
-	character->speed = INITIAL_CHARACTER_SPEED;
+	character->speed = speed;
 	character->recovery_timer = 0;
 	character->animation_timer = 0;
 	character->coloredTiles = false;
@@ -79,8 +77,6 @@ void loadCharacter(Character *character)
 	character->move_timer = 0.0f;
 	character->fire_timer = 0.0f;
 	character->time_alive = 0.0f;
-	
-	character->kills = 0;
 }
 
 void resetCharacterWins(void)
@@ -104,7 +100,7 @@ static void initCharacter(Character *character, float red, float green, float bl
 	character->green = green;
 	character->blue = blue;
 	
-	loadCharacter(character);
+	loadCharacter(character, 0.0f);
 	character->prev_alpha = character->alpha;
 
 	character->weap = malloc(sizeof(Weapon));
@@ -159,70 +155,33 @@ int offlineCharacterState(Character *character)
 	return (character->backup_state ? character->backup_state : character->state);
 }
 
-static void _loadCharacterTextures(Renderer *renderer, Character *character, TextureData textureData, float facePercentage, uint8_t mouthRed, uint8_t mouthGreen, uint8_t mouthBlue)
+static void _loadCharacterTextures(Renderer *renderer, Character *character, TextureData sphereTextureData, TextureData iconTextureData)
 {
-	uint8_t redIndex;
-	uint8_t greenIndex;
-	uint8_t blueIndex;
-	switch (textureData.pixelFormat)
-	{
-	case PIXEL_FORMAT_RGBA32:
-		redIndex = 0;
-		greenIndex = 1;
-		blueIndex = 2;
-		break;
-	case PIXEL_FORMAT_BGRA32:
-		blueIndex = 0;
-		greenIndex = 1;
-		redIndex = 2;
-		break;
-	}
+	character->texture = loadTextureFromData(renderer, sphereTextureData);
+	freeTextureData(sphereTextureData);
 
-	// Adjust color of face, eyes, and mouth
-	for (uint32_t pixelIndex = 0; pixelIndex < (uint32_t)(textureData.width * textureData.height); pixelIndex++)
+	for (uint32_t pixelIndex = 0; pixelIndex < (uint32_t)(iconTextureData.width * iconTextureData.height); pixelIndex++)
 	{
-		uint8_t *colorData = &textureData.pixelData[pixelIndex * 4];
-		// Face or Eyes
-		if (((colorData[redIndex] <= 132 && colorData[redIndex] >= 116) && (colorData[greenIndex] <= 85 && colorData[greenIndex] >= 70) && (colorData[blueIndex] <= 113 && colorData[blueIndex] >= 99)) || (colorData[redIndex] == 126 && colorData[greenIndex] == 10 && colorData[blueIndex] == 32))
+		uint8_t *colorData = &iconTextureData.pixelData[pixelIndex * 4];
+		if (colorData[0] == 255 && colorData[1] == 255 && colorData[2] == 255)
 		{
-			colorData[redIndex] = (uint8_t)(character->red * 255.0f * facePercentage);
-			colorData[greenIndex] = (uint8_t)(character->green * 255.0f * facePercentage);
-			colorData[blueIndex] = (uint8_t)(character->blue * 255.0f * facePercentage);
-		}
-		// Mouth
-		else if (colorData[redIndex] == 32 && colorData[greenIndex] == 16 && colorData[blueIndex] == 126)
-		{
-			colorData[redIndex] = mouthRed;
-			colorData[greenIndex] = mouthGreen;
-			colorData[blueIndex] = mouthBlue;
-		}
-	}
-	
-	character->texture = loadTextureFromData(renderer, textureData);
-	
-	// For icon data, remove all background pixels that are close to being black
-	for (uint32_t pixelIndex = 0; pixelIndex < (uint32_t)(textureData.width * textureData.height); pixelIndex++)
-	{
-		uint8_t *colorData = &textureData.pixelData[pixelIndex * 4];
-		if (colorData[0] <= 10 && colorData[1] <= 10 && colorData[2] <= 10)
-		{
+			colorData[0] = 0;
+			colorData[1] = 0;
+			colorData[2] = 0;
 			colorData[3] = 0;
 		}
 	}
-	
-	character->iconTexture = loadTextureFromData(renderer, textureData);
-	
-	freeTextureData(textureData);
+
+	character->iconTexture = loadTextureFromData(renderer, iconTextureData);
+	freeTextureData(iconTextureData);
 }
 
 void loadCharacterTextures(Renderer *renderer)
 {
-	TextureData textureData = loadTextureData("Data/Textures/face.bmp");
-	
-	_loadCharacterTextures(renderer, &gPinkBubbleGum, copyTextureData(textureData), 0.6f, 60, 36, 51);
-	_loadCharacterTextures(renderer, &gRedRover, copyTextureData(textureData), 0.65f, 18, 9, 73);
-	_loadCharacterTextures(renderer, &gGreenTree, copyTextureData(textureData), 0.6f, 20, 20, 20);
-	_loadCharacterTextures(renderer, &gBlueLightning, textureData, 0.65f, 32, 16, 126);
+	_loadCharacterTextures(renderer, &gPinkBubbleGum, loadTextureData("Data/Textures/face_pink.bmp"), loadTextureData("Data/Textures/icon_pink.bmp"));
+	_loadCharacterTextures(renderer, &gRedRover, loadTextureData("Data/Textures/face_red.bmp"), loadTextureData("Data/Textures/icon_red.bmp"));
+	_loadCharacterTextures(renderer, &gGreenTree, loadTextureData("Data/Textures/face_green.bmp"), loadTextureData("Data/Textures/icon_green.bmp"));
+	_loadCharacterTextures(renderer, &gBlueLightning, loadTextureData("Data/Textures/face_blue.bmp"), loadTextureData("Data/Textures/icon_blue.bmp"));
 }
 
 // http://www.songho.ca/opengl/gl_sphere.html
@@ -415,7 +374,7 @@ static ZGFloat zRotationForCharacter(Character *character)
 		case LEFT:
 			return 0.0f;
 		case DOWN:
-			return 100.0f * ((ZGFloat)M_PI / 180.0f);
+			return M_PI / 2.0f;
 		case UP:
 			return 3.0f * (ZGFloat)M_PI / 2.0f;
 	}

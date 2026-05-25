@@ -214,7 +214,6 @@ struct MainMenuView: View {
 	let onConnect: () -> Void
 	let onHumanPlayersChange: (Int) -> Void
 	let onPlayerLivesChange: (Int) -> Void
-	let onAIDifficultyChange: (Int) -> Void
 	let onEffectsChange: (Bool) -> Void
 	let onMusicChange: (Bool) -> Void
 	@State private var destination: MainMenuDestination? = nil
@@ -223,7 +222,6 @@ struct MainMenuView: View {
 	@State private var hostAddress: String
 	@State private var humanPlayers: Int
 	@State private var playerLives: Int
-	@State private var aiDifficulty: Int
 	@State private var effectsEnabled: Bool
 	@State private var musicEnabled: Bool
 
@@ -234,7 +232,6 @@ struct MainMenuView: View {
 	     onStartGame: @escaping () -> Void, onConnect: @escaping () -> Void,
 	     initialHumanPlayers: Int, onHumanPlayersChange: @escaping (Int) -> Void,
 	     initialPlayerLives: Int, onPlayerLivesChange: @escaping (Int) -> Void,
-	     initialAIDifficulty: Int, onAIDifficultyChange: @escaping (Int) -> Void,
 	     initialEffectsEnabled: Bool, onEffectsChange: @escaping (Bool) -> Void,
 	     initialMusicEnabled: Bool, onMusicChange: @escaping (Bool) -> Void) {
 		self.onPlay = onPlay
@@ -246,7 +243,6 @@ struct MainMenuView: View {
 		self.onConnect = onConnect
 		self.onHumanPlayersChange = onHumanPlayersChange
 		self.onPlayerLivesChange = onPlayerLivesChange
-		self.onAIDifficultyChange = onAIDifficultyChange
 		self.onEffectsChange = onEffectsChange
 		self.onMusicChange = onMusicChange
 		self._onlineName = State(initialValue: initialOnlineName)
@@ -254,7 +250,6 @@ struct MainMenuView: View {
 		self._hostAddress = State(initialValue: initialHostAddress)
 		self._humanPlayers = State(initialValue: initialHumanPlayers)
 		self._playerLives = State(initialValue: initialPlayerLives)
-		self._aiDifficulty = State(initialValue: initialAIDifficulty)
 		self._effectsEnabled = State(initialValue: initialEffectsEnabled)
 		self._musicEnabled = State(initialValue: initialMusicEnabled)
 	}
@@ -289,10 +284,6 @@ struct MainMenuView: View {
 				initialPlayerLives: playerLives, onPlayerLivesChange: { newValue in
 					playerLives = newValue
 					onPlayerLivesChange(newValue)
-				},
-				initialAIDifficulty: aiDifficulty, onAIDifficultyChange: { newValue in
-					aiDifficulty = newValue
-					onAIDifficultyChange(newValue)
 				},
 				initialEffectsEnabled: effectsEnabled, onEffectsChange: { newValue in
 					effectsEnabled = newValue
@@ -346,30 +337,25 @@ struct OptionsMenuView: View {
 	let onBack: () -> Void
 	let onHumanPlayersChange: (Int) -> Void
 	let onPlayerLivesChange: (Int) -> Void
-	let onAIDifficultyChange: (Int) -> Void
 	let onEffectsChange: (Bool) -> Void
 	let onMusicChange: (Bool) -> Void
 	@State private var humanPlayers: Int
 	@State private var playerLives: Int
-	@State private var aiDifficulty: Int
 	@State private var effectsEnabled: Bool
 	@State private var musicEnabled: Bool
 
 	init(onBack: @escaping () -> Void,
 		 initialHumanPlayers: Int, onHumanPlayersChange: @escaping (Int) -> Void,
 		 initialPlayerLives: Int, onPlayerLivesChange: @escaping (Int) -> Void,
-		 initialAIDifficulty: Int, onAIDifficultyChange: @escaping (Int) -> Void,
 		 initialEffectsEnabled: Bool, onEffectsChange: @escaping (Bool) -> Void,
 		 initialMusicEnabled: Bool, onMusicChange: @escaping (Bool) -> Void) {
 		self.onBack = onBack
 		self.onHumanPlayersChange = onHumanPlayersChange
 		self.onPlayerLivesChange = onPlayerLivesChange
-		self.onAIDifficultyChange = onAIDifficultyChange
 		self.onEffectsChange = onEffectsChange
 		self.onMusicChange = onMusicChange
 		self._humanPlayers = State(initialValue: initialHumanPlayers)
 		self._playerLives = State(initialValue: initialPlayerLives)
-		self._aiDifficulty = State(initialValue: initialAIDifficulty)
 		self._effectsEnabled = State(initialValue: initialEffectsEnabled)
 		self._musicEnabled = State(initialValue: initialMusicEnabled)
 	}
@@ -403,15 +389,6 @@ struct OptionsMenuView: View {
 				.foregroundColor(Color(white: 0.5))
 				.frame(width: itemWidth, alignment: .leading)
 
-			MenuSegmentedRow(
-				label: "Bot Difficulty",
-				segments: ["Easy", "Medium", "Hard"],
-				selection: $aiDifficulty,
-				rowHeight: rowHeight, fontSize: fontSize, itemWidth: itemWidth
-			)
-			.onChange(of: aiDifficulty) { _, newValue in onAIDifficultyChange(newValue) }
-			.padding(.bottom, itemSpacing)
-
 			MenuStepperRow(
 				label: humanPlayers == 1 ? "1 Human Player" : "\(humanPlayers) Human Players",
 				value: humanPlayers, range: 0...4,
@@ -423,10 +400,10 @@ struct OptionsMenuView: View {
 
 			MenuStepperRow(
 				label: playerLives == 1 ? "1 Player Life" : "\(playerLives) Player Lives",
-				value: playerLives, range: 1...10,
+				value: playerLives, range: 1...Int(MAX_CHARACTER_LIVES),
 				rowHeight: rowHeight, fontSize: fontSize, itemWidth: itemWidth,
 				onDecrement: { if playerLives > 1 { playerLives -= 1; onPlayerLivesChange(playerLives) } },
-				onIncrement: { if playerLives < 10 { playerLives += 1; onPlayerLivesChange(playerLives) } }
+				onIncrement: { if playerLives < MAX_CHARACTER_LIVES { playerLives += 1; onPlayerLivesChange(playerLives) } }
 			)
 			.padding(.bottom, itemSpacing)
 
@@ -752,7 +729,7 @@ struct OnlineMenuView: View {
 }
 
 @objc class MainMenuController: NSObject {
-	@MainActor @objc(viewControllerWithOnPlay:onTutorial:initialOnlineName:onOnlineNameChange:initialFriendsJoining:onFriendsJoiningChange:initialHostAddress:onHostAddressChange:onStartGame:onConnect:initialHumanPlayers:onHumanPlayersChange:initialPlayerLives:onPlayerLivesChange:initialAIDifficulty:onAIDifficultyChange:initialEffectsEnabled:onEffectsChange:initialMusicEnabled:onMusicChange:)
+	@MainActor @objc(viewControllerWithOnPlay:onTutorial:initialOnlineName:onOnlineNameChange:initialFriendsJoining:onFriendsJoiningChange:initialHostAddress:onHostAddressChange:onStartGame:onConnect:initialHumanPlayers:onHumanPlayersChange:initialPlayerLives:onPlayerLivesChange:initialEffectsEnabled:onEffectsChange:initialMusicEnabled:onMusicChange:)
 	static func viewController(onPlay: @escaping () -> Void,
 							   onTutorial: @escaping () -> Void,
 							   initialOnlineName: String,
@@ -767,13 +744,11 @@ struct OnlineMenuView: View {
 							   onHumanPlayersChange: @escaping (Int) -> Void,
 							   initialPlayerLives: Int,
 							   onPlayerLivesChange: @escaping (Int) -> Void,
-							   initialAIDifficulty: Int,
-							   onAIDifficultyChange: @escaping (Int) -> Void,
 							   initialEffectsEnabled: Bool,
 							   onEffectsChange: @escaping (Bool) -> Void,
 							   initialMusicEnabled: Bool,
 							   onMusicChange: @escaping (Bool) -> Void) -> UIViewController {
-		return UIHostingController(rootView: MainMenuView(onPlay: onPlay, onTutorial: onTutorial, initialOnlineName: initialOnlineName, onOnlineNameChange: onOnlineNameChange, initialFriendsJoining: initialFriendsJoining, onFriendsJoiningChange: onFriendsJoiningChange, initialHostAddress: initialHostAddress, onHostAddressChange: onHostAddressChange, onStartGame: onStartGame, onConnect: onConnect, initialHumanPlayers: initialHumanPlayers, onHumanPlayersChange: onHumanPlayersChange, initialPlayerLives: initialPlayerLives, onPlayerLivesChange: onPlayerLivesChange, initialAIDifficulty: initialAIDifficulty, onAIDifficultyChange: onAIDifficultyChange, initialEffectsEnabled: initialEffectsEnabled, onEffectsChange: onEffectsChange, initialMusicEnabled: initialMusicEnabled, onMusicChange: onMusicChange))
+		return UIHostingController(rootView: MainMenuView(onPlay: onPlay, onTutorial: onTutorial, initialOnlineName: initialOnlineName, onOnlineNameChange: onOnlineNameChange, initialFriendsJoining: initialFriendsJoining, onFriendsJoiningChange: onFriendsJoiningChange, initialHostAddress: initialHostAddress, onHostAddressChange: onHostAddressChange, onStartGame: onStartGame, onConnect: onConnect, initialHumanPlayers: initialHumanPlayers, onHumanPlayersChange: onHumanPlayersChange, initialPlayerLives: initialPlayerLives, onPlayerLivesChange: onPlayerLivesChange, initialEffectsEnabled: initialEffectsEnabled, onEffectsChange: onEffectsChange, initialMusicEnabled: initialMusicEnabled, onMusicChange: onMusicChange))
 	}
 }
 
