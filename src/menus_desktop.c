@@ -82,7 +82,6 @@ static Menu *gGreenTreePlayerOptionsMenu;
 static Menu *gBlueLightningPlayerOptionsMenu;
 
 static bool gDrawArrowsForCharacterLivesFlag;
-static bool gDrawArrowsForAIModeFlag;
 static bool gDrawArrowsForNumberOfNetHumansFlag;
 
 static bool gNetworkAddressFieldIsActive;
@@ -702,11 +701,16 @@ void drawAIModeOptionsMenu(Renderer *renderer, color4_t preferredColor)
 		drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, "Medium");
 	else if (gAIMode == AI_HARD_MODE)
 		drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, "Hard");
+}
 
-	if (gDrawArrowsForAIModeFlag)
-	{
-		drawUpAndDownArrowTriangles(renderer, m4_translation((vec3_t){5.0f, -4.1f / 1.25f - 0.59f, -25.0f / 1.25f}));
-	}
+void aiModeOptionsMenuAction(void *context)
+{
+	if (gAIMode == AI_EASY_MODE)
+		gAIMode = AI_MEDIUM_MODE;
+	else if (gAIMode == AI_MEDIUM_MODE)
+		gAIMode = AI_HARD_MODE;
+	else
+		gAIMode = AI_EASY_MODE;
 }
 
 void drawConfigureLivesMenu(Renderer *renderer, color4_t preferredColor)
@@ -1202,7 +1206,7 @@ void initMenus(ZGWindow *window, GameState *gameState, void (*exitGame)(ZGWindow
 	gBlueLightningPlayerOptionsMenu->action = blueLightningPlayerOptionsMenuAction;
 	
 	gAIModeOptionsMenu->draw = drawAIModeOptionsMenu;
-	gAIModeOptionsMenu->action = NULL;
+	gAIModeOptionsMenu->action = aiModeOptionsMenuAction;
 	
 	gConfigureLivesMenu->draw = drawConfigureLivesMenu;
 	gConfigureLivesMenu->action = NULL;
@@ -1435,14 +1439,6 @@ static void performMenuEnterAction(GameState *gameState, ZGWindow *window)
 		}
 	}
 
-	else if (gCurrentMenu == gAIModeOptionsMenu)
-	{
-		gDrawArrowsForAIModeFlag = !gDrawArrowsForAIModeFlag;
-		if (gAudioEffectsFlag)
-		{
-			playMenuSound();
-		}
-	}
 	else
 	{
 		GameMenuContext menuContext;
@@ -1469,15 +1465,6 @@ static void performMenuDownAction(void)
 		{
 			gCharacterLives--;
 		}
-	}
-	else if (gDrawArrowsForAIModeFlag)
-	{
-		if (gAIMode == AI_EASY_MODE)
-			gAIMode = AI_HARD_MODE;
-		else if (gAIMode == AI_MEDIUM_MODE)
-			gAIMode = AI_EASY_MODE;
-		else /* if (gAIMode == AI_HARD_MODE) */
-			gAIMode = AI_MEDIUM_MODE;
 	}
 	else if (gDrawArrowsForNumberOfNetHumansFlag)
 	{
@@ -1508,15 +1495,6 @@ static void performMenuUpAction(void)
 		{
 			gCharacterLives++;
 		}
-	}
-	else if (gDrawArrowsForAIModeFlag)
-	{
-		if (gAIMode == AI_EASY_MODE)
-			gAIMode = AI_MEDIUM_MODE;
-		else if (gAIMode == AI_MEDIUM_MODE)
-			gAIMode = AI_HARD_MODE;
-		else /* if (gAIMode == AI_HARD_MODE) */
-			gAIMode = AI_EASY_MODE;
 	}
 	else if (gDrawArrowsForNumberOfNetHumansFlag)
 	{
@@ -1557,10 +1535,6 @@ static void performMenuBackAction(GameState *gameState, ZGWindow *window)
 	else if (gDrawArrowsForCharacterLivesFlag)
 	{
 		gDrawArrowsForCharacterLivesFlag = false;
-	}
-	else if (gDrawArrowsForAIModeFlag)
-	{
-		gDrawArrowsForAIModeFlag = false;
 	}
 	else if (gDrawArrowsForNumberOfNetHumansFlag)
 	{
