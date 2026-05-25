@@ -1246,10 +1246,11 @@ static void drawScene(Renderer *renderer, void *context)
 				{
 					if (gGameState != GAME_STATE_PAUSED)
 					{
-						char buffer[256] = {0};
-						snprintf(buffer, sizeof(buffer) - 1, "Game begins in %d", gGameStartNumber);
-						
-						drawStringScaled(renderer, modelViewMatrix, textColor, scale, buffer);
+						drawStringScaled(renderer, modelViewMatrix, textColor, scale, "Game begins in");
+						char numBuffer[8] = {0};
+						snprintf(numBuffer, sizeof(numBuffer) - 1, "%d", gGameStartNumber);
+						mat4_t numModelViewMatrix = m4_mul(m4_translation((vec3_t){5.5f, 0.0f, 0.0f}), modelViewMatrix);
+						drawStringScaled(renderer, numModelViewMatrix, textColor, scale, numBuffer);
 					}
 				}
 				

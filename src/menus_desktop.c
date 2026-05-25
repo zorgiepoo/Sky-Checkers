@@ -434,7 +434,7 @@ void networkServerMenuAction(void *context)
 void drawNetworkServerNumberOfPlayersMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t numberPlayersModelViewMatrix = m4_translation((vec3_t){-3.0f, 1.07f, -20.00f});
-	char friendsBuffer[64];
+	char friendsBuffer[64] = {0};
 	snprintf(friendsBuffer, sizeof(friendsBuffer), "Friends Joining: %d", gNumberOfNetHumans);
 	drawStringLeftAligned(renderer, m4_mul(numberPlayersModelViewMatrix, m4_scaling(MENU_WIDE_SCALE)), preferredColor, MENU_TEXT_SCALE, friendsBuffer);
 
@@ -717,7 +717,7 @@ void drawConfigureLivesMenu(Renderer *renderer, color4_t preferredColor)
 {
 	mat4_t labelMatrix = m4_mul(m4_translation((vec3_t){-4.8f, -4.87f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
 	drawStringLeftAligned(renderer, labelMatrix, preferredColor, MENU_TEXT_SCALE, "Player Lives:");
-	char livesBuffer[64];
+	char livesBuffer[64] = {0};
 	snprintf(livesBuffer, sizeof(livesBuffer), "%d", gCharacterLives);
 	mat4_t valueMatrix = m4_mul(m4_translation((vec3_t){1.6f, -4.87f, -20.00f}), m4_scaling(MENU_WIDE_SCALE));
 	drawStringLeftAligned(renderer, valueMatrix, preferredColor, MENU_TEXT_SCALE, livesBuffer);
