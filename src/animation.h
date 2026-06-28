@@ -27,10 +27,12 @@
 //#define ANIMATION_TIMER_INTERVAL 0.00833 // in seconds
 #define ANIMATION_TIMER_INTERVAL 0.01666 // in seconds
 
-void startAnimation(void);
+void startAnimation(ZGWindow *window);
 void endAnimation(void);
 
 void animate(ZGWindow *window, double timeDelta, GameState gameState);
+
+void playFirstBeepCountdown(ZGWindow *window, GameState gameState);
 
 void prepareCharactersDeath(Character *player);
 void decideWhetherToMakeAPlayerAWinner(Character *player);

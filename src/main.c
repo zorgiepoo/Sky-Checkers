@@ -141,8 +141,7 @@ typedef struct
 #define CHARACTER_ICON_OFFSET -8.5f
 
 // in seconds
-#define FIRST_NEW_GAME_COUNTDOWN 5
-#define LATER_NEW_GAME_COUNTDOWN 3
+#define NEW_GAME_COUNTDOWN 3
 
 static void initScene(Renderer *renderer);
 
@@ -559,7 +558,11 @@ void initGame(ZGWindow *window, bool firstGame, bool tutorial)
 		gTutorialCoverTimer = 7.0f;
 	}
 
-	startAnimation();
+	startAnimation(window);
+	if (!tutorial && gNetworkConnection == NULL)
+	{
+		playFirstBeepCountdown(window, gGameState);
+	}
 	
 	int initialNumberOfLives;
 	if (tutorial)
@@ -687,21 +690,28 @@ void initGame(ZGWindow *window, bool firstGame, bool tutorial)
 	{
 		gGameStartNumber = 0;
 	}
-	else if (firstGame)
-	{
-		gGameStartNumber = FIRST_NEW_GAME_COUNTDOWN;
-	}
 	else
 	{
-		gGameStartNumber = LATER_NEW_GAME_COUNTDOWN;
+		gGameStartNumber = NEW_GAME_COUNTDOWN;
 	}
 	
 	gTutorialStage = 0;
 	
-	if (firstGame && gAudioMusicFlag && gGameState != GAME_STATE_PAUSED)
+	if (gAudioMusicFlag)
 	{
-		bool windowFocus = ZGWindowHasFocus(window);
-		playGameMusic(!windowFocus);
+		if ((gPrevGameLevel != gGameLevel) || (firstGame && gGameState != GAME_STATE_PAUSED))
+		{
+			bool windowFocus = ZGWindowHasFocus(window);
+			
+			if (tutorial)
+			{
+				playTutorialAndLobbyMusic(!windowFocus);
+			}
+			else
+			{
+				playGameMusic(gGameLevel, !windowFocus);
+			}
+		}
 	}
 	
 	if (firstGame && gGameState != GAME_STATE_PAUSED)
@@ -713,6 +723,8 @@ void initGame(ZGWindow *window, bool firstGame, bool tutorial)
 		ZGInstallTouchGestures(window);
 #endif
 	}
+	
+	gPrevGameLevel = gGameLevel;
 }
 
 void endGame(ZGWindow *window, bool lastGame)

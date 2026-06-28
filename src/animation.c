@@ -41,6 +41,9 @@
 
 #define ANIMATION_TIME_ELAPSED_INTERVAL 0.0177 // in seconds
 
+#define SECOND_TIMER_START 0.0f
+#define LAST_SECOND_TIMER_START 0.0f
+
 static int gTilesLayer[28];
 
 typedef struct
@@ -52,7 +55,7 @@ typedef struct
 
 static TileLayerState gTileLayerStates[2];
 
-static float gSecondTimer =						0.0f;
+static float gSecondTimer =						SECOND_TIMER_START;
 static float gLastSecond =						0.0f;
 
 static int gCurrentWinner =						0;
@@ -215,6 +218,18 @@ void animate(ZGWindow *window, double timeDelta, GameState gameState)
 				{
 					gGameStartNumber--;
 				}
+				
+				if (gAudioEffectsFlag && ZGWindowHasFocus(window) && gameState != GAME_STATE_PAUSED)
+				{
+					if (gGameStartNumber > 0)
+					{
+						playBeepCountdownSound();
+					}
+					else
+					{
+						playBoopLastCountdownSound();
+					}
+				}
 			}
 			
 			if (gStatsTimer != 0)
@@ -256,10 +271,6 @@ void animate(ZGWindow *window, double timeDelta, GameState gameState)
 	}
 	
 	// Animate objects based on time delta
-	updateAI(&gRedRover, gSecondTimer, !tutorialState, timeDelta);
-	updateAI(&gGreenTree, gSecondTimer, !tutorialState, timeDelta);
-	updateAI(&gPinkBubbleGum, gSecondTimer, !tutorialState, timeDelta);
-	updateAI(&gBlueLightning, gSecondTimer, !tutorialState, timeDelta);
 	float difficulty = currentGameDifficulty();
 	
 	updateAI(&gRedRover, gSecondTimer, difficulty, !tutorialState, timeDelta);
@@ -316,6 +327,14 @@ void animate(ZGWindow *window, double timeDelta, GameState gameState)
 		recoverCharacter(&gBlueLightning);
 		
 		gTimeElapsedAccumulator -= ANIMATION_TIME_ELAPSED_INTERVAL;
+	}
+}
+
+void playFirstBeepCountdown(ZGWindow *window, GameState gameState)
+{
+	if (gAudioEffectsFlag && ZGWindowHasFocus(window) && gameState != GAME_STATE_PAUSED)
+	{
+		playBeepCountdownSound();
 	}
 }
 
@@ -1039,14 +1058,14 @@ static void loadSecondTileAnimationLayer(void)
 	gTilesLayer[19] = 41;
 }
 
-void startAnimation(void)
+void startAnimation(ZGWindow *window)
 {
 	loadFirstTileAnimationLayer();
 }
 
 void endAnimation(void)
 {
-	gSecondTimer = 0.0f;
+	gSecondTimer = SECOND_TIMER_START;
 	gLastSecond = 0.0f;
 	gTimeElapsedAccumulator = 0.0;
 	
