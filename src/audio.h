@@ -28,7 +28,6 @@ extern "C" {
 
 #define MUSIC_VOLUME					32
 #define MENU_SOUND_VOLUME				32
-#define BEEP_SOUND_VOLUME				10
 #define SHOOTING_SOUND_VOLUME			16
 #define TILE_FALLING_SOUND_VOLUME		32
 #define TILE_DIEING_STONE_SOUND_VOLUME	8
@@ -41,8 +40,7 @@ extern "C" {
 #define TILE_FALLING_SOUND_MAX_CHANNEL 52
 #define DIEING_STONE_SOUND_MIN_CHANNEL 53
 #define DIEING_STONE_SOUND_MAX_CHANNEL 80
-#define BEEP_SOUND_CHANNEL 81
-#define MAX_CHANNELS (BEEP_SOUND_CHANNEL + 1)
+#define MAX_CHANNELS (DIEING_STONE_SOUND_MAX_CHANNEL + 1)
 
 #define AUDIO_FORMAT_SAMPLE_RATE 22050
 #define AUDIO_FORMAT_NUM_CHANNELS 2
@@ -58,8 +56,6 @@ void pauseMusic(void);
 void unPauseMusic(void);
 
 void playMenuSound(void);
-void playBeepCountdownSound(void);
-void playBoopLastCountdownSound(void);
 void playShootingSound(int soundIndex);
 void playTileFallingSound(void);
 void playDieingStoneSound(void);

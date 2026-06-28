@@ -30,8 +30,6 @@ static AVAudioPCMBuffer *gMainMusicBuffer;
 static AVAudioPCMBuffer *gGameMusicTrackBuffers[4];
 
 static AVAudioPCMBuffer *gMenuSoundBuffer;
-static AVAudioPCMBuffer *gBeepSoundBuffer;
-static AVAudioPCMBuffer *gBoopSoundBuffer;
 static AVAudioPCMBuffer *gShootingSoundBuffer;
 static AVAudioPCMBuffer *gTileFallingSoundBuffer;
 static AVAudioPCMBuffer *gDieingStoneSoundBuffer;
@@ -105,10 +103,6 @@ void initAudio(void)
 			[gAudioEngine attachNode:gPlayerEffectNodes[dieingStoneNodeIndex]];
 		}
 		
-		gPlayerEffectNodes[BEEP_SOUND_CHANNEL] = [[AVAudioPlayerNode alloc] init];
-		gPlayerEffectNodes[BEEP_SOUND_CHANNEL].volume = (float)BEEP_SOUND_VOLUME / (float)MAX_VOLUME;
-		[gAudioEngine attachNode:gPlayerEffectNodes[BEEP_SOUND_CHANNEL]];
-		
 		void (^cleanupFailure)(void) = ^{
 			gAudioEngine = nil;
 			gMainMusicBuffer = nil;
@@ -117,8 +111,6 @@ void initAudio(void)
 			gGameMusicTrackBuffers[2] = nil;
 			gGameMusicTrackBuffers[3] = nil;
 			gMenuSoundBuffer = nil;
-			gBeepSoundBuffer = nil;
-			gBoopSoundBuffer = nil;
 			gShootingSoundBuffer = nil;
 			gTileFallingSoundBuffer = nil;
 			gDieingStoneSoundBuffer = nil;
@@ -171,20 +163,6 @@ void initAudio(void)
 			return;
 		}
 		
-		gBeepSoundBuffer = createAudioBuffer(@"Data/Audio/beep.wav");
-		if (gBeepSoundBuffer == nil)
-		{
-			cleanupFailure();
-			return;
-		}
-		
-		gBoopSoundBuffer = createAudioBuffer(@"Data/Audio/boop.wav");
-		if (gBoopSoundBuffer == nil)
-		{
-			cleanupFailure();
-			return;
-		}
-		
 		gShootingSoundBuffer = createAudioBuffer(@"Data/Audio/whoosh.wav");
 		if (gShootingSoundBuffer == nil)
 		{
@@ -225,8 +203,6 @@ void initAudio(void)
 		{
 			[gAudioEngine connect:gPlayerEffectNodes[dieingStoneNodeIndex] to:mainMixerNode format:gDieingStoneSoundBuffer.format];
 		}
-		
-		[gAudioEngine connect:gPlayerEffectNodes[BEEP_SOUND_CHANNEL] to:mainMixerNode format:gBeepSoundBuffer.format];
 		
 		[gAudioEngine connect:mainMixerNode to:gAudioEngine.outputNode format:finalAudioFormat];
 		
@@ -316,28 +292,6 @@ void playMenuSound(void)
 		[gPlayerEffectNodes[MENU_SOUND_CHANNEL] scheduleBuffer:gMenuSoundBuffer atTime:nil options:AVAudioPlayerNodeBufferInterrupts completionHandler:nil];
 	
 		[gPlayerEffectNodes[MENU_SOUND_CHANNEL] play];
-	});
-}
-
-void playBeepCountdownSound(void)
-{
-	dispatch_async(gAudioQueue, ^{
-		if (gAudioEngine == nil || !gAudioEngine.isRunning) return;
-		
-		[gPlayerEffectNodes[BEEP_SOUND_CHANNEL] scheduleBuffer:gBeepSoundBuffer atTime:nil options:AVAudioPlayerNodeBufferInterrupts completionHandler:nil];
-	
-		[gPlayerEffectNodes[BEEP_SOUND_CHANNEL] play];
-	});
-}
-
-void playBoopLastCountdownSound(void)
-{
-	dispatch_async(gAudioQueue, ^{
-		if (gAudioEngine == nil || !gAudioEngine.isRunning) return;
-		
-		[gPlayerEffectNodes[BEEP_SOUND_CHANNEL] scheduleBuffer:gBoopSoundBuffer atTime:nil options:AVAudioPlayerNodeBufferInterrupts completionHandler:nil];
-	
-		[gPlayerEffectNodes[BEEP_SOUND_CHANNEL] play];
 	});
 }
 

@@ -338,8 +338,6 @@ void syncNetworkState(ZGWindow *window, float timeDelta, GameState gameState)
 				}
 				case START_GAME_MESSAGE_TYPE:
 					gPinkBubbleGum.netState = NETWORK_PLAYING_STATE;
-					
-					playFirstBeepCountdown(window, gameState);
 					break;
 				case GAME_START_NUMBER_UPDATE_MESSAGE_TYPE:
 					gGameStartNumber = message.gameStartNumber;

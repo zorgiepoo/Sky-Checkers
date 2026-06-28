@@ -218,18 +218,6 @@ void animate(ZGWindow *window, double timeDelta, GameState gameState)
 				{
 					gGameStartNumber--;
 				}
-				
-				if (gAudioEffectsFlag && ZGWindowHasFocus(window) && gameState != GAME_STATE_PAUSED)
-				{
-					if (gGameStartNumber > 0)
-					{
-						playBeepCountdownSound();
-					}
-					else
-					{
-						playBoopLastCountdownSound();
-					}
-				}
 			}
 			
 			if (gStatsTimer != 0)
@@ -327,14 +315,6 @@ void animate(ZGWindow *window, double timeDelta, GameState gameState)
 		recoverCharacter(&gBlueLightning);
 		
 		gTimeElapsedAccumulator -= ANIMATION_TIME_ELAPSED_INTERVAL;
-	}
-}
-
-void playFirstBeepCountdown(ZGWindow *window, GameState gameState)
-{
-	if (gAudioEffectsFlag && ZGWindowHasFocus(window) && gameState != GAME_STATE_PAUSED)
-	{
-		playBeepCountdownSound();
 	}
 }
 

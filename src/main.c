@@ -559,10 +559,6 @@ void initGame(ZGWindow *window, bool firstGame, bool tutorial)
 	}
 
 	startAnimation(window);
-	if (!tutorial && gNetworkConnection == NULL)
-	{
-		playFirstBeepCountdown(window, gGameState);
-	}
 	
 	int initialNumberOfLives;
 	if (tutorial)
