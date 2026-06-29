@@ -322,9 +322,17 @@ static void sendPing(void)
 {
 	if (gNetworkConnection)
 	{
+		static uint32_t lastPingTime = 0;
+		uint32_t currentTime = ZGGetTicks();
+		if (currentTime - lastPingTime < 500)
+		{
+			return;
+		}
+		lastPingTime = currentTime;
+
 		GameMessage message;
 		message.type = PING_MESSAGE_TYPE;
-		message.pingTimestamp = ZGGetTicks();
+		message.pingTimestamp = currentTime;
 		
 		if (gNetworkConnection->type == NETWORK_CLIENT_TYPE)
 		{

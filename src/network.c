@@ -560,7 +560,7 @@ void syncNetworkState(ZGWindow *window, float timeDelta, GameState gameState)
 		uint32_t currentTime = ZGGetTicks();
 		if (currentTime > 0)
 		{
-			uint32_t renderTime = currentTime - (uint32_t)(3 * gNetworkConnection->serverHalfPing);
+			uint32_t renderTime = currentTime - (uint32_t)(2 * gNetworkConnection->serverHalfPing);
 			
 			for (uint32_t triggerMessageIndex = 0; triggerMessageIndex < gNetworkConnection->characterTriggerMessagesCount; triggerMessageIndex++)
 			{
@@ -664,8 +664,19 @@ void syncNetworkState(ZGWindow *window, float timeDelta, GameState gameState)
 								CharacterMovement nextMovement = gNetworkConnection->characterMovements[characterIndex][(characterMovementIndex + 1) % CHARACTER_MOVEMENTS_CAPACITY];
 
 								Character *character = getCharacter(characterID);
-								
+								int savedDirection = character->direction;
+								int savedPointingDirection = character->pointing_direction;
+
 								interpolateCharacter(character, &previousMovement, &nextMovement, renderTime);
+
+								// For the local player, keep locally-input direction and facing
+								// rather than the server-interpolated ones; discrepancy
+								// reconciliation still applies.
+								if (character == gNetworkConnection->character)
+								{
+									character->direction = savedDirection;
+									character->pointing_direction = savedPointingDirection;
+								}
 							}
 							break;
 						}

@@ -61,7 +61,7 @@ typedef struct
 	uint8_t dead;
 } CharacterMovement;
 
-#define CHARACTER_MOVEMENTS_CAPACITY 20
+#define CHARACTER_MOVEMENTS_CAPACITY 40
 
 typedef enum
 {
