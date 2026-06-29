@@ -692,18 +692,23 @@ void syncNetworkState(ZGWindow *window, float timeDelta, GameState gameState)
 		for (uint8_t characterID = RED_ROVER; characterID <= PINK_BUBBLE_GUM; characterID++)
 		{
 			Character *character = getCharacter(characterID);
+
+			// Dead zone: ignore small discrepancies to avoid visible corrections
+			// for the routine sub-tile offsets.
+			// Larger errors (e.g. collision mispredictions) still get corrected
+			// gradually to prevent drift from reaching the warp threshold.
+			const float minDiscrepancy = 0.1f;
+			if (fabsf(character->xDiscrepancy) < minDiscrepancy)
+			{
+				character->xDiscrepancy = 0.0f;
+			}
 			
-			// Give a larger displacement if the character is moving
-			// When the character is stationary, we don't want to make adjusting their movement obvious to the player
-			float displacementAdjustment;
-			if (character->direction == NO_DIRECTION)
+			if (fabsf(character->yDiscrepancy) < minDiscrepancy)
 			{
-				displacementAdjustment = timeDelta * character->speed / 64.0f;
+				character->yDiscrepancy = 0.0f;
 			}
-			else
-			{
-				displacementAdjustment = timeDelta * character->speed / 16.0f;
-			}
+
+			float displacementAdjustment = timeDelta * character->speed / 8.0f;
 			
 			if (fabsf(character->xDiscrepancy) < displacementAdjustment)
 			{
