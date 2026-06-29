@@ -688,35 +688,32 @@ void syncNetworkState(ZGWindow *window, float timeDelta, GameState gameState)
 			}
 		}
 		
-		// Resolve position discrepanies
+		// Resolve position discrepancies along the active movement axis only.
+		// Corrections on the perpendicular axis or while stationary are more
+		// visible, so they are deferred until the character moves that way.
+		// Large errors are still warped instantly (see above).
 		for (uint8_t characterID = RED_ROVER; characterID <= PINK_BUBBLE_GUM; characterID++)
 		{
 			Character *character = getCharacter(characterID);
 
-			// Dead zone: ignore small discrepancies to avoid visible corrections
-			// for the routine sub-tile offsets.
-			// Larger errors (e.g. collision mispredictions) still get corrected
-			// gradually to prevent drift from reaching the warp threshold.
-			const float minDiscrepancy = 0.1f;
-			if (fabsf(character->xDiscrepancy) < minDiscrepancy)
+			bool correctX = (character->direction == RIGHT || character->direction == LEFT);
+			bool correctY = (character->direction == UP || character->direction == DOWN);
+
+			if (!correctX && !correctY)
 			{
-				character->xDiscrepancy = 0.0f;
-			}
-			
-			if (fabsf(character->yDiscrepancy) < minDiscrepancy)
-			{
-				character->yDiscrepancy = 0.0f;
+				continue;
 			}
 
+			const float minDiscrepancy = 0.1f;
 			float displacementAdjustment = timeDelta * character->speed / 8.0f;
-			
-			if (fabsf(character->xDiscrepancy) < displacementAdjustment)
+
+			if (correctX)
 			{
-				character->xDiscrepancy = 0.0f;
-			}
-			else
-			{
-				if (character->xDiscrepancy > 0.0f)
+				if (fabsf(character->xDiscrepancy) < minDiscrepancy || fabsf(character->xDiscrepancy) < displacementAdjustment)
+				{
+					character->xDiscrepancy = 0.0f;
+				}
+				else if (character->xDiscrepancy > 0.0f)
 				{
 					character->x += displacementAdjustment;
 					character->xDiscrepancy -= displacementAdjustment;
@@ -727,14 +724,14 @@ void syncNetworkState(ZGWindow *window, float timeDelta, GameState gameState)
 					character->xDiscrepancy += displacementAdjustment;
 				}
 			}
-			
-			if (fabsf(character->yDiscrepancy) < displacementAdjustment)
+
+			if (correctY)
 			{
-				character->yDiscrepancy = 0.0f;
-			}
-			else
-			{
-				if (character->yDiscrepancy > 0.0f)
+				if (fabsf(character->yDiscrepancy) < minDiscrepancy || fabsf(character->yDiscrepancy) < displacementAdjustment)
+				{
+					character->yDiscrepancy = 0.0f;
+				}
+				else if (character->yDiscrepancy > 0.0f)
 				{
 					character->y += displacementAdjustment;
 					character->yDiscrepancy -= displacementAdjustment;
