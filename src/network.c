@@ -689,12 +689,19 @@ void syncNetworkState(ZGWindow *window, float timeDelta, GameState gameState)
 		}
 		
 		// Resolve position discrepancies along the active movement axis only.
-		// Corrections on the perpendicular axis or while stationary are more
-		// visible, so they are deferred until the character moves that way.
+		// Corrections on the perpendicular axis, while stationary, or while the
+		// character is frozen (firing animation) are deferred. During firing,
+		// the ring buffer still shows movement (server hasn't processed the fire
+		// yet), so correcting would visibly shift the frozen character.
 		// Large errors are still warped instantly (see above).
 		for (uint8_t characterID = RED_ROVER; characterID <= PINK_BUBBLE_GUM; characterID++)
 		{
 			Character *character = getCharacter(characterID);
+
+			if (!character->active)
+			{
+				continue;
+			}
 
 			bool correctX = (character->direction == RIGHT || character->direction == LEFT);
 			bool correctY = (character->direction == UP || character->direction == DOWN);
