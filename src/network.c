@@ -666,8 +666,16 @@ void syncNetworkState(ZGWindow *window, float timeDelta, GameState gameState)
 								Character *character = getCharacter(characterID);
 								int savedDirection = character->direction;
 								int savedPointingDirection = character->pointing_direction;
+								bool wasAlive = CHARACTER_IS_ALIVE(character);
 
 								interpolateCharacter(character, &previousMovement, &nextMovement, renderTime);
+
+								// When respawning, reset the render state so prev_z doesn't
+								// interpolate from the fallen position for one frame.
+								if (!wasAlive && CHARACTER_IS_ALIVE(character))
+								{
+									saveRenderCharacterState(character);
+								}
 
 								// For the local player, keep locally-input direction and facing
 								// rather than the server-interpolated ones; discrepancy
